@@ -1,0 +1,325 @@
+/* The backdrop covers the window and places the panel. It fades; the panel fades with a small rise. */
+.backdrop {
+  --duration: var(--umbra-modal-duration, var(--umbra-motion-duration-slow));
+
+  position: fixed;
+  inset: 0;
+  z-index: var(--umbra-modal-z-index, 1000);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--umbra-modal-margin, var(--umbra-density-page-margin));
+  background: var(--umbra-modal-scrim, var(--umbra-color-base-scrim));
+  /* No blur by default: it is costly on a full window. An app can set one. */
+  backdrop-filter: var(--umbra-modal-backdrop-filter, none);
+  transition: opacity var(--duration) var(--umbra-motion-easing-enter);
+}
+
+.backdrop[data-entering],
+.backdrop[data-exiting] {
+  opacity: 0;
+}
+
+.backdrop[data-exiting] {
+  transition-timing-function: var(--umbra-motion-easing-exit);
+}
+
+.backdrop[data-variant='drawer'],
+.backdrop[data-narrow] {
+  padding: 0;
+}
+
+.backdrop[data-side='start'] {
+  justify-content: flex-start;
+}
+
+.backdrop[data-side='end'] {
+  justify-content: flex-end;
+}
+
+.backdrop[data-side='bottom'] {
+  align-items: flex-end;
+}
+
+.panel {
+  --bg: var(--umbra-modal-bg, var(--umbra-color-base-surface2));
+  --border: var(--umbra-modal-border, var(--umbra-color-base-border-strong));
+  --pad: var(--umbra-modal-padding, var(--umbra-density-card-padding));
+  --width: var(--umbra-size-modal-md);
+  --umbra-scroll-fade-color: var(--bg);
+  /* How far the panel moves as it enters: a small rise, or a drawer's own size. */
+  --from: 0 calc(var(--umbra-space-3) * var(--umbra-motion-scale));
+
+  display: flex;
+  flex-direction: column;
+  flex: none;
+  /* Not `none`: with movement scaled to nothing, entering must not differ from resting. */
+  translate: 0 0;
+  width: min(100%, var(--umbra-modal-width, var(--width)));
+  max-height: 100%;
+  overflow: hidden;
+  border: var(--umbra-border-width) solid var(--border);
+  border-radius: var(--umbra-modal-radius, var(--umbra-radius-card));
+  background: var(--bg);
+  color: var(--umbra-color-base-text-primary);
+  box-shadow: var(--umbra-modal-shadow, var(--umbra-elevation-overlay));
+  transition:
+    opacity var(--duration) var(--umbra-motion-easing-enter),
+    translate var(--duration) var(--umbra-motion-easing-enter);
+}
+
+.panel[data-entering],
+.panel[data-exiting] {
+  opacity: 0;
+  translate: var(--from);
+}
+
+.panel[data-exiting] {
+  transition-timing-function: var(--umbra-motion-easing-exit);
+}
+
+/* Open when it mounted: there is nothing to animate from. Closing still animates. */
+.backdrop[data-instant]:not([data-exiting]),
+.backdrop[data-instant]:not([data-exiting]) > .panel {
+  transition: none;
+}
+
+.panel[data-size='sm'] {
+  --width: var(--umbra-size-modal-sm);
+}
+
+.panel[data-size='lg'] {
+  --width: var(--umbra-size-modal-lg);
+}
+
+.panel[data-size='xl'] {
+  --width: var(--umbra-size-modal-xl);
+}
+
+.panel[data-size='full'] {
+  width: 100%;
+  height: 100%;
+}
+
+.panel[data-height='fill'] {
+  height: 100%;
+}
+
+/* A drawer is attached to its edge and takes the whole of it. */
+.panel[data-variant='drawer'] {
+  height: 100%;
+  border-width: 0;
+  border-radius: 0;
+  border-inline-start-width: var(--umbra-border-width);
+  --from: calc(100% * var(--umbra-motion-scale)) 0;
+}
+
+.panel[data-side='start'] {
+  border-inline-width: 0 var(--umbra-border-width);
+}
+
+.panel[data-side='start'],
+.panel[data-side='end']:dir(rtl) {
+  --from: calc(-100% * var(--umbra-motion-scale)) 0;
+}
+
+.panel[data-side='start']:dir(rtl) {
+  --from: calc(100% * var(--umbra-motion-scale)) 0;
+}
+
+.panel[data-side='bottom'] {
+  --from: 0 calc(100% * var(--umbra-motion-scale));
+  width: 100%;
+  height: auto;
+  max-height: calc(100% - var(--umbra-space-9));
+  border-width: var(--umbra-border-width) 0 0;
+}
+
+.panel[data-side='bottom'][data-height='fill'],
+.panel[data-side='bottom'][data-size='full'] {
+  height: 100%;
+  max-height: 100%;
+}
+
+/* Below the minimum window every modal takes the whole window. */
+.panel[data-narrow] {
+  width: 100%;
+  height: 100%;
+  max-height: 100%;
+  border-width: 0;
+  border-radius: 0;
+}
+
+.dialog {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  outline: none;
+}
+
+.header,
+.toolbar,
+.footer {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+.header {
+  grid-row: 1;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--umbra-space-3);
+  padding: var(--pad) var(--pad) var(--umbra-space-3);
+}
+
+.header > [data-part='icon'] {
+  flex: none;
+  margin-top: var(--umbra-space-1);
+}
+
+.titles {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--umbra-space-2);
+  /* Centres a lone title on the close button. */
+  min-height: var(--umbra-density-control-height);
+  justify-content: center;
+}
+
+.header > [data-umbra='icon-button'] {
+  flex: none;
+}
+
+.title {
+  margin: 0;
+  font: var(--umbra-font-title);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.description {
+  margin: 0;
+  color: var(--umbra-color-base-text-secondary);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+}
+
+.toolbar {
+  grid-row: 2;
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-space-3);
+  padding: 0 var(--pad) var(--umbra-space-4);
+}
+
+.nav {
+  grid-row: 3;
+  grid-column: 1;
+  min-height: 0;
+  width: var(--umbra-modal-nav-width, var(--umbra-size-modal-nav));
+  display: flex;
+  flex-direction: column;
+  border-inline-end: var(--umbra-border-width) solid var(--umbra-color-base-border-subtle);
+}
+
+.navList {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  /* Room at the top for the focus ring of the first control, here and in the body. */
+  padding: var(--umbra-space-2) var(--umbra-space-3) var(--pad) var(--pad);
+  scrollbar-width: thin;
+  scrollbar-color: var(--umbra-color-base-border-control) transparent;
+}
+
+.navLabel {
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: start;
+}
+
+.body {
+  grid-row: 3;
+  grid-column: 2;
+}
+
+.dialog:not(:has(> .nav)) > .body {
+  grid-column: 1 / -1;
+}
+
+.body > [data-part='viewport'] {
+  padding: var(--umbra-space-2) var(--pad) var(--pad);
+}
+
+.nav + .body > [data-part='viewport'] {
+  padding-inline-start: var(--umbra-space-5);
+}
+
+.body[data-padding='none'] > [data-part='viewport'] {
+  padding: 0;
+}
+
+/* An ActionBar as the footer takes the whole row: its status at the start, its actions at the end. */
+.footer > [data-umbra='action-bar'] {
+  flex: 1 1 0;
+}
+
+.footer {
+  grid-row: 4;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--umbra-space-3);
+  padding: var(--umbra-space-4) var(--pad) var(--pad);
+  border-top: var(--umbra-border-width) solid var(--umbra-color-base-border-subtle);
+}
+
+/* Below the minimum window the navigation is a toggle above the body; open, it takes the body's place. */
+.panel[data-narrow] > .dialog {
+  grid-template-rows: auto auto auto minmax(0, 1fr) auto;
+}
+
+.nav[data-narrow] {
+  grid-column: 1 / -1;
+  width: auto;
+  max-width: none;
+  gap: var(--umbra-space-3);
+  padding: 0 var(--pad) var(--umbra-space-4);
+  border-inline-end: 0;
+}
+
+.nav[data-narrow] > .navList {
+  padding: 0;
+}
+
+.nav[data-open] {
+  grid-row: 3 / span 2;
+}
+
+.panel[data-narrow] .nav ~ .body {
+  grid-row: 4;
+  grid-column: 1 / -1;
+}
+
+.panel[data-narrow] .nav ~ .body > [data-part='viewport'] {
+  padding-inline-start: var(--pad);
+}
+
+.panel[data-narrow] .nav[data-open] ~ .body {
+  display: none;
+}
+
+.panel[data-narrow] .footer {
+  grid-row: 5;
+}
