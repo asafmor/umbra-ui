@@ -226,6 +226,25 @@ test.describe('List', () => {
     const rows = group.getByRole('row');
     await expect(rows.nth(1)).toHaveAttribute('aria-selected', 'true');
     await expect(rows.nth(1).locator('[data-umbra="list-item"]')).toHaveAttribute('data-selected', 'true');
+    // Every row has a checkbox that shows its selection, so it is not carried by the fill alone.
+    const boxes = group.getByRole('checkbox');
+    await expect(boxes).toHaveCount(await rows.count());
+    await expect(boxes.nth(1)).toBeChecked();
+    await expect(boxes.nth(0)).not.toBeChecked();
+    await expect(boxes.nth(0)).toHaveAccessibleName(/Select/);
+    // It is not a tab stop of its own: Tab leaves the list. A click on it toggles its row only.
+    await rows.nth(0).focus();
+    await page.keyboard.press('Tab');
+    expect(
+      await group.evaluate((el) => el.querySelector('[role="grid"]')!.contains(document.activeElement)),
+    ).toBe(false);
+    await rows.nth(0).locator('[data-umbra="checkbox"]').click();
+    await expect(rows.nth(0)).toHaveAttribute('aria-selected', 'true');
+    await expect(boxes.nth(0)).toBeChecked();
+    await rows.nth(0).locator('[data-umbra="checkbox"]').click();
+    await expect(rows.nth(0)).toHaveAttribute('aria-selected', 'false');
+    // A single selection has no checkboxes.
+    await expect(card(page, 'Inbox').getByRole('checkbox')).toHaveCount(0);
 
     await rows.nth(0).focus();
     await page.keyboard.press('Space');

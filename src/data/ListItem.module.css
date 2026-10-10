@@ -66,6 +66,7 @@
   flex: none;
   display: flex;
   align-items: center;
+  gap: var(--umbra-list-item-gap, var(--umbra-space-4));
 }
 
 .content {
