@@ -1,0 +1,67 @@
+/* Fixed to the window, so the page cannot scroll whatever margins the host document has. */
+.root {
+  position: fixed;
+  inset: 0;
+  width: 100dvw;
+  height: 100dvh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  isolation: isolate;
+}
+
+.background {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    160deg,
+    var(--umbra-shell-bg, var(--umbra-context-page-background)) 30%,
+    var(--umbra-shell-bg-end, var(--umbra-context-page-background-end))
+  );
+}
+
+/* The diagonal pattern is opt-in: set --umbra-shell-pattern-opacity above 0. */
+.background::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: var(--umbra-shell-pattern-opacity, 0);
+  background: repeating-linear-gradient(135deg, transparent 0 28px, #fff 28px 29px);
+}
+
+.root[data-background='flat'] > .background {
+  background: var(--umbra-shell-bg, var(--umbra-context-page-background));
+}
+
+.root[data-background='flat'] > .background::after {
+  display: none;
+}
+
+.bars {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.main {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  outline: none;
+}
+
+.skip {
+  position: absolute;
+  left: var(--umbra-space-3);
+  top: -100px;
+  z-index: 10;
+  padding: var(--umbra-space-3) var(--umbra-space-4);
+  border-radius: var(--umbra-radius-control);
+  background: var(--umbra-color-base-surface2);
+  color: var(--umbra-color-base-text-primary);
+}
+
+.skip:focus {
+  top: var(--umbra-space-3);
+}

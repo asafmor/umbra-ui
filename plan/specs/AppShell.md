@@ -43,6 +43,7 @@ Every full screenshot: bars on top, content filling the rest, themed background 
 | `topBar` | node | — | |
 | `subNav` | node | — | |
 | `background` | see above | `gradient` | |
+| `skipLabel` | string | "Skip to content" | Text of the skip link |
 | `children` | node | — | The `Page` |
 
 ### 3. Parts
@@ -55,7 +56,7 @@ Every full screenshot: bars on top, content filling the rest, themed background 
 
 ## Behaviour as space shrinks
 
-- Size is `100dvw` × `100dvh` with overflow hidden; bars keep their height and `main` takes the rest.
+- Size is `100dvw` × `100dvh` with overflow hidden, fixed to the window so the host page's margins cannot make it scroll; bars keep their height and `main` takes the rest.
 - Below the minimum window (1024 × 600) it sets `data-narrow` on the root; `Columns` reacts by switching to tabs (see `layout.md`).
 
 ## Interaction and accessibility

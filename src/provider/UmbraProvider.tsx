@@ -76,6 +76,7 @@ interface UmbraContextValue {
 
 const UmbraContext = createContext<UmbraContextValue | null>(null);
 const ScopeContext = createContext<ScopeAttributes>({ 'data-umbra-scope': '', style: {} });
+export const ScopeProvider = ScopeContext.Provider;
 
 export function useUmbra() {
   const value = useContext(UmbraContext);
@@ -95,7 +96,11 @@ function isPreset(context: ContextTint): context is ContextPreset {
   return (contextPresets as readonly string[]).includes(context);
 }
 
-function useScope({ brand, context, density, tokens }: UmbraScopeProps, extra?: Partial<ScopeAttributes>) {
+/** Internal: the attributes for a scope element, merged with the scopes above it. */
+export function useScope(
+  { brand, context, density, tokens }: UmbraScopeProps,
+  extra?: Partial<ScopeAttributes>,
+) {
   const parent = useContext(ScopeContext);
   return useMemo(() => {
     const vars: Record<string, string | number> = {};

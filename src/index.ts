@@ -13,6 +13,10 @@ export type { IconMap, IconName } from './provider/icons';
 export type { Shortcut } from './provider/shortcuts';
 export type { Part } from './utils/parts';
 
+export { AppShell } from './shell/AppShell';
+export type { AppShellProps, AppShellRootProps } from './shell/AppShell';
+export { Page } from './layout/Page';
+export type { PageProps, PageRootProps } from './layout/Page';
 export { Columns } from './layout/Columns';
 export type { ColumnsProps, ColumnsTabsProps } from './layout/Columns';
 export { Stack } from './layout/Stack';
