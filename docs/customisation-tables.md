@@ -555,7 +555,7 @@ A header row for one group of rows inside a list or table.
 
 ## IconButton
 
-A button that shows only an icon. Inside an overflow menu it becomes a row with its icon and label.
+A button that shows only an icon. Inside an overflow menu it becomes a menu item with its icon and label.
 
 **Tokens**: `--umbra-button-accent-bg`, `--umbra-button-accent-border`, `--umbra-button-accent-fg`, `--umbra-button-danger-bg`, `--umbra-button-danger-border`, `--umbra-button-danger-fg`, `--umbra-button-ghost-bg`, `--umbra-button-ghost-border`, `--umbra-button-ghost-fg`, `--umbra-button-height`, `--umbra-button-neutral-bg`, `--umbra-button-neutral-border`, `--umbra-button-neutral-fg`, `--umbra-button-padding-x`, `--umbra-button-primary-bg`, `--umbra-button-primary-border`, `--umbra-button-primary-fg`, `--umbra-button-radius`, `--umbra-focus-color`, `--umbra-focus-offset`, `--umbra-icon-button-size`.
 
@@ -922,6 +922,7 @@ The top-level sections of the app, inside the `TopBar`.
 | `onChange` | `((id: string) => void)` | Called with the id of the item the user chose. |
 | `renderLink` | `((props: import("./nav").NavLinkProps) => ReactNode)` | Plugs in the app's router link. Defaults to a plain `<a>`. |
 | `moreLabel` | `string` | Label of the overflow item. |
+| `submenuLabel` | `((label: string) => string)` | Accessible name of the caret that opens an item's dropdown, from the item's label. |
 | `aria-label` | `string` | Accessible name of the navigation landmark. |
 | `className` | `string` |  |
 | `style` | `import("react").CSSProperties` |  |
@@ -1272,6 +1273,7 @@ The second bar: the pages of the current section, and room for shortcuts at the 
 | `onChange` | `((id: string) => void)` | Called with the id of the item the user chose. |
 | `renderLink` | `((props: import("./nav").NavLinkProps) => ReactNode)` | Plugs in the app's router link. Defaults to a plain `<a>`. |
 | `moreLabel` | `string` | Label of the overflow item. |
+| `submenuLabel` | `((label: string) => string)` | Accessible name of the caret that opens an item's dropdown, from the item's label. |
 | `aria-label` | `string` | Accessible name of the navigation landmark. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |

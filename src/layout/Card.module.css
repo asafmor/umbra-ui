@@ -229,16 +229,33 @@
   color: var(--umbra-color-base-text-secondary);
 }
 
-/* The popover that shows the content of a card the layout has collapsed. */
+/*
+ * The popover that shows the content of a card the layout has collapsed. The card's body blocks are
+ * moved into it; `order` keeps them in the card's order however they arrive.
+ */
 .popover {
   --pad: var(--umbra-card-padding, var(--umbra-density-card-padding));
   --border: var(--umbra-color-base-border-strong);
-  --umbra-scroll-fade-color: var(--umbra-color-base-surface2);
-  min-width: 240px;
 }
 
-.popover > .body {
+.popoverContent {
   flex: 0 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.popoverContent > .body {
+  flex: 0 1 auto;
+  order: 2;
+}
+
+.popoverContent > .toolbar {
+  order: 1;
+}
+
+.popoverContent > .footer {
+  order: 3;
 }
 
 .popoverActions {

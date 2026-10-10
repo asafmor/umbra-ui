@@ -56,7 +56,7 @@ States: hover, pressed, focus, disabled, loading. Height follows the density lev
 | `loadingLabel` | string | "Loading" | What a screen reader hears while loading |
 | `disabled` | boolean | `false` | |
 | `href` | string | — | Renders a link that looks like a button |
-| `shortcut` | shortcut id | — | Shows the key hint in its tooltip and binds the key |
+| `shortcut` | shortcut id | — | Binds the key, and shows the key hint in its `Tooltip` (or at the end of its row in an overflow menu) |
 | `fullWidth` | boolean | `false` | |
 | `collapseTo` | `icon` | — | Hides the label when space is short (see below) |
 | `type` | `button` \| `submit` \| `reset` | `button` | |
@@ -72,7 +72,7 @@ None.
 
 ## Behaviour as space shrinks
 
-The label truncates with an ellipsis. With `collapseTo="icon"` and an icon set, the label hides when the button does not fit, and the button behaves as an `IconButton` (the label becomes its tooltip and accessible name). It shows the label again when its container grows. Inside an overflow menu a button is a full-width row.
+The label truncates with an ellipsis. With `collapseTo="icon"` and an icon set, the label hides when the button does not fit, and the button behaves as an `IconButton` (the label becomes its tooltip and accessible name). It shows the label again when its container grows. Among actions that moved into an overflow menu a button is a `menuitem` row (`plan/specs/Menu.md`): its icon, its label and its key hint; a link button is a link row, and a disabled or loading button a disabled row.
 
 ## Interaction and accessibility
 

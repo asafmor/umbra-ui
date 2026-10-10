@@ -1,0 +1,63 @@
+.root {
+  composes: motion from './overlay.module.css';
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  row-gap: var(--umbra-space-1);
+  max-width: min(var(--umbra-tooltip-max-width, 320px), calc(100vw - 2 * var(--umbra-space-5)));
+  padding: var(--umbra-space-2) var(--umbra-space-3);
+  border: var(--umbra-border-width) solid var(--umbra-tooltip-border, var(--umbra-color-base-border-strong));
+  border-radius: var(--umbra-tooltip-radius, var(--umbra-radius-control));
+  background: var(--umbra-tooltip-bg, var(--umbra-color-base-surface2));
+  color: var(--umbra-tooltip-fg, var(--umbra-color-base-text-primary));
+  box-shadow: var(--umbra-elevation-overlay);
+  font: var(--umbra-font-label);
+  overflow-wrap: anywhere;
+}
+
+.root[data-rich] {
+  padding: var(--umbra-space-3) var(--umbra-space-4);
+}
+
+/*
+ * A tooltip fades in and leaves at once. A fade out that is cut short by the next tooltip opening leaves
+ * React Aria with an invisible tooltip in the page, so there is none.
+ */
+.root[data-exiting] {
+  transition: none;
+}
+
+.title {
+  grid-column: 1;
+  font-weight: 700;
+}
+
+.body {
+  grid-column: 1;
+}
+
+/* Under a title the text is the second line, across the full width, and quieter. */
+.root[data-rich] > .body {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  color: var(--umbra-color-base-text-secondary);
+}
+
+/* The key hint sits at the end of the first line. */
+.hint {
+  grid-column: 2;
+  grid-row: 1;
+  margin-inline-start: var(--umbra-space-4);
+  font: inherit;
+  white-space: nowrap;
+  color: var(--umbra-color-base-text-secondary);
+}
+
+/* The stand-in for a control that takes no events. It adds no box of its own to the layout. */
+.wrapper {
+  display: inline-flex;
+  min-width: 0;
+  max-width: 100%;
+  border-radius: var(--umbra-radius-control);
+  cursor: default;
+}
