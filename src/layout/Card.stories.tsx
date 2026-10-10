@@ -279,5 +279,39 @@ function CollapsedActionsStack() {
   );
 }
 
+/**
+ * `size="content"`: the card is as tall as its header plus its content, with or without a title, and
+ * the others share the rest. In the short stack it gets what the stack can give and scrolls inside.
+ */
+export const ContentSized: Story = {
+  render: () => (
+    <Columns style={{ height: '100%' }}>
+      <Stack>
+        <Card title="Hugs its content" size="content">
+          <Rows count={3} />
+        </Card>
+        <Card aria-label="Note" size="content">
+          A content-sized card without a title.
+        </Card>
+        <Card title="Takes the rest">
+          <Rows count={12} />
+        </Card>
+      </Stack>
+      <Slot label="Short stack">
+        <div style={{ height: 220, display: 'flex' }}>
+          <Stack>
+            <Card title="Taller than the stack" size="content">
+              <Rows count={12} />
+            </Card>
+            <Card title="Keeps its minimum" minHeight={72}>
+              <Rows count={3} />
+            </Card>
+          </Stack>
+        </div>
+      </Slot>
+    </Columns>
+  ),
+};
+
 /** A card the stack has collapsed opens in a popover, which repeats the header actions above the content. */
 export const CollapsedActions: Story = { render: () => <CollapsedActionsStack /> };

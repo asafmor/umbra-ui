@@ -511,6 +511,42 @@ test('card: Enter and Space toggle the caret', async ({ page }) => {
   await expect(caret).toBeFocused();
 });
 
+test('card: size="content" is as tall as its header and content, and scrolls inside a short stack', async ({
+  page,
+}) => {
+  await open(page, 'layout-card--content-sized');
+  const card = (name: string) => page.getByRole('region', { name });
+  const heights = (name: string) =>
+    card(name).evaluate((el) => {
+      const viewport = el.querySelector('[data-part="body"] > [data-part="viewport"]')!;
+      const header = el.querySelector('[data-part="header"]');
+      return {
+        card: el.clientHeight,
+        header: header?.clientHeight ?? 0,
+        body: viewport.clientHeight,
+        content: viewport.scrollHeight,
+      };
+    });
+  for (const name of ['Hugs its content', 'Note']) {
+    const h = await heights(name);
+    expect(h.body, name).toBeGreaterThan(20);
+    expect(h.body, name).toBe(h.content);
+    expect(h.card, name).toBe(h.header + h.body);
+  }
+  await expect(card('Note')).toContainText('A content-sized card without a title.');
+  // The rest of the stack goes to the card with a weight.
+  expect((await heights('Takes the rest')).card).toBeGreaterThan(200);
+
+  // In the short stack the content-sized card gets what is left of 220px and scrolls inside.
+  const tall = await heights('Taller than the stack');
+  expect(tall.content).toBeGreaterThan(tall.body);
+  expect(tall.body).toBeGreaterThan(40);
+  await expect(card('Keeps its minimum')).not.toHaveAttribute('data-collapsed');
+  expect((await heights('Keeps its minimum')).card).toBeGreaterThanOrEqual(70);
+  const stack = page.locator('[data-umbra="stack"]').last();
+  expect(await stack.evaluate((el) => el.scrollHeight - el.clientHeight)).toBe(0);
+});
+
 test('card: the popover of a layout-collapsed card repeats the header actions, and they work', async ({
   page,
 }) => {

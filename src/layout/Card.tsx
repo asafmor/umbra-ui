@@ -24,7 +24,7 @@ import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './Card.module.css';
 import { ScrollArea, type ScrollAreaProps } from './ScrollArea';
 import { MoreButton } from './SectionTitle';
-import { LayoutProvider, NarrowContext, useSlot, type SlotProps } from './useSlot';
+import { LayoutProvider, NarrowContext, slotMinHeight, useSlot, type SlotProps } from './useSlot';
 
 interface CardContextValue {
   titleId: string;
@@ -151,7 +151,14 @@ function Root({
     collapsed: layoutCollapsed,
     changed,
   } = useSlot<HTMLElement>(slot, {
-    min: (element) => (userCollapsed ? (headerHeight(element) ?? 0) : undefined),
+    min: (element) => {
+      if (userCollapsed) return headerHeight(element) ?? 0;
+      if (slot.size !== 'content') return undefined;
+      // A content-sized card can scroll inside, so it needs its content's height only up to the card minimum.
+      const view = element.querySelector(':scope > [data-part="body"] > [data-part="viewport"]');
+      const natural = element.offsetHeight + (view ? view.scrollHeight - view.clientHeight : 0);
+      return Math.min(natural, slotMinHeight(element));
+    },
     header: headerHeight,
   });
   useLayoutEffect(() => changed?.(), [changed, userCollapsed]);

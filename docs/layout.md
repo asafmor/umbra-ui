@@ -53,8 +53,8 @@ These props work on every child of `Columns` or `Stack`: `Card`, `Columns`, `Sta
 - Gaps come from the density level. `gap={3}` on `Columns` or `Stack` picks a step of the spacing scale.
 - Nothing overflows its slot: every child can shrink.
 - A child can be wrapped, for example in `UmbraScope`, and still takes part in the layout.
-- Known issue: a `Card` with `size="content"` shows only its header. Until that is fixed, put
-  content-sized pieces in a `Slot size="content"`, or in the `header` of the `Page`.
+- A `Card` with `size="content"` is as tall as its header plus its content. When the stack is too short
+  for that, it takes what is left and scrolls inside.
 
 ## What happens as space shrinks
 

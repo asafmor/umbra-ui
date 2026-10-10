@@ -59,6 +59,10 @@ export const LayoutProvider = LayoutContext.Provider;
 /** True below the minimum window size. Set by `AppShell`. */
 export const NarrowContext = createContext(false);
 
+/** The minimum height of a layout child: the `minHeight` prop, or a component default such as the card's. */
+export const slotMinHeight = (element: HTMLElement) =>
+  parseFloat(getComputedStyle(element).getPropertyValue('--umbra-slot-min-height')) || 0;
+
 interface SlotOptions {
   /** Default tab label, for example a card's title. */
   label?: string;
@@ -88,10 +92,11 @@ export function useSlot<E extends HTMLElement>(slot: SlotProps, options: SlotOpt
       min: () => {
         const element = ref.current;
         if (!element) return 0;
+        const own = options.min?.(element);
+        if (own !== undefined) return own;
         if (size === 'content') return element.offsetHeight;
         // The prop, or a component default such as the card's, both arrive as this CSS variable.
-        const fromCss = parseFloat(getComputedStyle(element).getPropertyValue('--umbra-slot-min-height'));
-        return options.min?.(element) ?? (fromCss || 0);
+        return slotMinHeight(element);
       },
       header: () => (ref.current && size !== 'content' ? (options.header?.(ref.current) ?? null) : null),
     };

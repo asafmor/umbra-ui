@@ -842,12 +842,13 @@ Charts come from their own entry, `umbra-ui/charts`, so an app without charts do
 - One `Legend` with `interactive` owns the switching. Its `onHighlight` could drive a highlight too.
 - Series take the palette by position, so the same order in the legend and in both charts gives the
   same colours.
-- A chart fills the slot it is in. Give it a parent with a size: here, a card.
-- The legend sits in the `meta` of the page's header, above both cards.
+- A chart fills the slot it is in: here, a card. Where there is no height to fill it is 240px tall, and
+  `height` sets another (see [Layout](layout.md#tables-lists-and-charts-where-there-is-no-height-to-fill)).
+- The legend sits in a card of its own with `size="content"`: as tall as the legend, above both charts.
 
 ```tsx
 import { useState } from 'react';
-import { AppShell, Card, Columns, Legend, Page, PageHeader, TopBar, UmbraProvider } from 'umbra-ui';
+import { AppShell, Card, Columns, Legend, Page, PageHeader, Stack, TopBar, UmbraProvider } from 'umbra-ui';
 import { BarChart, LineChart } from 'umbra-ui/charts';
 
 const regions = [
@@ -873,45 +874,40 @@ export function App() {
   return (
     <UmbraProvider>
       <AppShell topBar={<TopBar logo="U" />}>
-        <Page
-          header={
-            <PageHeader
-              title="Orders by region"
-              subtitle="The last eight weeks"
-              meta={
-                <Legend
-                  aria-label="Regions"
-                  items={regions}
-                  marker="square"
-                  interactive
+        <Page header={<PageHeader title="Orders by region" subtitle="The last eight weeks" />}>
+          <Stack>
+            <Card aria-label="Regions" size="content">
+              <Legend
+                aria-label="Regions"
+                items={regions}
+                marker="square"
+                interactive
+                hiddenIds={hidden}
+                onHiddenChange={setHidden}
+              />
+            </Card>
+            <Columns>
+              <Card title="Orders per week">
+                <LineChart
+                  label="Orders per week, by region"
+                  series={perWeek}
+                  yTitle="Orders"
+                  legend={false}
                   hiddenIds={hidden}
-                  onHiddenChange={setHidden}
                 />
-              }
-            />
-          }
-        >
-          <Columns>
-            <Card title="Orders per week">
-              <LineChart
-                label="Orders per week, by region"
-                series={perWeek}
-                yTitle="Orders"
-                legend={false}
-                hiddenIds={hidden}
-              />
-            </Card>
-            <Card title="Revenue, last four weeks">
-              <BarChart
-                label="Revenue of the last four weeks, by region"
-                categories={weeks.slice(4)}
-                series={lastMonth}
-                variant="stacked"
-                legend={false}
-                hiddenIds={hidden}
-              />
-            </Card>
-          </Columns>
+              </Card>
+              <Card title="Revenue, last four weeks">
+                <BarChart
+                  label="Revenue of the last four weeks, by region"
+                  categories={weeks.slice(4)}
+                  series={lastMonth}
+                  variant="stacked"
+                  legend={false}
+                  hiddenIds={hidden}
+                />
+              </Card>
+            </Columns>
+          </Stack>
         </Page>
       </AppShell>
     </UmbraProvider>

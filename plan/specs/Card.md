@@ -80,6 +80,7 @@ States: `collapsed`, `loading`, `empty`, `error`, `focus-within`.
 |---|---|---|
 | 1 | Header narrower than its content | `subtitle` hides, then `actions` move into an overflow menu; `title` truncates last |
 | 2 | Body taller than the slot | Body scrolls inside the card |
+| 2a | `size="content"` in a `Stack` | The card is as tall as its header plus its content (a card without a header: its content plus the padding). When the stack cannot give that much, the card gets what is left after the minimums of the others and its body scrolls inside. It is never collapsed by the layout. |
 | 3 | The cards of a `Stack` cannot all have their `minHeight` | While they all fit, each open card is held at its `minHeight` or more. When they do not, the parent `Stack` collapses the card to its header; clicking the header opens the body in a `Popover` anchored to it. A layout-collapsed card shows a small "expand" hint icon in its header, so it looks different from a user-collapsed card (which shows the caret and expands in place). |
 
 ## Interaction and accessibility
@@ -132,4 +133,5 @@ Resolved 2026-10-10:
 
 - Default `minHeight` is 72 / 88 / 104px for compact / default / spacious.
 - Approved after Milestone 0: `href` renders a plain `<a>`, not a router link; `toolbar` and `footer` are set through `parts` only, with `Card.Toolbar` and `Card.Footer`.
+- 2026-10-11: `size="content"` sizes the card by its header plus its body. Before, the body had no height of its own and the card showed only its header.
 - 2026-10-10 (review item 6): the popover moves the content, it does not repeat it. The overflow of `actions` is a `Menu`.

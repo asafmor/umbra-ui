@@ -26,6 +26,18 @@
   container-type: inline-size;
 }
 
+/*
+ * A content-sized card is as tall as its header plus its content. When the stack cannot give that
+ * much, the card shrinks and its body scrolls inside.
+ */
+.root[data-size='content'] {
+  flex-shrink: 1;
+}
+
+.root[data-size='content'] > .body {
+  flex: 0 1 auto;
+}
+
 /* When even the headers do not all fit, the collapsed cards shrink too, so nothing leaves the stack. */
 .root[data-collapsed] {
   flex-shrink: 1;
