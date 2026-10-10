@@ -79,6 +79,43 @@ export const States: Story = {
   ),
 };
 
+function Retrying() {
+  const [tries, setTries] = useState(0);
+  return (
+    <Card title="Error with retry" error="Could not load the orders." onRetry={() => setTries(tries + 1)}>
+      Tried {tries} times.
+    </Card>
+  );
+}
+
+/**
+ * The richer forms of `empty` and `error`, as on every data component: pieces (`title`, `description`,
+ * `icon`, `action`), `true` for a default text, and `onRetry` for a retry button.
+ */
+export const RichStates: Story = {
+  render: () => (
+    <Columns style={{ height: '100%' }}>
+      <Card
+        title="Empty, in pieces"
+        empty={{
+          title: 'No orders yet',
+          description: 'Orders appear here as soon as the first one is placed.',
+          icon: <Bookmark />,
+          action: <Button>New order</Button>,
+        }}
+      />
+      <Retrying />
+      <Card title="Error, default text" error />
+      <Card
+        title="Error, in pieces"
+        error={{ title: 'The service is not answering', description: 'It was last seen a minute ago.' }}
+        onRetry={() => {}}
+        retryLabel="Load again"
+      />
+    </Columns>
+  ),
+};
+
 /** As the header narrows: the subtitle hides, the actions move into one menu, then the title truncates. */
 export const HeaderShrink: Story = {
   render: () => (

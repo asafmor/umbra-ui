@@ -429,6 +429,32 @@ test('card: band colour, a title that opens, the heading level and a name withou
   await expect(untitled.locator('[data-part="header"]')).toHaveCount(0);
 });
 
+test('card: empty and error take the richer forms of the data components, and plain text stays as it was', async ({
+  page,
+}) => {
+  await open(page, 'layout-card--rich-states');
+  const card = (name: string) => page.getByRole('region', { name });
+  const empty = card('Empty, in pieces').locator('[data-umbra="empty-state"]');
+  await expect(empty.getByText('No orders yet')).toBeVisible();
+  await expect(empty.getByText('Orders appear here')).toBeVisible();
+  await expect(empty.getByRole('button', { name: 'New order' })).toBeVisible();
+
+  // An error is an alert; `onRetry` adds the button, and `retryLabel` names it.
+  const retrying = card('Error with retry');
+  await expect(retrying.getByRole('alert')).toContainText('Could not load the orders.');
+  await retrying.getByRole('button', { name: 'Try again' }).click();
+  await expect(retrying.getByRole('alert')).toBeVisible();
+  await expect(card('Error, default text').getByRole('alert')).toContainText('Something went wrong');
+  await expect(card('Error, in pieces').getByRole('button', { name: 'Load again' })).toBeVisible();
+
+  // Plain text and a plain node are drawn as before, without the shared empty state.
+  await open(page, 'layout-card--states');
+  await expect(card('Empty').locator('[data-state="empty"]')).toHaveText('Nothing to show yet.');
+  await expect(card('Empty').locator('[data-umbra="empty-state"]')).toHaveCount(0);
+  await expect(card('Error').getByRole('alert')).toHaveAttribute('data-state', 'error');
+  await expect(card('Error').getByRole('button', { name: 'Retry' })).toBeVisible();
+});
+
 test('card: controlled collapse follows the app state, and the caret reports to it', async ({ page }) => {
   await open(page, 'layout-card--controlled-collapse');
   const card = page.getByRole('region', { name: 'Controlled' });

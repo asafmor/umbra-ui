@@ -14,6 +14,7 @@ import {
 import { createPortal } from 'react-dom';
 import { ButtonBase } from '../basics/Button';
 import { Skeleton } from '../basics/Skeleton';
+import { dataState, isContent, type DataStateProps } from '../internal/dataState';
 import { useShrinkLevel } from '../internal/useShrinkLevel';
 import { ActionsOverflow } from '../overlays/Menu';
 import { Popover } from '../overlays/Popover';
@@ -527,10 +528,20 @@ export interface CardProps
   title?: ReactNode;
   /** Shows the body skeleton. */
   loading?: boolean;
-  /** Shown in place of the body when set (and not loading or in error). */
-  empty?: ReactNode;
-  /** Shown in place of the body when set. Put a retry action inside it. */
-  error?: ReactNode;
+  /**
+   * Shown in place of the body when set (and not loading or in error): text or a node, or
+   * `{ title, description, icon, action }` for the same empty state as the other data components.
+   */
+  empty?: DataStateProps['empty'];
+  /**
+   * Shown in place of the body when set: text or a node, `{ title, description, icon, action }`, or
+   * `true` for a default text.
+   */
+  error?: DataStateProps['error'];
+  /** Adds a retry button to the error state. */
+  onRetry?: () => void;
+  /** Label of the retry button. */
+  retryLabel?: string;
   /** Replace or hide named pieces. `toolbar` and `footer` are empty unless given, as `Card.Toolbar` and `Card.Footer`. */
   parts?: {
     header?: Part<CardHeaderProps>;
@@ -557,17 +568,25 @@ export function Card({
   moreLabel,
   empty,
   error,
+  onRetry,
+  retryLabel,
   parts,
   children,
   ...root
 }: CardProps) {
   const state = root.loading ? 'loading' : error ? 'error' : empty ? 'empty' : null;
+  const shown = state === 'error' ? error : empty;
+  // Text or a node is drawn as it is, centred. The richer forms (pieces, `true`, a retry button) are
+  // the shared empty and error states of the data components.
+  const rich = isContent(shown) || shown === true || (state === 'error' && !!onRetry);
   const content =
     state === 'loading' ? (
       renderPart(parts?.skeleton, {}, () => <Skeleton lines={3} />)
+    ) : state && rich ? (
+      dataState({ empty, error, onRetry, retryLabel }, { isEmpty: true })
     ) : state ? (
       <div className={styles.state} data-state={state} role={state === 'error' ? 'alert' : undefined}>
-        {error ?? empty}
+        {shown as ReactNode}
       </div>
     ) : (
       children

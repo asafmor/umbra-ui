@@ -58,8 +58,9 @@ States: `collapsed`, `loading`, `empty`, `error`, `focus-within`.
 | `collapsible` | boolean | `false` | Lets the end user collapse it |
 | `collapsed` / `defaultCollapsed` / `onCollapsedChange` | boolean / boolean / function | — | Controlled or uncontrolled collapse |
 | `loading` | boolean | `false` | Shows the body skeleton |
-| `empty` | node | — | Shown in place of the body when set |
-| `error` | node | — | Shown in place of the body when set |
+| `empty` | node \| `{ title, description, icon, action }` | — | Shown in place of the body when set. Text or a node is drawn as it is, centred; the pieces form draws the shared `EmptyState`. |
+| `error` | node \| `{ title, description, icon, action }` \| `true` | — | Shown in place of the body when set, as an alert. `true` shows a default text. |
+| `onRetry` / `retryLabel` | function / string | — / "Try again" | Adds a retry button to the error state |
 | `href` / `onOpen` | string / function | — | Makes the title a link (source: underlined pink titles) |
 | `headingLevel` | 2–6 | 2 | Heading level of the title |
 | `aria-label` | string | — | Names a card that has no title |
@@ -120,6 +121,8 @@ Not animated, on purpose:
 - A card whose height does not change when it collapses (directly in `Columns`, where its height is the row's).
 
 Tested in `tests/visual/structure.spec.ts` ("Card collapse animation"): the height only moves one way, there is a real state in between, the stack is never overflowed, the end has no jump, the body stays while closing, and reduced motion is instant.
+
+`empty`, `error`, `onRetry` and `retryLabel` are the props every data component has (`src/internal/dataState.tsx`). `Card` differs in one point, kept from Milestone 0: plain text or a node, without `onRetry`, is drawn as given (centred, quiet), not as an `EmptyState` title, and `empty` has no default: a card is only empty when the app says so.
 
 ## Open questions
 

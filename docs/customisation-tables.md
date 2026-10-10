@@ -204,13 +204,14 @@ Compares values across categories: grouped, stacked or diverging around zero, up
 | `parts` | `see Parts` | Replace or hide named pieces. |
 | `className` | `string` |  |
 | `style` | `import("react").CSSProperties` |  |
+| `empty` | `ReactNode` | Shown when there is no data. |
+| `error` | `ReactNode` | When set, shown in place of the chart. |
 | `variant` | `"stacked" \| "grouped" \| "diverging"` | `grouped`: the series side by side. `stacked`: on top of each other. `diverging`: every second series is drawn on the other side of zero, with all values shown as positive. |
 | `orientation` | `"vertical" \| "horizontal"` | `horizontal` puts the categories on the left and draws the bars sideways. |
 | `loading` | `boolean` | Shows a placeholder in the chart's shape. |
 | `hiddenIds` | `readonly string[]` | Ids of the series that are switched off (controlled). |
 | `defaultHiddenIds` | `readonly string[]` |  |
 | `onHiddenChange` | `((hiddenIds: string[]) => void)` |  |
-| `error` | `ReactNode` | When set, shown in place of the chart. |
 | `label` | `string` | Accessible name of the chart. Required unless `aria-labelledby` is set. |
 | `thresholds` | `BarThreshold[]` | Colours bars by value. Each threshold also has a fill, so the steps differ without colour. |
 | `formatValue` | `((value: number) => string)` | Formats a value for labels, the tooltip and screen readers. Defaults to the provider's locale. |
@@ -226,7 +227,6 @@ Compares values across categories: grouped, stacked or diverging around zero, up
 | `legend` | `string \| number \| bigint \| boolean \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| import("react").ReactPortal \| Promise<string \| number \| bigint \| boolean \| import("react").ReactPortal \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| null \| undefined> \| null` | The legend: `true` or a placement shows the built-in one, `false` hides it, and a node replaces it. By default it is shown below the chart when there is more than one series. |
 | `labels` | `boolean` | Draws labels on the chart itself, so it can be read without the legend or the tooltip. |
 | `onPointPress` | `((point: import(".").ChartPoint) => void)` | Called when a point is clicked, or activated with Enter or Space. |
-| `empty` | `ReactNode` | Shown when there is no data. |
 | `onRetry` | `(() => void)` | Adds a retry button to the error state. |
 | `retryLabel` | `string` |  |
 | `pointsLabel` | `string` | Accessible name of the list of data points. |
@@ -276,8 +276,10 @@ The container for one unit of content on a page. Fills the slot its parent gives
 |---|---|---|
 | `title` | `ReactNode` | Header title. The header is shown when it is set. |
 | `loading` | `boolean` | Shows the body skeleton. |
-| `empty` | `ReactNode` | Shown in place of the body when set (and not loading or in error). |
-| `error` | `ReactNode` | Shown in place of the body when set. Put a retry action inside it. |
+| `empty` | `ReactNode \| import("../internal/dataState").DataStateContent` | Shown in place of the body when set (and not loading or in error): text or a node, or `{ title, description, icon, action }` for the same empty state as the other data components. |
+| `error` | `ReactNode \| import("../internal/dataState").DataStateContent` | Shown in place of the body when set: text or a node, `{ title, description, icon, action }`, or `true` for a default text. |
+| `onRetry` | `(() => void)` | Adds a retry button to the error state. |
+| `retryLabel` | `string` | Label of the retry button. |
 | `parts` | `see Parts` | Replace or hide named pieces. `toolbar` and `footer` are empty unless given, as `Card.Toolbar` and `Card.Footer`. |
 | `tone` | `"neutral" \| "default" \| "tinted"` | `tinted` takes more of the context tint; `neutral` ignores it. |
 | `headerStyle` | `"plain" \| "band"` | `band` fills the header with the brand colour, or the header's `bandColor`. |
@@ -414,12 +416,13 @@ A ring that shows one value against a total, or how a total splits into segments
 | `value` | `number` | The single-value form: one value against `max`. |
 | `className` | `string` |  |
 | `style` | `import("react").CSSProperties` |  |
+| `empty` | `ReactNode` | Shown when there is no data. |
+| `error` | `ReactNode` | When set, shown in place of the chart. |
 | `tone` | `DonutTone` | Colour of the single value. The number in the centre is the cue that does not depend on colour. |
 | `loading` | `boolean` | Shows a placeholder in the chart's shape. |
 | `hiddenIds` | `readonly string[]` | Ids of the series that are switched off (controlled). |
 | `defaultHiddenIds` | `readonly string[]` |  |
 | `onHiddenChange` | `((hiddenIds: string[]) => void)` |  |
-| `error` | `ReactNode` | When set, shown in place of the chart. |
 | `label` | `string` | Accessible name of the chart. Required unless `aria-labelledby` is set. |
 | `color` | `string` | Any CSS colour for the single value; wins over `tone`. |
 | `max` | `number` | What a full ring stands for, in the single-value form. |
@@ -430,7 +433,6 @@ A ring that shows one value against a total, or how a total splits into segments
 | `legend` | `string \| number \| bigint \| boolean \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| import("react").ReactPortal \| Promise<string \| number \| bigint \| boolean \| import("react").ReactPortal \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| null \| undefined> \| null` | The legend: `true` or a placement shows the built-in one, `false` hides it, and a node replaces it. By default it is shown below the chart when there is more than one series. |
 | `labels` | `boolean` | Draws labels on the chart itself, so it can be read without the legend or the tooltip. |
 | `onPointPress` | `((point: import(".").ChartPoint) => void)` | Called when a point is clicked, or activated with Enter or Space. |
-| `empty` | `ReactNode` | Shown when there is no data. |
 | `onRetry` | `(() => void)` | Adds a retry button to the error state. |
 | `retryLabel` | `string` |  |
 | `pointsLabel` | `string` | Accessible name of the list of data points. |
@@ -720,11 +722,12 @@ One or more series over categories, numbers or time, with a numeric or an ordina
 | `parts` | `see Parts` | Replace or hide named pieces. |
 | `className` | `string` |  |
 | `style` | `import("react").CSSProperties` |  |
+| `empty` | `ReactNode` | Shown when there is no data. |
+| `error` | `ReactNode` | When set, shown in place of the chart. |
 | `loading` | `boolean` | Shows a placeholder in the chart's shape. |
 | `hiddenIds` | `readonly string[]` | Ids of the series that are switched off (controlled). |
 | `defaultHiddenIds` | `readonly string[]` |  |
 | `onHiddenChange` | `((hiddenIds: string[]) => void)` |  |
-| `error` | `ReactNode` | When set, shown in place of the chart. |
 | `label` | `string` | Accessible name of the chart. Required unless `aria-labelledby` is set. |
 | `formatValue` | `((value: number) => string)` | Formats a value for labels, the tooltip and screen readers. Defaults to the provider's locale. |
 | `categories` | `string[]` | The order of a category x axis. Defaults to the order the names first appear in. |
@@ -737,7 +740,6 @@ One or more series over categories, numbers or time, with a numeric or an ordina
 | `legend` | `string \| number \| bigint \| boolean \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| import("react").ReactPortal \| Promise<string \| number \| bigint \| boolean \| import("react").ReactPortal \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| null \| undefined> \| null` | The legend: `true` or a placement shows the built-in one, `false` hides it, and a node replaces it. By default it is shown below the chart when there is more than one series. |
 | `labels` | `boolean` | Draws labels on the chart itself, so it can be read without the legend or the tooltip. |
 | `onPointPress` | `((point: import(".").ChartPoint) => void)` | Called when a point is clicked, or activated with Enter or Space. |
-| `empty` | `ReactNode` | Shown when there is no data. |
 | `onRetry` | `(() => void)` | Adds a retry button to the error state. |
 | `retryLabel` | `string` |  |
 | `pointsLabel` | `string` | Accessible name of the list of data points. |
@@ -1059,11 +1061,12 @@ Compares one or more series across several axes that share a centre.
 | `parts` | `see Parts` | Replace or hide named pieces. |
 | `className` | `string` |  |
 | `style` | `import("react").CSSProperties` |  |
+| `empty` | `ReactNode` | Shown when there is no data. |
+| `error` | `ReactNode` | When set, shown in place of the chart. |
 | `loading` | `boolean` | Shows a placeholder in the chart's shape. |
 | `hiddenIds` | `readonly string[]` | Ids of the series that are switched off (controlled). |
 | `defaultHiddenIds` | `readonly string[]` |  |
 | `onHiddenChange` | `((hiddenIds: string[]) => void)` |  |
-| `error` | `ReactNode` | When set, shown in place of the chart. |
 | `label` | `string` | Accessible name of the chart. Required unless `aria-labelledby` is set. |
 | `max` | `number` | The value at the outer ring. Defaults to a round number above the largest value. |
 | `formatValue` | `((value: number) => string)` | Formats a value for labels, the tooltip and screen readers. Defaults to the provider's locale. |
@@ -1073,7 +1076,6 @@ Compares one or more series across several axes that share a centre.
 | `legend` | `string \| number \| bigint \| boolean \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| import("react").ReactPortal \| Promise<string \| number \| bigint \| boolean \| import("react").ReactPortal \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| null \| undefined> \| null` | The legend: `true` or a placement shows the built-in one, `false` hides it, and a node replaces it. By default it is shown below the chart when there is more than one series. |
 | `labels` | `boolean` | Draws labels on the chart itself, so it can be read without the legend or the tooltip. |
 | `onPointPress` | `((point: import(".").ChartPoint) => void)` | Called when a point is clicked, or activated with Enter or Space. |
-| `empty` | `ReactNode` | Shown when there is no data. |
 | `onRetry` | `(() => void)` | Adds a retry button to the error state. |
 | `retryLabel` | `string` |  |
 | `pointsLabel` | `string` | Accessible name of the list of data points. |

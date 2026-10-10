@@ -24,7 +24,7 @@ export interface DataStateProps {
   retryLabel?: string;
 }
 
-const isContent = (value: unknown): value is DataStateContent =>
+export const isContent = (value: unknown): value is DataStateContent =>
   typeof value === 'object' &&
   value !== null &&
   !isValidElement(value) &&
