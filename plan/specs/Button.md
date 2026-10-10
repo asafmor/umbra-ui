@@ -34,7 +34,7 @@ Magenta "Continue" (1), violet "Begin Introduction" beside neutral "Decline Intr
 | `accent` | violet | The confirming action of a group when it is not the screen's main action |
 | `neutral` (default) | raised surface with a border | Everything else |
 | `ghost` | no surface until hover | Low-emphasis actions in dense areas |
-| `danger` | danger colour | Destructive actions |
+| `danger` | danger-coloured text and border on a raised surface (white on the danger colour would not reach 4.5:1) | Destructive actions |
 
 States: hover, pressed, focus, disabled, loading. Height follows the density level; there is no `size` prop, except `size="small"` for use inside table cells.
 
@@ -58,7 +58,8 @@ States: hover, pressed, focus, disabled, loading. Height follows the density lev
 | `shortcut` | shortcut id | — | Shows the key hint in its tooltip and binds the key |
 | `fullWidth` | boolean | `false` | |
 | `collapseTo` | `icon` | — | Hides the label when space is short (see below) |
-| `onPress` | function | — | |
+| `type` | `button` \| `submit` \| `reset` | `button` | |
+| `onPress` | function, no arguments | — | |
 
 ### 3. Parts
 
@@ -70,7 +71,7 @@ None.
 
 ## Behaviour as space shrinks
 
-The label truncates with an ellipsis. With `collapseTo="icon"` and an icon set, the label hides and the button behaves as an `IconButton` (the label becomes its tooltip and accessible name).
+The label truncates with an ellipsis. With `collapseTo="icon"` and an icon set, the label hides when the button does not fit, and the button behaves as an `IconButton` (the label becomes its tooltip and accessible name). It shows the label again when its container grows. Inside an overflow menu a button is a full-width row.
 
 ## Interaction and accessibility
 

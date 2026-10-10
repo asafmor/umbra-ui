@@ -1,0 +1,156 @@
+.button {
+  --bg: var(--umbra-button-neutral-bg, var(--umbra-color-base-surface2));
+  --fg: var(--umbra-button-neutral-fg, var(--umbra-color-base-text-primary));
+  --border: var(--umbra-button-neutral-border, var(--umbra-color-base-border-control));
+  --height: var(--umbra-button-height, var(--umbra-density-control-height));
+
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--umbra-space-3);
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  height: var(--height);
+  padding: 0 var(--umbra-button-padding-x, var(--umbra-space-4));
+  border: var(--umbra-border-width) solid var(--border);
+  border-radius: var(--umbra-button-radius, var(--umbra-radius-control));
+  background: var(--bg);
+  color: var(--fg);
+  font: var(--umbra-font-body);
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  cursor: pointer;
+  transition: background-color var(--umbra-motion-duration-fast);
+}
+
+.button[data-variant='primary'] {
+  --bg: var(--umbra-button-primary-bg, var(--umbra-color-fixed-primary));
+  --fg: var(--umbra-button-primary-fg, var(--umbra-color-fixed-on-primary));
+  --border: var(--umbra-button-primary-border, transparent);
+  font-weight: 700;
+}
+
+.button[data-variant='accent'] {
+  --bg: var(--umbra-button-accent-bg, var(--umbra-color-fixed-selected));
+  --fg: var(--umbra-button-accent-fg, var(--umbra-color-fixed-on-selected));
+  --border: var(--umbra-button-accent-border, transparent);
+}
+
+.button[data-variant='ghost'] {
+  --bg: var(--umbra-button-ghost-bg, transparent);
+  --fg: var(--umbra-button-ghost-fg, currentColor);
+  --border: var(--umbra-button-ghost-border, transparent);
+}
+
+.button[data-variant='danger'] {
+  --bg: var(--umbra-button-danger-bg, var(--umbra-color-base-surface2));
+  --fg: var(--umbra-button-danger-fg, var(--umbra-color-semantic-danger));
+  --border: var(--umbra-button-danger-border, var(--umbra-color-semantic-danger));
+}
+
+/* Hover lightens one step, press darkens one step (plan/interaction.md). */
+.button[data-hovered] {
+  background: color-mix(in oklab, var(--bg), #fff 10%);
+}
+
+.button[data-pressed] {
+  background: color-mix(in oklab, var(--bg), #000 18%);
+}
+
+.button[data-variant='ghost'][data-hovered] {
+  background: color-mix(in oklab, currentColor 12%, transparent);
+}
+
+.button[data-variant='ghost'][data-pressed],
+.button[data-variant='ghost'][aria-pressed='true'] {
+  background: color-mix(in oklab, currentColor 6%, transparent);
+}
+
+.button[aria-pressed='true'] {
+  color: var(--umbra-color-fixed-accent-text);
+}
+
+.button[data-focus-visible] {
+  outline: var(--umbra-state-focus-ring-width) solid var(--umbra-color-fixed-focus-ring);
+  outline-offset: 2px;
+}
+
+.button[data-disabled] {
+  opacity: var(--umbra-state-disabled-opacity);
+  cursor: default;
+}
+
+.button[data-pending] {
+  cursor: progress;
+}
+
+.button[data-size='small'] {
+  --height: calc(var(--umbra-density-table-row) - 2px);
+  padding: 0 var(--umbra-space-3);
+  gap: var(--umbra-space-2);
+  font: var(--umbra-font-label);
+}
+
+.button[data-full-width] {
+  display: flex;
+  width: 100%;
+}
+
+.button[data-icon-only] {
+  flex: none;
+  width: var(--umbra-icon-button-size, var(--height));
+  height: var(--umbra-icon-button-size, var(--height));
+  padding: 0;
+  overflow: visible;
+}
+
+.button[data-shape='circle'] {
+  border-radius: 50%;
+}
+
+/* Inside an overflow menu every button is a full-width row. */
+.button[data-in-menu] {
+  justify-content: flex-start;
+  flex: none;
+}
+
+.label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* A label that can collapse to an icon must not shrink, so the button can tell when it no longer fits. */
+.label[data-fixed] {
+  flex: none;
+  overflow: visible;
+}
+
+.badge {
+  position: absolute;
+  top: 2px;
+  inset-inline-end: 2px;
+  min-width: 14px;
+  height: 14px;
+  padding: 0 3px;
+  border-radius: var(--umbra-radius-pill);
+  background: var(--umbra-color-fixed-primary);
+  color: var(--umbra-color-fixed-on-primary);
+  font: 700 10px/14px var(--umbra-font-family-body);
+  text-align: center;
+}
+
+.badge[data-dot] {
+  min-width: 8px;
+  width: 8px;
+  height: 8px;
+  padding: 0;
+}
+
+.button[data-in-menu] > .badge {
+  position: static;
+  margin-inline-start: auto;
+}

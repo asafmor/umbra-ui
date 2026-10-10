@@ -10,6 +10,11 @@ export default tseslint.config(
   reactHooks.configs.flat.recommended,
   storybook.configs['flat/recommended'],
   {
+    // The layout system measures the DOM in layout effects and then sets state (stack collapse, overflow
+    // menus). These two rules, written for the React Compiler, reject that pattern.
+    rules: { 'react-hooks/set-state-in-effect': 'off', 'react-hooks/preserve-manual-memoization': 'off' },
+  },
+  {
     files: ['src/**/*.{ts,tsx}'],
     ignores: ['src/**/*.stories.tsx', 'src/**/*.test.{ts,tsx}'],
     rules: {
