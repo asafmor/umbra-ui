@@ -4,7 +4,16 @@ import storybook from 'eslint-plugin-storybook';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
-  { ignores: ['**/dist', 'storybook-static', 'src/styles/tokens.generated.ts', 'plan', 'screenshots', '.claude'] },
+  {
+    ignores: [
+      '**/dist',
+      'storybook-static',
+      'src/styles/tokens.generated.ts',
+      'plan',
+      'screenshots',
+      '.claude',
+    ],
+  },
   js.configs.recommended,
   tseslint.configs.recommended,
   reactHooks.configs.flat.recommended,
