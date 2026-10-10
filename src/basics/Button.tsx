@@ -1,5 +1,9 @@
 import { useContext, useRef, type CSSProperties, type ReactNode } from 'react';
-import { Button as AriaButton, Link as AriaLink } from 'react-aria-components';
+import {
+  Button as AriaButton,
+  Link as AriaLink,
+  ProgressBar as AriaProgressBar,
+} from 'react-aria-components';
 import { ForceCollapseContext, OverflowMenuContext, Tip } from '../internal/overlays';
 import { useShrinkLevel } from '../internal/useShrinkLevel';
 import { Icon, IconSlot } from '../provider/icons';
@@ -99,6 +103,18 @@ export function ButtonBase({
   return <Tip content={inMenu ? null : tooltip}>{element}</Tip>;
 }
 
+/**
+ * Internal: the spinner of a loading button. It is a named progress element, which the button adds to
+ * its own name while it is pending, so a screen reader hears that it is busy.
+ */
+export function Spinner({ label }: { label: string }) {
+  return (
+    <AriaProgressBar isIndeterminate aria-label={label} className={styles.spinner}>
+      <Icon name="spinner" spin part="spinner" />
+    </AriaProgressBar>
+  );
+}
+
 /** Internal: tooltip content with an optional key hint. */
 export function tipWithHint(text: ReactNode, hint: string | undefined) {
   if (!text && !hint) return null;
@@ -121,6 +137,8 @@ export interface ButtonProps {
   size?: 'default' | 'small';
   /** Shows the spinner and blocks presses. The button stays focusable. */
   loading?: boolean;
+  /** What a screen reader hears while `loading`. */
+  loadingLabel?: string;
   disabled?: boolean;
   /** Renders a link that looks like a button. */
   href?: string;
@@ -150,6 +168,7 @@ export function Button({
   iconEnd,
   shortcut,
   collapseTo,
+  loadingLabel = 'Loading',
   onPress,
   parts,
   ...rest
@@ -178,7 +197,7 @@ export function Button({
       onPress={onPress}
     >
       {rest.loading
-        ? renderPart(parts?.spinner, {}, () => <Icon name="spinner" spin part="spinner" />)
+        ? renderPart(parts?.spinner, {}, () => <Spinner label={loadingLabel} />)
         : icon('iconStart', iconStart)}
       {!collapsed &&
         renderPart(parts?.label, { children }, (p) => (

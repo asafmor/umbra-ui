@@ -58,6 +58,8 @@
   background: var(--umbra-color-fixed-selected);
   border-color: var(--umbra-color-fixed-selected);
   color: var(--umbra-color-fixed-on-selected);
+  /* A bar under the selected tab, so the state does not depend on colour alone. */
+  box-shadow: inset 0 calc(-1 * var(--umbra-space-1)) 0 currentColor;
 }
 
 /* A Slot's single child fills it; the slot is a size container for the child's container queries. */

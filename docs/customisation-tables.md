@@ -32,7 +32,7 @@ The outermost frame: exactly the size of the window, never scrolls, bars above o
 
 Triggers an action. Text, with an optional icon.
 
-**Tokens**: `--umbra-button-accent-bg`, `--umbra-button-accent-border`, `--umbra-button-accent-fg`, `--umbra-button-danger-bg`, `--umbra-button-danger-border`, `--umbra-button-danger-fg`, `--umbra-button-ghost-bg`, `--umbra-button-ghost-border`, `--umbra-button-ghost-fg`, `--umbra-button-height`, `--umbra-button-neutral-bg`, `--umbra-button-neutral-border`, `--umbra-button-neutral-fg`, `--umbra-button-padding-x`, `--umbra-button-primary-bg`, `--umbra-button-primary-border`, `--umbra-button-primary-fg`, `--umbra-button-radius`, `--umbra-focus-offset`, `--umbra-icon-button-size`.
+**Tokens**: `--umbra-button-accent-bg`, `--umbra-button-accent-border`, `--umbra-button-accent-fg`, `--umbra-button-danger-bg`, `--umbra-button-danger-border`, `--umbra-button-danger-fg`, `--umbra-button-ghost-bg`, `--umbra-button-ghost-border`, `--umbra-button-ghost-fg`, `--umbra-button-height`, `--umbra-button-neutral-bg`, `--umbra-button-neutral-border`, `--umbra-button-neutral-fg`, `--umbra-button-padding-x`, `--umbra-button-primary-bg`, `--umbra-button-primary-border`, `--umbra-button-primary-fg`, `--umbra-button-radius`, `--umbra-focus-color`, `--umbra-focus-offset`, `--umbra-icon-button-size`.
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -42,6 +42,7 @@ Triggers an action. Text, with an optional icon.
 | `iconEnd` | `ReactNode` |  |
 | `size` | `"default" \| "small"` | `small` is for use inside table cells. Otherwise the height follows the density level. |
 | `loading` | `boolean` | Shows the spinner and blocks presses. The button stays focusable. |
+| `loadingLabel` | `string` | What a screen reader hears while `loading`. |
 | `disabled` | `boolean` |  |
 | `href` | `string` | Renders a link that looks like a button. |
 | `shortcut` | `string` | Id of a shortcut in the provider's list: binds the key and shows the hint in the tooltip. |
@@ -61,7 +62,7 @@ Triggers an action. Text, with an optional icon.
 
 The container for one unit of content on a page. Fills the slot its parent gives it and scrolls its own body when the content is taller.
 
-**Tokens**: `--umbra-card-bg`, `--umbra-card-border`, `--umbra-card-header-bg`, `--umbra-card-header-fg`, `--umbra-card-header-height`, `--umbra-card-min-height`, `--umbra-card-padding`, `--umbra-card-radius`, `--umbra-card-title-font`.
+**Tokens**: `--umbra-card-bg`, `--umbra-card-border`, `--umbra-card-header-bg`, `--umbra-card-header-fg`, `--umbra-card-header-height`, `--umbra-card-min-height`, `--umbra-card-padding`, `--umbra-card-radius`, `--umbra-card-title-font`, `--umbra-focus-color`.
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -129,7 +130,7 @@ Shares its width among its children. Below the minimum window it shows one child
 
 A button that shows only an icon. Inside an overflow menu it becomes a row with its icon and label.
 
-**Tokens**: `--umbra-button-accent-bg`, `--umbra-button-accent-border`, `--umbra-button-accent-fg`, `--umbra-button-danger-bg`, `--umbra-button-danger-border`, `--umbra-button-danger-fg`, `--umbra-button-ghost-bg`, `--umbra-button-ghost-border`, `--umbra-button-ghost-fg`, `--umbra-button-height`, `--umbra-button-neutral-bg`, `--umbra-button-neutral-border`, `--umbra-button-neutral-fg`, `--umbra-button-padding-x`, `--umbra-button-primary-bg`, `--umbra-button-primary-border`, `--umbra-button-primary-fg`, `--umbra-button-radius`, `--umbra-focus-offset`, `--umbra-icon-button-size`.
+**Tokens**: `--umbra-button-accent-bg`, `--umbra-button-accent-border`, `--umbra-button-accent-fg`, `--umbra-button-danger-bg`, `--umbra-button-danger-border`, `--umbra-button-danger-fg`, `--umbra-button-ghost-bg`, `--umbra-button-ghost-border`, `--umbra-button-ghost-fg`, `--umbra-button-height`, `--umbra-button-neutral-bg`, `--umbra-button-neutral-border`, `--umbra-button-neutral-fg`, `--umbra-button-padding-x`, `--umbra-button-primary-bg`, `--umbra-button-primary-border`, `--umbra-button-primary-fg`, `--umbra-button-radius`, `--umbra-focus-color`, `--umbra-focus-offset`, `--umbra-icon-button-size`.
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -144,6 +145,7 @@ A button that shows only an icon. Inside an overflow menu it becomes a row with 
 | `shortcut` | `string` | Id of a shortcut in the provider's list: binds the key and shows the hint in the tooltip. |
 | `disabled` | `boolean` |  |
 | `loading` | `boolean` |  |
+| `loadingLabel` | `string` | What a screen reader hears while `loading`. |
 | `onPress` | `(() => void)` |  |
 | `parts` | `see Parts` | Replace or hide named pieces. |
 | `className` | `string` |  |
@@ -179,7 +181,7 @@ The content area under the bars: applies the outer margin and the context tint.
 
 The top-level sections of the app, inside the `TopBar`.
 
-**Tokens**: `--umbra-focus-offset`, `--umbra-nav-font`, `--umbra-nav-gap`, `--umbra-nav-indicator-color`, `--umbra-subnav-indicator-color`.
+**Tokens**: `--umbra-focus-color`, `--umbra-focus-offset`, `--umbra-nav-font`, `--umbra-nav-gap`, `--umbra-nav-indicator-color`, `--umbra-subnav-indicator-color`.
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -311,7 +313,7 @@ Shares its height among its children.
 
 The second bar: the pages of the current section, and room for shortcuts at the end.
 
-**Tokens**: `--umbra-focus-offset`, `--umbra-nav-font`, `--umbra-nav-gap`, `--umbra-nav-indicator-color`, `--umbra-subnav-bg`, `--umbra-subnav-height`, `--umbra-subnav-indicator-color`.
+**Tokens**: `--umbra-focus-color`, `--umbra-focus-offset`, `--umbra-nav-font`, `--umbra-nav-gap`, `--umbra-nav-indicator-color`, `--umbra-subnav-bg`, `--umbra-subnav-height`, `--umbra-subnav-indicator-color`.
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -335,7 +337,7 @@ The second bar: the pages of the current section, and room for shortcuts at the 
 
 The brand-coloured bar at the top: where the user is, the main sections, and the one primary action.
 
-**Tokens**: `--umbra-focus-offset`, `--umbra-nav-font`, `--umbra-nav-gap`, `--umbra-nav-indicator-color`, `--umbra-subnav-indicator-color`, `--umbra-topbar-bg`, `--umbra-topbar-fg`, `--umbra-topbar-height`.
+**Tokens**: `--umbra-focus-color`, `--umbra-focus-offset`, `--umbra-nav-font`, `--umbra-nav-gap`, `--umbra-nav-indicator-color`, `--umbra-subnav-indicator-color`, `--umbra-topbar-bg`, `--umbra-topbar-fg`, `--umbra-topbar-height`.
 
 | Prop | Type | Purpose |
 |---|---|---|

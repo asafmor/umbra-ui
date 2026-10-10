@@ -6,10 +6,10 @@ The screenshots are static, so everything here is the library's own rule, approv
 
 | State | Rule |
 |---|---|
-| Hover | Surface lightens one step. Table and list rows highlight across their full width. |
+| Hover | Surface lightens one step. A surface that carries light or coloured text (primary, accent and danger buttons) darkens one step instead, so the text keeps 4.5:1. Table and list rows highlight across their full width. |
 | Pressed | Surface darkens one step. No movement. |
-| Selected | Violet fill (fixed colour). |
-| Focus | 2px light-pink ring, shown for keyboard focus (`:focus-visible`). Never violet, so focus and selected cannot be confused. |
+| Selected | Violet fill (fixed colour), always with a second cue that is not colour: a bar, an edge stripe, an outline, a weight change or a check. |
+| Focus | 2px light-pink ring, shown for keyboard focus (`:focus-visible`). Never violet, so focus and selected cannot be confused. On a brand bar where pink has less than 3:1, the ring takes the bar's text colour. Inside a container that clips, the ring is drawn inwards. |
 | Disabled | 40% opacity; no hover or press response. |
 
 ## Motion
@@ -28,6 +28,7 @@ Character: **crisp and minimal**. Short fades and small slides only; no sweeps, 
 
 ## Loading, empty, error
 
+- **Busy controls**: a loading button keeps focus, blocks presses and is announced through a named progress element (`loadingLabel`).
 - **Loading**: skeletons. Every data component has a `loading` prop that renders grey placeholder shapes in the component's final layout, so nothing moves when data arrives. No spinners by default.
 - **Empty**: every data component has an empty state (title + explanation, replaceable).
 - **Error**: every data component has an error state with a slot for a retry action.
@@ -46,7 +47,7 @@ Character: **crisp and minimal**. Short fades and small slides only; no sweeps, 
 
 ## Accessibility
 
-Target: WCAG 2.2 AA. This covers text and non-text contrast on every context tint, keyboard reach, screen-reader names and roles, and a non-colour fallback wherever colour carries data.
+Target: WCAG 2.2 AA. Every story is checked automatically (axe) on every context tint, in CI. Skeletons are decorative and exempt from non-text contrast; the scroll thumb is not. This covers text and non-text contrast on every context tint, keyboard reach, screen-reader names and roles, and a non-colour fallback wherever colour carries data.
 
 ## Open details
 

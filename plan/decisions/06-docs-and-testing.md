@@ -23,3 +23,5 @@ Storybook alone does not teach installing, the layout system or customisation, s
 **Rejected**: a separate designed docs site (more to maintain; can be added later). Docs site only (loses the per-state workshop and its test integration).
 
 **Confirmed 2026-10-10**: ESLint and Prettier; Changesets for the changelog and releases; GitHub Actions runs lint, typecheck, unit tests and build. Visual tests (Playwright against the built Storybook) run locally for now.
+
+**Changed 2026-10-10**: the Playwright tests (captures, the no-page-scroll check, the automated accessibility check and the interaction tests) now run in GitHub Actions on every push, not only locally. Each story is captured at three sizes and three densities on the default tint, and once on each other tint.

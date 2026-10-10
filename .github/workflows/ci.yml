@@ -20,4 +20,13 @@ jobs:
       - run: npm run build
       # The example imports the built package, so this checks the published entries and types.
       - run: npm run build -w examples/basic
-      # Visual tests run locally for now (npm run test:visual): baselines are recorded on one machine.
+      # Every story: captures at three sizes, three densities and four tints, the no-page-scroll check,
+      # the automated accessibility check and the interaction tests.
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:visual
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: test-results
+          path: test-results
+          retention-days: 7

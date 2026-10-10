@@ -38,3 +38,27 @@ export function textColourOn(background: string): { colour: string; ratio: numbe
   const onDark = contrastRatio(bg, parseColour(dark)!);
   return onLight >= onDark ? { colour: light, ratio: onLight } : { colour: dark, ratio: onDark };
 }
+
+const toHex = (rgb: Rgb) => '#' + rgb.map((v) => Math.round(v).toString(16).padStart(2, '0')).join('');
+
+/**
+ * A dimmed version of `text` for resting items on `background`: mixed towards the background by up to
+ * `most` (0 to 1), but never so far that it drops under 4.5:1.
+ */
+export function mutedTextOn(background: string, text: string, most = 0.2): string | null {
+  const bg = parseColour(background);
+  const fg = parseColour(text);
+  if (!bg || !fg) return null;
+  for (let amount = most; amount > 0; amount -= 0.02) {
+    const mixed = fg.map((v, i) => v + (bg[i]! - v) * amount) as Rgb;
+    if (contrastRatio(mixed, bg) >= 4.5) return toHex(mixed);
+  }
+  return toHex(fg);
+}
+
+/** `ring` when it has 3:1 against `background`, otherwise `fallback` (the text colour on it). */
+export function focusColourOn(background: string, ring: string, fallback: string): string {
+  const bg = parseColour(background);
+  const colour = parseColour(ring);
+  return bg && colour && contrastRatio(bg, colour) >= 3 ? ring : fallback;
+}

@@ -51,13 +51,24 @@
   --border: var(--umbra-button-danger-border, var(--umbra-color-semantic-danger));
 }
 
-/* Hover lightens one step, press darkens one step (plan/interaction.md). */
+/*
+ * Hover lightens one step, press darkens one step (plan/interaction.md). A surface that carries
+ * light or coloured text darkens on hover instead, so the text keeps its contrast.
+ */
 .button[data-hovered] {
   background: color-mix(in oklab, var(--bg), #fff 10%);
 }
 
 .button[data-pressed] {
   background: color-mix(in oklab, var(--bg), #000 18%);
+}
+
+.button:is([data-variant='primary'], [data-variant='accent'], [data-variant='danger'])[data-hovered] {
+  background: color-mix(in oklab, var(--bg), #000 12%);
+}
+
+.button:is([data-variant='primary'], [data-variant='accent'], [data-variant='danger'])[data-pressed] {
+  background: color-mix(in oklab, var(--bg), #000 26%);
 }
 
 .button[data-variant='ghost'][data-hovered] {
@@ -69,12 +80,18 @@
   background: color-mix(in oklab, currentColor 6%, transparent);
 }
 
+/* A toggled-on button is outlined, so the state does not depend on colour alone. */
 .button[aria-pressed='true'] {
+  border-color: currentColor;
+}
+
+.button:is([data-variant='ghost'], [data-variant='neutral'])[aria-pressed='true'] {
   color: var(--umbra-color-fixed-accent-text);
 }
 
 .button[data-focus-visible] {
-  outline: var(--umbra-state-focus-ring-width) solid var(--umbra-color-fixed-focus-ring);
+  outline: var(--umbra-state-focus-ring-width) solid
+    var(--umbra-focus-color, var(--umbra-color-fixed-focus-ring));
   outline-offset: var(--umbra-focus-offset, 2px);
 }
 
@@ -153,4 +170,8 @@
 .button[data-in-menu] > .badge {
   position: static;
   margin-inline-start: auto;
+}
+
+.spinner {
+  display: inline-flex;
 }

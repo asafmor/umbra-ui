@@ -15,6 +15,7 @@ import { ButtonBase } from '../basics/Button';
 import { Skeleton } from '../basics/Skeleton';
 import { ActionsOverflow, Popover, useEscapeToClose } from '../internal/overlays';
 import { useShrinkLevel } from '../internal/useShrinkLevel';
+import { textColourOn } from '../provider/contrast';
 import { Icon, IconSlot } from '../provider/icons';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './Card.module.css';
@@ -100,6 +101,10 @@ function Root({
   const [uncontrolled, setUncontrolled] = useState(defaultCollapsed);
   const userCollapsed = collapsible && (controlled ?? uncontrolled);
   const [popoverOpen, setPopoverOpen] = useState(false);
+  // The title can be hidden or replaced through `parts`; the region is only named by one that exists.
+  const [hasTitle, setHasTitle] = useState(true);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- checked after every render on purpose; an equal value does not render again
+  useLayoutEffect(() => setHasTitle(!!document.getElementById(titleId)));
   const [width, setWidth] = useState(0);
 
   // Collapsed, the card is as tall as its header plus its own borders. An open plain header has less
@@ -177,7 +182,7 @@ function Root({
       <section
         {...props}
         ref={ref}
-        aria-labelledby={ariaLabel ? undefined : titleId}
+        aria-labelledby={ariaLabel || !hasTitle ? undefined : titleId}
         aria-label={ariaLabel}
         aria-busy={loading || undefined}
         data-umbra="card"
@@ -345,7 +350,14 @@ function Header({
       data-header-style={headerStyle ?? card.headerStyle}
       data-truncate={level === steps.length || undefined}
       className={cx(styles.header, className)}
-      style={{ ...(bandColor && { ['--umbra-card-header-bg' as string]: bandColor }), ...style }}
+      style={{
+        // Text on a custom band is light or dark, whichever contrasts more with it.
+        ...(bandColor && {
+          ['--umbra-card-header-bg' as string]: bandColor,
+          ['--umbra-card-header-fg' as string]: textColourOn(bandColor)?.colour,
+        }),
+        ...style,
+      }}
     >
       {children ?? (
         <>

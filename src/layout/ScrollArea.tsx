@@ -39,6 +39,9 @@ export function ScrollArea({
   const viewport = useRef<HTMLDivElement>(null);
   const [state, setState] = useState({ start: false, end: false, needsFocus: false });
   const reachEnd = useRef(onReachEnd);
+  // Kept across renders: the effect below runs again whenever `children` is a new node, which must not
+  // report the same end a second time.
+  const atEnd = useRef(false);
   useEffect(() => {
     reachEnd.current = onReachEnd;
   });
@@ -47,7 +50,6 @@ export function ScrollArea({
     const el = viewport.current;
     if (!el) return;
     const horizontal = axis === 'horizontal';
-    let atEnd = false;
     const measure = () => {
       const position = Math.abs(horizontal ? el.scrollLeft : el.scrollTop);
       const max = horizontal ? el.scrollWidth - el.clientWidth : el.scrollHeight - el.clientHeight;
@@ -62,8 +64,8 @@ export function ScrollArea({
           : next,
       );
       const reached = max > 1 && !next.end;
-      if (reached && !atEnd) reachEnd.current?.();
-      atEnd = reached;
+      if (reached && !atEnd.current) reachEnd.current?.();
+      atEnd.current = reached;
     };
     measure();
     el.addEventListener('scroll', measure, { passive: true });

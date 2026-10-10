@@ -1,9 +1,9 @@
 import { useContext, type CSSProperties, type ReactNode } from 'react';
 import { OverflowMenuContext } from '../internal/overlays';
-import { Icon, IconSlot } from '../provider/icons';
+import { IconSlot } from '../provider/icons';
 import { useShortcut } from '../provider/UmbraProvider';
 import { renderPart, type Part } from '../utils/parts';
-import { ButtonBase, tipWithHint, type ButtonVariant } from './Button';
+import { ButtonBase, Spinner, tipWithHint, type ButtonVariant } from './Button';
 import styles from './Button.module.css';
 
 export interface IconButtonProps {
@@ -23,6 +23,8 @@ export interface IconButtonProps {
   shortcut?: string;
   disabled?: boolean;
   loading?: boolean;
+  /** What a screen reader hears while `loading`. */
+  loadingLabel?: string;
   onPress?: () => void;
   /** Replace or hide named pieces. */
   parts?: {
@@ -45,6 +47,7 @@ export function IconButton({
   badge,
   tooltip = true,
   shortcut,
+  loadingLabel = 'Loading',
   onPress,
   parts,
   ...rest
@@ -73,14 +76,19 @@ export function IconButton({
       onPress={press}
     >
       {rest.loading ? (
-        <Icon name="spinner" spin part="spinner" />
+        <Spinner label={loadingLabel} />
       ) : (
         renderPart(parts?.icon, { children: icon }, (p) => <IconSlot part="icon">{p.children}</IconSlot>)
       )}
       {inMenu && <span className={styles.label}>{label}</span>}
       {badge !== undefined &&
         renderPart(parts?.badge, { children: badge === true ? null : badge }, (p) => (
-          <span data-part="badge" data-dot={badge === true || undefined} className={styles.badge}>
+          <span
+            aria-hidden="true"
+            data-part="badge"
+            data-dot={badge === true || undefined}
+            className={styles.badge}
+          >
             {p.children}
           </span>
         ))}

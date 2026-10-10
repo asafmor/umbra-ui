@@ -79,5 +79,7 @@ export const contextPresets = [${list(t.color.context.presets)}] as const;
 export type TokenName =
 ${[...base, ...derived].map(([k]) => `  | '${k}'`).join('\n')};
 export const minWindow = { width: ${t.size.minWindowWidth}, height: ${t.size.minWindowHeight} } as const;
+/** Fixed colours that code computes contrast against. */
+export const fixedColours = { focusRing: '${t.color.fixed.focusRing}', surface: '${t.color.base.surface1}' } as const;
 `,
 );

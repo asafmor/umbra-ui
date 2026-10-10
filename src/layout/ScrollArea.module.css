@@ -11,7 +11,7 @@
   min-width: 0;
   min-height: 0;
   overflow: hidden;
-  --thumb: var(--umbra-scroll-thumb, var(--umbra-color-base-border-strong));
+  --thumb: var(--umbra-scroll-thumb, var(--umbra-color-base-border-control));
 }
 
 /* A viewport that takes focus to be scrolled by keyboard is usually clipped by its card. */
@@ -47,7 +47,7 @@
 }
 
 .viewport::-webkit-scrollbar-thumb:hover {
-  background-color: var(--umbra-scroll-thumb-hover, var(--umbra-color-base-border-control));
+  background-color: var(--umbra-scroll-thumb-hover, var(--umbra-color-base-text-secondary));
 }
 
 .viewport::-webkit-scrollbar-corner {

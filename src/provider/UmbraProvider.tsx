@@ -9,10 +9,10 @@ import {
   type ReactNode,
 } from 'react';
 import { I18nProvider } from 'react-aria-components';
-import { contextPresets, densities, type TokenName } from '../styles/tokens.generated';
+import { contextPresets, densities, fixedColours, type TokenName } from '../styles/tokens.generated';
 import { warn } from '../utils/dev';
 import { cx } from '../utils/parts';
-import { textColourOn } from './contrast';
+import { focusColourOn, mutedTextOn, textColourOn } from './contrast';
 import { defaultIcons, type IconMap } from './icons';
 import {
   findConflicts,
@@ -111,7 +111,11 @@ export function useScope(
       else if (text.ratio < 4.5)
         warn(`brand "${brand}" gives at most ${text.ratio.toFixed(2)}:1 text contrast; 4.5:1 is required.`);
       vars['--umbra-color-brand'] = brand;
-      vars['--umbra-color-on-brand'] = text?.colour ?? '#ffffff';
+      const on = text?.colour ?? '#ffffff';
+      vars['--umbra-color-on-brand'] = on;
+      // Resting nav items and the focus ring on the brand bar keep their contrast on any brand.
+      vars['--umbra-color-on-brand-muted'] = mutedTextOn(brand, on) ?? on;
+      vars['--umbra-color-on-brand-focus'] = focusColourOn(brand, fixedColours.focusRing, on);
     }
     for (const [name, value] of Object.entries(tokens ?? {})) {
       if (value !== undefined) vars[`--umbra-${name}`] = value;

@@ -130,7 +130,8 @@
 }
 
 .headerButton:focus-visible::after {
-  outline: var(--umbra-state-focus-ring-width) solid var(--umbra-color-fixed-focus-ring);
+  outline: var(--umbra-state-focus-ring-width) solid
+    var(--umbra-focus-color, var(--umbra-color-fixed-focus-ring));
   outline-offset: calc(-1 * var(--umbra-state-focus-ring-width));
   border-radius: var(--umbra-card-radius, var(--umbra-radius-card));
 }
@@ -146,8 +147,8 @@
 }
 
 .header[data-header-style='band'] .subtitle {
+  /* Full strength: a dimmed line would not keep its contrast on every band colour. */
   color: inherit;
-  opacity: 0.8;
 }
 
 .actions {

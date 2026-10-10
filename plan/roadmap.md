@@ -26,15 +26,17 @@ Tiers refer to the "Tier" column in `components.md`.
 | Batch | Components |
 |---|---|
 | 1a. Data basics | Tag, Badge, ValuePill, Avatar, EntityIcon, KeyValue, StatValue, SummaryTile, TrendArrow, StatusIndicator, GroupHeader, List, ListItem, Banner, Legend, EmptyState, Link |
-| 1b. Inputs | SegmentedFilter, Tabs, Select, Menu, Checkbox, Radio, Toggle, FormField, SearchField |
-| 1c. Overlays | Modal, Popover, Tooltip, ActionBar, VerticalNav, CommandPalette |
+| 1b. Inputs | Popover and Tooltip first (moved from 1c: Select and Menu need them), then SegmentedFilter, Tabs, Select, Menu, Checkbox, Radio, Toggle, FormField, SearchField |
+| 1c. Overlays | Modal, ActionBar, VerticalNav, CommandPalette; every Milestone 0 overlay moved to the public Popover, Menu and Tooltip |
 | 1d. Table | DataTable (sorting, cell widgets, priority-based column hiding, keyboard grid) |
 | 1e. Meters and charts | ProgressBar, LevelMeter, DonutChart, RadarChart, LineChart, BarChart |
 | 1f. Shell extras | ShortcutBar, HistoryButtons, PrimaryAction, PageHeader, Accordion |
 
 Docs in this milestone: the theming, customisation and recipes guides; the `dashboard` and `advanced` example apps.
 
-**Done when**: three reference screens are rebuilt as full-page stories (an overview with many cards, a list + detail screen, a table-heavy screen). First public release.
+Before 1a: the open items of the Milestone 0 review marked "before 1a" (`plan/reviews/milestone-0.md`).
+
+**Done when**: three reference screens are rebuilt as full-page stories (an overview with many cards, a list + detail screen, a table-heavy screen). First public release, as `0.1.0`.
 
 ## Milestone 2 — Extended (tier 2)
 
@@ -47,5 +49,5 @@ Order inside this milestone is decided by demand.
 1. Spec written, matches the catalog row, and lists all four customisation layers.
 2. Stories for every variant and state, including loading, empty and error.
 3. Shrink behaviour defined and covered by visual tests at several sizes.
-4. Keyboard and screen-reader checks pass.
-5. Works on every context tint and all three density levels.
+4. Keyboard and screen-reader checks pass: the automated accessibility test passes on every tint, and an interaction test covers the component's keys and focus.
+5. Works on every context tint and all three density levels: captured at all three densities, and once on each other tint.

@@ -44,7 +44,6 @@ The design is **inspired by** 40 screenshots of a game UI in `screenshots/`. It 
 - Commit `973f274` breaks "tests pass at every commit": it adds two navigation tests whose story arrives in the next commit. It was already pushed, so it stays.
 - A card collapsed with its caret is not size-animated; only the caret rotates (open detail in `plan/interaction.md`).
 - Dropdowns and overflow menus are popovers holding links and buttons, not ARIA menus, until the public `Menu` in Milestone 1.
-- The visual tests capture stories on the default context tint only.
 
 ## Commands
 
@@ -56,7 +55,7 @@ The design is **inspired by** 40 screenshots of a game UI in `screenshots/`. It 
 | `npm run typecheck` / `npm run lint` / `npm run format` | TypeScript, ESLint + Prettier check, Prettier write |
 | `npm test` | Unit tests (Vitest), for pure logic only |
 | `npm run storybook` | Storybook on port 6006 |
-| `npm run test:visual` | Builds Storybook, then captures every story at 1920x1080, 1280x720 and 1024x600 at all three densities, and fails on any document overflow. Stories tagged `narrow` are also captured at 900x560. |
+| `npm run test:visual` | Builds Storybook, then runs every Playwright test: captures of every story at 1920x1080, 1280x720 and 1024x600 at all three densities and once on each other context tint (failing on any document overflow; stories tagged `narrow` are also captured at 900x560), the automated accessibility check of every story on every tint, and the interaction tests. CI runs it on every push. `UMBRA_TEST_PORT` changes the port (default 6007), so two checkouts can run at once. |
 | `npm run test:visual:update` | Same, and rewrites the baselines in `tests/visual/__screenshots__/`. Look at the changed images before committing. |
 | `npm run docs:tables` | Regenerates `docs/customisation-tables.md` from the source. `npm run lint` fails when it is out of date, so run it after changing props, parts, blocks or CSS variables. |
 | `npm run build -w examples/basic` | Builds the example app against the built package (run `npm run build` first) |
@@ -83,13 +82,13 @@ The design is **inspired by** 40 screenshots of a game UI in `screenshots/`. It 
 | `plan/roadmap.md` | Pre-code tasks, milestones, build order, and the per-component definition of done. |
 | `plan/reference/` | `index.html`: the static reference screen, the visual ground truth for the look (open it in a browser; `?density=compact&context=teal` switches settings). `shot-*.png`: renders at three sizes. |
 | `plan/reviews/` | Review reports. `milestone-0.md`: what the independent review found, what was fixed, and what is open. |
-| `plan/prompts/` | Ready-made prompts for starting a fresh agent session: `milestone-0.md` (used), `verify-milestone-0.md` (independent review of Milestone 0), `milestone-1.md` (plan and build Milestone 1). |
+| `plan/prompts/` | `component-brief.md`: the rules for building a batch of components (read it before adding one). Ready-made prompts for starting a fresh agent session: `milestone-0.md` (used), `verify-milestone-0.md` (independent review of Milestone 0), `milestone-1.md` (plan and build Milestone 1). |
 | `src/` | Library source. `src/styles/`: base CSS and the generated tokens. `src/provider/`: provider, scope, icon map, shortcut registry. `src/layout/`: Page, Columns, Stack, Slot, Card, SectionTitle, ScrollArea (`useSlot.tsx` and `collapse.ts` hold the layout rules). `src/shell/`: AppShell, TopBar, PrimaryNav, SubNav (`nav.tsx` is shared). `src/basics/`: Button, IconButton, Skeleton. `src/internal/`: not exported; overlays on React Aria and `useShrinkLevel`, the hook behind every "show less as it narrows" rule. `src/utils/`: shared helpers (`parts.ts` implements the parts layer). `src/charts/`: the `umbra-ui/charts` entry. |
 | `scripts/` | Build scripts: `build-tokens.mjs`, and `build-customisation.mjs` for the customisation tables. |
 | `.storybook/` | Storybook config; the toolbar switches density and context. |
 | `docs/` | Guides in Markdown (`getting-started.md`, `layout.md`) and the generated `customisation-tables.md`. `docs/storybook/*.mdx` show them in Storybook. |
 | `examples/basic/` | A small app that imports the built package; an npm workspace. |
-| `tests/visual/` | Playwright tests against the built Storybook: `stories.spec.ts` (captures and the no-page-scroll check) and `interactions.spec.ts` (popovers, tab mode, overflow menus, keys), with the baseline images. |
+| `tests/visual/` | Playwright tests against the built Storybook: `stories.spec.ts` (captures and the no-page-scroll check), `a11y.spec.ts` (axe, WCAG 2.2 AA, every story on every tint) and `interactions.spec.ts` (popovers, tab mode, overflow menus, keys), with the baseline images. The comparison is strict on purpose; a changed baseline is a change to look at. |
 
 ## Decisions that bind every task
 

@@ -7,9 +7,8 @@ import { Card } from '../layout/Card';
 import { Columns } from '../layout/Columns';
 import { Page } from '../layout/Page';
 import { Stack } from '../layout/Stack';
-import { Rows, Value } from '../stories/placeholders';
+import { pages, Rows, sections, Value } from '../stories/placeholders';
 import { AppShell } from './AppShell';
-import type { NavItem } from './nav';
 import { PrimaryNav } from './PrimaryNav';
 import { SubNav } from './SubNav';
 import { TopBar } from './TopBar';
@@ -17,28 +16,6 @@ import { TopBar } from './TopBar';
 const meta = { title: 'Shell/App shell', component: AppShell } satisfies Meta<typeof AppShell>;
 export default meta;
 type Story = StoryObj<typeof meta>;
-
-const sections: NavItem[] = [
-  { id: 'overview', label: 'Overview', href: '#overview' },
-  {
-    id: 'orders',
-    label: 'Orders',
-    href: '#orders',
-    items: [
-      { id: 'open', label: 'Open orders', href: '#open' },
-      { id: 'returns', label: 'Returns', href: '#returns' },
-    ],
-  },
-  { id: 'planning', label: 'Planning', href: '#planning' },
-  { id: 'sourcing', label: 'Sourcing', href: '#sourcing' },
-  { id: 'people', label: 'People', items: [{ id: 'teams', label: 'Teams', href: '#teams' }] },
-  { id: 'finance', label: 'Finance', href: '#finance', disabled: true },
-];
-const pages: NavItem[] = ['Summary', 'Inbox', 'Calendar', 'Reports', 'Insights'].map((label) => ({
-  id: label.toLowerCase(),
-  label,
-  href: `#${label.toLowerCase()}`,
-}));
 
 function Bars({ brand, nav = true }: { brand?: string; nav?: boolean }) {
   const [section, setSection] = useState('overview');
@@ -169,5 +146,66 @@ export const WithoutNav: Story = {
         </div>
       ))}
     </div>
+  ),
+};
+
+const page = (
+  <Page>
+    <Columns>
+      <Card title="Orders" size={2}>
+        <Rows count={14} prefix="Order" />
+      </Card>
+      <Card title="Reports">
+        <Rows prefix="Report" />
+      </Card>
+    </Columns>
+  </Page>
+);
+
+function SeparateBarsShell() {
+  const [section, setSection] = useState('orders');
+  const [current, setCurrent] = useState('summary');
+  return (
+    <AppShell
+      topBar={<TopBar logo="U" nav={<PrimaryNav items={sections} value={section} onChange={setSection} />} />}
+      subNav={<SubNav label="Orders" items={pages} value={current} onChange={setCurrent} />}
+    >
+      {page}
+    </AppShell>
+  );
+}
+
+/** The bars passed separately, through `topBar` and `subNav`. */
+export const SeparateBars: Story = { render: () => <SeparateBarsShell /> };
+
+/** The shell built from its blocks, with its own skip link text. */
+export const Blocks: Story = {
+  render: () => (
+    <AppShell.Root skipLabel="Skip to the page">
+      <AppShell.Background />
+      <AppShell.Bars>
+        <TopBar logo="U" />
+        <SubNav label="Reports" items={pages} value="reports" />
+      </AppShell.Bars>
+      <AppShell.Main>{page}</AppShell.Main>
+    </AppShell.Root>
+  ),
+};
+
+/** `background="flat"` removes the gradient and the pattern. */
+export const FlatBackground: Story = {
+  render: () => (
+    <AppShell background="flat" topBar={<TopBar logo="U" />}>
+      {page}
+    </AppShell>
+  ),
+};
+
+/** The diagonal pattern is opt-in: set `--umbra-shell-pattern-opacity` above 0 on the shell or above it. */
+export const Pattern: Story = {
+  render: () => (
+    <AppShell topBar={<TopBar logo="U" />} style={{ ['--umbra-shell-pattern-opacity' as string]: 0.06 }}>
+      {page}
+    </AppShell>
   ),
 };

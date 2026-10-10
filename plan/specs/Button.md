@@ -53,6 +53,7 @@ States: hover, pressed, focus, disabled, loading. Height follows the density lev
 | `iconStart` / `iconEnd` | node | — | |
 | `size` | `default` \| `small` | `default` | |
 | `loading` | boolean | `false` | Shows the spinner and blocks presses |
+| `loadingLabel` | string | "Loading" | What a screen reader hears while loading |
 | `disabled` | boolean | `false` | |
 | `href` | string | — | Renders a link that looks like a button |
 | `shortcut` | shortcut id | — | Shows the key hint in its tooltip and binds the key |
@@ -76,7 +77,8 @@ The label truncates with an ellipsis. With `collapseTo="icon"` and an icon set, 
 ## Interaction and accessibility
 
 - `Enter` and `Space` activate it.
-- A loading button stays focusable and announces that it is busy.
+- A loading button stays focusable and announces that it is busy: its spinner is a progress element named by `loadingLabel`, which becomes part of the button's name.
+- `primary`, `accent` and `danger` darken on hover instead of lightening, so their text keeps 4.5:1.
 - Text contrast on every variant is at least 4.5:1 (checked for `primary` and `accent` in `tokens.json`).
 
 ## Open questions

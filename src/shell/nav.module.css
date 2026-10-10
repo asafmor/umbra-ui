@@ -18,6 +18,20 @@
   margin-inline: calc(-1 * var(--umbra-space-2));
 }
 
+/* On the brand bar a resting item is dimmed by colour, computed to keep 4.5:1 on any brand. */
+.primary :is(.link, .caret) {
+  opacity: 1;
+  color: var(
+    --umbra-color-on-brand-muted,
+    color-mix(in srgb, var(--umbra-color-on-brand, #fff) 80%, var(--umbra-color-brand))
+  );
+}
+
+.primary :is(.link, .caret):not([aria-disabled]):hover,
+.primary .item:is([data-active], [data-open]) > :is(.link, .caret) {
+  color: inherit;
+}
+
 .primary .list {
   gap: var(--umbra-nav-gap, var(--umbra-space-7));
   font: var(--umbra-nav-font, var(--umbra-font-nav));
@@ -52,7 +66,9 @@
   text-decoration: none;
   cursor: pointer;
   opacity: 0.8;
-  transition: opacity var(--umbra-motion-duration-fast);
+  transition:
+    opacity var(--umbra-motion-duration-fast),
+    color var(--umbra-motion-duration-fast);
   --umbra-icon-size: 0.9em;
 }
 
@@ -79,7 +95,8 @@
 
 .link:focus-visible,
 .caret:focus-visible {
-  outline: var(--umbra-state-focus-ring-width) solid var(--umbra-color-fixed-focus-ring);
+  outline: var(--umbra-state-focus-ring-width) solid
+    var(--umbra-focus-color, var(--umbra-color-fixed-focus-ring));
   outline-offset: var(--umbra-focus-offset, 2px);
   border-radius: var(--umbra-radius-control);
 }
@@ -144,6 +161,9 @@
 .menu .link[aria-current] {
   background: var(--umbra-color-fixed-selected);
   color: var(--umbra-color-fixed-on-selected);
+  /* An edge stripe and weight, so the current page does not depend on colour alone. */
+  box-shadow: inset var(--umbra-space-1) 0 0 currentColor;
+  font-weight: 700;
 }
 
 .menu .link[aria-disabled],

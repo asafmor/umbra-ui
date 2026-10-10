@@ -8,6 +8,8 @@
   overflow: hidden;
   background: var(--umbra-topbar-bg, var(--umbra-color-brand));
   color: var(--umbra-topbar-fg, var(--umbra-color-on-brand, #fff));
+  /* The pink ring does not show on every brand; the provider picks one that does. */
+  --umbra-focus-color: var(--umbra-color-on-brand-focus, var(--umbra-color-fixed-focus-ring));
   white-space: nowrap;
 }
 

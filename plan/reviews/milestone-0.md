@@ -60,3 +60,21 @@ An independent check of Milestone 0 against the plan: the checks, the "done when
 - `interaction.md` says hover moves "one step"; the tokens have no step, and no rule for coloured surfaces.
 - `Card.md` does not say whether the popover moves or repeats the content.
 - `TopBar.md` promises 4.5:1 on any brand but does not cover dimmed items or the focus ring.
+
+## Owner's decisions (2026-10-10)
+
+The owner approved the Milestone 1 plan and these answers, and asked for the work to run to completion without a stop per batch, with CI running every test.
+
+| Question | Decision |
+|---|---|
+| Popover needed by 1b | Popover and Tooltip move to the start of 1b |
+| Review leftovers | Done before 1a |
+| Tints in visual tests | Each story once on each other tint, at the default density |
+| Button hover contrast | Primary, accent and danger darken on hover |
+| Brand bar | Dimmed nav items and the focus ring are computed from the brand |
+| Selected by colour only | A second cue is always added |
+| Loading button | `loadingLabel`, default "Loading" |
+| Scroll thumb and skeleton | Thumb raised to 3:1 or more; skeleton stays decorative |
+| Release | `0.1.0`; publishing still needs the owner's explicit go-ahead |
+
+Item 11 (the ResizeObserver loop error) turned out to come from Storybook, which observes the document body; a sweep of 111 window sizes on the `basic` example app raised none.

@@ -66,7 +66,9 @@ Does not shrink. Its container decides whether to move it into an overflow menu,
 ## Interaction and accessibility
 
 - `label` is required by the type, so an unnamed icon button cannot be written.
-- A toggle exposes `aria-pressed`.
+- A toggle exposes `aria-pressed`, and a toggled-on button is outlined, so the state does not depend on colour. The accent text colour is applied on `ghost` and `neutral` only.
+- `loadingLabel` (default "Loading") names the busy state, as on `Button`.
+- The badge is hidden from assistive technology; a count is part of the button's name.
 - The hit area is at least 24 × 24px at every density level.
 
 ## Open questions

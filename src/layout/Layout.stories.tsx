@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { AppShell } from '../shell/AppShell';
-import { Rows, Value } from '../stories/placeholders';
+import { Bar, Rows, Value } from '../stories/placeholders';
 import { Card } from './Card';
 import { Columns } from './Columns';
 import { Page } from './Page';
@@ -123,6 +123,179 @@ export const StackCollapse: Story = {
               </div>
             </Slot>
           ))}
+        </Columns>
+      </Page>
+    </AppShell>
+  ),
+};
+
+const twoCards = (
+  <Columns>
+    <Card title="Orders">
+      <Rows prefix="Order" />
+    </Card>
+    <Card title="Reports">
+      <Rows prefix="Report" />
+    </Card>
+  </Columns>
+);
+
+/** `header` and `footer` stay fixed above and below the content, which takes the rest of the height. */
+export const PageHeaderFooter: Story = {
+  render: () => (
+    <AppShell>
+      <Page header={<Bar>Page header</Bar>} footer={<Bar>Page footer</Bar>}>
+        {twoCards}
+      </Page>
+    </AppShell>
+  ),
+};
+
+/** `loading` shows one skeleton in place of the content; the header and footer stay. */
+export const PageLoading: Story = {
+  render: () => (
+    <AppShell>
+      <Page loading header={<Bar>Page header</Bar>} footer={<Bar>Page footer</Bar>}>
+        {twoCards}
+      </Page>
+    </AppShell>
+  ),
+};
+
+/** `padding="none"` removes the outer margin, for edge-to-edge content. */
+export const PagePaddingNone: Story = {
+  render: () => (
+    <AppShell background="flat">
+      <Page padding="none">
+        <Card title="Edge to edge" padding="none">
+          <Rows count={40} />
+        </Card>
+      </Page>
+    </AppShell>
+  ),
+};
+
+/** The page built from its blocks. */
+export const PageBlocks: Story = {
+  render: () => (
+    <AppShell>
+      <Page.Root context="green">
+        <Page.Header>
+          <Bar>Page.Header</Bar>
+        </Page.Header>
+        <Page.Content>{twoCards}</Page.Content>
+        <Page.Footer>
+          <Bar>Page.Footer</Bar>
+        </Page.Footer>
+      </Page.Root>
+    </AppShell>
+  ),
+};
+
+/**
+ * `narrow="keep"` keeps the columns below the minimum window, `overflow="keep"` stops a stack from
+ * collapsing its cards, and `gap` replaces the density gap with a step of the spacing scale.
+ */
+export const KeepColumnsAndCards: Story = {
+  tags: ['narrow'],
+  render: () => (
+    <AppShell>
+      <Page>
+        <Columns narrow="keep" gap={7}>
+          <Card title="Orders">
+            <Rows count={20} prefix="Order" />
+          </Card>
+          <Stack overflow="keep" gap={1} label="Status">
+            {five.map((title) => (
+              <Card key={title} title={title} tone="neutral">
+                <Rows count={3} />
+              </Card>
+            ))}
+          </Stack>
+        </Columns>
+      </Page>
+    </AppShell>
+  ),
+};
+
+/**
+ * Below the minimum window every `Columns` becomes tabs, also a nested one. A child without a label
+ * (here a `Slot` around plain content) gets its number as the tab label.
+ */
+export const NestedTabs: Story = {
+  tags: ['narrow'],
+  render: () => (
+    <AppShell>
+      <Page>
+        <Columns tabsLabel="Sections">
+          <Card title="Orders">
+            <Rows count={20} prefix="Order" />
+          </Card>
+          <Columns label="Regions" tabsLabel="Regions">
+            <Card title="Region 1">
+              <Rows prefix="Site" />
+            </Card>
+            <Card title="Region 2">
+              <Rows count={3} prefix="Site" />
+            </Card>
+          </Columns>
+          <Slot>
+            <div style={{ border: '1px dashed var(--umbra-color-base-border-control)', padding: 12 }}>
+              Plain content in a Slot without a label
+            </div>
+          </Slot>
+        </Columns>
+      </Page>
+    </AppShell>
+  ),
+};
+
+/** `parts.tabs` replaces the tab strip. It receives the tabs, with the ids that link them to their panels. */
+export const CustomTabStrip: Story = {
+  tags: ['narrow'],
+  render: () => (
+    <AppShell>
+      <Page>
+        <Columns
+          parts={{
+            tabs: ({ tabs, onSelect }) => (
+              <div role="tablist" aria-label="Views" style={{ flex: 'none', display: 'flex', gap: 16 }}>
+                {tabs.map((tab) => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    role="tab"
+                    id={tab.tabId}
+                    aria-selected={tab.selected}
+                    aria-controls={tab.panelId}
+                    onClick={() => onSelect(tab.id)}
+                    style={{
+                      padding: '6px 0',
+                      border: 0,
+                      borderBottom: `2px solid ${tab.selected ? 'currentColor' : 'transparent'}`,
+                      background: 'none',
+                      color: 'inherit',
+                      font: 'var(--umbra-font-label)',
+                      fontWeight: tab.selected ? 700 : 400,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+            ),
+          }}
+        >
+          <Card title="Orders">
+            <Rows count={20} prefix="Order" />
+          </Card>
+          <Card title="Reports">
+            <Rows prefix="Report" />
+          </Card>
+          <Card title="People">
+            <Rows prefix="Person" />
+          </Card>
         </Columns>
       </Page>
     </AppShell>

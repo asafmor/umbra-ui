@@ -65,7 +65,10 @@ export function useShrinkLevel(
     observer.observe(el);
     if (el.parentElement) observer.observe(el.parentElement);
     // Text measured before a web font arrived may have been wider; start again when fonts finish loading.
-    const restart = () => setLevel(0);
+    // Not while a menu opened from this row is showing: starting again would unmount its trigger.
+    const restart = () => {
+      if (!el.querySelector('[aria-expanded="true"]')) setLevel(0);
+    };
     document.fonts?.addEventListener('loadingdone', restart);
     return () => {
       observer.disconnect();
