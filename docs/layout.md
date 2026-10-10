@@ -9,6 +9,8 @@ and components show less as space shrinks.
 | ------------ | -------------------------------------------------------------------- |
 | `AppShell`   | Exactly the window. Holds the bars and one `Page`.                   |
 | `Page`       | The area under the bars. Adds the outer margin and the context tint. |
+| `PageHeader` | In the `header` of a `Page`: fixed above the content.                |
+| `ActionBar`  | In the `footer` of a `Page`: fixed below the content.                |
 | `Columns`    | Shares its width among its children.                                 |
 | `Stack`      | Shares its height among its children.                                |
 | `Card`       | Fills the slot it is given. Its body scrolls inside.                 |
@@ -36,7 +38,8 @@ and components show less as space shrinks.
 
 ## How space is shared
 
-These props work on every child of `Columns` or `Stack`: `Card`, `Columns`, `Stack` and `Slot`.
+These props work on every child of `Columns` or `Stack`: `Card`, `Columns`, `Stack` and `Slot`, and also
+`Tabs`, `Accordion`, `VerticalNav` and `SummaryTile`, which can sit beside cards.
 
 | Prop             | Meaning                                                                                                            |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------ |
@@ -50,6 +53,8 @@ These props work on every child of `Columns` or `Stack`: `Card`, `Columns`, `Sta
 - Gaps come from the density level. `gap={3}` on `Columns` or `Stack` picks a step of the spacing scale.
 - Nothing overflows its slot: every child can shrink.
 - A child can be wrapped, for example in `UmbraScope`, and still takes part in the layout.
+- Known issue: a `Card` with `size="content"` shows only its header. Until that is fixed, put
+  content-sized pieces in a `Slot size="content"`, or in the `header` of the `Page`.
 
 ## What happens as space shrinks
 
@@ -74,6 +79,22 @@ Rule 4 in detail:
 
 - The window is "narrow" when it is under 1024 wide **or** under 600 high. `AppShell` sets `data-narrow`.
 - Every `Columns` then shows tabs. `narrow="keep"` on a `Columns` keeps its columns.
+
+## A header and a footer for the page
+
+`Page` takes a `header` and a `footer`. Both stay fixed, and the content shares what is left.
+
+```tsx
+<Page
+  header={<PageHeader title="Orders" subtitle="Region A" actions={<Button>Export</Button>} />}
+  footer={<ActionBar status="3 unsaved changes" primary={{ label: 'Save' }} />}
+>
+  <Columns>
+    <Card title="Open" />
+    <Card title="Sent" />
+  </Columns>
+</Page>
+```
 
 ## Letting the user collapse a card
 
@@ -107,3 +128,21 @@ A card that takes the size of its content (`size="content"`, or collapsed) is a 
 
 The rule is tested, not assumed. `npm run test:visual` opens every story at 1920 x 1080, 1280 x 720 and
 1024 x 600, at all three densities, and fails if the document is larger than the window.
+`npm run test:examples` does the same for the three example apps, down to 900 x 560.
+
+In an app of your own, the check is four lines in any browser test:
+
+```tsx
+const overflow = () => {
+  const d = document.documentElement;
+  return { x: d.scrollWidth - d.clientWidth, y: d.scrollHeight - d.clientHeight };
+};
+// Both must be 0 at every window size you support.
+```
+
+## Next
+
+- [Recipes](recipes.md): [three columns and a stack](recipes.md#2-three-columns-and-a-stack-that-collapses),
+  [tab mode](recipes.md#3-tab-mode-below-the-minimum-window).
+- [Theming](theming.md): density, which sets the gaps and the minimum height of a card.
+- `examples/dashboard`: a stack that collapses at small heights, in an app.

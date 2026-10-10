@@ -346,7 +346,13 @@ visible.
 />
 ```
 
-A label that depends on a number or a row is a function: `moreLabel={(n) => `${n} de plus`}`.
+A label that depends on a number or a row is a function:
+
+```tsx
+<AvatarGroup max={3} moreLabel={(count) => `${count} de plus`}>
+  <Avatar name="Person A" />
+</AvatarGroup>
+```
 
 | Component                             | Strings                                                                                                                                                                                                             |
 | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

@@ -1092,8 +1092,11 @@ export function App() {
 }
 ```
 
-For a single figure, show the direction beside it: `<StatValue value="1,204" trend={<TrendArrow
-direction="up" value="+12" />} />`.
+For a single figure, show the direction beside it:
+
+```tsx
+<StatValue label="In stock" value="1,204" trend={<TrendArrow direction="up" value="+12" />} />
+```
 
 ## 13. One section in its own theme
 
