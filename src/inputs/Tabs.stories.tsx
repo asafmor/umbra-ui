@@ -204,8 +204,8 @@ const many: TabsItem[] = [
 ];
 
 /**
- * With less room the counts hide, then a tab with an icon shows the icon only, then the list scrolls
- * inside itself and keeps the selected tab in view.
+ * With less room the counts hide, then a tab with an icon shows the icon only, then the tabs that do not
+ * fit move into a "more" menu. The selected tab always stays in the list.
  */
 export const Narrowing: Story = {
   render: () => (

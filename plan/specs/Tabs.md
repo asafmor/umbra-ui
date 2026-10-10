@@ -28,6 +28,7 @@ Underline, large text, above a card or in a modal header (3, 9, 10, 20, 21, 26, 
 | `count` | a number in parentheses | shown when the tab has a `count` |
 | `close` | button that closes the tab | shown when `onClose` is set and the tab is closable |
 | `indicator` | the mark of the selected tab, which slides between tabs | shown |
+| `more` | button of the menu that holds the tabs that do not fit | shown at the last shrink step only |
 | `end` | controls after the tabs, outside the tab list | hidden |
 | `panel` | the content of one tab | the selected one |
 
@@ -69,6 +70,7 @@ There is no loading, empty or error state: a panel shows those through the data 
 | `keepMounted` | boolean | `false` | |
 | `onClose` | `(id) => void` | — | Makes tabs closable. The app removes the tab. |
 | `closeLabel` | string | "Close" | First word of a close button's name |
+| `moreLabel` | string | "More tabs" | Name of the button that opens the menu of tabs that do not fit |
 | `end` | node | — | Controls after the tabs, for example an "add" button |
 | `aria-label` | string | — | Names the tab list |
 | `size` | number \| `"content"` | `1` | Share of the parent's space, as on every layout child |
@@ -90,7 +92,7 @@ For a horizontal list:
 |---|---|---|
 | 1 | The tabs are wider than the list | The counts hide. They are still read with the label. |
 | 2 | Still wider | A tab with an icon shows the icon only. Its label stays as its accessible name. A tab without an icon keeps its label. |
-| 3 | Still wider | The list scrolls sideways inside itself, without a scrollbar; an edge that hides tabs fades out. The selected tab is always scrolled into view. |
+| 3 | Still wider | The tabs that do not fit move into a "more" menu, opened by a button after the list (`moreLabel`). The selected tab always stays in the list: it takes the last place that fits, and the menu still lists it, with a check. Choosing a row selects that tab. A tab in the menu cannot be closed from there; select it first. |
 
 A vertical list has no steps: its labels truncate with an ellipsis at the list's maximum width (40% of the tabs), and a list taller than its slot scrolls with faded edges. The panel clips; scrolling belongs to the card or `ScrollArea` inside it.
 
@@ -108,7 +110,7 @@ A vertical list has no steps: its labels truncate with an ellipsis at the list's
 
 ## Open questions
 
-- Step 3 scrolls instead of moving tabs into a "more" menu, because the public `Menu` did not exist when this was built. Switch when it does.
+None.
 
 Resolved 2026-10-10:
 
@@ -122,3 +124,4 @@ Resolved 2026-10-10:
 - A panel is always a tab stop (`tabindex="0"`), so a panel without controls can be read and scrolled by keyboard.
 - An item without `content` gets no panel; the app shows the content itself.
 - No loading, empty or error state.
+- Step 3 is a "more" menu (the public `Menu`), not scrolling. Its button sits outside the `tablist` (which may only hold tabs) and is the tab stop after it. Fade-scrolling stays only for a vertical list. The tab strip of `Columns` gets the same menu.

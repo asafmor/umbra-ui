@@ -3,16 +3,26 @@ import {
   Fragment,
   createContext,
   useContext,
+  useMemo,
   useRef,
   useState,
   type CSSProperties,
   type ReactNode,
 } from 'react';
-import { ToggleButton, ToggleButtonGroup } from 'react-aria-components';
-import { IconSlot, RawIcon } from '../provider/icons';
+import { Button as AriaButton, ToggleButton, ToggleButtonGroup } from 'react-aria-components';
+import { Menu } from '../overlays/Menu';
+import { Icon, IconSlot, RawIcon } from '../provider/icons';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './SegmentedFilter.module.css';
-import { nameWithCount, useStrip } from './strip';
+import {
+  StripItemsContext,
+  moreRows,
+  nameWithCount,
+  useMoreItems,
+  useStrip,
+  useStripItem,
+  type StripRow,
+} from './strip';
 
 /** One segment, as data. */
 export interface SegmentedFilterItem {
@@ -74,6 +84,8 @@ interface RootBase {
   /** Fills the width of its container with equal segments. */
   fullWidth?: boolean;
   disabled?: boolean;
+  /** Accessible name of the button that opens the menu of segments that do not fit. */
+  moreLabel?: string;
   /** Accessible name of the group. */
   'aria-label'?: string;
   /** Id of the element that names the group. */
@@ -103,9 +115,11 @@ const MultipleContext = createContext(false);
 
 function Root(props: SegmentedFilterRootProps) {
   const { all = false, allLabel = 'All', allCount, size = 'default', fullWidth = false } = props;
-  const { disabled = false, className, style, children } = props;
+  const { disabled = false, moreLabel = 'More', className, style, children } = props;
   const multiple = props.selectionMode === 'multiple';
   const ref = useRef<HTMLDivElement>(null);
+  const more = useRef<HTMLButtonElement>(null);
+  const [rows] = useState(() => new Map<string, StripRow>());
   const strip = useStrip(ref, 2, Children.count(children));
 
   const [own, setOwn] = useState<string[]>(
@@ -114,6 +128,11 @@ function Root(props: SegmentedFilterRootProps) {
   const controlled = multiple ? props.values : props.value;
   const selected =
     controlled === undefined ? own : Array.isArray(controlled) ? controlled : controlled ? [controlled] : [];
+
+  const keys = all && selected.length === 0 ? [ALL] : selected;
+  // The last step: the segments that do not fit move into a menu. The selected one of a single selection stays.
+  const overflow = useMoreItems(ref, more, strip.level === 2, multiple ? null : (keys[0] ?? null));
+  const items = useMemo(() => ({ hidden: overflow.hidden, rows }), [overflow.hidden, rows]);
 
   const change = (keys: Set<string | number>) => {
     const ids = [...keys].map(String);
@@ -128,39 +147,71 @@ function Root(props: SegmentedFilterRootProps) {
 
   return (
     <MultipleContext value={multiple}>
-      <ToggleButtonGroup
-        ref={ref}
-        selectionMode={multiple ? 'multiple' : 'single'}
-        disallowEmptySelection={!multiple}
-        selectedKeys={all && selected.length === 0 ? [ALL] : selected}
-        onSelectionChange={change}
-        isDisabled={disabled}
-        aria-label={props['aria-label']}
-        aria-labelledby={props['aria-labelledby']}
-        {...strip.attributes}
-        data-umbra="segmented-filter"
-        data-size={size}
-        data-selection={multiple ? 'multiple' : 'single'}
-        data-full-width={fullWidth || undefined}
-        className={cx(strip.className, styles.root, className)}
-        style={style}
-      >
-        {all && (
-          <Item id={ALL} count={allCount}>
-            {allLabel}
-          </Item>
-        )}
-        {children}
-      </ToggleButtonGroup>
+      <StripItemsContext value={items}>
+        <ToggleButtonGroup
+          ref={ref}
+          selectionMode={multiple ? 'multiple' : 'single'}
+          disallowEmptySelection={!multiple}
+          selectedKeys={keys}
+          onSelectionChange={change}
+          isDisabled={disabled}
+          aria-label={props['aria-label']}
+          aria-labelledby={props['aria-labelledby']}
+          {...strip.attributes}
+          data-umbra="segmented-filter"
+          data-size={size}
+          data-selection={multiple ? 'multiple' : 'single'}
+          data-full-width={fullWidth || undefined}
+          className={cx(strip.className, styles.root, className)}
+          style={style}
+        >
+          {all && (
+            <Item id={ALL} count={allCount}>
+              {allLabel}
+            </Item>
+          )}
+          {children}
+          {overflow.showMore && (
+            <Menu
+              label={moreLabel}
+              placement="bottom end"
+              items={moreRows(overflow.overflowed, rows, multiple ? 'checkbox' : 'radio', (id) =>
+                keys.includes(id),
+              )}
+              onAction={(id) =>
+                change(
+                  new Set(
+                    !multiple ? [id] : keys.includes(id) ? keys.filter((k) => k !== id) : [...keys, id],
+                  ),
+                )
+              }
+              trigger={
+                <AriaButton
+                  ref={more}
+                  aria-label={moreLabel}
+                  data-part="more"
+                  // A selected segment in the menu shows on the button, with the bar of a selected segment.
+                  data-has-selected={keys.some((id) => overflow.hidden.has(id)) || undefined}
+                  className={cx(styles.item, styles.more)}
+                >
+                  <Icon name="more" />
+                </AriaButton>
+              }
+            />
+          )}
+        </ToggleButtonGroup>
+      </StripItemsContext>
     </MultipleContext>
   );
 }
 
 function Item({ id, icon, count, disabled, parts, className, style, children }: SegmentedFilterItemProps) {
   const multiple = useContext(MultipleContext);
+  if (useStripItem(id, { label: children, count, icon, disabled })) return null;
   return (
     <ToggleButton
       id={id}
+      data-id={id}
       isDisabled={disabled}
       aria-label={nameWithCount(children, count)}
       data-part="item"

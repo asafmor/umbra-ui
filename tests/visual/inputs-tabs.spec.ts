@@ -20,6 +20,8 @@ const press = async (page: Page, ...keys: string[]) => {
 };
 const names = (items: Locator) => items.evaluateAll((els) => els.map((el) => el.textContent));
 const isCutShort = (el: Locator) => el.evaluate((node) => node.scrollWidth > node.clientWidth);
+/** As `isCutShort`, with the pixel of tolerance a row of items with fractional widths needs. */
+const overflows = (el: Locator) => el.evaluate((node) => node.scrollWidth > node.clientWidth + 1);
 /** True when `inner` lies inside the visible box of `outer`. */
 const isInside = async (inner: Locator, outer: Locator) =>
   inner.evaluate(
@@ -151,7 +153,7 @@ test('the "All" segment stands for no filter and clears the others', async ({ pa
   await expect(page.getByText('One region: any')).toBeVisible();
 });
 
-test('a segmented filter hides its counts, then truncates its labels equally, then scrolls', async ({
+test('a segmented filter hides its counts, then truncates its labels equally, then moves segments into a menu', async ({
   page,
 }) => {
   await open(page, 'inputs-segmentedfilter--narrowing');
@@ -179,16 +181,57 @@ test('a segmented filter hides its counts, then truncates its labels equally, th
     await fits(at(width));
   }
 
-  // Step 3: the segments are at their minimum width and the control scrolls inside itself.
+  // Step 3: the segments that do not fit at their minimum width are in the "more" menu. The selected one stays.
   const small = at(150);
-  expect(await isCutShort(small)).toBe(true);
+  const more = small.getByRole('button', { name: 'More' });
+  await expect(more).toBeVisible();
+  expect(await overflows(small)).toBe(false);
   await fits(small);
-  await expect(small).toHaveAttribute('data-fade-end', 'true');
-  await expect(small).not.toHaveAttribute('data-fade-start');
-  await small.getByRole('radio', { name: 'Archived, 9' }).focus();
-  await expect(small).toHaveAttribute('data-fade-start', 'true');
-  await expect(small).not.toHaveAttribute('data-fade-end');
+  expect(await small.getByRole('radio').count()).toBeLessThan(4);
+  await expect(small.getByRole('radio', { name: 'Waiting for review, 3' })).toBeChecked();
+  await expect(small.getByRole('radio', { name: 'Archived, 9' })).toHaveCount(0);
+
+  // The button is the last stop of the arrow keys, and the menu lists what is not shown.
+  await small.getByRole('radio', { checked: true }).focus();
+  await press(page, 'End');
+  await expect(more).toBeFocused();
+  await page.keyboard.press('Enter');
+  const menu = page.getByRole('menu', { name: 'More' });
+  await expect(menu.getByRole('menuitemradio', { name: 'Closed this quarter (148)' })).toBeVisible();
+  // Choosing a row selects it and brings it into the control; the menu then shows it with a check.
+  await menu.getByRole('menuitemradio', { name: 'Archived (9)' }).click();
+  await expect(small.getByRole('radio', { name: 'Archived, 9' })).toBeChecked();
   expect(await isInside(small.getByRole('radio', { name: 'Archived, 9' }), small)).toBe(true);
+  await expect(small.getByRole('radio', { name: 'Waiting for review, 3' })).toHaveCount(0);
+  await fits(small);
+  await expect(menu).toBeHidden();
+  await more.click();
+  await expect(menu.getByRole('menuitemradio', { name: 'Archived (9)' })).toBeChecked();
+  await expect(menu.getByRole('menuitemradio', { checked: true })).toHaveCount(1);
+  await page.keyboard.press('Escape');
+  await expect(menu).toBeHidden();
+
+  // Several selected: nothing is pulled out of the menu; the button shows that it holds a selected segment.
+  const several = page.getByRole('toolbar', { name: 'Orders, several' });
+  const moreSeveral = several.getByRole('button', { name: 'More' });
+  await expect(moreSeveral).toHaveAttribute('data-has-selected', 'true');
+  await moreSeveral.click();
+  const archived = menu.getByRole('menuitemcheckbox', { name: 'Archived (9)' });
+  await expect(archived).toBeChecked();
+  await archived.click();
+  await expect(archived).not.toBeChecked();
+  await expect(moreSeveral).not.toHaveAttribute('data-has-selected');
+  await page.keyboard.press('Escape');
+  await expect(menu).toBeHidden();
+
+  // With room again the segments come back, and with less they leave again.
+  const narrow = small.locator('xpath=ancestor::*[@data-narrow]');
+  await narrow.evaluate((el) => (el.style.width = '900px'));
+  await expect(small.getByRole('radio')).toHaveCount(4);
+  await expect(more).toHaveCount(0);
+  await narrow.evaluate((el) => (el.style.width = '150px'));
+  await expect(more).toBeVisible();
+  await fits(small);
 
   // With room, everything shows.
   await open(page, 'inputs-segmentedfilter--variants');
@@ -417,7 +460,7 @@ test('the indicator sits on the selected tab, slides to the next, and does not s
   expect(await offset(list.getByRole('tab').first())).toEqual([0, 0, 0]);
 });
 
-test('tabs hide their counts, then show icons only, then scroll and keep the selected tab in view', async ({
+test('tabs hide their counts, then show icons only, then move into a menu and keep the selected tab', async ({
   page,
 }) => {
   await open(page, 'inputs-tabs--narrowing');
@@ -444,22 +487,45 @@ test('tabs hide their counts, then show icons only, then scroll and keep the sel
   expect(await shown(label(at(480), 'Archive'))).toBe(true);
   expect(await isCutShort(at(480))).toBe(false);
 
-  // Step 3: the list scrolls inside itself, and the selected tab is in view.
-  for (const list of [at(220), page.getByRole('tablist', { name: 'Underline at 220' })]) {
-    expect(await isCutShort(list)).toBe(true);
-    expect(await isInside(list, list.locator('xpath=ancestor::*[@data-narrow]'))).toBe(true);
-    await expect(list).toHaveAttribute('data-fade-start', 'true');
+  // Step 3: the tabs that do not fit are in the "more" menu, and the selected tab stays in the list.
+  const underline = page.getByRole('tablist', { name: 'Underline at 220' });
+  const menu = page.getByRole('menu', { name: 'More tabs' });
+  for (const list of [at(220), underline]) {
+    const whole = list.locator('xpath=ancestor::*[@data-part="list"]');
+    expect(await overflows(list)).toBe(false);
+    expect(await isInside(whole, list.locator('xpath=ancestor::*[@data-narrow]'))).toBe(true);
+    expect(await list.getByRole('tab').count()).toBeLessThan(5);
     expect(await isInside(list.getByRole('tab', { selected: true }), list)).toBe(true);
+    await expect(whole.getByRole('button', { name: 'More tabs' })).toBeVisible();
   }
-  // Selecting a tab that is out of view brings it in.
-  const small = at(220);
-  await small.getByRole('tab', { selected: true }).focus();
+  // The selected tab would not have fitted: it is drawn, and the menu shows it with a check.
+  const more = underline
+    .locator('xpath=ancestor::*[@data-part="list"]')
+    .getByRole('button', { name: 'More tabs' });
+  await expect(underline.getByRole('tab', { name: 'Archive' })).toHaveAttribute('aria-selected', 'true');
+  await more.click();
+  await expect(menu.getByRole('menuitemradio', { checked: true })).toHaveText('Archive');
+  // Choosing a row selects that tab and brings it into the list.
+  await menu.getByRole('menuitemradio', { name: 'Settings (2)' }).click();
+  await expect(underline.getByRole('tab', { name: 'Settings, 2' })).toHaveAttribute('aria-selected', 'true');
+  await expect(underline.getByRole('tab', { name: 'Archive' })).toHaveCount(0);
+  expect(await isInside(underline.getByRole('tab', { selected: true }), underline)).toBe(true);
+  // The button keeps focus after the menu closes; it is the stop after the tab list.
+  await expect(more).toBeFocused();
+  await underline.getByRole('tab', { selected: true }).focus();
   await page.keyboard.press('Home');
-  const first = small.getByRole('tab').first();
-  await expect(first).toHaveAttribute('aria-selected', 'true');
-  expect(await isInside(first, small)).toBe(true);
-  await expect(small).not.toHaveAttribute('data-fade-start');
-  await expect(small).toHaveAttribute('data-fade-end', 'true');
+  await expect(underline.getByRole('tab').first()).toHaveAttribute('aria-selected', 'true');
+  await page.keyboard.press('Tab');
+  await expect(more).toBeFocused();
+
+  // With room again every tab is back, and with less they leave again.
+  const narrow = underline.locator('xpath=ancestor::*[@data-narrow]');
+  await narrow.evaluate((el) => (el.style.width = '900px'));
+  await expect(underline.getByRole('tab')).toHaveCount(5);
+  await expect(more).toHaveCount(0);
+  await narrow.evaluate((el) => (el.style.width = '220px'));
+  await expect(more).toBeVisible();
+  expect(await underline.getByRole('tab').count()).toBeLessThan(5);
 });
 
 test('tabs inside a card: the list in the toolbar switches the panels in the body', async ({ page }) => {

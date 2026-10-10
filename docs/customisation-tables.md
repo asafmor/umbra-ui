@@ -1196,6 +1196,7 @@ A row of joined segments that filters the content below it. One or several can b
 | `size` | `"default" \| "small"` | `small` is for table cells and dense toolbars. Otherwise the height follows the density level. |
 | `fullWidth` | `boolean` | Fills the width of its container with equal segments. |
 | `disabled` | `boolean` |  |
+| `moreLabel` | `string` | Accessible name of the button that opens the menu of segments that do not fit. |
 | `aria-label` | `string` | Accessible name of the group. |
 | `aria-labelledby` | `string` | Id of the element that names the group. |
 | `className` | `string` |  |
@@ -1397,6 +1398,7 @@ Switches between views of the same content area. The panel fills the rest of the
 | `items` | `TabsItem[]` | The tabs and their panels. Leave out to compose `Tabs.List`, `Tabs.Tab` and `Tabs.Panel` yourself. |
 | `aria-label` | `string` | Accessible name of the tab list. |
 | `end` | `ReactNode` | Shown after the tabs, for example an "add" button. |
+| `moreLabel` | `string` | Accessible name of the button that opens the menu of tabs that do not fit. |
 | `parts` | `see Parts` | Replace or hide named pieces. |
 | `value` | `string \| null` | The selected tab. |
 | `defaultValue` | `string \| null` |  |

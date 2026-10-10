@@ -12,10 +12,21 @@ import {
   type KeyboardEvent,
   type ReactNode,
 } from 'react';
+import { ButtonBase } from '../basics/Button';
 import { LayoutProvider, useSlot, type SlotProps } from '../layout/useSlot';
+import { Menu } from '../overlays/Menu';
 import { Icon, IconSlot } from '../provider/icons';
 import { cx, renderPart, type Part } from '../utils/parts';
-import { nameWithCount, reveal, useStrip } from './strip';
+import {
+  StripItemsContext,
+  moreRows,
+  nameWithCount,
+  reveal,
+  useMoreItems,
+  useStrip,
+  useStripItem,
+  type StripRow,
+} from './strip';
 import styles from './Tabs.module.css';
 
 export type TabsVariant = 'underline' | 'pill' | 'button-group';
@@ -159,6 +170,8 @@ export interface TabsListProps extends BlockProps {
   'aria-label'?: string;
   /** Shown after the tabs and outside the tab list, for example an "add" button. */
   end?: ReactNode;
+  /** Accessible name of the button that opens the menu of tabs that do not fit. */
+  moreLabel?: string;
   /** Replace or hide named pieces. */
   parts?: { indicator?: Part };
 }
@@ -166,7 +179,15 @@ export interface TabsListProps extends BlockProps {
 const tabsIn = (strip: HTMLElement) => [...strip.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
 
 /** The row (or column) of tabs. One tab stop; arrow keys, Home and End move between tabs. */
-function List({ 'aria-label': label, end, parts, className, style, children }: TabsListProps) {
+function List({
+  'aria-label': label,
+  end,
+  moreLabel = 'More tabs',
+  parts,
+  className,
+  style,
+  children,
+}: TabsListProps) {
   const tabs = useTabs();
   const vertical = tabs.orientation === 'vertical';
   const strip = useRef<HTMLDivElement>(null);
@@ -179,6 +200,11 @@ function List({ 'aria-label': label, end, parts, className, style, children }: T
     const last = el.querySelector<HTMLElement>('[data-part="tab"]:last-of-type');
     return !!last && last.offsetLeft + last.offsetWidth > el.clientWidth + 1;
   });
+  // The last step of a horizontal list: the tabs that do not fit move into a menu. The selected one stays.
+  const more = useRef<HTMLSpanElement>(null);
+  const [rows] = useState(() => new Map<string, StripRow>());
+  const overflow = useMoreItems(strip, more, !vertical && shrink.level === 2, tabs.value);
+  const items = useMemo(() => ({ hidden: overflow.hidden, rows }), [overflow.hidden, rows]);
   // A close button may not be inside a `tablist`. With closable tabs the role moves to an empty element
   // that owns the tabs, and the buttons stay beside their tabs.
   const closable = !!tabs.onClose;
@@ -235,12 +261,12 @@ function List({ 'aria-label': label, end, parts, className, style, children }: T
     return () => observer.disconnect();
   }, [count]);
 
-  // The selected tab always stays in view.
+  // In a vertical list, which scrolls, the selected tab always stays in view.
   useLayoutEffect(() => {
     const el = strip.current;
     const tab = el?.querySelector<HTMLElement>('[data-part="tab"][data-selected]');
-    if (el && tab) reveal(el, tab);
-  }, [tabs.value, shrink.level]);
+    if (vertical && el && tab) reveal(el, tab);
+  }, [tabs.value, vertical]);
 
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     const enabled = tabsIn(event.currentTarget).filter((t) => !t.disabled);
@@ -283,8 +309,23 @@ function List({ 'aria-label': label, end, parts, className, style, children }: T
             className={styles.indicator}
           />
         ))}
-        {children}
+        <StripItemsContext value={items}>{children}</StripItemsContext>
       </div>
+      {overflow.showMore && (
+        <span ref={more} data-part="more" className={styles.more}>
+          <Menu
+            label={moreLabel}
+            placement="bottom end"
+            items={moreRows(overflow.overflowed, rows, 'radio', (id) => id === tabs.value)}
+            onAction={tabs.select}
+            trigger={
+              <ButtonBase umbra="icon-button" variant="ghost" iconOnly size={tabs.tabSize} label={moreLabel}>
+                <Icon name="more" />
+              </ButtonBase>
+            }
+          />
+        </span>
+      )}
       {end && (
         <div data-part="end" className={styles.end}>
           {end}
@@ -322,6 +363,7 @@ function Tab({
   const tabs = useTabs();
   const selected = tabs.value === id;
   const canClose = !!tabs.onClose && closable !== false && !disabled;
+  const inMenu = useStripItem(id, { label: children, count, icon, disabled });
   const close = (from: HTMLElement) => {
     // The tab is about to go: focus moves to its neighbour, so the keyboard user stays in the list.
     const enabled = tabsIn(from.closest<HTMLElement>('[data-part="list"]')!).filter((t) => !t.disabled);
@@ -329,10 +371,12 @@ function Tab({
     tabs.onClose?.(id);
     (enabled[index + 1] ?? enabled[index - 1])?.focus();
   };
+  if (inMenu) return null;
   return (
     <div
       role="presentation"
       data-part="tab"
+      data-id={id}
       data-selected={selected || undefined}
       data-disabled={disabled || undefined}
       data-icon={icon ? '' : undefined}
@@ -427,6 +471,8 @@ export interface TabsProps extends TabsRootProps {
   'aria-label'?: string;
   /** Shown after the tabs, for example an "add" button. */
   end?: ReactNode;
+  /** Accessible name of the button that opens the menu of tabs that do not fit. */
+  moreLabel?: string;
   /** Replace or hide named pieces. */
   parts?: NonNullable<TabsListProps['parts']> &
     NonNullable<TabsTabProps['parts']> & {
@@ -441,6 +487,7 @@ export function Tabs({
   items,
   'aria-label': label,
   end,
+  moreLabel,
   parts,
   value,
   defaultValue,
@@ -474,6 +521,7 @@ export function Tabs({
         {
           'aria-label': label,
           end,
+          moreLabel,
           parts: { indicator },
           children: items.map(({ id, label: text, icon, count, disabled, closable }) => (
             <Fragment key={id}>

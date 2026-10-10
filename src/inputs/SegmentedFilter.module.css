@@ -7,7 +7,7 @@
   flex: 0 1 auto;
   min-width: 0;
   max-width: 100%;
-  overflow-x: auto;
+  overflow: hidden;
   border-radius: var(--umbra-segmented-filter-radius, var(--umbra-radius-control));
   font: var(--umbra-font-body);
   white-space: nowrap;
@@ -126,7 +126,7 @@
   display: none;
 }
 
-/* Step 2: the segments share the width equally and their labels truncate. Past their minimum width, the control scrolls. */
+/* Step 2: the segments share the width equally and their labels truncate. Past their minimum width, the last ones move into the "more" menu. */
 .root[data-level='2'] {
   display: flex;
   width: 100%;
@@ -135,4 +135,16 @@
 .root[data-level='2'] > .item {
   flex: 1 1 0;
   min-width: var(--umbra-segmented-filter-min-item-width, 4.5em);
+}
+
+/* Step 3: the button of the menu that holds the segments that do not fit. It is the last, square segment. */
+.root[data-level] > .more {
+  flex: none;
+  width: var(--height);
+  min-width: 0;
+  padding: 0;
+}
+
+.more[data-has-selected] {
+  box-shadow: inset 0 calc(-1 * var(--umbra-space-1)) 0 currentColor;
 }
