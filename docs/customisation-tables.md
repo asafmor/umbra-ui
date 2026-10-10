@@ -853,6 +853,40 @@ The content of one row of a list: a title with optional lines, and leading and t
 
 **Blocks**: `ListItem.Root`, `ListItem.Leading`, `ListItem.Content`, `ListItem.Overline`, `ListItem.Title`, `ListItem.Description`, `ListItem.End`, `ListItem.Meta`, `ListItem.Unread`, `ListItem.Trailing`.
 
+## Menu
+
+A list of actions or links that opens from a control. One tab stop; arrow keys, type-ahead, and submenus that open with the arrow keys.
+
+**Tokens**: `--umbra-focus-color`, `--umbra-menu-bg`, `--umbra-menu-border`, `--umbra-menu-item-height`, `--umbra-menu-item-hover-bg`, `--umbra-menu-item-radius`, `--umbra-menu-max-width`, `--umbra-menu-min-width`, `--umbra-menu-radius`, `--umbra-scroll-thumb`, `--umbra-scroll-thumb-size`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `items` | `MenuEntry[]` | The rows, as data. |
+| `children` | `ReactNode` | The rows, as `Menu.Item`, `Menu.Section`, `Menu.Separator` and `Menu.Sub` blocks. |
+| `trigger` | `ReactNode` | The control that opens the menu: an umbra-ui button, or a plain `<button>`. Leave it out to use `anchorRef`. |
+| `anchorRef` | `RefObject<Element \| null>` | The element to open against, when there is no `trigger`. Use it with `open`. |
+| `open` | `boolean` | Controlled state. |
+| `defaultOpen` | `boolean` |  |
+| `onOpenChange` | `((open: boolean) => void)` |  |
+| `label` | `string` | Accessible name. A menu with a `trigger` is named by it. |
+| `onAction` | `((id: string) => void)` | Called with the id of the row the user chose. |
+| `selectedIds` | `string[]` | The checked `checkbox` and `radio` rows, in every section and submenu. |
+| `defaultSelectedIds` | `string[]` |  |
+| `onSelectionChange` | `((ids: string[]) => void)` |  |
+| `placement` | `OverlayPlacement` | Side of the anchor and alignment along it. It flips to the other side to stay in the window. |
+| `offset` | `number` | Gap between the anchor and the menu, in pixels. |
+| `matchAnchorWidth` | `boolean` | Makes the menu at least as wide as its anchor. |
+| `maxHeight` | `number` | Tallest the menu may be, in pixels. It is never taller than the room in the window; the rows scroll. |
+| `renderLink` | `((props: MenuLinkProps) => ReactNode)` | Plugs in the app's router link for rows with `href`. Defaults to a plain `<a>`. |
+| `emptyLabel` | `string` | Shown when there are no rows. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `className` | `string` | On the menu's panel. |
+| `style` | `CSSProperties` |  |
+
+**Parts**: `item`, `check`, `sectionHeader`.
+
+**Blocks**: `Menu.Item`, `Menu.Section`, `Menu.Separator`, `Menu.Sub`, `Menu.Context`.
+
 ## Page
 
 The content area under the bars: applies the outer margin and the context tint.
@@ -907,6 +941,44 @@ The header of a page or of a detail pane: what it shows, facts about it, and its
 **Parts**: `breadcrumbs`, `back`, `media`, `overline`, `title`, `subtitle`, `meta`, `actions`, `tabs`.
 
 **Blocks**: `PageHeader.Root`, `PageHeader.Breadcrumbs`, `PageHeader.Bar`, `PageHeader.Content`, `PageHeader.Back`, `PageHeader.Media`, `PageHeader.Titles`, `PageHeader.Overline`, `PageHeader.Title`, `PageHeader.Subtitle`, `PageHeader.Meta`, `PageHeader.Actions`, `PageHeader.Tabs`.
+
+## Popover
+
+An anchored panel without a backdrop: the page behind it stays usable. It keeps the density, context tint and tokens of the place it was opened from.
+
+**Tokens**: `--umbra-focus-color`, `--umbra-popover-bg`, `--umbra-popover-border`, `--umbra-popover-max-width`, `--umbra-popover-min-width`, `--umbra-popover-padding`, `--umbra-popover-radius`, `--umbra-popover-shadow`, `--umbra-popover-title-font`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `trigger` | `ReactNode` | The control that opens it: an umbra-ui button, or a plain `<button>`. Leave it out to use `anchorRef`. |
+| `toolbar` | `ReactNode` | Filters or tabs that stay fixed above the body. |
+| `footer` | `ReactNode` | Status or actions fixed below the body. |
+| `children` | `ReactNode \| ((close: () => void) => ReactNode)` | The body. A function receives `close`. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `open` | `boolean` | Controlled state. |
+| `defaultOpen` | `boolean` |  |
+| `size` | `"default" \| "large"` | `large` is a wide panel with room for a toolbar and a footer. |
+| `label` | `string` | Accessible name, when there is no title. |
+| `anchorRef` | `RefObject<Element \| null>` | The element to open against, when there is no `Popover.Trigger`. Use it with `open`. |
+| `placement` | `OverlayPlacement` | Side of the anchor and alignment along it. It flips to the other side to stay in the window. |
+| `offset` | `number` | Gap between the anchor and the panel, in pixels. |
+| `matchAnchorWidth` | `boolean` | Gives the panel the width of its anchor. |
+| `maxHeight` | `number` | Tallest the panel may be, in pixels. It is never taller than the room in the window; the body scrolls. |
+| `arrow` | `boolean` | A small pointer towards the anchor. |
+| `dismissOnBlur` | `boolean` | Closes when keyboard focus leaves the panel. Escape and a press outside always close it. |
+| `onOpenChange` | `((open: boolean) => void)` |  |
+| `subtitle` | `ReactNode` | Second line, in the body font. |
+| `actions` | `ReactNode` | Trailing controls, for example the popover's main action. |
+| `title` | `ReactNode` |  |
+| `closeButton` | `boolean` | Shows a close button. |
+| `closeLabel` | `string` | Accessible name of the close button. |
+| `padding` | `"default" \| "none"` | `none` for edge-to-edge lists and tables. |
+
+**Parts**: `header`, `toolbar`, `body`, `footer`.
+
+**Blocks**: `Popover.Root`, `Popover.Trigger`, `Popover.Content`, `Popover.Header`, `Popover.Toolbar`, `Popover.Body`, `Popover.Footer`.
 
 ## PrimaryNav
 
@@ -1442,6 +1514,34 @@ A switch for a setting that takes effect at once: on or off.
 **Parts**: `track`, `label`, `description`.
 
 **Blocks**: `Toggle.Root`, `Toggle.Track`, `Toggle.Label`, `Toggle.Description`.
+
+## Tooltip
+
+A short description of a control, shown on hover and on keyboard focus. Text only: it never holds anything the user could interact with.
+
+**Tokens**: `--umbra-tooltip-bg`, `--umbra-tooltip-border`, `--umbra-tooltip-fg`, `--umbra-tooltip-max-width`, `--umbra-tooltip-radius`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `children` (required) | `ReactNode` | The control the tooltip describes: any umbra-ui control, or a plain focusable element. |
+| `content` | `ReactNode` | The text. Nothing is shown when it is empty (and there is no `title` or `shortcut`). |
+| `title` | `ReactNode` | A heading above the text, for a rich tooltip. |
+| `shortcut` | `string` | Id of a shortcut in the provider's list: its keys are shown as a hint. |
+| `placement` | `OverlayPlacement` |  |
+| `delay` | `number` | Milliseconds before it shows on hover. Keyboard focus shows it at once. |
+| `offset` | `number` | Gap between the control and the tooltip, in pixels. |
+| `open` | `boolean` | Controlled state. |
+| `defaultOpen` | `boolean` |  |
+| `onOpenChange` | `((open: boolean) => void)` |  |
+| `disabled` | `boolean` | Never shows. |
+| `wrap` | `boolean` | Puts the control in a focusable wrapper that carries the tooltip, so it also shows for a control that takes no pointer or focus events. Defaults to the control's own `disabled` prop. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `className` | `string` | On the tooltip itself. |
+| `style` | `CSSProperties` |  |
+
+**Parts**: `title`, `body`, `hint`.
+
+**Blocks**: none.
 
 ## TopBar
 

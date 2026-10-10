@@ -246,3 +246,28 @@ export type {
   VerticalNavSectionProps,
   VerticalNavToggleProps,
 } from './shell/VerticalNav';
+export { Popover } from './overlays/Popover';
+export type {
+  PopoverBodyProps,
+  PopoverContentProps,
+  PopoverHeaderProps,
+  PopoverProps,
+  PopoverRootProps,
+} from './overlays/Popover';
+export { Tooltip } from './overlays/Tooltip';
+export type { TooltipProps } from './overlays/Tooltip';
+export { Menu } from './overlays/Menu';
+export type {
+  MenuContextProps,
+  MenuEntry,
+  MenuItemData,
+  MenuItemPartProps,
+  MenuItemProps,
+  MenuLinkProps,
+  MenuProps,
+  MenuSectionData,
+  MenuSectionProps,
+  MenuSeparatorData,
+  MenuSubProps,
+} from './overlays/Menu';
+export type { OverlayAlign, OverlayPlacement, OverlaySide } from './overlays/shared';
