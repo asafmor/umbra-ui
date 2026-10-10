@@ -399,6 +399,76 @@ Shares its width among its children. Below the minimum window it shows one child
 
 **Blocks**: none.
 
+## DataTable
+
+A table of rows and columns that fills its slot and scrolls inside it: sorting, selection, groups, pinned columns, and columns that hide by priority as it narrows.
+
+**Tokens**: `--umbra-focus-color`, `--umbra-group-header-bg`, `--umbra-group-header-color`, `--umbra-group-header-font`, `--umbra-group-header-height`, `--umbra-scroll-fade-color`, `--umbra-table-border-color`, `--umbra-table-caption-color`, `--umbra-table-cell-padding-x`, `--umbra-table-change-down`, `--umbra-table-change-neutral`, `--umbra-table-change-up`, `--umbra-table-color`, `--umbra-table-detail-bg`, `--umbra-table-edge-padding-x`, `--umbra-table-font`, `--umbra-table-footer-bg`, `--umbra-table-header-active-color`, `--umbra-table-header-bg`, `--umbra-table-header-border-color`, `--umbra-table-header-color`, `--umbra-table-header-font`, `--umbra-table-header-group-color`, `--umbra-table-header-height`, `--umbra-table-highlight-bg`, `--umbra-table-highlight-marker`, `--umbra-table-hover-bg`, `--umbra-table-pin-border-color`, `--umbra-table-row-bg`, `--umbra-table-row-height`, `--umbra-table-selected-bg`, `--umbra-table-stripe-bg`, `--umbra-table-stripe-width`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `data` (required) | `Row[]` | The rows. Keep the array stable between renders (state or a memo): a new array is sorted again. |
+| `getRowId` (required) | `(row: Row) => string` | A stable, unique id for a row. Selection, highlight, focus and change highlighting are kept by it. |
+| `columns` (required) | `DataTableColumn<Row>[]` | The columns, in order. Pinned columns move to their edge. Keep the array stable between renders. |
+| `columnGroups` | `DataTableColumnGroup[]` | Headers that span several columns, in a row above the column headers. |
+| `sort` | `DataTableSort[]` | Controlled sort order: the first entry sorts first. |
+| `defaultSort` | `DataTableSort[]` |  |
+| `onSortChange` | `((sort: DataTableSort[]) => void)` |  |
+| `multiSort` | `boolean` | Shift+click or Shift+Enter on a header adds it to the sort instead of replacing it. |
+| `manualSorting` | `boolean` | The rows arrive sorted (by a server): headers still show and report the sort, the table does not reorder. |
+| `selectionMode` | `"none" \| "single" \| "multiple"` | `single` and `multiple` add a checkbox column and let the user select rows. |
+| `selectedIds` | `string[]` | Controlled selection: the ids of the selected rows. |
+| `defaultSelectedIds` | `string[]` |  |
+| `onSelectionChange` | `((ids: string[]) => void)` |  |
+| `selectRowLabel` | `((row: Row) => string)` | Accessible name of a row's checkbox. |
+| `selectAllLabel` | `string` | Accessible name of the header checkbox, or of the checkbox column in `single`. |
+| `highlightedRowIds` | `string[]` | Ids of rows shown with a stronger fill and an edge marker: "my row" in a ranking. |
+| `rowHighlight` | `((row: Row) => boolean)` | The same, as a function. |
+| `highlightLabel` | `string` | What assistive technology hears for a highlighted row. |
+| `rowAccent` | `((row: Row) => DataTableRowAccent \| undefined)` | A coloured edge stripe that carries a category or status, with the label that says what it means. |
+| `striped` | `boolean` | A faint fill on every other row. |
+| `dividers` | `boolean` | A line under every row. |
+| `onRowAction` | `((row: Row) => void)` | Called when a row is activated: Enter, a double click, or a single click when rows cannot be selected. |
+| `rowHref` | `((row: Row) => string \| undefined)` | Makes the row a link: its row header cell (or first cell) holds the link, and activating the row follows it. |
+| `isRowDisabled` | `((row: Row) => boolean)` | Disabled rows are dimmed and can be neither selected nor activated. |
+| `groupBy` | `(keyof Row & string) \| ((row: Row) => string)` | Groups the rows under header rows: a key of the row, or a function that returns the group's key. |
+| `groups` | `DataTableGroup[]` | Titles and order of the groups. Groups not listed follow, titled by their key, as they first appear. |
+| `collapsibleGroups` | `boolean` | Adds a caret to every group header row. |
+| `collapsedGroups` | `string[]` | Controlled: the keys of the collapsed groups. |
+| `defaultCollapsedGroups` | `string[]` |  |
+| `onCollapsedGroupsChange` | `((keys: string[]) => void)` |  |
+| `stickyGroups` | `boolean` | Group header rows stick below the header while their rows scroll. |
+| `collapseGroupLabel` | `string` | Accessible names of a group's caret; the group's title is added. |
+| `expandGroupLabel` | `string` |  |
+| `onHiddenColumnsChange` | `((ids: string[]) => void)` | Called with the ids of the columns hidden for lack of width, whenever they change. |
+| `expandableHidden` | `boolean` | While columns are hidden, each row gets a control that shows their labels and values under the row. |
+| `showDetailsLabel` | `string` | Accessible names of that control. |
+| `hideDetailsLabel` | `string` |  |
+| `skeletonRows` | `number` | Number of skeleton rows shown while `loading`. |
+| `loadingMore` | `boolean` | Shows a skeleton row after the last row while more rows load. |
+| `loadingMoreLabel` | `string` | What assistive technology hears while more rows load. |
+| `onReachEnd` | `(() => void)` | Called when the table is scrolled to its end, for loading more. |
+| `virtualize` | `boolean \| "auto"` | Renders only the rows in view. `auto`: above 200 rows, unless a column wraps. Rows must then all have the same height. |
+| `highlightChanges` | `boolean \| string[]` | A changed value flashes once: green up, red down (with a sign), neutral otherwise. `true` for every column with an `accessor`, or the ids of some. |
+| `increasedLabel` | `string` | What assistive technology hears with the sign of a changed value. |
+| `decreasedLabel` | `string` |  |
+| `caption` | `ReactNode` | Names the table. Read by assistive technology; shown above the table with `showCaption`. |
+| `showCaption` | `boolean` |  |
+| `aria-label` | `string` | Accessible name of the table. Give this, `aria-labelledby` or `caption`. |
+| `aria-labelledby` | `string` |  |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `loading` | `boolean` | Shows skeletons in the final layout and marks the component busy. |
+| `empty` | `ReactNode \| import("../internal/dataState").DataStateContent` | Shown when there is no data: text, a node, or `{ title, description, icon, action }`. Defaults to a short English text. |
+| `error` | `ReactNode \| import("../internal/dataState").DataStateContent` | Shown in place of the data when set: text, a node, `{ title, description, icon, action }`, or `true` for a default text. |
+| `onRetry` | `(() => void)` | Adds a retry button to the error state. |
+| `retryLabel` | `string` | Label of the retry button. |
+
+**Parts**: `header`, `headerCell`, `sortIndicator`, `row`, `cell`, `groupHeader`, `detail`, `footer`, `skeleton`, `empty`, `error`.
+
+**Blocks**: `DataTable.Root`, `DataTable.Header`, `DataTable.HeaderCell`, `DataTable.SortIndicator`, `DataTable.Body`, `DataTable.Row`, `DataTable.Cell`, `DataTable.GroupRow`, `DataTable.Footer`.
+
 ## DonutChart
 
 A ring that shows one value against a total, or how a total splits into segments.

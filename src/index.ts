@@ -271,3 +271,23 @@ export type {
   MenuSubProps,
 } from './overlays/Menu';
 export type { OverlayAlign, OverlayPlacement, OverlaySide } from './overlays/shared';
+export { DataTable, actionsColumn, numberColumn } from './table/DataTable';
+export type {
+  DataTableAlign,
+  DataTableCellContext,
+  DataTableCellProps,
+  DataTableColumn,
+  DataTableColumnGroup,
+  DataTableColumnWidth,
+  DataTableGroup,
+  DataTableGroupRowProps,
+  DataTableHeaderCellProps,
+  DataTablePin,
+  DataTableProps,
+  DataTableRootProps,
+  DataTableRowAccent,
+  DataTableRowProps,
+  DataTableSort,
+  DataTableSortDirection,
+  DataTableSortIndicatorProps,
+} from './table/DataTable';
