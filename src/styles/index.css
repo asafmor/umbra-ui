@@ -15,3 +15,23 @@
   outline: var(--umbra-state-focus-ring-width) solid var(--umbra-color-fixed-focus-ring);
   outline-offset: 2px;
 }
+
+/* Reduced motion: movement is multiplied by --umbra-motion-scale, so it disappears and fades stay. */
+:root {
+  --umbra-motion-scale: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root,
+  [data-umbra-reduced-motion='system'] {
+    --umbra-motion-scale: 0;
+  }
+}
+
+[data-umbra-reduced-motion='always'] {
+  --umbra-motion-scale: 0;
+}
+
+[data-umbra-reduced-motion='never'] {
+  --umbra-motion-scale: 1;
+}

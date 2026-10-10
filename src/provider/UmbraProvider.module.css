@@ -1,0 +1,4 @@
+/* A provider or scope adds no box of its own, so it can wrap anything, including a layout child. */
+.scope {
+  display: contents;
+}

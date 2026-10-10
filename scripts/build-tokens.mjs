@@ -73,6 +73,8 @@ writeFileSync(
   `// Generated from plan/tokens.json by scripts/build-tokens.mjs. Do not edit.
 export const densities = [${list(t.density)}] as const;
 export const contextPresets = [${list(t.color.context.presets)}] as const;
+export type TokenName =
+${[...base, ...derived].map(([k]) => `  | '${k}'`).join('\n')};
 export const minWindow = { width: ${t.size.minWindowWidth}, height: ${t.size.minWindowHeight} } as const;
 `,
 );

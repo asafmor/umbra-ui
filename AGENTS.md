@@ -29,13 +29,13 @@ The design is **inspired by** 40 screenshots of a game UI in `screenshots/`. It 
 | Step | Status |
 |---|---|
 | 1. Repo setup: package, tokens, Storybook, visual tests, lint, changelog, CI | done |
-| 2. UmbraProvider and UmbraScope | next |
-| 3. Layout: AppShell, Page, Columns, Stack, Slot, Card, CardHeader, SectionTitle, ScrollArea | not started |
+| 2. UmbraProvider and UmbraScope | done |
+| 3. Layout: AppShell, Page, Columns, Stack, Slot, Card, CardHeader, SectionTitle, ScrollArea | next |
 | 4. Shell: TopBar, PrimaryNav, SubNav | not started |
 | 5. Basics: Button, IconButton, Skeleton | not started |
 | 6. Docs: README, guides, `basic` example, customisation table generator | not started |
 
-**Next step**: step 2, `UmbraProvider` and `UmbraScope` (`plan/specs/UmbraProvider.md`).
+**Next step**: step 3, the layout components (`plan/layout.md` and their specs).
 
 ## Commands
 
@@ -71,7 +71,7 @@ The design is **inspired by** 40 screenshots of a game UI in `screenshots/`. It 
 | `plan/roadmap.md` | Pre-code tasks, milestones, build order, and the per-component definition of done. |
 | `plan/reference/` | `index.html`: the static reference screen, the visual ground truth for the look (open it in a browser; `?density=compact&context=teal` switches settings). `shot-*.png`: renders at three sizes. |
 | `plan/prompts/` | Ready-made prompts for starting a coding session (`milestone-0.md`). |
-| `src/` | Library source. `src/styles/` holds the base CSS and the generated tokens; `src/charts/` is the `umbra-ui/charts` entry. |
+| `src/` | Library source. `src/styles/`: base CSS and the generated tokens. `src/provider/`: provider, scope, icon map, shortcut registry. `src/utils/`: shared helpers (`parts.ts` implements the parts layer). `src/charts/`: the `umbra-ui/charts` entry. |
 | `scripts/` | Build scripts (`build-tokens.mjs`). |
 | `.storybook/` | Storybook config; the toolbar switches density and context. |
 | `tests/visual/` | Playwright visual tests and their baseline images. |
