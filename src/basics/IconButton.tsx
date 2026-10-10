@@ -1,4 +1,5 @@
 import { useContext, type CSSProperties, type ReactNode } from 'react';
+import { Badge } from '../data/Badge';
 import { OverflowMenuContext } from '../internal/contexts';
 import { IconSlot } from '../provider/icons';
 import { useShortcut } from '../provider/UmbraProvider';
@@ -84,16 +85,19 @@ export function IconButton({
       {inMenu && <span className={styles.label}>{label}</span>}
       {badge !== undefined &&
         renderPart(parts?.badge, { children: badge === true ? null : badge }, (p) => (
-          <span
-            aria-hidden="true"
-            data-part="badge"
-            data-dot={badge === true || undefined}
-            // A count is drawn by CSS from this attribute: it is already part of the button's name, and as
-            // text in the button it would read as a visible label that the name does not start with.
-            data-count={typeof p.children === 'number' ? p.children : undefined}
-            className={styles.badge}
-          >
-            {typeof p.children === 'number' ? null : p.children}
+          // The public `Badge`, at the corner. It is decorative: a count is already part of the button's
+          // name, and as text in the button it would read as a visible label that the name does not
+          // start with.
+          <span aria-hidden="true" data-part="badge" className={styles.badge}>
+            {typeof p.children === 'number' ? (
+              <Badge count={p.children} showZero decorative />
+            ) : p.children === null ? (
+              <Badge dot decorative />
+            ) : (
+              <Badge.Root>
+                <Badge.Indicator decorative>{p.children}</Badge.Indicator>
+              </Badge.Root>
+            )}
           </span>
         ))}
     </ButtonBase>

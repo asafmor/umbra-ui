@@ -13,7 +13,7 @@
   flex: none;
   min-width: var(--size);
   height: var(--size);
-  padding: 0 var(--umbra-space-2);
+  padding: 0 var(--umbra-badge-padding-x, var(--umbra-space-2));
   border-radius: var(--umbra-badge-radius, var(--umbra-radius-pill));
   background: var(--umbra-badge-bg, var(--tone));
   color: var(--umbra-badge-fg, var(--on-tone));
@@ -21,6 +21,11 @@
   font-variant-numeric: tabular-nums;
   text-align: center;
   white-space: nowrap;
+}
+
+/* A decorative badge draws its text from an attribute, so it is not text of the page. */
+.indicator[data-text]::after {
+  content: attr(data-text);
 }
 
 .indicator[data-dot] {

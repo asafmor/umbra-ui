@@ -857,6 +857,29 @@ test('icon button: the tooltip shows on focus, can be turned off or replaced, an
   ).toHaveCount(0);
 });
 
+test('icon button: the badge is the public Badge, drawn but not text, and its count is in the name', async ({
+  page,
+}) => {
+  await open(page, 'basics-buttons--icon-buttons');
+  const button = page.getByRole('button', { name: 'Notifications (3)' });
+  const badge = button.locator('[data-part="badge"]');
+  await expect(badge).toHaveAttribute('aria-hidden', 'true');
+  const indicator = badge.locator('[data-umbra="badge"] [data-part="indicator"]');
+  // The count is drawn from an attribute: the button has no text content, only its name.
+  await expect(indicator).toHaveAttribute('data-text', '3');
+  await expect(button).toHaveText('');
+  expect(await indicator.evaluate((el) => getComputedStyle(el, '::after').content)).toBe('"3"');
+  // One default colour for a count: the badge of a button is the colour of a badge that stands alone.
+  const colour = await indicator.evaluate((el) => getComputedStyle(el).backgroundColor);
+  await open(page, 'data-badge--variants');
+  const alone = page.locator('[data-umbra="badge"]:not([data-anchored]) [data-part="indicator"]').first();
+  expect(await alone.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(colour);
+  // A dot has no text and adds nothing to the name.
+  await open(page, 'basics-buttons--icon-buttons');
+  const dot = page.getByRole('button', { name: 'Notifications', exact: true }).locator('[data-part="badge"]');
+  await expect(dot.locator('[data-part="indicator"]')).toHaveAttribute('data-dot', 'true');
+});
+
 test('skeleton: shapes, lines, and animation="none"', async ({ page }) => {
   await open(page, 'basics-buttons--skeletons');
   const skeletons = page.locator('[data-umbra="skeleton"]');

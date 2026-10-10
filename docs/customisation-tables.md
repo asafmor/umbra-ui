@@ -141,7 +141,7 @@ A row of overlapping avatars. Those that do not fit are counted in a "+N" at the
 
 A count or a dot, alone or on the corner of another element.
 
-**Tokens**: `--umbra-badge-bg`, `--umbra-badge-dot-size`, `--umbra-badge-fg`, `--umbra-badge-font`, `--umbra-badge-offset`, `--umbra-badge-radius`, `--umbra-badge-size`.
+**Tokens**: `--umbra-badge-bg`, `--umbra-badge-dot-size`, `--umbra-badge-fg`, `--umbra-badge-font`, `--umbra-badge-offset`, `--umbra-badge-padding-x`, `--umbra-badge-radius`, `--umbra-badge-size`.
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -150,6 +150,7 @@ A count or a dot, alone or on the corner of another element.
 | `max` | `number` | Counts above this show as "99+". |
 | `showZero` | `boolean` | Shows the badge when `count` is 0. |
 | `label` | `string \| ((count: number) => string)` | What a screen reader hears: a string, or a function of the count (`(n) => n + ' unread'`). By default the full count is read, also above `max`. A dot is silent without it. |
+| `decorative` | `boolean` | Draws the count without making it text of the page, and hides the badge from assistive technology. For a badge inside a control whose own name already holds the count, as `IconButton` does. |
 | `children` | `ReactNode` | The element the badge sits on the corner of. Without it the badge stands alone. |
 | `parts` | `see Parts` | Replace or hide named pieces. |
 | `className` | `string` |  |
@@ -239,7 +240,7 @@ Compares values across categories: grouped, stacked or diverging around zero, up
 
 Triggers an action. Text, with an optional icon.
 
-**Tokens**: `--umbra-button-accent-bg`, `--umbra-button-accent-border`, `--umbra-button-accent-fg`, `--umbra-button-danger-bg`, `--umbra-button-danger-border`, `--umbra-button-danger-fg`, `--umbra-button-ghost-bg`, `--umbra-button-ghost-border`, `--umbra-button-ghost-fg`, `--umbra-button-height`, `--umbra-button-neutral-bg`, `--umbra-button-neutral-border`, `--umbra-button-neutral-fg`, `--umbra-button-padding-x`, `--umbra-button-primary-bg`, `--umbra-button-primary-border`, `--umbra-button-primary-fg`, `--umbra-button-radius`, `--umbra-focus-color`, `--umbra-focus-offset`, `--umbra-icon-button-size`.
+**Tokens**: `--umbra-button-accent-bg`, `--umbra-button-accent-border`, `--umbra-button-accent-fg`, `--umbra-button-danger-bg`, `--umbra-button-danger-border`, `--umbra-button-danger-fg`, `--umbra-button-ghost-bg`, `--umbra-button-ghost-border`, `--umbra-button-ghost-fg`, `--umbra-button-height`, `--umbra-button-neutral-bg`, `--umbra-button-neutral-border`, `--umbra-button-neutral-fg`, `--umbra-button-padding-x`, `--umbra-button-primary-bg`, `--umbra-button-primary-border`, `--umbra-button-primary-fg`, `--umbra-button-radius`, `--umbra-focus-color`, `--umbra-focus-offset`, `--umbra-icon-button-badge-dot-size`, `--umbra-icon-button-badge-font`, `--umbra-icon-button-badge-padding-x`, `--umbra-icon-button-badge-size`, `--umbra-icon-button-size`.
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -558,7 +559,7 @@ A header row for one group of rows inside a list or table.
 
 A button that shows only an icon. Inside an overflow menu it becomes a menu item with its icon and label.
 
-**Tokens**: `--umbra-button-accent-bg`, `--umbra-button-accent-border`, `--umbra-button-accent-fg`, `--umbra-button-danger-bg`, `--umbra-button-danger-border`, `--umbra-button-danger-fg`, `--umbra-button-ghost-bg`, `--umbra-button-ghost-border`, `--umbra-button-ghost-fg`, `--umbra-button-height`, `--umbra-button-neutral-bg`, `--umbra-button-neutral-border`, `--umbra-button-neutral-fg`, `--umbra-button-padding-x`, `--umbra-button-primary-bg`, `--umbra-button-primary-border`, `--umbra-button-primary-fg`, `--umbra-button-radius`, `--umbra-focus-color`, `--umbra-focus-offset`, `--umbra-icon-button-size`.
+**Tokens**: `--umbra-button-accent-bg`, `--umbra-button-accent-border`, `--umbra-button-accent-fg`, `--umbra-button-danger-bg`, `--umbra-button-danger-border`, `--umbra-button-danger-fg`, `--umbra-button-ghost-bg`, `--umbra-button-ghost-border`, `--umbra-button-ghost-fg`, `--umbra-button-height`, `--umbra-button-neutral-bg`, `--umbra-button-neutral-border`, `--umbra-button-neutral-fg`, `--umbra-button-padding-x`, `--umbra-button-primary-bg`, `--umbra-button-primary-border`, `--umbra-button-primary-fg`, `--umbra-button-radius`, `--umbra-focus-color`, `--umbra-focus-offset`, `--umbra-icon-button-badge-dot-size`, `--umbra-icon-button-badge-font`, `--umbra-icon-button-badge-padding-x`, `--umbra-icon-button-badge-size`, `--umbra-icon-button-size`.
 
 | Prop | Type | Purpose |
 |---|---|---|

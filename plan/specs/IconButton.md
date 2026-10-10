@@ -37,6 +37,8 @@ States: hover, pressed, focus, disabled, loading, and `pressed` on/off when used
 
 `--umbra-icon-button-size` (equals the control height of the density level), `--umbra-icon-size`, plus the `Button` variant colours.
 
+The badge is the public `Badge`, so its colours are Badge's tokens (`--umbra-badge-bg`, `--umbra-badge-fg`). It is smaller on a button; `--umbra-icon-button-badge-size` (14px), `--umbra-icon-button-badge-dot-size` (8px), `--umbra-icon-button-badge-padding-x` (3px) and `--umbra-icon-button-badge-font` set Badge's size tokens for it.
+
 ### 2. Props
 
 | Prop | Type | Default | Purpose |
@@ -68,9 +70,13 @@ Does not shrink. Its container decides whether to move it into an overflow menu,
 - `label` is required by the type, so an unnamed icon button cannot be written.
 - A toggle exposes `aria-pressed`, and a toggled-on button is outlined, so the state does not depend on colour. The accent text colour is applied on `ghost` and `neutral` only.
 - `loadingLabel` (default "Loading") names the busy state, as on `Button`.
-- The badge is hidden from assistive technology; a count is part of the button's name.
+- The badge is hidden from assistive technology; a count is part of the button's name (the full count, also above 99, where the badge shows "99+"). The count is drawn from an attribute (`Badge`'s `decorative`), not as text in the button, where it would read as a visible label that the name does not start with.
 - The hit area is at least 24 × 24px at every density level.
 
 ## Open questions
 
 None.
+
+Resolved in the integration pass:
+
+- The `badge` is drawn by the public `Badge` (same `data-part="badge"` wrapper, same accessible name). Its default colour is Badge's violet `accent`, not magenta: one default colour for a count on a control. On an `accent` button, which is the same violet, set `--umbra-badge-bg`.

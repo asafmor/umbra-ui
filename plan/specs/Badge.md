@@ -39,7 +39,7 @@ States: hidden (count 0 without `showZero`).
 
 ### 1. Tokens
 
-`--umbra-badge-bg`, `--umbra-badge-fg`, `--umbra-badge-size`, `--umbra-badge-dot-size`, `--umbra-badge-radius`, `--umbra-badge-font`, `--umbra-badge-offset` (how far an anchored badge overhangs).
+`--umbra-badge-bg`, `--umbra-badge-fg`, `--umbra-badge-size`, `--umbra-badge-dot-size`, `--umbra-badge-padding-x`, `--umbra-badge-radius`, `--umbra-badge-font`, `--umbra-badge-offset` (how far an anchored badge overhangs).
 
 ### 2. Props
 
@@ -52,6 +52,7 @@ States: hidden (count 0 without `showZero`).
 | `tone` | see above | `accent` | |
 | `color` | CSS colour | — | Custom colour; replaces `tone` |
 | `label` | string \| function of the count | the full count | What a screen reader hears |
+| `decorative` | boolean | `false` | Draws the count from an attribute, so it is not text of the page, and hides the badge from assistive technology. For a badge inside a control whose own name already holds the count. |
 | `children` | node | — | The anchor |
 
 ### 3. Parts
@@ -80,7 +81,7 @@ None.
 
 Resolved 2026-10-10:
 
-- Default tone is `accent` (violet), as in the source. `IconButton`'s built-in badge is magenta; the two should be aligned in a later change to `IconButton` (not in this batch's scope).
+- Default tone is `accent` (violet), as in the source. This is the one default colour of a count, also on a control: `IconButton` draws its `badge` with this component (integration pass), no longer in magenta.
 - `label` accepts a string or a function of the count.
 - A count of 0 is hidden unless `showZero`.
 - One placement (top trailing corner), adjustable by `--umbra-badge-offset`; no placement prop.
