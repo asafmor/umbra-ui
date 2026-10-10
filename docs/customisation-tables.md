@@ -203,6 +203,72 @@ The container for one unit of content on a page. Fills the slot its parent gives
 
 **Blocks**: `Card.Root`, `Card.Header`, `Card.Title`, `Card.Actions`, `Card.Toolbar`, `Card.Body`, `Card.Footer`.
 
+## Checkbox
+
+A box that is checked or not: one yes-or-no choice, or one of several in a `CheckboxGroup`.
+
+**Tokens**: `--umbra-checkbox-bg`, `--umbra-checkbox-border`, `--umbra-checkbox-border-width`, `--umbra-checkbox-gap`, `--umbra-checkbox-invalid-border`, `--umbra-checkbox-mark-color`, `--umbra-checkbox-radius`, `--umbra-checkbox-selected-bg`, `--umbra-checkbox-size`, `--umbra-checkbox-small-size`, `--umbra-field-description-color`, `--umbra-field-error-color`, `--umbra-field-marker-color`, `--umbra-focus-color`, `--umbra-focus-offset`, `--umbra-option-group-gap`, `--umbra-option-group-inline-gap`, `--umbra-option-group-min-option-width`, `--umbra-option-group-text-gap`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `children` | `ReactNode` | The label. |
+| `description` | `ReactNode` | A second line under the label. |
+| `error` | `ReactNode` | An error message under the checkbox, shown with an icon. Setting it makes the checkbox invalid. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `value` | `string` | The form value when checked; inside a `CheckboxGroup`, the entry in the group's `value`. |
+| `onChange` | `((checked: boolean) => void)` |  |
+| `aria-label` | `string` | Accessible name of a checkbox that has no visible label. |
+| `className` | `string` |  |
+| `style` | `import("react").CSSProperties` |  |
+| `size` | `"default" \| "small"` | `small` is for use inside table cells. Otherwise the size follows the density level. |
+| `disabled` | `boolean` |  |
+| `indeterminate` | `boolean` | Shows the "some, not all" mark, whatever `checked` is. |
+| `checked` | `boolean` | Controlled state. |
+| `defaultChecked` | `boolean` |  |
+| `readOnly` | `boolean` | Focusable, but cannot be changed. |
+| `invalid` | `boolean` |  |
+| `required` | `boolean` |  |
+| `requiredLabel` | `string` | The text of the required marker after the label. |
+| `name` | `string` | Form field name. |
+| `id` | `string` |  |
+
+**Parts**: `box`, `label`, `description`, `error`.
+
+**Blocks**: `Checkbox.Root`, `Checkbox.Box`, `Checkbox.Label`, `Checkbox.Description`, `Checkbox.Error`.
+
+## CheckboxGroup
+
+Several checkboxes that answer one question, with a shared label, description and error.
+
+**Tokens**: `--umbra-checkbox-bg`, `--umbra-checkbox-border`, `--umbra-checkbox-border-width`, `--umbra-checkbox-gap`, `--umbra-checkbox-invalid-border`, `--umbra-checkbox-mark-color`, `--umbra-checkbox-radius`, `--umbra-checkbox-selected-bg`, `--umbra-checkbox-size`, `--umbra-checkbox-small-size`, `--umbra-field-description-color`, `--umbra-field-error-color`, `--umbra-field-marker-color`, `--umbra-focus-color`, `--umbra-focus-offset`, `--umbra-option-group-gap`, `--umbra-option-group-inline-gap`, `--umbra-option-group-min-option-width`, `--umbra-option-group-text-gap`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `children` | `ReactNode` | The checkboxes. |
+| `label` | `ReactNode` | The group's label. |
+| `description` | `ReactNode` | A line under the label. |
+| `error` | `ReactNode` | An error message under the checkboxes, shown with an icon. Setting it makes the group invalid. |
+| `columns` | `number` | Lays the checkboxes in a grid of at most this many columns; columns drop as the group narrows. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `value` | `string[]` | Controlled: the `value` of every checked checkbox. |
+| `onChange` | `((value: string[]) => void)` |  |
+| `aria-label` | `string` | Accessible name of a group that has no visible label. |
+| `className` | `string` |  |
+| `style` | `import("react").CSSProperties` |  |
+| `orientation` | `"vertical" \| "horizontal"` | `horizontal` puts the checkboxes on one line, wrapping when they do not fit. |
+| `disabled` | `boolean` |  |
+| `readOnly` | `boolean` |  |
+| `invalid` | `boolean` |  |
+| `required` | `boolean` | At least one checkbox must be checked. |
+| `requiredLabel` | `string` | The text of the required marker after the group label. |
+| `name` | `string` | Form field name of every checkbox in the group. |
+| `id` | `string` |  |
+| `defaultValue` | `string[]` |  |
+
+**Parts**: `label`, `description`, `options`, `error`.
+
+**Blocks**: `CheckboxGroup.Root`, `CheckboxGroup.Label`, `CheckboxGroup.Description`, `CheckboxGroup.Options`, `CheckboxGroup.Error`.
+
 ## Columns
 
 Shares its width among its children. Below the minimum window it shows one child at a time.
@@ -275,6 +341,36 @@ A small mark for an entity (a logo, a flag, a category glyph), with an optional 
 **Parts**: `mark`, `label`.
 
 **Blocks**: `EntityIcon.Root`, `EntityIcon.Mark`, `EntityIcon.Label`.
+
+## FormField
+
+Pairs a label, a description and an error message with one control: a row of a form or settings list.
+
+**Tokens**: `--umbra-field-description-color`, `--umbra-field-error-color`, `--umbra-field-marker-color`, `--umbra-form-field-bg`, `--umbra-form-field-control-gap`, `--umbra-form-field-control-max-width`, `--umbra-form-field-gap`, `--umbra-form-field-padding-x`, `--umbra-form-field-padding-y`, `--umbra-form-field-radius`, `--umbra-option-group-gap`, `--umbra-option-group-inline-gap`, `--umbra-option-group-min-option-width`, `--umbra-option-group-text-gap`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `children` | `ReactNode \| ((control: FormFieldControlProps) => ReactNode)` | The control: an umbra-ui input, or a function for a plain form element. |
+| `label` | `ReactNode` | The label. A click on it focuses or toggles the control. |
+| `description` | `ReactNode` | A line that explains the setting. |
+| `error` | `ReactNode` | An error message, shown with an icon. Setting it makes the control invalid. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `className` | `string` |  |
+| `style` | `import("react").CSSProperties` |  |
+| `disabled` | `boolean` | Disables the control. |
+| `layout` | `"inline" \| "stacked" \| "row"` | `row`: label and description at the start, control at the end, as in a settings list. `stacked`: label above the control. `inline`: label and control on one line, the description and error under the control. `row` and `inline` stack when the field is narrow. |
+| `labelWidth` | `string \| number` | The width of the label column of a `row` or `inline` field: a number of pixels, or any CSS width. |
+| `invalid` | `boolean` | Marks the control invalid. Set by itself when the field has an error. |
+| `required` | `boolean` | Marks the control required and shows the required marker. |
+| `requiredLabel` | `string` | The text of the required marker. |
+| `id` | `string` | The id of the control. Generated when not set. |
+| `surface` | `boolean` | Gives the field its own raised surface and padding, as the rows of a settings list have. |
+| `optional` | `boolean` | Shows the optional marker. |
+| `optionalLabel` | `string` | The text of the optional marker. |
+
+**Parts**: `label`, `description`, `control`, `error`.
+
+**Blocks**: `FormField.Root`, `FormField.Label`, `FormField.Description`, `FormField.Control`, `FormField.Error`.
 
 ## GroupHeader
 
@@ -643,6 +739,62 @@ A bar that fills with a value: progress of a task, or a measured level. Fills th
 
 **Blocks**: `ProgressBar.Root`, `ProgressBar.Label`, `ProgressBar.Value`, `ProgressBar.Track`, `ProgressBar.Fill`, `ProgressBar.Target`.
 
+## Radio
+
+One option of a `RadioGroup`.
+
+**Tokens**: `--umbra-field-description-color`, `--umbra-field-error-color`, `--umbra-field-marker-color`, `--umbra-focus-color`, `--umbra-focus-offset`, `--umbra-option-group-gap`, `--umbra-option-group-inline-gap`, `--umbra-option-group-min-option-width`, `--umbra-option-group-text-gap`, `--umbra-radio-bg`, `--umbra-radio-border`, `--umbra-radio-border-width`, `--umbra-radio-card-bg`, `--umbra-radio-card-border`, `--umbra-radio-card-description-lines`, `--umbra-radio-card-divider`, `--umbra-radio-card-media-size`, `--umbra-radio-card-min-height`, `--umbra-radio-card-padding`, `--umbra-radio-card-radius`, `--umbra-radio-card-selected-bg`, `--umbra-radio-card-selected-border`, `--umbra-radio-gap`, `--umbra-radio-invalid-border`, `--umbra-radio-mark-color`, `--umbra-radio-selected-bg`, `--umbra-radio-size`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `children` | `ReactNode` | The label; the title of a `card` option. |
+| `description` | `ReactNode` | A second line under the label. |
+| `media` | `ReactNode` | An icon or a small image, shown by the `card` variant. It hides when the card is narrow. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `value` (required) | `string` | What the group's `value` is when this option is chosen. |
+| `aria-label` | `string` | Accessible name of an option that has no visible label. |
+| `className` | `string` |  |
+| `style` | `import("react").CSSProperties` |  |
+| `disabled` | `boolean` |  |
+
+**Parts**: `mark`, `media`, `label`, `description`.
+
+**Blocks**: `Radio.Root`, `Radio.Mark`, `Radio.Media`, `Radio.Label`, `Radio.Description`.
+
+## RadioGroup
+
+A choice of exactly one option among a few, all visible at once.
+
+**Tokens**: `--umbra-field-description-color`, `--umbra-field-error-color`, `--umbra-field-marker-color`, `--umbra-focus-color`, `--umbra-focus-offset`, `--umbra-option-group-gap`, `--umbra-option-group-inline-gap`, `--umbra-option-group-min-option-width`, `--umbra-option-group-text-gap`, `--umbra-radio-bg`, `--umbra-radio-border`, `--umbra-radio-border-width`, `--umbra-radio-card-bg`, `--umbra-radio-card-border`, `--umbra-radio-card-description-lines`, `--umbra-radio-card-divider`, `--umbra-radio-card-media-size`, `--umbra-radio-card-min-height`, `--umbra-radio-card-padding`, `--umbra-radio-card-radius`, `--umbra-radio-card-selected-bg`, `--umbra-radio-card-selected-border`, `--umbra-radio-gap`, `--umbra-radio-invalid-border`, `--umbra-radio-mark-color`, `--umbra-radio-selected-bg`, `--umbra-radio-size`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `children` | `ReactNode` | The options. |
+| `label` | `ReactNode` | The group's label. |
+| `description` | `ReactNode` | A line under the label. |
+| `error` | `ReactNode` | An error message under the options, shown with an icon. Setting it makes the group invalid. |
+| `columns` | `number` | Lays the options in a grid of at most this many columns; columns drop as the group narrows. `card` options are always in a grid, of one column by default. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `value` | `string \| null` | Controlled: the `value` of the chosen option. |
+| `onChange` | `((value: string) => void)` |  |
+| `aria-label` | `string` | Accessible name of a group that has no visible label. |
+| `className` | `string` |  |
+| `style` | `import("react").CSSProperties` |  |
+| `variant` | `RadioVariant` | `default`: a dot and a label. `card`: a bordered tile with a title, a description and an icon. |
+| `orientation` | `"vertical" \| "horizontal"` | The direction of the options, and of the arrow keys that move between them. |
+| `disabled` | `boolean` |  |
+| `readOnly` | `boolean` |  |
+| `invalid` | `boolean` |  |
+| `required` | `boolean` |  |
+| `requiredLabel` | `string` | The text of the required marker after the group label. |
+| `name` | `string` | Form field name. |
+| `id` | `string` |  |
+| `defaultValue` | `string` |  |
+
+**Parts**: `label`, `description`, `options`, `error`.
+
+**Blocks**: `RadioGroup.Root`, `RadioGroup.Label`, `RadioGroup.Description`, `RadioGroup.Options`, `RadioGroup.Error`.
+
 ## ScrollArea
 
 A region that scrolls inside its slot. The only place scrolling happens.
@@ -886,6 +1038,72 @@ A small label chip: a category, a status code or a value with an icon.
 **Parts**: `icon`, `label`, `remove`, `skeleton`.
 
 **Blocks**: `Tag.Root`, `Tag.Icon`, `Tag.Label`, `Tag.Remove`.
+
+## TextField
+
+A box for typing one line of text, or several with `multiline`.
+
+**Tokens**: `--umbra-field-description-color`, `--umbra-field-error-color`, `--umbra-field-marker-color`, `--umbra-focus-color`, `--umbra-icon-size`, `--umbra-option-group-gap`, `--umbra-option-group-inline-gap`, `--umbra-option-group-min-option-width`, `--umbra-option-group-text-gap`, `--umbra-text-field-affix-color`, `--umbra-text-field-bg`, `--umbra-text-field-border`, `--umbra-text-field-fg`, `--umbra-text-field-height`, `--umbra-text-field-invalid-border`, `--umbra-text-field-padding-x`, `--umbra-text-field-placeholder`, `--umbra-text-field-radius`, `--umbra-text-field-width`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `prefix` | `ReactNode` | Text or an icon before the text. |
+| `suffix` | `ReactNode` | Text, an icon or a small control after the text. |
+| `clearable` | `boolean` | Shows a button that empties the field while it holds text. |
+| `clearLabel` | `string` | Accessible name of the clear button. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `value` | `string` | Controlled text. |
+| `onChange` | `((value: string) => void)` |  |
+| `aria-label` | `string` | Accessible name of a field that has no `FormField` label. |
+| `className` | `string` |  |
+| `style` | `import("react").CSSProperties` |  |
+| `size` | `"default" \| "small"` | `small` is for use inside table cells. Otherwise the height follows the density level. |
+| `disabled` | `boolean` |  |
+| `rows` | `number` | Visible lines of a `multiline` field. |
+| `readOnly` | `boolean` | Focusable and selectable, but cannot be changed. |
+| `invalid` | `boolean` | Shows the danger border and an error icon. Put the message in the `error` of a `FormField`. |
+| `required` | `boolean` |  |
+| `name` | `string` | Form field name. |
+| `id` | `string` |  |
+| `defaultValue` | `string` |  |
+| `multiline` | `boolean` | Several lines: a text area of `rows` lines. |
+| `type` | `"number" \| "text" \| "password" \| "email" \| "url"` |  |
+| `placeholder` | `string` |  |
+| `autoComplete` | `string` | The browser's autofill hint, for example `email` or `off`. |
+| `maxLength` | `number` |  |
+
+**Parts**: `prefix`, `input`, `invalidIcon`, `clear`, `suffix`.
+
+**Blocks**: `TextField.Root`, `TextField.Prefix`, `TextField.Input`, `TextField.InvalidIcon`, `TextField.Clear`, `TextField.Suffix`.
+
+## Toggle
+
+A switch for a setting that takes effect at once: on or off.
+
+**Tokens**: `--umbra-field-description-color`, `--umbra-field-error-color`, `--umbra-field-marker-color`, `--umbra-focus-color`, `--umbra-focus-offset`, `--umbra-option-group-gap`, `--umbra-option-group-inline-gap`, `--umbra-option-group-min-option-width`, `--umbra-option-group-text-gap`, `--umbra-toggle-bg`, `--umbra-toggle-border`, `--umbra-toggle-gap`, `--umbra-toggle-height`, `--umbra-toggle-mark-color`, `--umbra-toggle-radius`, `--umbra-toggle-selected-bg`, `--umbra-toggle-selected-thumb-bg`, `--umbra-toggle-small-height`, `--umbra-toggle-thumb-bg`, `--umbra-toggle-thumb-inset`, `--umbra-toggle-width`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `children` | `ReactNode` | The label. |
+| `description` | `ReactNode` | A second line under the label. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `value` | `string` | The form value when on. |
+| `onChange` | `((checked: boolean) => void)` |  |
+| `aria-label` | `string` | Accessible name of a toggle that has no visible label. |
+| `className` | `string` |  |
+| `style` | `import("react").CSSProperties` |  |
+| `size` | `"default" \| "small"` | `small` is for use inside table cells and dense toolbars. Otherwise the size follows the density level. |
+| `disabled` | `boolean` |  |
+| `checked` | `boolean` | Controlled state. |
+| `defaultChecked` | `boolean` |  |
+| `readOnly` | `boolean` | Focusable, but cannot be changed. |
+| `name` | `string` | Form field name. |
+| `id` | `string` |  |
+| `labelPosition` | `"start" \| "end"` | The side of the switch the label is on. |
+
+**Parts**: `track`, `label`, `description`.
+
+**Blocks**: `Toggle.Root`, `Toggle.Track`, `Toggle.Label`, `Toggle.Description`.
 
 ## TopBar
 
