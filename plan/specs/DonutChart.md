@@ -1,0 +1,132 @@
+# DonutChart
+
+**Tier** 1 · **Group** Meters and charts · **Status** spec written 2026-10-10 (approved under the owner's delegation)
+
+## Purpose
+
+A ring that shows one value against a total (a KPI ring), or how a total splits into a few segments.
+
+## Not for
+
+- A value in a table row or a line of text: use `ProgressBar` or `LevelMeter`.
+- More than about six segments, or comparing values precisely: use `BarChart`.
+- A full pie: the centre is always open.
+
+## Evidence
+
+Ring with a yellow arc on a dark track and the percentage inside, about 80px, 8px stroke, clockwise from 12 o'clock (7); green arc without a centre label, beside a title and text (8). Segments, gauges, tones and labels are the library's own additions.
+
+## Anatomy
+
+| Part | Content | Default |
+|---|---|---|
+| `track` | the ring behind the value | shown |
+| `segments` | the value arc, or one arc per segment | shown |
+| `labels` | segment name and share beside each segment | shown with `labels`, in the segment form |
+| `center` | `centerValue` (large) and `centerLabel` (caption) | the percentage in the single-value form; empty in the segment form |
+| `legend` | one item per segment | shown in the segment form with more than one segment |
+| `tooltip` | name and value of the pointed segment | on hover and focus |
+| `skeleton`, `empty`, `error` | the data states | — |
+
+## Variants and states
+
+| Variant | Values | Notes |
+|---|---|---|
+| form | `value` + `max`, or `data` | One value against a total, or several segments |
+| `tone` | `default`, `success`, `warning`, `danger`, `info` | Single value only. The number in the centre is the cue that does not depend on colour |
+| `thresholds` | `{ from, tone }[]` | Picks the tone from the value: the last threshold reached |
+| `sweep` / `startAngle` | degrees | Less than 360 leaves the ring open, as a gauge |
+| `roundedCaps` | boolean | On by default for one value, off for segments |
+| `gap` | degrees | Space between segments, default 2 |
+| segment fill | `square` (solid), `stripes`, `dots` | Taken in turn by position, so neighbours differ without colour; the legend shows the same swatch |
+| `labels` | boolean | Name and percentage outside each segment of 4% or more |
+
+States: hover, focus, series hidden, series dimmed, loading, empty, error.
+
+## Customisation
+
+### 1. Tokens
+
+Shared by the four charts: `--umbra-chart-font`, `--umbra-chart-fg` (axis and label text), `--umbra-chart-value-fg` (value labels, hover outline), `--umbra-chart-axis`, `--umbra-chart-axis-width`, `--umbra-chart-grid`, `--umbra-chart-grid-width`, `--umbra-chart-grid-dash`, `--umbra-chart-line-width`, `--umbra-chart-point-scale`, `--umbra-chart-area-opacity`, `--umbra-chart-bar-radius`, `--umbra-chart-track`, `--umbra-chart-value`, `--umbra-chart-positive`, `--umbra-chart-negative`, `--umbra-chart-warning`, `--umbra-chart-info`, `--umbra-chart-annotation`, `--umbra-chart-annotation-width`, `--umbra-chart-band-opacity`, `--umbra-chart-dim-opacity`, `--umbra-chart-center-font`, `--umbra-chart-gap`, `--umbra-chart-tooltip-bg`, `--umbra-chart-tooltip-fg`, `--umbra-chart-tooltip-border`, `--umbra-chart-tooltip-radius`. Each falls back to a global token. Series colours are the global palette `--umbra-color-series-1` … `-8`, by position. No global token was added.
+
+### 2. Props
+
+| Prop | Type | Default | Purpose |
+|---|---|---|---|
+| `value` | number | — | The single value |
+| `max` | number | `100` | What a full ring stands for |
+| `data` | `{ id, label, value, color?, marker? }[]` | — | The segments |
+| `centerValue` / `centerLabel` | node | percentage / — | The two lines in the middle; `centerValue={null}` hides the percentage |
+| `thickness` | number | a fifth of the radius, 3 to 28px | Ring width in pixels |
+| `startAngle` | number | `0` | Degrees clockwise from 12 o'clock |
+| `sweep` | number | `360` | Degrees the ring covers |
+| `roundedCaps` | boolean | see above | |
+| `gap` | number | `2` | Degrees between segments |
+| `tone` / `thresholds` / `color` | see above / see above / CSS colour | `default` / — / — | Colour of the single value; `color` wins |
+| `label` / `aria-labelledby` | string | — | Accessible name; one of the two is required |
+| `description` | string | generated summary | What a screen reader hears after the name |
+| `legend` | boolean \| `top` \| `bottom` \| `start` \| `end` \| node | shown below when there is more than one series | The built-in `Legend`, its place, or the app's own node |
+| `hiddenIds` / `defaultHiddenIds` / `onHiddenChange` | string[] / string[] / function | — / `[]` / — | Controlled or uncontrolled set of switched-off series |
+| `labels` | boolean | `false` | Direct labels on the chart (see Variants) |
+| `formatValue` | `(value) => string` | `Intl.NumberFormat` in the provider's locale | Text of values in labels, tooltip, names and table |
+| `onPointPress` | `(point) => void` | — | Click, Enter or Space on a point. `point` is `{ seriesId, seriesLabel, index, x, value }` |
+| `loading` | boolean | `false` | Shows the skeleton |
+| `empty` | node | "No data" | Shown when there is no data |
+| `error` | node | — | When set, shown in place of the chart |
+| `onRetry` / `retryLabel` | function / string | — / "Retry" | Adds a retry button to the error state |
+| `pointsLabel` / `legendLabel` | string | "Data points" / "Legend" | Accessible names of the list of points and of the legend |
+
+### 3. Parts
+
+`legend`, `tooltip`, `skeleton`, `empty`, `error`, `center`. Each accepts a node (replace), `null` (hide) or a function receiving the default part's props. A `center` node is drawn inside the SVG.
+
+### 4. Blocks
+
+`DonutChart.Root`, `DonutChart.Track`, `DonutChart.Segments`, `DonutChart.Labels`, `DonutChart.Center`. Other SVG elements may be placed between them.
+
+## Behaviour as space shrinks
+
+The ring always takes the largest circle that fits the plot.
+
+| Step | Trigger (slot width or height below) | Result |
+|---|---|---|
+| 1 | 200 / 190 | The legend and the segment labels hide |
+| 2 | 120 / 110 | The centre caption hides; the value stays and shrinks with the ring |
+| 3 | 64 / 64 | The centre value hides: a bare ring |
+
+The caption also hides whenever there is under 72px of room inside the ring. Centre text that is still too wide truncates with an ellipsis.
+
+## Interaction and accessibility
+
+- The root is a `figure` named by `label` or `aria-labelledby`, and described by a visually hidden summary (`description` replaces the generated one).
+- The marks are one tab stop: a `listbox` named by `pointsLabel`, whose options are the points, each with a readable name ("Web: 48 (48%)", or "Budget used: 81% (81 / 100)" for one value). `aria-activedescendant` follows the arrow keys.
+- Keys: left and right move between segments. `Home` and `End` go to the first and last point of the series. `Enter` and `Space` call `onPointPress`. `Escape` clears the point (and only then takes the key, so a dialog around the chart still closes).
+- With no point chosen the focus ring is on the plot, drawn inwards; with one it is on the point. A hovered point gets a light outline instead, so hover and focus differ.
+- Hover or focus shows the tooltip: the group's title and one row per series at that position, the pointed one in bold. It is positioned inside the plot, above the point unless the point is in the top half, and aligned to the side of the plot the point is on; it is never wider than two thirds of the plot. It is hidden from assistive technology, which has the option names.
+- The legend is the `Legend` component, interactive: an item hides its series (pressed means shown), and hovering or focusing one dims the other series.
+- A visually hidden `table` repeats every value: one row per series, one column per position.
+- Loading sets `aria-busy` and removes the list of points; the error state is an `alert`.
+- Marks fade in over 180ms on the first draw and when the data changes. With reduced motion the duration is 0.
+- Text keeps 4.5:1; axis lines, grid dots and marks keep 3:1 against the card on every tint (checked in `src/charts/scales.test.ts` and by the series palette's own test).
+- Hiding a segment in the legend shares the ring among the others; percentages follow.
+
+## Open questions
+
+None.
+
+Resolved 2026-10-10:
+
+- Drawn as SVG by the library; `d3-scale` and `d3-shape` only (`plan/decisions/03-charts.md`). Ships from `umbra-ui/charts`.
+- The chart measures its slot with a `ResizeObserver` (`src/charts/internal/useChartSize.ts`) and draws from that; it has no size props. Steps are decided from the slot's width and height together: the smaller one decides.
+- Label widths are estimated from the font size, not measured, so a layout is computed in one pass. The estimate is on the wide side.
+- Not a layout child: a chart goes inside a `Card` or `Slot`, so it takes no `size` or `priority`.
+- The points are a `listbox` with `aria-activedescendant`: one tab stop, real option names, no roving DOM focus inside SVG.
+- The tooltip is the chart's own element inside the plot, not a portal, so it cannot leave the slot. It is clipped if the plot is shorter than the tooltip.
+- Data states are implemented in `src/charts/internal/Frame.tsx` with the agreed prop names (`loading`, `empty`, `error`, `onRetry`, `retryLabel`); `src/internal/dataState.tsx` did not exist in this checkout.
+- While loading, the legend's place is held by a placeholder line, so the plot does not move when the data arrives.
+- The generated summary lists the series and the range; apps that need a sentence in their own language set `description`.
+- One component for both forms; `data` switches to segments.
+- The default centre value is the percentage, as in the source. The default colour is the first series colour, not the source's yellow, which reads as a warning here.
+- Tones use the semantic colours. Thresholds are in the units of `value`.
+- Segment fills go solid, stripes, dots by position, in the Legend's own marker kinds, so a legend swatch matches its segment.
+- Zero and negative values draw nothing; a value above `max` fills the ring.

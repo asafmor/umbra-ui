@@ -1,0 +1,514 @@
+import { expect, test, type Locator, type Page } from '@playwright/test';
+
+// Charts: keyboard, tooltip, legend, the data states, and each step of "show less as the slot shrinks".
+const open = async (page: Page, id: string, width = 1280, height = 720) => {
+  await page.setViewportSize({ width, height });
+  await page.goto(`/iframe.html?id=${id}&viewMode=story`);
+  await page.locator('#storybook-root > *').first().waitFor();
+  await page.evaluate(async () => {
+    await Promise.all(
+      [...document.fonts].filter((f) => f.unicodeRange.startsWith('U+0-FF')).map((f) => f.load()),
+    );
+    await document.fonts.ready;
+  });
+};
+const tile = (page: Page, id: string) => page.locator(`[data-tile="${id}"] figure`);
+const sized = (page: Page, size: string, nth = 0) => page.locator(`[data-size="${size}"] figure`).nth(nth);
+const marks = (chart: Locator) => chart.getByRole('listbox');
+const tooltip = (chart: Locator) => chart.locator('[data-part="tooltip"]');
+const ring = (chart: Locator) => chart.locator('[data-part="focus-ring"]');
+/** The accessible name of the point the arrow keys are on. */
+const current = async (chart: Locator) => {
+  const id = await marks(chart).getAttribute('aria-activedescendant');
+  return id ? chart.locator(`[id="${id}"]`).getAttribute('aria-label') : null;
+};
+const inside = async (inner: Locator, outer: Locator) => {
+  const [a, b] = [(await inner.boundingBox())!, (await outer.boundingBox())!];
+  expect(a.x).toBeGreaterThanOrEqual(b.x - 1);
+  expect(a.y).toBeGreaterThanOrEqual(b.y - 1);
+  expect(a.x + a.width).toBeLessThanOrEqual(b.x + b.width + 1);
+  expect(a.y + a.height).toBeLessThanOrEqual(b.y + b.height + 1);
+};
+const has = (chart: Locator, part: string) => chart.locator(`[data-part="${part}"]`);
+
+test.describe('LineChart', () => {
+  test('arrow keys move between points, and Enter and Space press one', async ({ page }) => {
+    await open(page, 'charts-linechart--interaction');
+    const chart = tile(page, 'controlled');
+    await page.getByRole('button', { name: 'Show all' }).focus();
+    await page.keyboard.press('Tab');
+    await expect(marks(chart)).toBeFocused();
+    expect(await current(chart)).toBeNull();
+    await expect(tooltip(chart)).toHaveCount(0);
+
+    await page.keyboard.press('ArrowRight');
+    expect(await current(chart)).toBe('Plan, Jan: 40 orders');
+    await expect(ring(chart)).toHaveAttribute('data-keyboard', 'true');
+    await expect(tooltip(chart)).toContainText('Jan');
+    await expect(tooltip(chart)).toContainText('40 orders');
+    // The tooltip shows every series at that position.
+    await expect(tooltip(chart)).toContainText('42 orders');
+
+    await page.keyboard.press('ArrowRight');
+    expect(await current(chart)).toBe('Plan, Feb: 44 orders');
+    await page.keyboard.press('ArrowDown');
+    expect(await current(chart)).toBe('Actual, Feb: 48 orders');
+    await page.keyboard.press('ArrowDown');
+    expect(await current(chart)).toBe('Actual, Feb: 48 orders');
+    await page.keyboard.press('ArrowUp');
+    expect(await current(chart)).toBe('Plan, Feb: 44 orders');
+    await page.keyboard.press('End');
+    expect(await current(chart)).toBe('Plan, Dec: 84 orders');
+    await page.keyboard.press('ArrowRight');
+    expect(await current(chart)).toBe('Plan, Dec: 84 orders');
+    await page.keyboard.press('Home');
+    expect(await current(chart)).toBe('Plan, Jan: 40 orders');
+
+    await page.keyboard.press('Enter');
+    await expect(page.getByText('Pressed: Plan, Jan, 40.')).toBeVisible();
+    await page.keyboard.press('ArrowRight');
+    await page.keyboard.press('Space');
+    await expect(page.getByText('Pressed: Plan, Feb, 44.')).toBeVisible();
+
+    await page.keyboard.press('Escape');
+    expect(await current(chart)).toBeNull();
+    await expect(tooltip(chart)).toHaveCount(0);
+    await expect(ring(chart)).toHaveCount(0);
+    await expect(marks(chart)).toBeFocused();
+
+    // One tab stop: the next Tab leaves the points for the legend.
+    await page.keyboard.press('Tab');
+    await expect(chart.getByRole('button', { name: 'Plan' })).toBeFocused();
+  });
+
+  test('hovering a point shows a tooltip that stays inside the chart', async ({ page }) => {
+    await open(page, 'charts-linechart--interaction');
+    const chart = tile(page, 'controlled');
+    const plot = has(chart, 'plot');
+    await chart.getByRole('option', { name: 'Actual, Jan: 42 orders' }).hover();
+    await expect(tooltip(chart)).toBeVisible();
+    await expect(tooltip(chart)).toHaveAttribute('data-align', 'start');
+    await expect(tooltip(chart)).toHaveAttribute('data-side', 'above');
+    await inside(tooltip(chart), plot);
+    // A hovered point is outlined, but not with the focus ring.
+    await expect(ring(chart)).not.toHaveAttribute('data-keyboard', 'true');
+
+    await chart.getByRole('option', { name: 'Actual, Dec: 90 orders' }).hover();
+    await expect(tooltip(chart)).toHaveAttribute('data-align', 'end');
+    await expect(tooltip(chart)).toHaveAttribute('data-side', 'below');
+    await inside(tooltip(chart), plot);
+
+    await chart.getByRole('option', { name: 'Actual, Jun: 58 orders' }).hover();
+    await expect(tooltip(chart)).toHaveAttribute('data-align', 'center');
+    await inside(tooltip(chart), plot);
+
+    await chart.getByRole('option', { name: 'Actual, Jun: 58 orders' }).click();
+    await expect(page.getByText('Pressed: Actual, Jun, 58.')).toBeVisible();
+    await page.mouse.move(2, 2);
+    await expect(tooltip(chart)).toHaveCount(0);
+  });
+
+  test('a legend item hides its series, controlled and uncontrolled, and hovering one dims the others', async ({
+    page,
+  }) => {
+    await open(page, 'charts-linechart--interaction');
+    const chart = tile(page, 'controlled');
+    await expect(chart.getByRole('option')).toHaveCount(24);
+    await chart.getByRole('button', { name: 'Actual' }).hover();
+    await expect(chart.locator('[data-series="plan"]')).toHaveAttribute('data-dim', 'true');
+    await expect(chart.locator('[data-series="actual"]')).not.toHaveAttribute('data-dim', 'true');
+
+    await chart.getByRole('button', { name: 'Actual' }).click();
+    await expect(chart.locator('[data-series="actual"]')).toHaveCount(0);
+    await expect(chart.getByRole('option')).toHaveCount(12);
+    await expect(chart.getByRole('button', { name: 'Actual' })).toHaveAttribute('aria-pressed', 'false');
+    await expect(page.getByText('Hidden: actual.')).toBeVisible();
+    await page.getByRole('button', { name: 'Show all' }).click();
+    await expect(chart.locator('[data-series="actual"]')).toHaveCount(1);
+
+    const other = tile(page, 'uncontrolled');
+    await expect(other.locator('[data-series="r3"]')).toHaveCount(0);
+    await other.getByRole('button', { name: 'Region 3' }).press('Enter');
+    await expect(other.locator('[data-series="r3"]')).toHaveCount(1);
+    // The legend marker is the series' own line and point shape.
+    await expect(
+      other.getByRole('button', { name: 'Region 3' }).locator('[data-kind="diamond"]'),
+    ).toHaveCount(1);
+  });
+
+  test('sheds the legend, the labels, the axis titles and the axes as the slot shrinks', async ({ page }) => {
+    await open(page, 'charts-linechart--shrink');
+    const parts = async (size: string) => {
+      const chart = sized(page, size);
+      await inside(chart.locator('svg').first(), chart);
+      return {
+        level: await chart.getAttribute('data-level'),
+        legend: await has(chart, 'legend').count(),
+        labels: await has(chart, 'series-label').count(),
+        titles: await chart.locator('[data-part="x-title"], [data-part="y-title"]').count(),
+        axes: await has(chart, 'axes').count(),
+        ticks: await chart.locator('[data-part="x-ticks"] text').count(),
+      };
+    };
+    expect(await parts('420x270')).toEqual({
+      level: '0',
+      legend: 1,
+      labels: 2,
+      titles: 2,
+      axes: 1,
+      ticks: 6,
+    });
+    expect(await parts('330x230')).toMatchObject({ level: '1', legend: 0, labels: 2, titles: 2, axes: 1 });
+    expect(await parts('270x180')).toMatchObject({ level: '2', legend: 0, labels: 0, titles: 2, axes: 1 });
+    expect(await parts('210x140')).toEqual({
+      level: '3',
+      legend: 0,
+      labels: 0,
+      titles: 0,
+      axes: 1,
+      ticks: 4,
+    });
+    expect(await parts('140x80')).toMatchObject({ level: '4', legend: 0, labels: 0, titles: 0, axes: 0 });
+  });
+
+  test('redraws to fill its slot when the window changes size', async ({ page }) => {
+    await open(page, 'charts-linechart--variants');
+    const chart = tile(page, 'plan');
+    const widths = async () => {
+      const svg = (await chart.locator('svg').first().boundingBox())!;
+      const plot = (await has(chart, 'plot').boundingBox())!;
+      return [Math.round(svg.width), Math.round(plot.width), Math.round(svg.height), Math.round(plot.height)];
+    };
+    const before = await widths();
+    expect(before[0]).toBe(before[1]);
+    expect(before[2]).toBe(before[3]);
+    await page.setViewportSize({ width: 1024, height: 600 });
+    await expect.poll(async () => (await widths())[0]).toBeLessThan(before[0]!);
+    const after = await widths();
+    expect(after[0]).toBe(after[1]);
+    expect(after[2]).toBe(after[3]);
+    // At this size the card is too small for the legend.
+    await expect(has(chart, 'legend')).toHaveCount(0);
+  });
+
+  test('missing values break the line, and a lone value keeps its point', async ({ page }) => {
+    await open(page, 'charts-linechart--variants');
+    const line = tile(page, 'missing').locator('[data-series="s1"] [data-part="line"]');
+    const d = (await line.getAttribute('d'))!;
+    expect(d.match(/M/g)).toHaveLength(4);
+    await expect(tile(page, 'missing').getByRole('option', { name: /^Sensor 1/ })).toHaveCount(8);
+    // The ordinal axis names its levels, and points carry their own shape.
+    const ordinal = tile(page, 'ordinal');
+    await expect(ordinal.locator('[data-part="y-ticks"] text')).toHaveText(['Tier C', 'Tier B', 'Tier A']);
+    await expect(ordinal.getByRole('option', { name: 'Service level, 2019: Tier C' })).toHaveCount(1);
+    await expect(ordinal.locator('[data-shape="triangle"]')).toHaveCount(3);
+  });
+
+  test('marks draw in over the base duration, and not at all with reduced motion', async ({ page }) => {
+    const duration = () =>
+      tile(page, 'plan')
+        .locator('svg > g')
+        .first()
+        .evaluate((g) => getComputedStyle(g).animationDuration);
+    await open(page, 'charts-linechart--variants');
+    expect(await duration()).toBe('0.18s');
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await open(page, 'charts-linechart--variants');
+    expect(await duration()).toBe('0s');
+  });
+});
+
+test.describe('Chart accessibility and states', () => {
+  test('a chart is a named figure with a summary, a list of points and a data table', async ({ page }) => {
+    await open(page, 'charts-linechart--variants');
+    const chart = page.getByRole('figure', { name: 'Orders, plan and actual' });
+    await expect(chart).toHaveCount(1);
+    const describedBy = (await chart.getAttribute('aria-describedby'))!;
+    await expect(page.locator(`[id="${describedBy}"]`)).toHaveText('Plan, Actual: Jan – Dec');
+    await expect(marks(chart)).toHaveAccessibleName('Data points');
+    await expect(chart.getByRole('option').first()).toHaveAccessibleName('Plan, Jan: 40');
+
+    const table = chart.getByRole('table', { name: 'Orders, plan and actual' });
+    await expect(table.getByRole('columnheader')).toHaveCount(12);
+    await expect(table.getByRole('rowheader')).toHaveText(['Plan', 'Actual']);
+    await expect(table.getByRole('row').nth(2).getByRole('cell')).toHaveText([
+      '42',
+      '48',
+      '45',
+      '53',
+      '60',
+      '58',
+      '66',
+      '71',
+      '69',
+      '78',
+      '84',
+      '90',
+    ]);
+  });
+
+  test('loading is busy and has no points; an error offers a retry; no data shows the empty text', async ({
+    page,
+  }) => {
+    await open(page, 'charts-linechart--states');
+    const charts = page.getByRole('figure');
+    await expect(charts.nth(0)).toHaveAttribute('aria-busy', 'true');
+    await expect(charts.nth(0).getByRole('listbox')).toHaveCount(0);
+    await expect(charts.nth(0).locator('[data-umbra="skeleton"]').first()).toBeAttached();
+    await expect(charts.nth(1)).toHaveText(/No data/);
+    await expect(charts.nth(3)).toHaveText(/No orders in this period\./);
+
+    const error = charts.nth(2).getByRole('alert');
+    await expect(error).toContainText('Retries: 0.');
+    await error.getByRole('button', { name: 'Try again' }).focus();
+    await page.keyboard.press('Enter');
+    await expect(error).toContainText('Retries: 1.');
+  });
+
+  test('the tooltip part receives the title and the rows', async ({ page }) => {
+    await open(page, 'charts-linechart--parts-and-blocks');
+    const chart = tile(page, 'tooltip');
+    await chart.getByRole('option', { name: 'Plan, Mar: 48' }).hover();
+    await expect(tooltip(chart)).toHaveText('Mar: Plan 48 · Actual 45');
+    await expect(has(chart, 'legend')).toHaveCount(0);
+  });
+});
+
+test.describe('BarChart', () => {
+  test('arrow keys follow the bars: across for a vertical chart, down for a horizontal one', async ({
+    page,
+  }) => {
+    await open(page, 'charts-barchart--interaction');
+    const vertical = tile(page, 'vertical');
+    await marks(vertical).focus();
+    await page.keyboard.press('ArrowRight');
+    expect(await current(vertical)).toBe('Plan, Q1: 120');
+    await page.keyboard.press('ArrowRight');
+    expect(await current(vertical)).toBe('Plan, Q2: 135');
+    await page.keyboard.press('ArrowDown');
+    expect(await current(vertical)).toBe('Actual, Q2: 141');
+    await expect(ring(vertical)).toHaveAttribute('data-keyboard', 'true');
+    await expect(tooltip(vertical)).toContainText('Q2');
+    await page.keyboard.press('Enter');
+    await expect(page.getByText('Pressed: Actual, Q2, 141.')).toBeVisible();
+
+    const horizontal = tile(page, 'horizontal');
+    await marks(horizontal).focus();
+    // Focus left the first chart, so its point is no longer active.
+    expect(await current(vertical)).toBeNull();
+    await page.keyboard.press('ArrowDown');
+    expect(await current(horizontal)).toBe('Web, Q1: 42');
+    await page.keyboard.press('ArrowDown');
+    expect(await current(horizontal)).toBe('Web, Q2: 48');
+    await page.keyboard.press('ArrowRight');
+    expect(await current(horizontal)).toBe('Phone, Q2: 26');
+    await page.keyboard.press('ArrowRight');
+    expect(await current(horizontal)).toBe('Partners, Q2: 18');
+    await page.keyboard.press('ArrowLeft');
+    await page.keyboard.press('End');
+    expect(await current(horizontal)).toBe('Phone, Q4: 21');
+  });
+
+  test('hovering a bar shows its tooltip, and the legend hides a series', async ({ page }) => {
+    await open(page, 'charts-barchart--interaction');
+    const chart = tile(page, 'vertical');
+    await chart.getByRole('option', { name: 'Actual, Q4: 171' }).hover();
+    await expect(tooltip(chart)).toContainText('Q4');
+    await expect(tooltip(chart)).toContainText('171');
+    await inside(tooltip(chart), has(chart, 'plot'));
+    await chart.getByRole('option', { name: 'Actual, Q4: 171' }).click();
+    await expect(page.getByText('Pressed: Actual, Q4, 171.')).toBeVisible();
+
+    await expect(chart.getByRole('option')).toHaveCount(8);
+    await chart.getByRole('button', { name: 'Plan' }).click();
+    await expect(chart.getByRole('option')).toHaveCount(4);
+    await expect(chart.locator('[data-series="plan"]')).toHaveCount(0);
+    // The legend swatch has the same pattern as the bars of its series.
+    await expect(chart.getByRole('button', { name: 'Actual' }).locator('[data-kind="stripes"]')).toHaveCount(
+      1,
+    );
+    await expect(chart.locator('[data-series="actual"] [data-pattern="stripes"]')).toHaveCount(4);
+  });
+
+  test('sheds the legend, the value labels, the axis titles and the axes as the slot shrinks', async ({
+    page,
+  }) => {
+    await open(page, 'charts-barchart--shrink');
+    const parts = async (size: string, nth = 0) => {
+      const chart = sized(page, size, nth);
+      await inside(chart.locator('svg').first(), chart);
+      return {
+        level: await chart.getAttribute('data-level'),
+        legend: await has(chart, 'legend').count(),
+        labels: await chart.locator('[data-part="value-labels"] text').count(),
+        titles: await chart.locator('[data-part="x-title"], [data-part="y-title"]').count(),
+        axes: await has(chart, 'axes').count(),
+        ticks: await chart.locator('[data-part="x-ticks"] text').count(),
+      };
+    };
+    expect(await parts('420x270')).toEqual({
+      level: '0',
+      legend: 1,
+      labels: 8,
+      titles: 2,
+      axes: 1,
+      ticks: 8,
+    });
+    expect(await parts('330x230')).toMatchObject({ level: '1', legend: 0, labels: 8, titles: 2, axes: 1 });
+    expect(await parts('270x180')).toMatchObject({ level: '2', legend: 0, labels: 0, titles: 2, axes: 1 });
+    expect(await parts('210x140')).toEqual({
+      level: '3',
+      legend: 0,
+      labels: 0,
+      titles: 0,
+      axes: 1,
+      ticks: 4,
+    });
+    expect(await parts('140x80')).toMatchObject({ level: '4', legend: 0, labels: 0, titles: 0, axes: 0 });
+    // Horizontal: the category labels on the left thin out as the chart gets shorter.
+    const tall = sized(page, '330x230', 1).locator('[data-part="y-ticks"] text');
+    const short = sized(page, '210x120').locator('[data-part="y-ticks"] text');
+    await expect(tall).toHaveCount(8);
+    await expect(short).toHaveCount(4);
+  });
+
+  test('variants: stacks, both sides of zero, and a pattern with every colour that carries data', async ({
+    page,
+  }) => {
+    await open(page, 'charts-barchart--variants');
+    // Stacked: the label is the total of the stack.
+    await expect(tile(page, 'stacked').locator('[data-part="value-labels"] text')).toHaveText([
+      '84',
+      '92',
+      '101',
+      '109',
+    ]);
+    // Diverging: the second series hangs below the zero line, and both sides read as positive.
+    const diverging = tile(page, 'diverging');
+    const up = (await diverging.getByRole('option', { name: 'Inbound, Jan: 14' }).boundingBox())!;
+    const down = (await diverging.getByRole('option', { name: 'Outbound, Jan: 3' }).boundingBox())!;
+    expect(down.y).toBeGreaterThanOrEqual(up.y + up.height - 1);
+    await expect(diverging.locator('[data-part="y-ticks"] text').first()).not.toContainText('-');
+    // By sign: negative bars are striped as well as red.
+    const sign = tile(page, 'sign');
+    await expect(sign.locator('[data-pattern="stripes"]')).toHaveCount(2);
+    await expect(sign.locator('[data-part="annotations"] [data-kind="line"]')).toContainText('Goal');
+    // By threshold: each step has its own fill.
+    const steps = tile(page, 'thresholds');
+    await expect(steps.locator('[data-pattern="stripes"]')).toHaveCount(2);
+    await expect(steps.locator('[data-pattern="dots"]')).toHaveCount(1);
+  });
+});
+
+test.describe('DonutChart', () => {
+  test('arrow keys move around the segments, and the legend hides one', async ({ page }) => {
+    await open(page, 'charts-donutchart--interaction');
+    const chart = tile(page, 'segments');
+    await marks(chart).focus();
+    await page.keyboard.press('ArrowRight');
+    expect(await current(chart)).toBe('Web: 48 (48%)');
+    await expect(ring(chart)).toHaveAttribute('data-keyboard', 'true');
+    await expect(tooltip(chart)).toHaveText(/Web\s*48 \(48%\)/);
+    await inside(tooltip(chart), chart);
+    await page.keyboard.press('ArrowRight');
+    expect(await current(chart)).toBe('Phone: 26 (26%)');
+    await page.keyboard.press('End');
+    expect(await current(chart)).toBe('Other: 8 (8%)');
+    await page.keyboard.press('Space');
+    await expect(page.getByText('Pressed: Other, 8.')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(tooltip(chart)).toHaveCount(0);
+
+    // Without the largest segment the others share the whole ring.
+    await chart.getByRole('button', { name: 'Web' }).click();
+    await expect(chart.getByRole('option')).toHaveCount(3);
+    await expect(chart.getByRole('option').first()).toHaveAccessibleName('Phone: 26 (50%)');
+
+    const single = tile(page, 'single');
+    // The middle of a ring is its hole: point at the band, just right of 12 o'clock.
+    const box = (await single.getByRole('option').boundingBox())!;
+    const position = { x: box.width / 2 + 12, y: 5 };
+    await single.getByRole('option').hover({ position });
+    await expect(tooltip(single)).toContainText('81%');
+    await single.getByRole('option').click({ position });
+    await expect(page.getByText('Pressed: Budget used, 81.')).toBeVisible();
+  });
+
+  test('sheds the legend and labels, then the centre caption, then the centre value', async ({ page }) => {
+    await open(page, 'charts-donutchart--shrink');
+    const parts = async (size: string) => {
+      const chart = sized(page, size);
+      await inside(chart.locator('svg').first(), chart);
+      return {
+        level: await chart.getAttribute('data-level'),
+        legend: await has(chart, 'legend').count(),
+        labels: await chart.locator('[data-part="labels"] text').count(),
+        caption: await has(chart, 'center-label').count(),
+        value: await has(chart, 'center-value').count(),
+      };
+    };
+    expect(await parts('320x260')).toEqual({ level: '0', legend: 1, labels: 4, caption: 1, value: 1 });
+    expect(await parts('190x180')).toEqual({ level: '1', legend: 0, labels: 0, caption: 1, value: 1 });
+    expect(await parts('110x100')).toEqual({ level: '2', legend: 0, labels: 0, caption: 0, value: 1 });
+    expect(await parts('56x56')).toEqual({ level: '3', legend: 0, labels: 0, caption: 0, value: 0 });
+    // The single-value ring of the source: about 80px, with its percentage inside.
+    await expect(has(sized(page, '80x80'), 'center-value')).toHaveText('81%');
+    await inside(has(sized(page, '80x80'), 'center-value'), sized(page, '80x80'));
+    await expect(has(sized(page, '48x48'), 'center-value')).toHaveCount(0);
+    await expect(sized(page, '48x48').getByRole('option')).toHaveAccessibleName(/81%/);
+  });
+});
+
+test.describe('RadarChart', () => {
+  test('arrow keys move around the axes and between series', async ({ page }) => {
+    await open(page, 'charts-radarchart--interaction');
+    const chart = tile(page, 'several');
+    await marks(chart).focus();
+    await page.keyboard.press('ArrowRight');
+    expect(await current(chart)).toBe('Team A, Speed: 16');
+    await page.keyboard.press('ArrowRight');
+    expect(await current(chart)).toBe('Team A, Quality: 12');
+    await page.keyboard.press('ArrowDown');
+    expect(await current(chart)).toBe('Team B, Quality: 15');
+    await expect(tooltip(chart)).toContainText('Quality');
+    await expect(tooltip(chart)).toContainText('Team C');
+    await inside(tooltip(chart), chart);
+    await page.keyboard.press('Enter');
+    await expect(page.getByText('Pressed: Team B, Quality, 15.')).toBeVisible();
+
+    await chart.getByRole('button', { name: 'Team B' }).click();
+    await expect(chart.locator('[data-series="b"]')).toHaveCount(0);
+    await expect(chart.getByRole('option')).toHaveCount(12);
+    // Each series has its own point shape, in the chart and in the legend.
+    await expect(chart.locator('[data-series="c"] [data-shape="diamond"]')).toHaveCount(6);
+    await expect(chart.getByRole('button', { name: 'Team C' }).locator('[data-kind="diamond"]')).toHaveCount(
+      1,
+    );
+  });
+
+  test('sheds the legend, then the values, then the axis labels, and labels stay inside', async ({
+    page,
+  }) => {
+    await open(page, 'charts-radarchart--shrink');
+    const parts = async (size: string) => {
+      const chart = sized(page, size);
+      for (const label of await chart.locator('[data-part="axis-labels"] text').all())
+        await inside(label, chart);
+      return {
+        level: await chart.getAttribute('data-level'),
+        legend: await has(chart, 'legend').count(),
+        values: await has(chart, 'value-label').count(),
+        labels: await chart.locator('[data-part="axis-labels"] text').count(),
+      };
+    };
+    expect(await parts('380x300')).toEqual({ level: '0', legend: 1, values: 8, labels: 8 });
+    expect(await parts('280x230')).toEqual({ level: '1', legend: 0, values: 7, labels: 8 });
+    expect(await parts('210x170')).toEqual({ level: '2', legend: 0, values: 0, labels: 8 });
+    expect(await parts('140x120')).toEqual({ level: '3', legend: 0, values: 0, labels: 0 });
+    expect(await parts('56x56')).toEqual({ level: '3', legend: 0, values: 0, labels: 0 });
+    // Labels too long for their room end in an ellipsis instead of leaving the chart.
+    const long = sized(page, '230x200');
+    await expect(long.locator('[data-part="axis-labels"] text').first()).toContainText('…');
+    for (const label of await long.locator('[data-part="axis-labels"] text').all()) await inside(label, long);
+  });
+});
