@@ -222,7 +222,7 @@ export const IconButtonOptions: Story = {
             icon: (p) => <span data-part="icon">{p.children}</span>,
             badge: () => (
               <span aria-hidden="true" data-part="badge" style={{ font: 'var(--umbra-font-label)' }}>
-                99+
+                120
               </span>
             ),
             tooltip: (p) => <>{p.children} (from a part)</>,
