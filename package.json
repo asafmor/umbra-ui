@@ -51,6 +51,7 @@
     "react-dom": ">=19"
   },
   "dependencies": {
+    "@tanstack/react-table": "^9.2.8",
     "lucide-react": "^1.55.0",
     "react-aria-components": "^1.22.1"
   },
