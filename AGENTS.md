@@ -10,7 +10,7 @@ The design is **inspired by** 40 screenshots of a game UI in `screenshots/`. It 
 
 ## Current state
 
-**Phase: Milestone 0 (foundation) built and reviewed (`plan/reviews/milestone-0.md`); Milestone 1 is being planned.** Update this section whenever the phase or the next step changes.
+**Phase: Milestone 0 (foundation) built and reviewed (`plan/reviews/milestone-0.md`); Milestone 1 (core) is being built.** Update this section whenever the phase or the next step changes.
 
 | Step | Status | Artifact |
 |---|---|---|
@@ -35,7 +35,22 @@ The design is **inspired by** 40 screenshots of a game UI in `screenshots/`. It 
 | 5. Basics: Button, IconButton, Skeleton | done (built before the cards, which use them) |
 | 6. Docs: README, guides, `basic` example, customisation table generator | done |
 
-**Next step**: the owner's go-ahead on the Milestone 1 plan (`plan/prompts/milestone-1.md`). Then the open review items marked "before 1a" in `plan/reviews/milestone-0.md`, then batch 1a (data basics) in `plan/roadmap.md`; each component's spec is written first, from `plan/specs/Card.md`.
+### Milestone 1 progress
+
+The owner approved the plan and delegated the open questions (`plan/reviews/milestone-0.md`, "Owner's decisions"); each decision made on the way is under "Resolved" in the component's spec.
+
+| Batch | Status |
+|---|---|
+| Review items due before 1a | done |
+| 1a. Data basics (19 components, in `src/data/`) | done |
+| 1b. Inputs, starting with Popover, Tooltip and Menu | in progress |
+| 1c. Overlays | — |
+| 1d. Table | — |
+| 1e. Meters and charts | in progress |
+| 1f. Shell extras | — |
+| Full-page stories, guides, `dashboard` and `advanced` examples | — |
+
+**Next step**: finish 1b, then 1c, 1d and 1f in the order of `plan/roadmap.md`. A batch is built from `plan/prompts/component-brief.md`.
 
 ### Known issues
 
@@ -75,7 +90,7 @@ The design is **inspired by** 40 screenshots of a game UI in `screenshots/`. It 
 | `plan/components.md` | The catalog: every component, what it absorbs, its tier, and the product decisions. |
 | `plan/tokens.json` | The design tokens: colour, type, spacing, radius, density, motion. |
 | `plan/inventory/source-colours.md` | Colours sampled from the screenshots (reference only), and the sampling method. |
-| `plan/specs/` | One spec per component. `Card.md` is the template; all 14 tier 0 specs are approved. |
+| `plan/specs/` | One spec per component. `Card.md` is the template; the 14 tier 0 specs are approved, and tier 1 specs are written under the owner's delegation. |
 | `plan/layout.md` | The layout model: primitives, sizing rules, and what happens as space shrinks. |
 | `plan/interaction.md` | States, motion, loading, live updates, keyboard and accessibility rules. |
 | `plan/decisions/` | One short record per tech decision: styling, behaviour base, charts, table engine, packaging, docs and testing, customisation. |
@@ -83,7 +98,7 @@ The design is **inspired by** 40 screenshots of a game UI in `screenshots/`. It 
 | `plan/reference/` | `index.html`: the static reference screen, the visual ground truth for the look (open it in a browser; `?density=compact&context=teal` switches settings). `shot-*.png`: renders at three sizes. |
 | `plan/reviews/` | Review reports. `milestone-0.md`: what the independent review found, what was fixed, and what is open. |
 | `plan/prompts/` | `component-brief.md`: the rules for building a batch of components (read it before adding one). Ready-made prompts for starting a fresh agent session: `milestone-0.md` (used), `verify-milestone-0.md` (independent review of Milestone 0), `milestone-1.md` (plan and build Milestone 1). |
-| `src/` | Library source. `src/styles/`: base CSS and the generated tokens. `src/provider/`: provider, scope, icon map, shortcut registry. `src/layout/`: Page, Columns, Stack, Slot, Card, SectionTitle, ScrollArea (`useSlot.tsx` and `collapse.ts` hold the layout rules). `src/shell/`: AppShell, TopBar, PrimaryNav, SubNav (`nav.tsx` is shared). `src/basics/`: Button, IconButton, Skeleton. `src/internal/`: not exported; overlays on React Aria and `useShrinkLevel`, the hook behind every "show less as it narrows" rule. `src/utils/`: shared helpers (`parts.ts` implements the parts layer). `src/charts/`: the `umbra-ui/charts` entry. |
+| `src/` | Library source. `src/styles/`: base CSS and the generated tokens. `src/provider/`: provider, scope, icon map, shortcut registry. `src/layout/`: Page, Columns, Stack, Slot, Card, SectionTitle, ScrollArea (`useSlot.tsx` and `collapse.ts` hold the layout rules). `src/shell/`: AppShell, TopBar, PrimaryNav, SubNav (`nav.tsx` is shared). `src/basics/`: Button, IconButton, Skeleton. `src/data/`: the data basics (Tag, Badge, List, KeyValue, Banner, Legend, EmptyState and the rest of batch 1a). `src/internal/`: not exported; overlays on React Aria and `useShrinkLevel`, the hook behind every "show less as it narrows" rule. `src/utils/`: shared helpers (`parts.ts` implements the parts layer). `src/charts/`: the `umbra-ui/charts` entry. |
 | `scripts/` | Build scripts: `build-tokens.mjs`, and `build-customisation.mjs` for the customisation tables. |
 | `.storybook/` | Storybook config; the toolbar switches density and context. |
 | `docs/` | Guides in Markdown (`getting-started.md`, `layout.md`) and the generated `customisation-tables.md`. `docs/storybook/*.mdx` show them in Storybook. |

@@ -49,7 +49,7 @@ Clustered from the four inventory files in `plan/inventory/` (40 screenshots).
 | List | leaderboard, person list, MediaObject, FixtureRow | ~20 screens | 1 |
 | ListItem (message) | MessageListItem: sender, title, tags, time, unread dot, category tint | 1, 2, 13–16, 25, 27, 28 | 1 |
 | GroupHeader | DateGroupHeader, OfferGroupHeader | 1, 2, 7, 13–16, 31 | 1 |
-| KeyValue | KeyValueRow, FactItem, AttributeList | 5–7, 9, 32, 33, 37, 40 | 1 |
+| KeyValue | KeyValueRow, FactItem, AttributeList; `KeyValueList` for a group of rows | 5–7, 9, 32, 33, 37, 40 | 1 |
 | StatValue | large value + label + optional bar | ~15 screens | 1 |
 | SummaryTile | compact tile: icon, title, one value | 37, 38, 40 | 1 |
 | Tag | PositionChip, FixtureChip, RatingTag; edge-stripe variant | ~25 screens | 1 |
@@ -59,7 +59,7 @@ Clustered from the four inventory files in `plan/inventory/` (40 screenshots).
 | TrendArrow | up / down / flat | 1, 5, 6, 32, 36 | 1 |
 | StatusIndicator | StatusIcon, StatusLabel, MoodIndicator | 4, 6, 8, 9, 11, 12, 16–18 | 1 |
 | SequenceDots | FormIndicator, PersonDots: a short row of coloured dots | 1, 2, 4, 6, 9, 11, 18, 27, 28, 31, 37, 38 | 2 |
-| Avatar | person, silhouette placeholder | ~25 screens | 1 |
+| Avatar | person, silhouette placeholder; `AvatarGroup` for an overlapping row | ~25 screens | 1 |
 | EntityIcon | CrestIcon: small logo / flag next to a name | ~30 screens | 1 |
 | MediaCard | NewsCard hero and compact, ResultCard | 1, 2, 5, 27, 28, 30, 31 | 2 |
 | Banner | InsightBanner, RecommendationBand, Callout, Alert, NotificationPrompt | 1, 5, 15, 36, 39 | 1 |
