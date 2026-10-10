@@ -10,7 +10,7 @@ The design is **inspired by** 40 screenshots of a game UI in `screenshots/`. It 
 
 ## Current state
 
-**Phase: Milestone 0 (foundation) in progress.** Update this section whenever the phase or the next step changes.
+**Phase: Milestone 0 (foundation) built, waiting for the owner's review.** Update this section whenever the phase or the next step changes.
 
 | Step | Status | Artifact |
 |---|---|---|
@@ -33,9 +33,9 @@ The design is **inspired by** 40 screenshots of a game UI in `screenshots/`. It 
 | 3. Layout: AppShell, Page, Columns, Stack, Slot, Card, CardHeader, SectionTitle, ScrollArea | done |
 | 4. Shell: TopBar, PrimaryNav, SubNav | done |
 | 5. Basics: Button, IconButton, Skeleton | done (built before the cards, which use them) |
-| 6. Docs: README, guides, `basic` example, customisation table generator | next |
+| 6. Docs: README, guides, `basic` example, customisation table generator | done |
 
-**Next step**: step 6, the docs.
+**Next step**: the owner reviews Milestone 0. Then Milestone 1, batch 1a (data basics) in `plan/roadmap.md`: write each component's spec first, from `plan/specs/Card.md`.
 
 ## Commands
 
@@ -49,6 +49,8 @@ The design is **inspired by** 40 screenshots of a game UI in `screenshots/`. It 
 | `npm run storybook` | Storybook on port 6006 |
 | `npm run test:visual` | Builds Storybook, then captures every story at 1920x1080, 1280x720 and 1024x600 at all three densities, and fails on any document overflow. Stories tagged `narrow` are also captured at 900x560. |
 | `npm run test:visual:update` | Same, and rewrites the baselines in `tests/visual/__screenshots__/`. Look at the changed images before committing. |
+| `npm run docs:tables` | Regenerates `docs/customisation-tables.md` from the source. `npm run lint` fails when it is out of date, so run it after changing props, parts, blocks or CSS variables. |
+| `npm run build -w examples/basic` | Builds the example app against the built package (run `npm run build` first) |
 | `npm run changeset` | Adds a changelog entry; needed for any change users will notice |
 
 - Run lint, typecheck, unit and visual tests before every commit; all must pass.
@@ -75,6 +77,8 @@ The design is **inspired by** 40 screenshots of a game UI in `screenshots/`. It 
 | `src/` | Library source. `src/styles/`: base CSS and the generated tokens. `src/provider/`: provider, scope, icon map, shortcut registry. `src/layout/`: Page, Columns, Stack, Slot, Card, SectionTitle, ScrollArea (`useSlot.tsx` and `collapse.ts` hold the layout rules). `src/shell/`: AppShell, TopBar, PrimaryNav, SubNav (`nav.tsx` is shared). `src/basics/`: Button, IconButton, Skeleton. `src/internal/`: not exported; overlays on React Aria and `useShrinkLevel`, the hook behind every "show less as it narrows" rule. `src/utils/`: shared helpers (`parts.ts` implements the parts layer). `src/charts/`: the `umbra-ui/charts` entry. |
 | `scripts/` | Build scripts (`build-tokens.mjs`). |
 | `.storybook/` | Storybook config; the toolbar switches density and context. |
+| `docs/` | Guides in Markdown (`getting-started.md`, `layout.md`) and the generated `customisation-tables.md`. `docs/storybook/*.mdx` show them in Storybook. |
+| `examples/basic/` | A small app that imports the built package; an npm workspace. |
 | `tests/visual/` | Playwright tests against the built Storybook: `stories.spec.ts` (captures and the no-page-scroll check) and `interactions.spec.ts` (popovers, tab mode, overflow menus, keys), with the baseline images. |
 
 ## Decisions that bind every task
