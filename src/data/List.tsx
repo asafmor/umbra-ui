@@ -1,6 +1,8 @@
 import {
   Children,
+  cloneElement,
   createContext,
+  isValidElement,
   useContext,
   useEffect,
   useMemo,
@@ -323,7 +325,15 @@ export interface ListProps<T = unknown> extends ListRootProps {
  */
 // ponytail: every row is rendered; add React Aria's Virtualizer when lists pass a few thousand rows.
 export function List<T>({ items, groups, renderItem, children, ...root }: ListProps<T>) {
-  const rows = (list: T[]) => Children.toArray(list.map((item, index) => renderItem?.(item, index)));
+  // Each row is keyed by its `id`, so `renderItem` does not have to set a key. (`Children.toArray`
+  // would add implicit keys, which React still reports as missing.)
+  const rows = (list: T[]) =>
+    list.map((item, index) => {
+      const row = renderItem?.(item, index);
+      return isValidElement<{ id?: ListKey }>(row) && row.key == null
+        ? cloneElement(row, { key: row.props.id ?? index })
+        : row;
+    });
   return (
     <Root {...root}>
       {groups

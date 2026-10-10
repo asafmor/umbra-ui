@@ -104,6 +104,12 @@
   padding-inline-end: var(--edge-x);
 }
 
+/* A utility cell holds one control and no text: at the spacious density the control is wider than
+   the cell's content box, and an ellipsis would be drawn beside it. */
+.cell:is([data-col='__select'], [data-col='__expand']) {
+  text-overflow: clip;
+}
+
 :is(.cell, .headerCell)[data-align='center'] {
   text-align: center;
 }

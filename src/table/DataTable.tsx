@@ -1293,21 +1293,24 @@ export function DataTable<Row>({
     [items, metrics],
   );
   const indexByKey = useMemo(() => new Map(items.map((item, index) => [item.key, index])), [items]);
+  const viewHeight = size?.height ?? 600;
   const range = !virtual
     ? { start: 0, end: items.length }
-    : windowRange(offsets, scrollTop - metrics.head, size?.height ?? 600, OVERSCAN);
+    : windowRange(offsets, scrollTop - metrics.head, viewHeight, OVERSCAN);
 
   useEffect(() => {
     const el = viewport();
     if (!el || !virtual) return;
     const onScroll = () => {
-      const next = windowRange(offsets, el.scrollTop - metrics.head, el.clientHeight, OVERSCAN);
+      // The same height the render used. With the viewport's own height, a table measured while its
+      // tab panel was still hidden would never agree with the render, and update without end.
+      const next = windowRange(offsets, el.scrollTop - metrics.head, viewHeight, OVERSCAN);
       if (next.start !== range.start || next.end !== range.end) setScrollTop(el.scrollTop);
     };
     onScroll();
     el.addEventListener('scroll', onScroll, { passive: true });
     return () => el.removeEventListener('scroll', onScroll);
-  }, [virtual, offsets, metrics.head, range.start, range.end]);
+  }, [virtual, offsets, metrics.head, viewHeight, range.start, range.end]);
 
   // Row heights are read from the rows themselves, so density, tokens and tall cell content are all
   // taken into account. Every row is assumed to be as tall as the first; detail rows are measured one by one.
