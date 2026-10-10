@@ -290,7 +290,7 @@ test.describe('keyboard grid', () => {
     await page.keyboard.press('Enter');
     await expect(group.getByText('Last action: Open p3')).toBeVisible();
 
-    // Two buttons: Enter moves into the cell, Tab stays among them, Escape returns to the cell.
+    // Several controls: Enter moves into the cell, Tab stays among them, Escape returns to the cell.
     await page.keyboard.press('End');
     expect(await focused(page)).toMatchObject({ col: 'actions', isCell: true });
     await page.keyboard.press('Enter');
@@ -298,8 +298,10 @@ test.describe('keyboard grid', () => {
     await page.keyboard.press('Tab');
     await expect(row.getByRole('button', { name: 'Remove Person C' })).toBeFocused();
     await page.keyboard.press('Tab');
+    await expect(row.getByRole('button', { name: 'More actions for Person C' })).toBeFocused();
+    await page.keyboard.press('Tab');
     await expect(row.getByRole('button', { name: 'Edit Person C' })).toBeFocused();
-    await page.keyboard.press('Shift+Tab');
+    await press(page, 'Shift+Tab', 'Shift+Tab');
     await expect(row.getByRole('button', { name: 'Remove Person C' })).toBeFocused();
     await page.keyboard.press('Enter');
     await expect(group.getByText('Last action: Remove p3')).toBeVisible();
@@ -588,14 +590,16 @@ test.describe('groups', () => {
     await expect(groups.nth(1)).toContainText('Leaves today');
     // A listed group with no rows is still shown.
     await expect(groups.nth(3)).toContainText('Returned0');
-    await expect(groups.nth(0)).toHaveAttribute('aria-expanded', 'true');
-    await expect(groups.nth(1)).toHaveAttribute('aria-expanded', 'false');
+    // The expanded state is on the caret: a row of a grid cannot carry it.
+    await expect(groups.nth(0).getByRole('button')).toHaveAttribute('aria-expanded', 'true');
+    await expect(groups.nth(1).getByRole('button')).toHaveAttribute('aria-expanded', 'false');
+    await expect(groups.nth(1)).toHaveAttribute('data-collapsed', 'true');
     await expect(bodyRows(table)).toHaveCount(24);
 
     await group.getByRole('button', { name: 'Collapse Open' }).click();
     await expect(group.getByText('Collapsed: packed, open')).toBeVisible();
     await expect(bodyRows(table)).toHaveCount(12);
-    await expect(groups.nth(0)).toHaveAttribute('aria-expanded', 'false');
+    await expect(groups.nth(0).getByRole('button')).toHaveAttribute('aria-expanded', 'false');
 
     // By keyboard: the group row is a row of the grid, and Enter or Space works its caret.
     await groups.nth(1).locator('[data-cell]').first().focus();
@@ -736,9 +740,10 @@ test.describe('virtualisation', () => {
     await expect(group.getByText('Selected: none')).toBeVisible();
 
     await header(table, 'Amount').getByRole('button').click();
+    await expect(header(table, 'Amount')).toHaveAttribute('aria-sort', 'descending');
     await view.evaluate((el) => (el.scrollTop = 0));
+    await expect(bodyRows(table).first().locator('[data-col="amount"]')).toHaveText(/^4,99\d$/);
     const amounts = (await column(table, 'amount')).slice(0, 10).map((text) => Number(text.replace(',', '')));
-    expect(amounts[0]).toBeGreaterThan(4990);
     expect(amounts).toEqual([...amounts].sort((a, b) => b - a));
     await expect(table.locator('tfoot [data-col="amount"]')).toHaveText('25,091,660');
   });
@@ -925,6 +930,77 @@ test.describe('parts and blocks', () => {
 
     await group.getByRole('button', { name: 'Collapse Everyone' }).click();
     await expect(bodyRows(table)).toHaveCount(0);
-    await expect(table.locator('tr[data-kind="group"]')).toHaveAttribute('aria-expanded', 'false');
+    await expect(table.locator('tr[data-kind="group"]')).toHaveAttribute('data-collapsed', 'true');
+  });
+});
+
+test.describe('tooltips and the actions menu', () => {
+  test("a header hint shows on hover and on keyboard focus, and is the header's description", async ({
+    page,
+  }) => {
+    await open(page, 'people');
+    const table = grid(page, 'People');
+    const score = header(table, 'Score');
+    await expect(score).toHaveAccessibleDescription('Average of the last five reviews');
+    const tip = page.locator('[data-umbra="tooltip"]');
+    await expect(tip).toHaveCount(0);
+    await score.hover();
+    await expect(tip).toHaveText('Average of the last five reviews');
+    await page.mouse.move(5, 5);
+    await expect(tip).toHaveCount(0);
+    // By keyboard it shows at once, and goes when focus moves on.
+    await header(table, 'Status').focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(score).toBeFocused();
+    await expect(tip).toHaveText('Average of the last five reviews');
+    await page.keyboard.press('ArrowLeft');
+    await expect(tip).toHaveCount(0);
+  });
+
+  test('a cell shows its full text in a tooltip only while the text is cut', async ({ page }) => {
+    await open(page, 'people');
+    const table = grid(page, 'People');
+    const cell = table.getByRole('row', { name: /Person C/ }).locator('[data-col="team"]');
+    const tip = page.locator('[data-umbra="tooltip"]');
+    await cell.hover();
+    await page.waitForTimeout(800);
+    await expect(tip).toHaveCount(0);
+    await page.mouse.move(5, 5);
+    // Cut the text (as a narrow column would), and point at it again.
+    await cell.evaluate((el: HTMLElement) => (el.style.letterSpacing = '60px'));
+    expect(await cell.evaluate((el) => el.scrollWidth > el.clientWidth)).toBe(true);
+    await cell.hover();
+    await expect(tip).toHaveText('Team 3');
+    // The browser's own tooltip is not used.
+    await expect(cell).not.toHaveAttribute('title', /.*/);
+    await table.locator('xpath=ancestor::*[@data-part="viewport"][1]').evaluate((el) => (el.scrollTop = 40));
+    await expect(tip).toHaveCount(0);
+  });
+
+  test('the actions menu opens from its cell by keyboard and reports the row', async ({ page }) => {
+    await open(page, 'people');
+    const group = card(page, 'People');
+    const table = grid(page, 'People');
+    const row = table.getByRole('row', { name: /Person B/ });
+    await row.getByRole('button', { name: 'More actions for Person B' }).click();
+    await page.getByRole('menuitem', { name: 'Duplicate' }).click();
+    await expect(group.getByText('Last action: duplicate p2')).toBeVisible();
+
+    // From the cell: Enter moves in, Tab reaches the button, Enter opens the menu. Escape closes the menu
+    // first, and then returns to the cell.
+    await expect(row.getByRole('button', { name: 'More actions for Person B' })).toBeFocused();
+    await page.keyboard.press('Escape');
+    expect(await focused(page)).toMatchObject({ row: 'r:p2', col: 'actions', isCell: true });
+    await press(page, 'Enter', 'Shift+Tab');
+    await expect(row.getByRole('button', { name: 'More actions for Person B' })).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(page.getByRole('menu')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('menu')).toHaveCount(0);
+    await expect(row.getByRole('button', { name: 'More actions for Person B' })).toBeFocused();
+    await page.keyboard.press('Escape');
+    expect(await focused(page)).toMatchObject({ row: 'r:p2', col: 'actions', isCell: true });
+    await press(page, 'Enter', 'Shift+Tab', 'Enter', 'ArrowDown', 'ArrowDown', 'Enter');
+    await expect(group.getByText('Last action: archive p2')).toBeVisible();
   });
 });

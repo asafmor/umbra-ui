@@ -99,6 +99,7 @@ A column (`DataTableColumn<Row>`):
 | `id` | string | required | |
 | `header` / `headerLabel` | node / string | — | The header; `headerLabel` is its text when the header is not text |
 | `description` | string | — | Read after the header by assistive technology (no tooltip) |
+| `tooltip` | string | — | A hint for the header, in a tooltip on hover and keyboard focus; also read after the header unless `description` is set |
 | `hideHeader` | boolean | `false` | The header stays for assistive technology only |
 | `accessor` | key or `(row) => value` | — | The value: sorts, and renders when there is no `cell` |
 | `cell` | `(row, context) => node` | the value as text | `context`: `value`, `text`, `rowId`, `rowIndex`, `selected`, `highlighted`, `disabled` |
@@ -113,7 +114,7 @@ A column (`DataTableColumn<Row>`):
 | `aggregate` | `(rows) => node` | — | The cell in each group header row |
 | `rowHeader` | boolean | `false` | Its cells are the headers of their rows |
 
-Helpers: `numberColumn(column)` (end-aligned, tabular, 80px, largest first) and `actionsColumn({ cell })` (pinned to the end, never hidden, header for assistive technology only). There is no helper per widget: a cell renderer returns the widget.
+Helpers: `numberColumn(column)` (end-aligned, tabular, 80px, largest first) and `actionsColumn({ cell, menu, onMenuAction, menuLabel })` (pinned to the end, never hidden, header for assistive technology only; `cell` returns buttons, `menu` returns the rows of a `Menu` opened by a "more" button). There is no helper per widget: a cell renderer returns the widget.
 
 ### 3. Parts
 
@@ -127,7 +128,7 @@ Helpers: `numberColumn(column)` (end-aligned, tabular, 80px, largest first) and 
 
 | Step | Trigger | Result |
 |---|---|---|
-| 1 | A column narrower than its content | Text is cut with an ellipsis (a tooltip holds the full text); widgets follow their own rules |
+| 1 | A column narrower than its content | Text is cut with an ellipsis; while it is cut, hover or keyboard focus shows the full text in a tooltip. Widgets follow their own rules |
 | 2 | The columns do not fit at their minimum widths | Columns hide one at a time: lowest `priority` first, equal priorities from the end of the source order. They return, in reverse, when there is room. With `expandableHidden` a disclosure column appears and each row can show its hidden columns under it |
 | 3 | Only `always` columns are left and still do not fit | The table scrolls sideways inside its slot; pinned columns stay in view |
 | 4 | Rows taller than the slot | The body scrolls; header, group rows and footer stick |
@@ -146,7 +147,7 @@ Keyboard (the decided model):
 - **Headers**: Enter or Space on a sortable header cycles its sort (ascending, descending, unsorted; a `sortDescFirst` column starts descending). Shift+Enter adds it to a multiple sort.
 - **Body cells**: Space toggles the row's selection. Enter is the row action; in a cell with exactly one control, Enter (and Space, when rows cannot be selected) is forwarded to it; in a cell with several, Enter or F2 moves focus to the first, Tab and Shift+Tab move among them, and Escape (or F2) returns to the cell. From a button, link or checkbox focused by a click, the arrow keys still move through the grid.
 - **Shift + Arrow Up / Down** extends the selection from the row where it started. **Shift+click** selects a range from the last row toggled.
-- **Group rows**: Enter or Space works the caret. The row has `aria-expanded`.
+- **Group rows**: Enter or Space works the caret, a button with `aria-expanded` (in a grid, unlike a tree grid, a row cannot carry it).
 - **Right to left**: Left and Right follow what is seen.
 - No type-ahead.
 
@@ -157,6 +158,8 @@ Mouse: a click on a row selects it (toggle; Shift for a range), or activates it 
 Selection: rows have `aria-selected`; the grid has `aria-multiselectable`. Selected rows show the violet fill and the checked box. The header checkbox is "some" (indeterminate) between none and all.
 
 Not colour alone: the sort direction is the arrow's shape; a highlighted row is also bold, has an edge marker and a hidden `highlightLabel`; an accent stripe has its required `label` as hidden text (pair it with a `Legend` for sighted users); a changed value shows ▲ or ▼ with hidden text.
+
+Tooltips: one tooltip serves the whole table, in the look of `Tooltip`. It shows a header's `tooltip`, and the full text of a plain-text cell while that text is cut; after 500ms of hover, at once on keyboard focus, and it goes on scroll, press or blur. Nothing is mounted per cell.
 
 Data states: `loading` sets `aria-busy` and shows skeleton rows in the real columns, hidden from assistive technology. The error state is an `alert`. `loadingMore` is announced through a `status` region.
 
@@ -182,7 +185,9 @@ Resolved 2026-10-10:
 - **Group rows do not push each other out**: each sticks below the header and is covered by the next.
 - **Expanded detail rows are uncontrolled** (no prop for which rows are open).
 - **`virtualize="auto"` starts above 200 rows** and is off when a column wraps; a virtualised table needs rows of one height.
-- **Escape returns from a control to its cell even when a tooltip is open on it**; a control with `aria-expanded="true"` keeps Escape for itself.
+- **Escape returns from a control to its cell even when a tooltip is open on it**; a control with `aria-expanded="true"` keeps Escape for itself. A menu opened from a cell closes first, focus returns to its button, and the next Escape returns to the cell.
+- **One shared tooltip, not a `Tooltip` per cell**: `Tooltip` needs an element with a widget role as its trigger (a header cell or row header is not one) and one trigger per cell would cost thousands of components. The table opens React Aria's tooltip against the cell itself and reuses the styles of `Tooltip`.
+- **Focus is taken back only when it is nowhere** (the focused element was removed): focus that moved to a menu or dialog opened from a cell is left alone.
 - **Ctrl+Home goes to the first header cell** and does not scroll the body; the next Arrow Down goes to the first row.
 - **`wrap` only**; there is no separate `truncate` option (truncation is the default).
 - **Not a layout child** (no `size` or `priority` of its own): it goes in a `Card` with `padding="none"`, or any element with a height.

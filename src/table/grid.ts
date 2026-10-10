@@ -149,7 +149,9 @@ export function useGrid() {
     }
     const cell = activeCell();
     setTabStop(cell);
-    if (hasFocus.current && cell && !el.contains(document.activeElement)) cell.focus({ preventScroll: true });
+    // Only when focus is nowhere: focus that moved to a menu or a dialog opened from the table is left alone.
+    const lost = !document.activeElement || document.activeElement === document.body;
+    if (hasFocus.current && cell && lost) cell.focus({ preventScroll: true });
   });
 
   useEffect(() => {

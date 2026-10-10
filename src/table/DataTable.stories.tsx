@@ -211,12 +211,14 @@ function PeopleCard() {
       numberColumn({
         id: 'score',
         header: 'Score',
+        tooltip: 'Average of the last five reviews',
         accessor: 'score',
         priority: 2,
         sortable: true,
         cell: (person) => <ValuePill size="small" shape="square" value={person.score} />,
       }),
       actionsColumn<Person>({
+        width: 110,
         cell: (person) => (
           <>
             <IconButton
@@ -231,6 +233,13 @@ function PeopleCard() {
             />
           </>
         ),
+        menu: () => [
+          { id: 'duplicate', label: 'Duplicate' },
+          { id: 'move', label: 'Move to another team' },
+          { id: 'archive', label: 'Archive', danger: true },
+        ],
+        menuLabel: (person) => `More actions for ${person.name}`,
+        onMenuAction: (id, person) => setLast(`${id} ${person.id}`),
       }),
     ],
     [],

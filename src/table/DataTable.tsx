@@ -27,12 +27,18 @@ import {
   type RefObject,
 } from 'react';
 import { flushSync } from 'react-dom';
+import { Tooltip as AriaTooltip, TooltipTrigger } from 'react-aria-components';
+import { IconButton } from '../basics/IconButton';
 import { Skeleton } from '../basics/Skeleton';
 import { GroupHeader } from '../data/GroupHeader';
 import { KeyValueList, type KeyValueItem } from '../data/KeyValue';
 import { Checkbox } from '../inputs/Checkbox';
 import { dataState, type DataStateProps } from '../internal/dataState';
 import { ScrollArea } from '../layout/ScrollArea';
+import { Menu, type MenuEntry } from '../overlays/Menu';
+import tipStyles from '../overlays/Tooltip.module.css';
+import { Icon } from '../provider/icons';
+import { useScopeAttributes } from '../provider/UmbraProvider';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './DataTable.module.css';
 import { GridAdapterContext, INTERACTIVE, rowHandlers, useGrid, type GridAdapter } from './grid';
@@ -90,6 +96,8 @@ export interface DataTableColumn<Row> {
   headerLabel?: string;
   /** A longer explanation of the column, read by assistive technology after the header. */
   description?: string;
+  /** A hint for the header, shown in a tooltip on hover and keyboard focus, and read after the header unless `description` is set. */
+  tooltip?: string;
   /** Hides the header's content visually; it stays for assistive technology. */
   hideHeader?: boolean;
   /** The value of a row in this column: a key of the row, or a function. Used to sort, and to render when there is no `cell`. */
@@ -209,6 +217,21 @@ function Root({
   const own = useRef<HTMLDivElement>(null);
   const root = elementRef ?? own;
   const [table, gridHandlers] = useGrid();
+  const scope = useScopeAttributes();
+
+  // One tooltip for the whole table, in the look of `Tooltip`: the full text of a cell that is cut, or
+  // the hint of a header. A cell says what to show with `data-tip`; nothing is mounted per cell.
+  const [tip, setTip] = useState<{ el: HTMLElement; text: string } | null>(null);
+  const tipTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const tipFor = (target: EventTarget) => {
+    const el = (target as Element).closest<HTMLElement>('[data-tip]');
+    if (!el || (!el.hasAttribute('data-tip-always') && el.scrollWidth <= el.clientWidth)) return null;
+    return { el, text: el.dataset.tip! };
+  };
+  const hideTip = () => {
+    clearTimeout(tipTimer.current);
+    setTip(null);
+  };
 
   // Pinned columns show an edge line only while something is scrolled under them.
   useEffect(() => {
@@ -222,11 +245,14 @@ function Root({
     };
     update();
     view.addEventListener('scroll', update, { passive: true });
+    const hide = () => setTip(null);
+    view.addEventListener('scroll', hide, { passive: true });
     const observer = new ResizeObserver(update);
     observer.observe(view);
     if (table.current) observer.observe(table.current);
     return () => {
       view.removeEventListener('scroll', update);
+      view.removeEventListener('scroll', hide);
       observer.disconnect();
     };
   }, [root, table]);
@@ -264,7 +290,25 @@ function Root({
           data-fixed={width !== undefined || undefined}
           className={styles.table}
           style={{ width }}
-          {...gridHandlers}
+          onKeyDown={gridHandlers.onKeyDown}
+          onFocus={(event) => {
+            gridHandlers.onFocus(event);
+            // Keyboard focus shows the tooltip at once; a click does not.
+            const next = event.target.matches(':focus-visible') ? tipFor(event.target) : null;
+            if (next?.el === event.target) setTip(next);
+          }}
+          onBlur={(event) => {
+            gridHandlers.onBlur(event);
+            hideTip();
+          }}
+          onPointerOver={(event) => {
+            const next = tipFor(event.target);
+            if (next?.el === tip?.el) return;
+            hideTip();
+            if (next) tipTimer.current = setTimeout(() => setTip(next), 500);
+          }}
+          onPointerLeave={hideTip}
+          onPointerDown={hideTip}
         >
           {children}
         </table>
@@ -277,6 +321,24 @@ function Root({
       <div role="status" className={srOnly}>
         {announcement}
       </div>
+      {tip && tip.el.isConnected && (
+        // Opened by the table, against the cell: there is no trigger element of its own.
+        <TooltipTrigger isOpen>
+          <AriaTooltip
+            {...scope}
+            triggerRef={{ current: tip.el }}
+            placement="top"
+            offset={6}
+            data-umbra="tooltip"
+            data-umbra-overlay=""
+            className={tipStyles.root}
+          >
+            <span data-part="body" className={tipStyles.body}>
+              {tip.text}
+            </span>
+          </AriaTooltip>
+        </TooltipTrigger>
+      )}
     </div>
   );
 }
@@ -355,8 +417,10 @@ export interface DataTableHeaderCellProps extends BlockProps, CellLayoutProps {
   sortIndicator?: ReactNode;
   /** Accessible name, when the content is not text. */
   label?: string;
-  /** A longer explanation, read after the name. */
+  /** A longer explanation, read after the name. Assistive technology only. */
   description?: string;
+  /** A hint shown in a tooltip on hover and keyboard focus. Also read after the name, unless `description` is set. */
+  tooltip?: string;
   /** Hides the content visually. */
   hideLabel?: boolean;
   /** `colgroup` for a header that spans several columns. */
@@ -376,7 +440,8 @@ function HeaderCell({
   onSort,
   sortIndicator,
   label,
-  description,
+  description: longDescription,
+  tooltip,
   hideLabel,
   scope = 'col',
   className,
@@ -385,6 +450,7 @@ function HeaderCell({
 }: DataTableHeaderCellProps) {
   const descriptionId = useId();
   const labelId = useId();
+  const description = longDescription ?? tooltip;
   const content = (
     <span id={labelId} data-part="header-label" className={hideLabel ? srOnly : styles.headerLabel}>
       {children}
@@ -400,6 +466,8 @@ function HeaderCell({
       data-pin={pin}
       data-pin-edge={pinEdge || undefined}
       data-sort={sort}
+      data-tip={tooltip}
+      data-tip-always={tooltip ? '' : undefined}
       aria-sort={sort === 'asc' ? 'ascending' : sort === 'desc' ? 'descending' : sort}
       aria-label={label}
       // The description sits inside the cell, so the name is taken from the label alone.
@@ -525,7 +593,7 @@ export interface DataTableCellProps extends BlockProps, CellLayoutProps {
   numeric?: boolean;
   /** Lets the text wrap. Default: one line, cut with an ellipsis. */
   wrap?: boolean;
-  /** Tooltip, for text that may be cut. */
+  /** The cell's full text: shown in a tooltip while the cell cuts it. */
   title?: string;
   /** `false` keeps the cell out of the keyboard grid: a placeholder or a skeleton. */
   focusable?: boolean;
@@ -562,7 +630,7 @@ function Cell({
       data-wrap={wrap || undefined}
       aria-colindex={index}
       colSpan={colSpan}
-      title={title}
+      data-tip={title}
       tabIndex={focusable ? -1 : undefined}
       className={cx(styles.cell, className)}
       style={pinStyle(pin, pinOffset, style)}
@@ -626,7 +694,6 @@ function GroupRow({
       data-sticky={sticky || undefined}
       data-collapsed={(collapsible && collapsed) || undefined}
       aria-rowindex={index}
-      aria-expanded={collapsible ? !collapsed : undefined}
       className={cx(styles.groupRow, className)}
       style={style}
     >
@@ -1359,6 +1426,7 @@ export function DataTable<Row>({
           : undefined,
       label: c.def.headerLabel,
       description: c.def.description,
+      tooltip: c.def.tooltip,
       hideLabel: c.def.hideHeader,
       children: c.def.header,
     };
@@ -1735,13 +1803,26 @@ export function numberColumn<Row>(column: DataTableColumn<Row>): DataTableColumn
   return { align: 'end', numeric: true, width: 80, sortDescFirst: true, ...column };
 }
 
-/** A column of row actions: pinned to the end, never hidden, with a header only assistive technology reads. */
-export function actionsColumn<Row>(
-  column: Omit<DataTableColumn<Row>, 'id' | 'cell'> & {
-    id?: string;
-    cell: NonNullable<DataTableColumn<Row>['cell']>;
-  },
-): DataTableColumn<Row> {
+/**
+ * A column of row actions: pinned to the end, never hidden, with a header only assistive technology
+ * reads. `cell` returns buttons; `menu` adds a "more" button that opens a `Menu` of the row's actions.
+ */
+export function actionsColumn<Row>({
+  cell,
+  menu,
+  onMenuAction,
+  menuLabel = () => 'More actions',
+  ...column
+}: Omit<DataTableColumn<Row>, 'id' | 'cell'> & {
+  id?: string;
+  cell?: DataTableColumn<Row>['cell'];
+  /** The rows of the menu for one row of the table. */
+  menu?: (row: Row) => MenuEntry[];
+  /** Called with the id of the menu row the user chose. */
+  onMenuAction?: (id: string, row: Row) => void;
+  /** Accessible name of the "more" button. */
+  menuLabel?: (row: Row) => string;
+}): DataTableColumn<Row> {
   return {
     id: 'actions',
     header: 'Actions',
@@ -1749,8 +1830,21 @@ export function actionsColumn<Row>(
     align: 'end',
     pin: 'end',
     priority: 'always',
-    width: 96,
+    width: cell ? 96 : 56,
     ...column,
+    cell: (row, context) => (
+      <>
+        {cell?.(row, context)}
+        {menu && (
+          <Menu
+            trigger={<IconButton icon={<Icon name="more" />} label={menuLabel(row)} tooltip={false} />}
+            items={menu(row)}
+            onAction={(id) => onMenuAction?.(id, row)}
+            placement="bottom end"
+          />
+        )}
+      </>
+    ),
   };
 }
 
