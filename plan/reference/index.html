@@ -159,7 +159,7 @@ tr.me td { color: var(--accent-text); font-weight: 700; }
   </header>
   <div class="subnav">
     <b>Overview</b>
-    <a href="#" aria-current="page">Summary</a><a href="#">Inbox</a><a href="#">Calendar</a><a href="#">Reports</a><a href="#">Data hub</a>
+    <a href="#" aria-current="page">Summary</a><a href="#">Inbox</a><a href="#">Calendar</a><a href="#">Reports</a><a href="#">Insights</a>
     <div class="shortcuts"><button class="chip">Inbox</button><button class="chip">Team</button><button class="chip">Directory</button><button class="chip">(+1)</button></div>
   </div>
 
@@ -180,8 +180,8 @@ tr.me td { color: var(--accent-text); font-weight: 700; }
             <div>
               <section>
                 <h3 class="section-title link">Updates</h3>
-                <div class="media"><span class="tag">Operations</span><b>North region lands the Harbor contract</b><small style="color:var(--t2)">2d ago · Contracts</small></div>
-                <div class="kv"><span>Unclear outcome at Eastgate site</span><span>3d</span></div>
+                <div class="media"><span class="tag">Operations</span><b>North region lands a new contract</b><small style="color:var(--t2)">2d ago · Contracts</small></div>
+                <div class="kv"><span>Unclear outcome at Site 7</span><span>3d</span></div>
                 <div class="kv"><span>West team has work to do after slow start</span><span>2d</span></div>
               </section>
               <section>
@@ -196,10 +196,10 @@ tr.me td { color: var(--accent-text); font-weight: 700; }
               </section>
               <section>
                 <h3 class="section-title link">Top performers</h3>
-                <div class="kv"><span>Highest average rating<br><small style="color:var(--t2)">E. Halvorsen</small></span><b>8.80</b></div>
-                <div class="kv"><span>Most closed orders<br><small style="color:var(--t2)">E. Halvorsen</small></span><b>6</b></div>
-                <div class="kv"><span>Most referrals<br><small style="color:var(--t2)">T. George</small></span><b>2</b></div>
-                <div class="kv"><span>Most reviews passed<br><small style="color:var(--t2)">M. Okafor</small></span><b>2</b></div>
+                <div class="kv"><span>Highest average rating<br><small style="color:var(--t2)">Person H</small></span><b>9.1</b></div>
+                <div class="kv"><span>Most closed orders<br><small style="color:var(--t2)">Person H</small></span><b>6</b></div>
+                <div class="kv"><span>Most referrals<br><small style="color:var(--t2)">Person J</small></span><b>2</b></div>
+                <div class="kv"><span>Most reviews passed<br><small style="color:var(--t2)">Person K</small></span><b>2</b></div>
               </section>
             </div>
           </div>
@@ -208,8 +208,8 @@ tr.me td { color: var(--accent-text); font-weight: 700; }
 
       <div class="stack" style="--size:2.4">
         <section class="card neutral"><div class="card-header"><h2 class="card-title">Next review</h2></div>
-          <div class="card-body"><b>Coventry depot</b> <small style="color:var(--t2)">· Today</small><div class="stat-label hide-short">20th in regional ranking</div></div></section>
-        <section class="card neutral" style="--size:1.4"><div class="card-header"><h2 class="card-title">Data hub</h2></div>
+          <div class="card-body"><b>Site 20 depot</b> <small style="color:var(--t2)">· Today</small><div class="stat-label hide-short">20th in regional ranking</div></div></section>
+        <section class="card neutral" style="--size:1.4"><div class="card-header"><h2 class="card-title">Insights</h2></div>
           <div class="card-body" style="display:flex;gap:12px;align-items:center">
             <svg class="hide-tiny" viewBox="-50 -50 100 100" width="84" height="84" role="img" aria-label="Radar chart: performance across six measures, above average on five" style="flex:none">
               <polygon points="0,-44 38,-22 38,22 0,44 -38,22 -38,-22" fill="none" stroke="#3a4350"/>
@@ -219,9 +219,9 @@ tr.me td { color: var(--accent-text); font-weight: 700; }
             <div><span class="tag" style="border-color:var(--success)">▲ Performing above average</span><p class="stat-label hide-short" style="margin-top:6px">Well above average on five of six measures.</p></div>
           </div></section>
         <section class="card neutral"><div class="card-header"><h2 class="card-title">Project budget</h2></div>
-          <div class="card-body"><div class="stat-label hide-tiny">Available</div><div class="stat">£80.12M</div><div class="stat-label hide-short">Spent this year · £12.13M</div><div class="bar hide-tiny" role="img" aria-label="87% of budget available"><i style="--v:87%"></i></div></div></section>
+          <div class="card-body"><div class="stat-label hide-tiny">Available</div><div class="stat">€64.0M</div><div class="stat-label hide-short">Spent this year · €9.5M</div><div class="bar hide-tiny" role="img" aria-label="87% of budget available"><i style="--v:87%"></i></div></div></section>
         <section class="card neutral"><div class="card-header"><h2 class="card-title">Payroll budget</h2></div>
-          <div class="card-body"><div class="stat-label hide-tiny">Available</div><div class="stat">£275K p/w</div><div class="stat-label hide-short">Committed · £1.62M p/w</div><div class="bar hide-tiny" role="img" aria-label="55% of payroll committed"><i style="--v:55%"></i></div></div></section>
+          <div class="card-body"><div class="stat-label hide-tiny">Available</div><div class="stat">€410K / month</div><div class="stat-label hide-short">Committed · €500K / month</div><div class="bar hide-tiny" role="img" aria-label="55% of payroll committed"><i style="--v:55%"></i></div></div></section>
         <section class="card neutral"><div class="card-header"><h2 class="card-title">This week</h2></div>
           <div class="card-body"><div class="week" id="week"></div></div></section>
       </div>
@@ -233,20 +233,20 @@ tr.me td { color: var(--accent-text); font-weight: 700; }
 for (const [k, v] of new URLSearchParams(location.search)) if (k === 'density' || k === 'context') document.documentElement.dataset[k] = v;
 // Row data only; all look and layout is CSS above.
 const h = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
-const inbox = [['Fri 9 Oct'], ['D. Nowak', 'Training review', 'Training', '20:49', 0], ['D. Nowak', 'Planning advice', 'Staff advice', '19:49', 0],
-  ['C. Martin', 'Junior schedule clash', 'Scheduling', '08:43', 1], ['D. Nowak', 'Selection advice: Coventry', 'Planning', '07:50', 1, 1], ['Thu 8 Oct'],
-  ['S. Ruth', 'Trainee catches the eye in audit', 'Review', '21:34', 0], ['J. Doolan', 'Coventry site report', 'Research', '10:50', 1],
-  ['M. Cave', 'Staffing advice', 'Staff advice', '08:55', 1], ['B. Kontermann', 'Vendor research report', 'Research', '08:48', 1], ['Wed 7 Oct'],
-  ['D. Nowak', 'Review preparation: Coventry', 'Planning', '21:57', 1], ['J. Martins', 'Client praises Ayari delivery', 'Media', '21:31', 1]];
+const inbox = [['Fri 9 Oct'], ['Person A', 'Training review', 'Training', '20:49', 0], ['Person A', 'Planning advice', 'Staff advice', '19:49', 0],
+  ['Person B', 'Junior schedule clash', 'Scheduling', '08:43', 1], ['Person A', 'Selection advice: Site 20', 'Planning', '07:50', 1, 1], ['Thu 8 Oct'],
+  ['Person C', 'Trainee catches the eye in audit', 'Review', '21:34', 0], ['Person D', 'Site 20 report', 'Research', '10:50', 1],
+  ['Person E', 'Staffing advice', 'Staff advice', '08:55', 1], ['Person F', 'Vendor research report', 'Research', '08:48', 1], ['Wed 7 Oct'],
+  ['Person A', 'Review preparation: Site 20', 'Planning', '21:57', 1], ['Person G', 'Client praises on-time delivery', 'Media', '21:31', 1]];
 document.getElementById('inbox').innerHTML = inbox.map(r => r.length === 1 ? `<div class="group">${h(r[0])}</div>` :
   `<div class="item${r[4] ? ' read' : ''}"${r[5] ? ' aria-selected="true"' : ''}><small>${h(r[0])}</small><span class="tag">${h(r[2])}</span><strong>${h(r[1])}</strong><time>${r[3]}</time></div>`).join('');
-const regions = ['Northgate', 'Harbor', 'Hull', 'Arden', 'Brightwater', 'Forest', 'Everdale', 'Newbridge', 'Brentwood', 'Sunderby', 'Chelsey', 'Fullmoor', 'Manby', 'Bournhill', 'Astonfield', 'Riverside', 'Palace', 'Ipsley', 'Leeds Row', 'Coventry'];
+const regions = Array.from({ length: 20 }, (_, i) => `Region ${i + 1}`);
 document.getElementById('ranking').innerHTML = regions.map((n, i) => { const w = Math.max(0, 3 - (i >> 2)), l = Math.min(3, i >> 2), o = 3 - w - l > 0 ? 3 - w - l : 0;
   const stripe = i < 4 ? 'var(--info)' : i === 4 ? 'var(--warning)' : i > 16 ? 'var(--danger)' : 'transparent';
   return `<tr class="${i === 4 ? 'me' : ''}"><td class="pos" style="--stripe:${stripe}">${i + 1}</td><td>${n}</td><td class="num p3">3</td><td class="num p2">${w}</td><td class="num p3">${o}</td><td class="num p2">${l}</td><td class="num">${w * 3 + o}</td></tr>`; }).join('');
-const sched = [['20/08', 'Tromsø Works', 'Home', 'success', 'Done 3-1', 'Direct'], ['23/08', 'Aston Mills', 'Home', 'success', 'Done 3-0', 'Partner'], ['27/08', 'Tromsø Works', 'Away', 'success', 'Done 1-3', 'Direct'],
-  ['30/08', 'Chelsey Ltd', 'Away', 'danger', 'Missed', 'Partner'], ['05/09', 'Leeds Row', 'Home', 'success', 'Done', 'Partner'], ['09/09', 'Spurfield', 'Home', 'warning', 'Late', 'Tender'],
-  ['12/09', 'Coventry', 'Away', '', '–', 'Partner'], ['20/09', 'Arden', 'Home', '', '–', 'Partner'], ['27/09', 'Sunderby', 'Away', '', '–', 'Partner']];
+const sched = [['20/08', 'Client A', 'On site', 'success', 'Done', 'Direct'], ['23/08', 'Client B', 'On site', 'success', 'Done', 'Partner'], ['27/08', 'Client A', 'Remote', 'success', 'Done', 'Direct'],
+  ['30/08', 'Client C', 'Remote', 'danger', 'Missed', 'Partner'], ['05/09', 'Client D', 'On site', 'success', 'Done', 'Partner'], ['09/09', 'Client E', 'On site', 'warning', 'Late', 'Tender'],
+  ['12/09', 'Client F', 'Remote', '', '–', 'Partner'], ['20/09', 'Client G', 'On site', '', '–', 'Partner'], ['27/09', 'Client H', 'Remote', '', '–', 'Partner']];
 document.getElementById('schedule').innerHTML = sched.map(r => `<tr><td style="width:4em;max-width:none">${r[0]}</td><td>${r[1]}</td><td class="p2">${r[2]}</td><td>${r[3] ? `<i class="dot" style="--c:var(--${r[3]})"></i>` : ''}${r[4]}</td><td class="p3">${r[5]}</td></tr>`).join('');
 const cols = ['info', 'success', 'b-strong', 'warning', 'success', 'primary', 'b-strong'];
 document.getElementById('week').innerHTML = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((d, i) =>
