@@ -1,0 +1,171 @@
+.root {
+  /* Read by a parent Stack: the height the tile needs to stay readable. */
+  --umbra-slot-min-height: var(--umbra-summary-tile-min-height, var(--umbra-density-list-row));
+
+  flex: 1 1 0;
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  /* The tile always has a definite width, so its parts can hide by container query as it narrows. */
+  container-type: inline-size;
+}
+
+/* A tile that hugs its content cannot take its width from it (it is a container), so it gets a fixed one. */
+.root[data-size='content'] {
+  flex: 0 0 auto;
+  min-width: var(--umbra-summary-tile-min-width, 160px);
+}
+
+.root[hidden] {
+  display: none;
+}
+
+.surface {
+  --bg: var(--umbra-summary-tile-bg, var(--umbra-context-card-tint));
+  --fg: var(--umbra-summary-tile-fg, var(--umbra-color-base-text-primary));
+  --secondary: var(--umbra-summary-tile-caption-fg, var(--umbra-color-base-text-secondary));
+  --block: var(
+    --umbra-summary-tile-icon-size,
+    calc(var(--umbra-density-control-height) + var(--umbra-space-3))
+  );
+
+  flex: 1 1 0;
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-space-4);
+  min-width: 0;
+  padding: var(--umbra-summary-tile-padding, var(--umbra-space-4));
+  overflow: hidden;
+  border: var(--umbra-border-width) solid
+    var(--umbra-summary-tile-border, var(--umbra-color-base-border-subtle));
+  border-radius: var(--umbra-summary-tile-radius, var(--umbra-radius-card));
+  background: var(--bg);
+  color: var(--fg);
+  font: var(--umbra-font-body);
+  text-align: start;
+  text-decoration: none;
+  transition: background-color var(--umbra-motion-duration-fast);
+}
+
+.surface:is(a, button) {
+  cursor: pointer;
+}
+
+/* Hover lightens one step, press darkens one step (plan/interaction.md). */
+.surface[data-hovered] {
+  background: color-mix(in oklab, var(--bg), #fff 6%);
+}
+
+.surface[data-pressed] {
+  background: color-mix(in oklab, var(--bg), #000 18%);
+}
+
+/* Selected: the violet fill, and a bar along the bottom edge as the cue that is not colour. */
+.root[data-selected] > .surface {
+  --bg: var(--umbra-summary-tile-selected-bg, var(--umbra-color-fixed-selected));
+  --fg: var(--umbra-summary-tile-selected-fg, var(--umbra-color-fixed-on-selected));
+  --secondary: var(--fg);
+
+  border-color: var(--bg);
+  box-shadow: inset 0 calc(-1 * var(--umbra-space-2)) 0 var(--umbra-color-fixed-accent-text);
+}
+
+/* A surface that carries light text darkens on hover, so the text keeps its contrast. */
+.root[data-selected] > .surface[data-hovered] {
+  background: color-mix(in oklab, var(--bg), #000 12%);
+}
+
+.root[data-selected] > .surface[data-pressed] {
+  background: color-mix(in oklab, var(--bg), #000 26%);
+}
+
+/* Drawn inwards: tiles often sit edge to edge inside a card body, which clips. */
+.surface:focus-visible,
+.surface[data-focus-visible] {
+  outline: var(--umbra-state-focus-ring-width) solid
+    var(--umbra-focus-color, var(--umbra-color-fixed-focus-ring));
+  outline-offset: calc(-1 * var(--umbra-state-focus-ring-width));
+}
+
+.root[data-disabled] > .surface {
+  opacity: var(--umbra-state-disabled-opacity);
+  cursor: default;
+}
+
+.icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: var(--block);
+  height: var(--block);
+  border-radius: var(--umbra-radius-control);
+  background: var(--umbra-summary-tile-icon-bg, var(--umbra-color-base-surface3));
+  font-size: calc(var(--block) * 0.45);
+}
+
+.root[data-selected] .icon {
+  background: var(--umbra-summary-tile-icon-bg, color-mix(in oklab, var(--fg) 18%, transparent));
+}
+
+.content {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--umbra-space-1);
+  min-width: 0;
+}
+
+.title,
+.value,
+.caption {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.title {
+  font: var(--umbra-font-card-title);
+  text-transform: var(--umbra-font-card-title-transform);
+}
+
+.figure {
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-space-3);
+  min-width: 0;
+}
+
+.trend {
+  flex: none;
+  display: inline-flex;
+  font: var(--umbra-font-label);
+}
+
+.caption {
+  color: var(--secondary);
+  font: var(--umbra-font-label);
+}
+
+/* As the tile narrows the caption hides, then the trend, then the icon. Title and value stay and truncate. */
+@container (max-width: 220px) {
+  .caption {
+    display: none;
+  }
+}
+
+@container (max-width: 180px) {
+  .trend {
+    display: none;
+  }
+}
+
+@container (max-width: 140px) {
+  .icon {
+    display: none;
+  }
+
+  .surface {
+    padding: var(--umbra-summary-tile-padding, var(--umbra-space-3));
+  }
+}

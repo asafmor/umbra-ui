@@ -1,0 +1,110 @@
+.root {
+  /* Without a size the avatar is as tall as a control, so it follows the density level. */
+  --size: var(--umbra-avatar-size, var(--umbra-density-control-height));
+  --ring: var(--umbra-avatar-ring, var(--umbra-color-fixed-accent-text));
+
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  width: var(--size);
+  height: var(--size);
+  vertical-align: middle;
+}
+
+.root[data-size='xs'] {
+  --size: var(--umbra-avatar-size, 18px);
+}
+
+.root[data-size='sm'] {
+  --size: var(--umbra-avatar-size, 24px);
+}
+
+.root[data-size='md'] {
+  --size: var(--umbra-avatar-size, 32px);
+}
+
+.root[data-size='lg'] {
+  --size: var(--umbra-avatar-size, 48px);
+}
+
+.root[data-size='xl'] {
+  --size: var(--umbra-avatar-size, 72px);
+}
+
+.media {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--umbra-avatar-bg, var(--umbra-color-base-surface3));
+  color: var(--umbra-avatar-fg, var(--umbra-color-base-text-primary));
+  font: 700 calc(var(--size) * 0.4) / 1 var(--umbra-font-family-body);
+  object-fit: cover;
+  user-select: none;
+}
+
+.root[data-shape='square'] > .media {
+  border-radius: var(--umbra-avatar-radius, var(--umbra-radius-control));
+}
+
+.media[data-part='fallback'] {
+  color: var(--umbra-avatar-fallback-fg, var(--umbra-color-base-text-secondary));
+}
+
+.media[data-part='fallback'] > :is(svg, img) {
+  width: 60%;
+  height: 60%;
+}
+
+/* A gap separates the ring from the image, so it reads on any image. */
+.root[data-ring] > .media {
+  outline: var(--umbra-state-focus-ring-width) solid var(--ring);
+  outline-offset: 2px;
+}
+
+.status {
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline-end: 0;
+  display: grid;
+  place-items: center;
+  /* The slot has a size, so a status node can simply fill it; centred on the corner of a square. */
+  width: var(--umbra-avatar-status-size, max(8px, calc(var(--size) * 0.28)));
+  height: var(--umbra-avatar-status-size, max(8px, calc(var(--size) * 0.28)));
+  translate: 25% 25%;
+}
+
+.root[data-shape='circle'] > .status {
+  /* On a circle the corner of the box is outside the shape; unmoved, the slot is centred on the edge. */
+  translate: 0 0;
+}
+
+/*
+ * The group clips, so it can tell when its avatars no longer fit (useShrinkLevel). The padding keeps
+ * the outline of each avatar inside the clip.
+ */
+.group {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  max-width: 100%;
+  padding: 2px;
+  overflow: hidden;
+}
+
+.root[data-in-group] > .media {
+  font-size: calc(var(--size) * 0.36);
+  box-shadow: 0 0 0 2px var(--umbra-avatar-group-border, var(--umbra-color-base-surface1));
+}
+
+.root[data-in-group]:not(:first-child) {
+  margin-inline-start: calc(var(--size) * -1 * var(--umbra-avatar-group-overlap, 0.16));
+}
+
+.media[data-part='overflow'] {
+  color: var(--umbra-avatar-fg, var(--umbra-color-base-text-primary));
+  font-size: max(9px, calc(var(--size) * 0.36));
+  font-variant-numeric: tabular-nums;
+}

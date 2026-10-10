@@ -1,0 +1,189 @@
+.root {
+  --font: var(--umbra-stat-value-font, var(--umbra-font-title));
+  /* One step down, used when the slot is short. */
+  --font-small: var(
+    --umbra-stat-value-font-small,
+    700 var(--umbra-density-body-size) / 1.375 var(--umbra-font-family-body)
+  );
+  --fg: var(--umbra-stat-value-fg, var(--umbra-color-base-text-primary));
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--umbra-stat-value-gap, var(--umbra-space-2));
+  min-width: 0;
+}
+
+.root[data-size='lg'] {
+  --font: var(--umbra-stat-value-font, var(--umbra-font-display));
+  --font-small: var(--umbra-stat-value-font-small, var(--umbra-font-title));
+}
+
+/* Larger than the display font, which is the largest font token. */
+.root[data-size='xl'] {
+  --font: var(--umbra-stat-value-font, 700 40px/1.1 var(--umbra-font-family-body));
+  --font-small: var(--umbra-stat-value-font-small, var(--umbra-font-display));
+}
+
+.root[data-tone='accent'] {
+  --fg: var(--umbra-stat-value-fg, var(--umbra-color-fixed-accent-text));
+}
+
+.root[data-tone='success'] {
+  --fg: var(--umbra-stat-value-fg, var(--umbra-color-semantic-success));
+}
+
+.root[data-tone='warning'] {
+  --fg: var(--umbra-stat-value-fg, var(--umbra-color-semantic-warning));
+}
+
+.root[data-tone='danger'] {
+  --fg: var(--umbra-stat-value-fg, var(--umbra-color-semantic-danger));
+}
+
+.root[data-tone='muted'] {
+  --fg: var(--umbra-stat-value-fg, var(--umbra-color-base-text-secondary));
+}
+
+.root[data-align='center'] {
+  text-align: center;
+}
+
+.root[data-align='end'] {
+  text-align: end;
+}
+
+.label {
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-space-2);
+  min-width: 0;
+  color: var(--umbra-stat-value-label-fg, var(--umbra-color-base-text-secondary));
+  font: var(--umbra-font-label);
+}
+
+.figure {
+  display: flex;
+  align-items: baseline;
+  gap: var(--umbra-space-2);
+  min-width: 0;
+  color: var(--fg);
+  font: var(--font);
+  /* Holds the line while a skeleton stands in for the value, so nothing moves when it arrives. */
+  min-height: 1lh;
+}
+
+.root[data-align='center'] > :is(.label, .figure) {
+  justify-content: center;
+}
+
+.root[data-align='end'] > :is(.label, .figure) {
+  justify-content: flex-end;
+}
+
+.text,
+.value,
+.caption {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.value {
+  font-variant-numeric: tabular-nums;
+}
+
+.unit {
+  flex: none;
+  color: var(--umbra-stat-value-unit-fg, var(--umbra-color-base-text-secondary));
+  font: var(--umbra-font-label);
+}
+
+.trend {
+  flex: none;
+  display: inline-flex;
+  align-self: center;
+  color: var(--umbra-color-base-text-primary);
+  font: var(--umbra-font-label);
+}
+
+.caption {
+  color: var(--umbra-stat-value-caption-fg, var(--umbra-color-base-text-secondary));
+  font: var(--umbra-font-label);
+}
+
+.meter {
+  min-width: 0;
+  padding-top: var(--umbra-space-1);
+}
+
+/*
+ * As the slot gets shorter the caption hides, then the meter, then the label; at the last step the
+ * value also goes one font step down. The slot is the nearest size container: the Card or Slot the
+ * stat sits in. The heights are those of a card with a header that holds one stat, per value size.
+ */
+@container (max-height: 150px) {
+  .root[data-size='md'] > .caption {
+    display: none;
+  }
+}
+
+@container (max-height: 126px) {
+  .root[data-size='md'] > .meter {
+    display: none;
+  }
+}
+
+@container (max-height: 110px) {
+  .root[data-size='md'] > .label {
+    display: none;
+  }
+
+  .root[data-size='md'] > .figure {
+    font: var(--font-small);
+  }
+}
+
+@container (max-height: 158px) {
+  .root[data-size='lg'] > .caption {
+    display: none;
+  }
+}
+
+@container (max-height: 134px) {
+  .root[data-size='lg'] > .meter {
+    display: none;
+  }
+}
+
+@container (max-height: 118px) {
+  .root[data-size='lg'] > .label {
+    display: none;
+  }
+
+  .root[data-size='lg'] > .figure {
+    font: var(--font-small);
+  }
+}
+
+@container (max-height: 170px) {
+  .root[data-size='xl'] > .caption {
+    display: none;
+  }
+}
+
+@container (max-height: 146px) {
+  .root[data-size='xl'] > .meter {
+    display: none;
+  }
+}
+
+@container (max-height: 130px) {
+  .root[data-size='xl'] > .label {
+    display: none;
+  }
+
+  .root[data-size='xl'] > .figure {
+    font: var(--font-small);
+  }
+}

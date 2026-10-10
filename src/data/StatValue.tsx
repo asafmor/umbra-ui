@@ -1,0 +1,232 @@
+import {
+  createContext,
+  useContext,
+  useId,
+  useLayoutEffect,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from 'react';
+import { Skeleton } from '../basics/Skeleton';
+import { IconSlot } from '../provider/icons';
+import { cx, renderPart, type Part } from '../utils/parts';
+import styles from './StatValue.module.css';
+
+export type StatValueTone = 'default' | 'accent' | 'success' | 'warning' | 'danger' | 'muted';
+
+/** The id that ties the label to the group it names. */
+const LabelIdContext = createContext<string | undefined>(undefined);
+
+interface BlockProps {
+  className?: string;
+  style?: CSSProperties;
+  children?: ReactNode;
+}
+
+export interface StatValueRootProps extends BlockProps {
+  /** Size of the value: `md` is the title font, `lg` the display font, `xl` larger still. */
+  size?: 'md' | 'lg' | 'xl';
+  /** Colour of the value. A tone that carries meaning needs a second cue: a `trend`, an icon or the label. */
+  tone?: StatValueTone;
+  align?: 'start' | 'center' | 'end';
+  /** Marks the stat busy for assistive technology. */
+  loading?: boolean;
+  /** Accessible name, for a stat without a label. */
+  'aria-label'?: string;
+}
+
+function Root({
+  size = 'md',
+  tone = 'default',
+  align = 'start',
+  loading = false,
+  'aria-label': ariaLabel,
+  className,
+  style,
+  children,
+}: StatValueRootProps) {
+  const labelId = useId();
+  // The label can be left out or hidden through `parts`; the group is only named by one that exists.
+  const [hasLabel, setHasLabel] = useState(true);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- checked after every render on purpose; an equal value does not render again
+  useLayoutEffect(() => setHasLabel(!!document.getElementById(labelId)));
+  return (
+    <div
+      role="group"
+      aria-labelledby={ariaLabel || !hasLabel ? undefined : labelId}
+      aria-label={ariaLabel}
+      aria-busy={loading || undefined}
+      data-umbra="stat-value"
+      data-size={size}
+      data-tone={tone}
+      data-align={align}
+      data-loading={loading || undefined}
+      className={cx(styles.root, className)}
+      style={style}
+    >
+      <LabelIdContext value={labelId}>{children}</LabelIdContext>
+    </div>
+  );
+}
+
+export interface StatValueLabelProps extends BlockProps {
+  /** Shown before the label. */
+  icon?: ReactNode;
+}
+
+function Label({ icon, className, style, children }: StatValueLabelProps) {
+  return (
+    <div
+      data-part="label"
+      id={useContext(LabelIdContext)}
+      className={cx(styles.label, className)}
+      style={style}
+    >
+      {icon}
+      <span className={styles.text}>{children}</span>
+    </div>
+  );
+}
+
+/** The line that holds the value, its unit and its trend. */
+function Figure({ className, style, children }: BlockProps) {
+  return (
+    <div data-part="figure" className={cx(styles.figure, className)} style={style}>
+      {children}
+    </div>
+  );
+}
+
+function Value({ className, style, children }: BlockProps) {
+  return (
+    <span data-part="value" className={cx(styles.value, className)} style={style}>
+      {children}
+    </span>
+  );
+}
+
+function Unit({ className, style, children }: BlockProps) {
+  return (
+    <span data-part="unit" className={cx(styles.unit, className)} style={style}>
+      {children}
+    </span>
+  );
+}
+
+function Trend({ className, style, children }: BlockProps) {
+  return (
+    <span data-part="trend" className={cx(styles.trend, className)} style={style}>
+      {children}
+    </span>
+  );
+}
+
+function Caption({ className, style, children }: BlockProps) {
+  return (
+    <div data-part="caption" className={cx(styles.caption, className)} style={style}>
+      {children}
+    </div>
+  );
+}
+
+function Meter({ className, style, children }: BlockProps) {
+  return (
+    <div data-part="meter" className={cx(styles.meter, className)} style={style}>
+      {children}
+    </div>
+  );
+}
+
+export interface StatValueProps extends Omit<StatValueRootProps, 'children'> {
+  /** The value. It never hides. */
+  value?: ReactNode;
+  /** What the value is. */
+  label?: ReactNode;
+  /** Shown before the label. */
+  icon?: ReactNode;
+  /** Shown after the value, smaller. */
+  unit?: ReactNode;
+  /** A secondary line under the value. */
+  caption?: ReactNode;
+  /** A node after the value that shows its direction, for example a `TrendArrow`. */
+  trend?: ReactNode;
+  /** A node under the caption that shows the value as a share, for example a `ProgressBar`. */
+  meter?: ReactNode;
+  /** Shows skeletons in place of the value, caption and meter. */
+  loading?: boolean;
+  /** Replace or hide named pieces. */
+  parts?: {
+    icon?: Part<{ children: ReactNode }>;
+    label?: Part<StatValueLabelProps>;
+    value?: Part<{ children: ReactNode }>;
+    unit?: Part<{ children: ReactNode }>;
+    trend?: Part<{ children: ReactNode }>;
+    caption?: Part<{ children: ReactNode }>;
+    meter?: Part<{ children: ReactNode }>;
+    skeleton?: Part;
+  };
+}
+
+const has = (node: ReactNode) => node != null && node !== false;
+
+/** A large value with its label, and optional unit, trend, caption and meter. */
+export function StatValue({
+  value,
+  label,
+  icon,
+  unit,
+  caption,
+  trend,
+  meter,
+  parts,
+  ...root
+}: StatValueProps) {
+  const { loading } = root;
+  const iconNode =
+    has(icon) &&
+    renderPart(parts?.icon, { children: icon }, (p) => <IconSlot part="icon">{p.children}</IconSlot>);
+  return (
+    <Root {...root}>
+      {has(label) && renderPart(parts?.label, { icon: iconNode, children: label }, (p) => <Label {...p} />)}
+      <Figure>
+        {loading ? (
+          renderPart(parts?.skeleton, {}, () => (
+            <Skeleton
+              shape="block"
+              width="4em"
+              height="0.7em"
+              style={{ alignSelf: 'center', minHeight: 0 }}
+            />
+          ))
+        ) : (
+          <>
+            {renderPart(parts?.value, { children: value }, (p) => (
+              <Value>{p.children}</Value>
+            ))}
+            {has(unit) && renderPart(parts?.unit, { children: unit }, (p) => <Unit>{p.children}</Unit>)}
+            {has(trend) && renderPart(parts?.trend, { children: trend }, (p) => <Trend>{p.children}</Trend>)}
+          </>
+        )}
+      </Figure>
+      {has(caption) &&
+        renderPart(parts?.caption, { children: loading ? <Skeleton width="8em" /> : caption }, (p) => (
+          <Caption>{p.children}</Caption>
+        ))}
+      {has(meter) &&
+        renderPart(
+          parts?.meter,
+          { children: loading ? <Skeleton shape="block" height={8} style={{ minHeight: 0 }} /> : meter },
+          (p) => <Meter>{p.children}</Meter>,
+        )}
+    </Root>
+  );
+}
+
+StatValue.Root = Root;
+StatValue.Label = Label;
+StatValue.Figure = Figure;
+StatValue.Value = Value;
+StatValue.Unit = Unit;
+StatValue.Trend = Trend;
+StatValue.Caption = Caption;
+StatValue.Meter = Meter;
