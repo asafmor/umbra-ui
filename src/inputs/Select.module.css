@@ -1,0 +1,341 @@
+/* The root is the visible box. The trigger button inside it has no box of its own and covers all of it. */
+.root {
+  --height: var(--umbra-select-height, var(--umbra-density-control-height));
+  --bg: var(--umbra-select-bg, var(--umbra-color-base-surface1));
+  --fg: var(--umbra-select-fg, var(--umbra-color-base-text-primary));
+  --border: var(--umbra-select-border, var(--umbra-color-base-border-control));
+  --pad: var(--umbra-select-padding-x, var(--umbra-space-4));
+
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--umbra-space-3);
+  flex: 0 1 auto;
+  width: var(--umbra-select-width, auto);
+  min-width: 0;
+  max-width: 100%;
+  min-height: var(--height);
+  padding: 0 var(--pad);
+  border: var(--umbra-border-width) solid var(--border);
+  border-radius: var(--umbra-select-radius, var(--umbra-radius-control));
+  background: var(--bg);
+  color: var(--fg);
+  font: var(--umbra-font-body);
+  vertical-align: middle;
+  cursor: pointer;
+  transition:
+    background-color var(--umbra-motion-duration-fast),
+    border-color var(--umbra-motion-duration-fast);
+}
+
+.root[data-full-width],
+.root[data-variant='inCell'] {
+  display: flex;
+  width: 100%;
+}
+
+.root[data-size='small'] {
+  --height: calc(var(--umbra-density-table-row) - 2px);
+  --pad: var(--umbra-space-3);
+
+  gap: var(--umbra-space-2);
+  font: var(--umbra-font-table-cell);
+}
+
+/* Ghost and in-cell: no box until the pointer is over it. */
+.root:is([data-variant='ghost'], [data-variant='inCell']) {
+  --bg: var(--umbra-select-ghost-bg, transparent);
+  --border: transparent;
+}
+
+/* In a cell the chosen option's colour is the fill. Its label is the cue that is not colour. */
+.root[data-variant='inCell'][data-tone] {
+  --bg: var(--tone);
+  --fg: var(--on-tone);
+  font-weight: 700;
+}
+
+/* Hover lightens one step, press darkens one step (plan/interaction.md). */
+.root:has(> .trigger[data-hovered]) {
+  background: color-mix(in oklab, var(--bg), currentColor 10%);
+}
+
+.root:has(> .trigger[data-pressed]) {
+  background: color-mix(in oklab, var(--bg), #000 18%);
+}
+
+.root:is([data-variant='ghost'], [data-variant='inCell']):has(> .trigger[data-hovered]),
+.root[data-variant='ghost'][data-open] {
+  border-color: var(--umbra-select-border, var(--umbra-color-base-border-control));
+}
+
+/* A coloured fill carries coloured text, so it darkens on hover. */
+.root[data-variant='inCell'][data-tone]:has(> .trigger[data-hovered]) {
+  border-color: transparent;
+  background: color-mix(in oklab, var(--bg), #000 12%);
+}
+
+.root:has(> .trigger[data-focus-visible]) {
+  outline: var(--umbra-state-focus-ring-width) solid
+    var(--umbra-focus-color, var(--umbra-color-fixed-focus-ring));
+  outline-offset: var(--umbra-focus-offset, 2px);
+}
+
+/* A table cell clips, so there the ring is drawn inwards. */
+.root[data-variant='inCell']:has(> .trigger[data-focus-visible]) {
+  outline-offset: calc(-1 * var(--umbra-state-focus-ring-width));
+}
+
+.root[data-invalid] {
+  --border: var(--umbra-select-invalid-border, var(--umbra-color-semantic-danger));
+}
+
+/* Read-only: no fill and a dashed edge, so it does not look like it opens. */
+.root[data-readonly] {
+  border-style: dashed;
+  border-color: var(--umbra-select-border, var(--umbra-color-base-border-control));
+  background: transparent;
+  cursor: default;
+}
+
+.root[data-disabled] {
+  opacity: var(--umbra-state-disabled-opacity);
+  cursor: default;
+}
+
+.trigger {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: inherit;
+  /* The ring is drawn on the root. */
+  outline: none;
+}
+
+/* The whole box is the button's hit area; the clear button stays above it. */
+.trigger::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+.value {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-space-3);
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  --umbra-icon-size: 1.25em;
+}
+
+/* Text alone (the placeholder, several labels, a count) truncates as one line. */
+.value[data-empty],
+.root[data-multiple] .value {
+  display: block;
+  text-overflow: ellipsis;
+}
+
+.value[data-empty] {
+  color: var(--umbra-select-placeholder, var(--umbra-color-base-text-muted));
+}
+
+.valueText {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.valueLabel,
+.valueDescription {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.valueDescription {
+  font: var(--umbra-font-label);
+  color: var(--umbra-color-base-text-secondary);
+}
+
+/* Two lines make the box taller than a control; it keeps a little room above and below. */
+.valueText:has(.valueDescription) {
+  padding-block: var(--umbra-space-2);
+}
+
+.root[data-variant='inCell'][data-tone] .valueDescription {
+  color: inherit;
+}
+
+.leading {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+.swatch {
+  flex: none;
+  width: var(--umbra-select-swatch-size, 0.75em);
+  height: var(--umbra-select-swatch-size, 0.75em);
+  border-radius: var(--umbra-space-1);
+}
+
+/* The fill already shows the colour. */
+.root[data-variant='inCell'][data-tone] .swatch {
+  display: none;
+}
+
+.root > [data-part='icon'] {
+  color: var(--umbra-select-icon-color, var(--umbra-color-base-text-secondary));
+  transition: rotate calc(var(--umbra-motion-duration-base) * var(--umbra-motion-scale));
+}
+
+.root[data-variant='inCell'][data-tone] > [data-part='icon'] {
+  color: inherit;
+}
+
+.root[data-open] > [data-part='icon'] {
+  rotate: 180deg;
+}
+
+.invalidIcon {
+  flex: none;
+  display: inline-flex;
+  color: var(--umbra-select-invalid-border, var(--umbra-color-semantic-danger));
+}
+
+.clear {
+  --umbra-icon-button-size: 24px;
+  --umbra-focus-offset: calc(-1 * var(--umbra-state-focus-ring-width));
+
+  position: relative;
+  z-index: 1;
+  flex: none;
+  display: inline-flex;
+  margin-inline: calc(-1 * var(--umbra-space-2));
+}
+
+/* The panel and the rows take the look of a Menu (its classes are added beside these). */
+.popover {
+  max-width: min(var(--umbra-select-popover-max-width, 480px), calc(100vw - 2 * var(--umbra-space-5)));
+}
+
+.list:empty,
+.list:has(> .rows:empty) {
+  padding: 0;
+}
+
+/* The options of a list with a filter field: the box around them scrolls. */
+.rows {
+  display: flex;
+  flex-direction: column;
+  outline: none;
+}
+
+.scroll:focus-visible {
+  outline: var(--umbra-state-focus-ring-width) solid
+    var(--umbra-focus-color, var(--umbra-color-fixed-focus-ring));
+  outline-offset: calc(-1 * var(--umbra-state-focus-ring-width));
+}
+
+.search {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-space-3);
+  height: var(--umbra-density-control-height);
+  padding: 0 var(--umbra-space-4);
+  border-bottom: var(--umbra-border-width) solid
+    var(--umbra-menu-border, var(--umbra-color-base-border-strong));
+  color: var(--umbra-color-base-text-secondary);
+}
+
+.searchInput {
+  flex: 1 1 0;
+  min-width: 0;
+  align-self: stretch;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--umbra-color-base-text-primary);
+  font: inherit;
+  outline: none;
+}
+
+.searchInput::placeholder {
+  color: var(--umbra-select-placeholder, var(--umbra-color-base-text-muted));
+  opacity: 1;
+}
+
+.searchInput::-webkit-search-cancel-button {
+  appearance: none;
+}
+
+/* Focus stays in the filter field while the arrow keys move through the options; the ring shows where typing goes. */
+.search:has(.searchInput[data-focus-visible]) {
+  outline: var(--umbra-state-focus-ring-width) solid
+    var(--umbra-focus-color, var(--umbra-color-fixed-focus-ring));
+  outline-offset: calc(-1 * var(--umbra-state-focus-ring-width));
+}
+
+/* Chosen: the violet tint and edge stripe of a selected list row, plus the check. */
+.option[data-selected] {
+  --selected-bg: var(
+    --umbra-select-option-selected-bg,
+    color-mix(in oklab, var(--umbra-color-fixed-selected) 28%, transparent)
+  );
+
+  background: var(--selected-bg);
+  box-shadow: inset var(--umbra-select-option-stripe-width, 3px) 0 var(--umbra-color-fixed-selected);
+}
+
+.option[data-selected]:is([data-focused], [data-hovered]) {
+  background: color-mix(in oklab, #fff 8%, var(--selected-bg));
+}
+
+.meta {
+  flex: none;
+  margin-inline-start: auto;
+  padding-inline-start: var(--umbra-space-4);
+  font: var(--umbra-font-label);
+  color: var(--umbra-color-base-text-secondary);
+}
+
+/* The checkbox of an option of a `multiple` select: filled with a mark when chosen. */
+.box {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 1.15em;
+  height: 1.15em;
+  border: calc(var(--umbra-border-width) * 2) solid var(--umbra-color-base-border-control);
+  border-radius: var(--umbra-radius-control);
+  color: var(--umbra-color-fixed-on-selected);
+}
+
+.option[data-selected] > .box {
+  border-color: var(--umbra-color-fixed-selected);
+  background: var(--umbra-color-fixed-selected);
+}
+
+.box > svg {
+  width: 100%;
+  height: 100%;
+  stroke-width: 3.5;
+}
+
+.empty {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--umbra-space-3);
+  padding: var(--umbra-space-4);
+}
