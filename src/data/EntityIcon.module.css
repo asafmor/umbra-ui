@@ -1,0 +1,79 @@
+.root {
+  /* Without a size the mark follows the text around it, like an icon. */
+  --size: var(--umbra-entity-icon-size, 1.25em);
+
+  display: inline-flex;
+  align-items: center;
+  gap: var(--umbra-entity-icon-gap, var(--umbra-space-2));
+  min-width: 0;
+  max-width: 100%;
+  vertical-align: middle;
+}
+
+.root[data-size='xs'] {
+  --size: var(--umbra-entity-icon-size, 14px);
+}
+
+.root[data-size='sm'] {
+  --size: var(--umbra-entity-icon-size, 18px);
+}
+
+.root[data-size='md'] {
+  --size: var(--umbra-entity-icon-size, 24px);
+}
+
+.root[data-size='lg'] {
+  --size: var(--umbra-entity-icon-size, 32px);
+}
+
+.root[data-size='xl'] {
+  --size: var(--umbra-entity-icon-size, 56px);
+}
+
+.root:is([data-size='lg'], [data-size='xl']) {
+  gap: var(--umbra-entity-icon-gap, var(--umbra-space-3));
+}
+
+.mark {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: var(--size);
+  height: var(--size);
+  overflow: hidden;
+  border-radius: var(--umbra-entity-icon-radius, calc(var(--size) * 0.2));
+}
+
+.root[data-shape='circle'] > .mark {
+  border-radius: 50%;
+}
+
+.root[data-shape='square'] > .mark {
+  border-radius: 0;
+}
+
+.mark > :is(svg, img) {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* The colour comes from the name (entity.ts keeps white text at 4.5:1 on it), unless the token sets it. */
+.mark[data-kind='generated'] {
+  background: var(--umbra-entity-icon-bg, var(--generated));
+  /* White has no token: it is the text colour the generated colours are checked against. */
+  color: var(--umbra-entity-icon-fg, #fff);
+  font: 700 calc(var(--size) * 0.48) / 1 var(--umbra-font-family-body);
+  user-select: none;
+}
+
+.mark[data-letters='1'] {
+  font-size: calc(var(--size) * 0.64);
+}
+
+.label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

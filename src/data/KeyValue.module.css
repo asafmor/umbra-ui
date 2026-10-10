@@ -1,0 +1,155 @@
+.root {
+  display: grid;
+  /* The label takes its own width, up to a share of the row; the value takes the rest. */
+  grid-template-columns: fit-content(var(--umbra-key-value-label-width, 60%)) minmax(0, 1fr);
+  column-gap: var(--umbra-key-value-gap, var(--umbra-space-4));
+  align-items: center;
+  min-width: 0;
+  margin: 0;
+  font: var(--umbra-font-label);
+}
+
+.root[data-orientation='stacked'] {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--umbra-space-1);
+}
+
+.label {
+  grid-column: 1;
+  grid-row: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-space-2);
+  min-width: 0;
+  overflow: hidden;
+  color: var(--umbra-key-value-label-fg, var(--umbra-color-base-text-secondary));
+}
+
+.text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.value {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--umbra-key-value-value-fg, var(--umbra-color-base-text-primary));
+}
+
+.root[data-orientation='stacked'] > .value {
+  font: var(--umbra-key-value-value-font, var(--umbra-font-body));
+  font-weight: 500;
+}
+
+.root[data-align='end'] > .value {
+  text-align: end;
+}
+
+.root[data-wrap] > .value {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.hint {
+  grid-column: 1;
+  grid-row: 2;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--umbra-key-value-hint-fg, var(--umbra-color-base-text-muted));
+}
+
+.root[data-orientation='stacked'][data-align='end'] > :is(.hint, .label) {
+  justify-content: flex-end;
+  text-align: end;
+}
+
+.list {
+  --gap: var(--umbra-key-value-gap, var(--umbra-space-4));
+
+  display: grid;
+  min-width: 0;
+  margin: 0;
+}
+
+/* Rows share the list's two columns (subgrid), so every label column is as wide as the longest label. */
+.list[data-layout='rows'] {
+  grid-template-columns:
+    var(--label-column, fit-content(var(--umbra-key-value-label-width, 60%)))
+    minmax(0, 1fr);
+  column-gap: var(--gap);
+}
+
+.list[data-layout='rows'] > .root {
+  grid-column: 1 / -1;
+  min-height: var(--umbra-key-value-row-height, var(--umbra-density-table-row));
+  padding: var(--umbra-space-2) var(--umbra-key-value-padding-x, var(--umbra-space-3));
+}
+
+.list[data-layout='rows'] > .root[data-orientation='inline'] {
+  grid-template-columns: subgrid;
+}
+
+.list[data-striped][data-layout='rows'] > .root:nth-child(odd) {
+  background: var(
+    --umbra-key-value-stripe,
+    color-mix(in oklab, var(--umbra-color-base-text-primary) 5%, transparent)
+  );
+}
+
+.list[data-dividers][data-layout='rows'] > .root:not(:first-child) {
+  border-top: var(--umbra-border-width) solid
+    var(--umbra-key-value-divider, var(--umbra-color-base-border-subtle));
+}
+
+.list[data-layout='columns'] {
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  column-gap: var(--gap);
+}
+
+.list[data-dividers][data-layout='columns'] > .root:not(:first-child) {
+  padding-inline-start: var(--gap);
+  border-inline-start: var(--umbra-border-width) solid
+    var(--umbra-key-value-divider, var(--umbra-color-base-border-subtle));
+}
+
+/* At most `columns` columns; fewer when a column would be narrower than the minimum. */
+.list[data-layout='grid'] {
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(
+      min(
+        100%,
+        max(
+          var(--umbra-key-value-min-column, 140px),
+          calc((100% - (var(--columns) - 1) * var(--gap)) / var(--columns))
+        )
+      ),
+      1fr
+    )
+  );
+  gap: var(--umbra-space-3) var(--gap);
+}
+
+.state {
+  grid-column: 1 / -1;
+  padding: var(--umbra-space-2) var(--umbra-key-value-padding-x, var(--umbra-space-3));
+  color: var(--umbra-color-base-text-secondary);
+  font: var(--umbra-font-label);
+}
+
+.root[data-align='end'] .skeletonValue {
+  margin-inline-start: auto;
+}
