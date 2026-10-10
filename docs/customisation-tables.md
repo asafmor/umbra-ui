@@ -7,6 +7,68 @@ A token is a CSS variable: set it in CSS on any ancestor, or through the `tokens
 `UmbraProvider` or `UmbraScope` (without the `--umbra-` prefix). Every component also accepts
 `className` and `style` on its root.
 
+## Accordion
+
+A stack of sections that open and close. It fills its slot; an open panel scrolls inside when space is short.
+
+**Tokens**: `--umbra-accordion-border`, `--umbra-accordion-gap`, `--umbra-accordion-header-height`, `--umbra-accordion-padding`, `--umbra-accordion-title-font`, `--umbra-card-bg`, `--umbra-card-border`, `--umbra-card-padding`, `--umbra-card-radius`, `--umbra-card-title-font`, `--umbra-focus-color`, `--umbra-scroll-thumb`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `collapsible` | `boolean` | May every section be closed? Only matters for `type="single"`; when `false`, the open section stays open. |
+| `variant` | `"plain" \| "card"` | `plain`: rules between the sections. `card`: each section looks like a card. |
+| `headingLevel` | `4 \| 3 \| 2 \| 5 \| 6` | Heading level of the section titles. |
+| `keepMounted` | `boolean` | Keeps the content of closed sections in the page (hidden), so it keeps its state. |
+| `aria-label` | `string` | Accessible name of the group of sections. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `children` | `ReactNode` |  |
+| `size` | `number \| "content"` | Share of the parent's space: a weight, or `"content"` to take the size of the content. Default 1. |
+| `priority` | `number` | Which child gives way first when space runs out. Higher stays longer; ties give way from the end. Default 0. |
+| `minWidth` | `number` | Reserved: `Columns` has no rule that uses it yet, so it has no effect. |
+| `minHeight` | `number` | Below this height a parent `Stack` may collapse the child to its header. |
+| `label` | `string` | Tab label when a parent `Columns` shows one child at a time. |
+| `type` | `"single" \| "multiple"` | `single`: one section open at a time. `multiple`: any number. |
+| `value` | `string \| string[] \| null` | The open section (controlled). `null` for none. The open sections (controlled). |
+| `defaultValue` | `string \| string[] \| null` |  |
+| `onChange` | `((value: string \| null) => void) \| ((value: string[]) => void)` | Called with the id of the open section, or `null`. Called with the ids of the open sections. |
+| `items` | `AccordionItemData[]` | The sections. Or pass `Accordion.Item` elements as children. |
+| `parts` | `see Parts` | Replace or hide named pieces. `item` applies to every section built from `items`. |
+
+**Parts**: `item`.
+
+**Blocks**: `Accordion.Root`, `Accordion.Item`, `Accordion.Section`, `Accordion.Header`, `Accordion.Panel`.
+
+## ActionBar
+
+The bar at the bottom of a page, card or modal: a status at the start and the actions at the end.
+
+**Tokens**: `--umbra-action-bar-bg`, `--umbra-action-bar-border`, `--umbra-action-bar-danger-color`, `--umbra-action-bar-gap`, `--umbra-action-bar-info-color`, `--umbra-action-bar-neutral-color`, `--umbra-action-bar-offset`, `--umbra-action-bar-padding-x`, `--umbra-action-bar-padding-y`, `--umbra-action-bar-radius`, `--umbra-action-bar-success-color`, `--umbra-action-bar-warning-color`, `--umbra-icon-size`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `status` | `ReactNode \| { tone?: ActionBarTone; text: ReactNode; }` | The message at the start: a node, or a tone and a text. The tone adds its icon, so it is not colour alone. |
+| `actions` | `ReactNode` | The actions, as nodes. Or use `primary`, `secondary` and `tertiary`. |
+| `primary` | `ReactNode \| ActionBarAction \| ActionBarAction[]` | The main action or actions, at the end. Their labels never hide. |
+| `secondary` | `ReactNode \| ActionBarAction \| ActionBarAction[]` | Before the primary actions. With an icon, they keep only the icon when the bar is narrow. |
+| `tertiary` | `ReactNode \| ActionBarAction \| ActionBarAction[]` | At the start, after the status. They collapse like the secondary ones. |
+| `selectionCount` | `number` | Floating bar: how many things are selected. The bar is open while it is above 0, unless `open` is set. |
+| `selectionLabel` | `((count: number) => string)` | The status text for a selection. |
+| `onClearSelection` | `(() => void)` | Shows a button that clears the selection. |
+| `clearLabel` | `string` | Accessible name of the clear button. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `aria-label` | `string` | Accessible name of the group. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `variant` | `"inline" \| "floating"` | `inline`: in the flow, at the bottom of a page, card or modal. `floating`: over the bottom of its container. |
+| `emphasis` | `"default" \| "strong"` | `strong` fills the bar with the tone, for a status the user has to act on. |
+| `open` | `boolean` | Shows a `floating` bar. Its container needs `position: relative`. |
+| `align` | `"start" \| "center" \| "end"` | Where the actions sit. The status is always at the start. |
+
+**Parts**: `status`, `clear`, `tertiary`, `actions`.
+
+**Blocks**: `ActionBar.Root`, `ActionBar.Status`, `ActionBar.Actions`, `ActionBar.Group`, `ActionBar.Action`, `ActionBar.Clear`.
+
 ## AppShell
 
 The outermost frame: exactly the size of the window, never scrolls, bars above one `Page`.
@@ -813,6 +875,39 @@ The content area under the bars: applies the outer margin and the context tint.
 
 **Blocks**: `Page.Root`, `Page.Header`, `Page.Content`, `Page.Footer`.
 
+## PageHeader
+
+The header of a page or of a detail pane: what it shows, facts about it, and its actions.
+
+**Tokens**: `--umbra-focus-color`, `--umbra-focus-offset`, `--umbra-nav-font`, `--umbra-nav-gap`, `--umbra-nav-indicator-color`, `--umbra-page-header-bg`, `--umbra-page-header-border`, `--umbra-page-header-fg`, `--umbra-page-header-media-size`, `--umbra-page-header-media-size-small`, `--umbra-page-header-padding`, `--umbra-page-header-radius`, `--umbra-page-header-title-font`, `--umbra-subnav-indicator-color`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `title` | `ReactNode` |  |
+| `subtitle` | `ReactNode` | A line under the title. |
+| `overline` | `ReactNode` | A small line above the title, for example the kind of thing the page shows. |
+| `media` | `ReactNode` | Leading avatar, entity icon or image. |
+| `meta` | `ReactNode \| PageHeaderFact[]` | A row of facts: `{ label, value }` items, or any node. |
+| `tags` | `ReactNode` | Tags or badges after the title. |
+| `actions` | `ReactNode` | Trailing controls. |
+| `onBack` | `(() => void)` | Shows a back button before the title. |
+| `backLabel` | `string` | Accessible name of the back button. |
+| `breadcrumbs` | `PageHeaderCrumb[]` | The path to this page; the last item is the current page. |
+| `breadcrumbsLabel` | `string` | Accessible name of the breadcrumb landmark. |
+| `renderLink` | `((props: NavLinkProps) => ReactNode)` | Plugs the app's router link into the breadcrumbs. Defaults to a plain `<a>`. |
+| `tabs` | `ReactNode` | A tab list, placed along the bottom edge. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `tone` | `"default" \| "tinted" \| "band"` | `tinted` is a panel in the context tint. `band` fills with the brand colour, or `bandColor`. |
+| `size` | `"compact" \| "default"` | `compact` is for the header of a detail pane inside a card. |
+| `bandColor` | `string` | Colour of the band (hex or `rgb()`); the text colour is chosen for contrast with it. |
+| `headingLevel` | `4 \| 3 \| 1 \| 2 \| 5 \| 6` | Heading level of the title. |
+
+**Parts**: `breadcrumbs`, `back`, `media`, `overline`, `title`, `subtitle`, `meta`, `actions`, `tabs`.
+
+**Blocks**: `PageHeader.Root`, `PageHeader.Breadcrumbs`, `PageHeader.Bar`, `PageHeader.Content`, `PageHeader.Back`, `PageHeader.Media`, `PageHeader.Titles`, `PageHeader.Overline`, `PageHeader.Title`, `PageHeader.Subtitle`, `PageHeader.Meta`, `PageHeader.Actions`, `PageHeader.Tabs`.
+
 ## PrimaryNav
 
 The top-level sections of the app, inside the `TopBar`.
@@ -1471,3 +1566,40 @@ A value coloured by where it falls on a five-step ramp.
 **Parts**: `value`, `level`, `skeleton`.
 
 **Blocks**: `ValuePill.Root`, `ValuePill.Value`, `ValuePill.Level`.
+
+## VerticalNav
+
+Side navigation for a modal, a settings screen or one column of a page.
+
+**Tokens**: `--umbra-focus-color`, `--umbra-focus-offset`, `--umbra-icon-size`, `--umbra-nav-font`, `--umbra-nav-gap`, `--umbra-nav-indicator-color`, `--umbra-subnav-indicator-color`, `--umbra-vertical-nav-bg`, `--umbra-vertical-nav-current-bg`, `--umbra-vertical-nav-current-fg`, `--umbra-vertical-nav-fg`, `--umbra-vertical-nav-gap`, `--umbra-vertical-nav-padding`, `--umbra-vertical-nav-radius`, `--umbra-vertical-nav-rail-below`, `--umbra-vertical-nav-rail-width`, `--umbra-vertical-nav-row-height`, `--umbra-vertical-nav-stripe-width`, `--umbra-vertical-nav-width`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `items` | `(VerticalNavItem \| VerticalNavSection)[]` | The entries: items, groups (an item with `items`) and sections (`{ type: 'section', label, items }`). |
+| `header` | `ReactNode` | Fixed above the list, for example a title or a search field. |
+| `footer` | `ReactNode` | Fixed below the list. |
+| `collapsible` | `boolean` | Shows the button that lets the user switch to the icon rail and back. |
+| `parts` | `see Parts` | Replace or hide named pieces. `item` applies to every item, also inside groups and sections. |
+| `value` | `string` | The current item. |
+| `onChange` | `((id: string) => void)` | Called with the id of the item the user chose. |
+| `renderLink` | `((props: NavLinkProps) => ReactNode)` | Plugs in the app's router link. Defaults to a plain `<a>`. |
+| `aria-label` | `string` | Accessible name of the navigation landmark. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `collapsed` | `boolean` | Icon-only rail (controlled). Each label stays as the accessible name of its item. |
+| `size` | `number \| "content"` | Share of the parent's space: a weight, or `"content"` to take the size of the content. Default 1. |
+| `label` | `string` | Tab label when a parent `Columns` shows one child at a time. |
+| `priority` | `number` | Which child gives way first when space runs out. Higher stays longer; ties give way from the end. Default 0. |
+| `minWidth` | `number` | Reserved: `Columns` has no rule that uses it yet, so it has no effect. |
+| `minHeight` | `number` | Below this height a parent `Stack` may collapse the child to its header. |
+| `expandedIds` | `string[]` | The open groups (controlled). |
+| `defaultExpandedIds` | `string[]` |  |
+| `onExpandedChange` | `((ids: string[]) => void)` |  |
+| `defaultCollapsed` | `boolean` |  |
+| `onCollapsedChange` | `((collapsed: boolean) => void)` |  |
+| `collapseLabel` | `string` | Accessible names of the button, by what a press does. |
+| `expandLabel` | `string` |  |
+
+**Parts**: `header`, `item`, `footer`, `toggle`.
+
+**Blocks**: `VerticalNav.Root`, `VerticalNav.Header`, `VerticalNav.List`, `VerticalNav.Section`, `VerticalNav.Group`, `VerticalNav.Item`, `VerticalNav.Footer`, `VerticalNav.Toggle`.

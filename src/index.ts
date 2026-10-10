@@ -202,3 +202,47 @@ export type {
   TabsTabProps,
   TabsVariant,
 } from './inputs/Tabs';
+export { Accordion } from './layout/Accordion';
+export type {
+  AccordionHeaderProps,
+  AccordionItemData,
+  AccordionItemProps,
+  AccordionPanelProps,
+  AccordionProps,
+  AccordionRootProps,
+  AccordionSectionProps,
+} from './layout/Accordion';
+export { PageHeader } from './shell/PageHeader';
+export type {
+  PageHeaderBackProps,
+  PageHeaderBreadcrumbsProps,
+  PageHeaderCrumb,
+  PageHeaderFact,
+  PageHeaderMetaProps,
+  PageHeaderProps,
+  PageHeaderRootProps,
+  PageHeaderTitleProps,
+} from './shell/PageHeader';
+export { ActionBar } from './overlays/ActionBar';
+export type {
+  ActionBarAction,
+  ActionBarActionProps,
+  ActionBarClearProps,
+  ActionBarGroupKind,
+  ActionBarGroupProps,
+  ActionBarProps,
+  ActionBarRootProps,
+  ActionBarStatusProps,
+  ActionBarTone,
+} from './overlays/ActionBar';
+export { VerticalNav } from './shell/VerticalNav';
+export type {
+  VerticalNavGroupProps,
+  VerticalNavItem,
+  VerticalNavItemProps,
+  VerticalNavProps,
+  VerticalNavRootProps,
+  VerticalNavSection,
+  VerticalNavSectionProps,
+  VerticalNavToggleProps,
+} from './shell/VerticalNav';
