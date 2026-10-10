@@ -122,6 +122,11 @@ The panel and its rows are a `Menu`'s, so they also follow `--umbra-menu-bg`, `-
 
 ## Open questions
 
+Resolved 2026-10-11:
+
+- The label of the chosen option, when the trigger cuts it, shows its full text in a tooltip on hover and keyboard focus (`TruncatedText`, as in `Tag`, `KeyValue` and `ListItem`).
+
+
 None.
 
 Resolved 2026-10-10:

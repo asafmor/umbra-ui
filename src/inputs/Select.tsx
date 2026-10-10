@@ -28,6 +28,7 @@ import { Skeleton } from '../basics/Skeleton';
 import shared from '../data/shared.module.css';
 import { toneColour, toneProps, type Tone } from '../data/tone';
 import { dataState, type DataStateProps } from '../internal/dataState';
+import { TruncatedText } from '../internal/TruncatedText';
 import { useShrinkLevel } from '../internal/useShrinkLevel';
 import { CheckMark } from '../overlays/Menu';
 import menuStyles from '../overlays/Menu.module.css';
@@ -435,7 +436,9 @@ function Value({
               <>
                 <Leading option={one} />
                 <span className={styles.valueText}>
-                  <span className={styles.valueLabel}>{one.label}</span>
+                  <TruncatedText hoverOwner className={styles.valueLabel}>
+                    {one.label}
+                  </TruncatedText>
                   {valueDescription && one.description && (
                     <span className={styles.valueDescription}>{one.description}</span>
                   )}

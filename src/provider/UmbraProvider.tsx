@@ -184,7 +184,9 @@ export function UmbraProvider({
       const shortcut = shortcutForEvent(event, registry);
       if (!shortcut) return;
       const typing = shortcut.whenTyping ?? (event.ctrlKey || event.metaKey || event.altKey);
-      if (!typing && isTypingTarget(event.target)) return;
+      // Also by where the focus is: a field that keeps the focus while the arrow keys move through a
+      // list (the filter of a `Select`) passes its keys on to the list, and those arrive from the list.
+      if (!typing && (isTypingTarget(event.target) || isTypingTarget(document.activeElement))) return;
       // With nothing to run (a reserved key whose component is not mounted) the key is left alone.
       const run = bound.get(shortcut.id) ?? shortcut.action;
       if (!run) return;

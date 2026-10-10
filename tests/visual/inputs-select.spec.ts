@@ -148,6 +148,15 @@ test.describe('Select', () => {
     const long = select(page, 'Long');
     const label = long.locator('[data-part="value"] span span').first();
     expect(await label.evaluate((el) => el.scrollWidth > el.clientWidth)).toBe(true);
+    // The cut label shows its full text in a tooltip; a label that fits shows none.
+    await long.hover();
+    const tip = page.locator('[data-umbra="tooltip"]');
+    await expect(tip).toHaveText(await label.evaluate((el) => el.textContent!));
+    await page.mouse.move(0, 0);
+    await expect(tip).toHaveCount(0);
+    await invalid.hover();
+    await page.waitForTimeout(700);
+    await expect(tip).toHaveCount(0);
     const outer = await box(long);
     const caret = await box(long.locator(':scope > [data-part="icon"]'));
     expect(caret.x + caret.width).toBeLessThan(outer.x + outer.width);

@@ -265,6 +265,7 @@ The list's selection is controlled, and the detail pane is drawn from it.
 - The pane's header is a `PageHeader` with `size="compact"`: title, facts and actions, shedding detail
   as the pane narrows.
 - In tab mode the two cards become two tabs; `label` names the second one.
+- The search is a `SearchField` in the card's toolbar, which stays above the rows as they scroll.
 
 ```tsx
 import { useState } from 'react';
@@ -278,6 +279,7 @@ import {
   List,
   Page,
   PageHeader,
+  SearchField,
   Tag,
   TopBar,
   UmbraProvider,
@@ -293,17 +295,35 @@ const clients = Array.from({ length: 40 }, (_, i) => ({
 
 export function App() {
   const [selected, setSelected] = useState<(string | number)[]>(['client-1']);
+  const [query, setQuery] = useState('');
   const client = clients.find((c) => c.id === selected[0]);
+  const shown = clients.filter((c) => c.name.toLowerCase().includes(query.trim().toLowerCase()));
 
   return (
     <UmbraProvider>
       <AppShell topBar={<TopBar logo="U" />}>
         <Page>
           <Columns>
-            <Card title="Clients" padding="none">
+            <Card
+              title="Clients"
+              padding="none"
+              parts={{
+                toolbar: (
+                  <Card.Toolbar>
+                    <SearchField
+                      label="Search clients"
+                      placeholder="Search clients"
+                      value={query}
+                      onChange={setQuery}
+                    />
+                  </Card.Toolbar>
+                ),
+              }}
+            >
               <List
                 aria-label="Clients"
-                items={clients}
+                items={shown}
+                empty="No client matches"
                 selectionMode="single"
                 selectionBehavior="replace"
                 selectedIds={selected}
@@ -372,10 +392,12 @@ To keep the selection in the address, read `selected` from the route and navigat
 - **The bulk bar** is a floating `ActionBar`: it enters when the first row is selected. Its container
   needs `position: relative`.
 - Keep `data` and `columns` stable between renders: state, a memo, or a constant outside the component.
+- **The search** is a `SearchField` in the card's toolbar. It filters the rows before the table sees
+  them; the selection keeps the rows it had.
 
 ```tsx
 import { Archive, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   ActionBar,
   AppShell,
@@ -383,6 +405,7 @@ import {
   DataTable,
   numberColumn,
   Page,
+  SearchField,
   Tag,
   TopBar,
   UmbraProvider,
@@ -442,6 +465,11 @@ const columns: DataTableColumn<Order>[] = [
 export function App() {
   const [rows, setRows] = useState(orders);
   const [selected, setSelected] = useState<string[]>([]);
+  const [query, setQuery] = useState('');
+  const shown = useMemo(() => {
+    const words = query.trim().toLowerCase();
+    return words ? rows.filter((order) => `${order.id} ${order.client}`.toLowerCase().includes(words)) : rows;
+  }, [rows, query]);
   const remove = () => {
     setRows((all) => all.filter((order) => !selected.includes(order.id)));
     setSelected([]);
@@ -451,10 +479,26 @@ export function App() {
     <UmbraProvider>
       <AppShell topBar={<TopBar logo="U" />}>
         <Page>
-          <Card title="Orders" padding="none" style={{ position: 'relative' }}>
+          <Card
+            title="Orders"
+            padding="none"
+            style={{ position: 'relative' }}
+            parts={{
+              toolbar: (
+                <Card.Toolbar>
+                  <SearchField
+                    label="Search orders"
+                    placeholder="Order or client"
+                    value={query}
+                    onChange={setQuery}
+                  />
+                </Card.Toolbar>
+              ),
+            }}
+          >
             <DataTable
               aria-label="Orders"
-              data={rows}
+              data={shown}
               columns={columns}
               getRowId={(order) => order.id}
               defaultSort={[{ id: 'total', direction: 'desc' }]}
@@ -462,7 +506,11 @@ export function App() {
               selectedIds={selected}
               onSelectionChange={setSelected}
               selectRowLabel={(order) => `Select order ${order.id}`}
-              empty={{ title: 'No orders', description: 'Every order has been archived or deleted.' }}
+              empty={
+                query
+                  ? { title: 'No order matches', description: 'Try another order number or client.' }
+                  : { title: 'No orders', description: 'Every order has been archived or deleted.' }
+              }
             />
             <ActionBar
               variant="floating"
@@ -493,6 +541,8 @@ When the server sorts and pages, the table shows what it is given.
 - `loading` shows skeleton rows for the first page. `loadingMore` adds one after the last row while the
   next page is on its way.
 - `onReachEnd` is called when the table is scrolled to its end.
+- The search text goes to the server too. `SearchField` reports every key in `onChange` and the
+  finished search in `onSubmit` (Enter, or a cleared field): fetch on the second, or debounce the first.
 
 The fake server below holds 500 rows and answers after half a second.
 
@@ -504,6 +554,7 @@ import {
   DataTable,
   numberColumn,
   Page,
+  SearchField,
   TopBar,
   UmbraProvider,
   type DataTableColumn,
@@ -524,19 +575,21 @@ const all: Product[] = Array.from({ length: 500 }, (_, i) => ({
   price: 5 + ((i * 53) % 195),
 }));
 
-/** Stands in for the server: sorts, cuts one page, and takes its time. */
-function fetchPage(sort: DataTableSort[], offset: number, limit = 50) {
+/** Stands in for the server: searches, sorts, cuts one page, and takes its time. */
+function fetchPage(search: string, sort: DataTableSort[], offset: number, limit = 50) {
+  const words = search.trim().toLowerCase();
+  const found = words ? all.filter((product) => product.name.toLowerCase().includes(words)) : all;
   const by = sort[0];
   const sorted = by
-    ? [...all].sort((a, b) => {
+    ? [...found].sort((a, b) => {
         const [x, y] = [a[by.id as keyof Product], b[by.id as keyof Product]];
         const order =
           typeof x === 'number' && typeof y === 'number' ? x - y : String(x).localeCompare(String(y));
         return by.direction === 'asc' ? order : -order;
       })
-    : all;
+    : found;
   return new Promise<{ rows: Product[]; total: number }>((resolve) =>
-    setTimeout(() => resolve({ rows: sorted.slice(offset, offset + limit), total: all.length }), 500),
+    setTimeout(() => resolve({ rows: sorted.slice(offset, offset + limit), total: found.length }), 500),
   );
 }
 
@@ -548,30 +601,33 @@ const columns: DataTableColumn<Product>[] = [
 
 export function App() {
   const [sort, setSort] = useState<DataTableSort[]>([{ id: 'stock', direction: 'desc' }]);
+  // What is typed, and what was last sent to the server.
+  const [text, setText] = useState('');
+  const [search, setSearch] = useState('');
   const [rows, setRows] = useState<Product[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  // An answer to an earlier request (an older sort) is dropped.
+  // An answer to an earlier request (an older sort or search) is dropped.
   const request = useRef(0);
 
   useEffect(() => {
     const id = ++request.current;
     setLoading(true);
     setLoadingMore(false);
-    fetchPage(sort, 0).then((page) => {
+    fetchPage(search, sort, 0).then((page) => {
       if (id !== request.current) return;
       setRows(page.rows);
       setTotal(page.total);
       setLoading(false);
     });
-  }, [sort]);
+  }, [search, sort]);
 
   const loadMore = () => {
     if (loading || loadingMore || rows.length >= total) return;
     const id = ++request.current;
     setLoadingMore(true);
-    fetchPage(sort, rows.length).then((page) => {
+    fetchPage(search, sort, rows.length).then((page) => {
       if (id !== request.current) return;
       setRows((loaded) => [...loaded, ...page.rows]);
       setLoadingMore(false);
@@ -582,7 +638,25 @@ export function App() {
     <UmbraProvider>
       <AppShell topBar={<TopBar logo="U" />}>
         <Page>
-          <Card title="Products" subtitle={`${rows.length} of ${total} loaded`} padding="none">
+          <Card
+            title="Products"
+            subtitle={`${rows.length} of ${total} loaded`}
+            padding="none"
+            parts={{
+              toolbar: (
+                <Card.Toolbar>
+                  <SearchField
+                    label="Search products"
+                    placeholder="Search products"
+                    value={text}
+                    onChange={setText}
+                    onSubmit={setSearch}
+                    onClear={() => setSearch('')}
+                  />
+                </Card.Toolbar>
+              ),
+            }}
+          >
             <DataTable
               aria-label="Products"
               data={rows}
@@ -614,6 +688,7 @@ of your own.
   `layout="row"` with `surface` is the settings-list look.
 - The footer is an `ActionBar`. `Modal.Close` is a button that also closes the modal.
 - `onRequestClose` can refuse to close, here while the name is empty.
+- One choice of a few goes in a `RadioGroup`; one of many, in a `Select` (`searchable` for a long list).
 
 ```tsx
 import { Settings } from 'lucide-react';
@@ -628,6 +703,7 @@ import {
   Page,
   Radio,
   RadioGroup,
+  Select,
   TextField,
   Toggle,
   TopBar,
@@ -639,11 +715,16 @@ const sections = [
   { id: 'profile', label: 'Profile' },
   { id: 'alerts', label: 'Alerts' },
 ];
+const timeZones = ['UTC', 'UTC+1', 'UTC+2', 'UTC+3', 'UTC-5', 'UTC-8'].map((zone) => ({
+  id: zone,
+  label: zone,
+}));
 
 export function App() {
   const [open, setOpen] = useState(false);
   const [section, setSection] = useState('profile');
   const [name, setName] = useState('Person A');
+  const [zone, setZone] = useState('UTC+1');
   const [summary, setSummary] = useState('weekly');
   const [sound, setSound] = useState(true);
   const nameError = name.trim() === '' ? 'Enter a name.' : undefined;
@@ -660,7 +741,7 @@ export function App() {
       >
         <Page>
           <Card title="Profile">
-            {name || 'No name'} · {summary} summary · sound {sound ? 'on' : 'off'}
+            {name || 'No name'} · {zone} · {summary} summary · sound {sound ? 'on' : 'off'}
           </Card>
         </Page>
       </AppShell>
@@ -686,16 +767,21 @@ export function App() {
         footer={<ActionBar primary={<Modal.Close variant="primary">Done</Modal.Close>} />}
       >
         {section === 'profile' ? (
-          <FormField
-            layout="row"
-            surface
-            label="Display name"
-            description="Shown to the people you share with."
-            required
-            error={nameError}
-          >
-            <TextField value={name} onChange={setName} />
-          </FormField>
+          <>
+            <FormField
+              layout="row"
+              surface
+              label="Display name"
+              description="Shown to the people you share with."
+              required
+              error={nameError}
+            >
+              <TextField value={name} onChange={setName} />
+            </FormField>
+            <FormField layout="row" surface label="Time zone" description="Used for dates and reminders.">
+              <Select options={timeZones} value={zone} onChange={setZone} />
+            </FormField>
+          </>
         ) : (
           <>
             <FormField layout="row" surface label="Sound" description="Play a sound when a report is ready.">
@@ -1013,6 +1099,8 @@ lines that shows the whole pattern without a dependency.
 up, red with a minus for down. Nothing counts or slides, and with reduced motion nothing flashes.
 
 - It is opt-in: `true` for every column with an `accessor`, or a list of column ids.
+- The same prop is on `StatValue`, `KeyValue`, `ValuePill`, `SummaryTile`, `ListItem` (its `meta`),
+  `ProgressBar` and `LevelMeter`, as a boolean: `<StatValue label="Orders" value={orders} highlightChanges />`.
 - Rows are matched by `getRowId`, so the order may change between updates.
 - Update the data immutably: a new array, new objects for the rows that changed.
 

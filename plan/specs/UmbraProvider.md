@@ -97,6 +97,11 @@ Warnings are given from an effect, never during render, and once per conflict fo
 
 ## Open questions
 
+Resolved 2026-10-11:
+
+- A bare-key shortcut is also held back while the focus is in a field, not only when the key event comes from one. The filter field of a searchable `Select` passes its keys on to the list of options, so a typed letter that was a shortcut (`n`) ran the shortcut and was lost to the field. Found in `examples/advanced` when its client field became a `Select`.
+
+
 None.
 
 Resolved 2026-10-10:

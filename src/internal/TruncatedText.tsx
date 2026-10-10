@@ -29,6 +29,8 @@ export function useHoverTip(
   element: RefObject<HTMLElement | null>,
   content: ReactNode,
   when: (element: HTMLElement) => boolean = () => true,
+  /** Hovering the link or button around the element counts, for an element that the control covers. */
+  hoverOwner = false,
 ) {
   const scope = useScopeAttributes();
   const [open, setOpen] = useState(false);
@@ -53,20 +55,21 @@ export function useHoverTip(
     const onEnter = () => show(HOVER_DELAY);
     // `focusin` also reports a link or button inside the element.
     const onFocus = (event: FocusEvent) => (event.target as Element).matches(':focus-visible') && show(0);
-    el.addEventListener('pointerenter', onEnter);
-    el.addEventListener('pointerleave', hide);
-    el.addEventListener('pointerdown', hide);
+    const hovered = hoverOwner ? owner : el;
+    hovered.addEventListener('pointerenter', onEnter);
+    hovered.addEventListener('pointerleave', hide);
+    hovered.addEventListener('pointerdown', hide);
     owner.addEventListener('focusin', onFocus);
     owner.addEventListener('focusout', hide);
     return () => {
       window.clearTimeout(timer);
-      el.removeEventListener('pointerenter', onEnter);
-      el.removeEventListener('pointerleave', hide);
-      el.removeEventListener('pointerdown', hide);
+      hovered.removeEventListener('pointerenter', onEnter);
+      hovered.removeEventListener('pointerleave', hide);
+      hovered.removeEventListener('pointerdown', hide);
       owner.removeEventListener('focusin', onFocus);
       owner.removeEventListener('focusout', hide);
     };
-  }, [element]);
+  }, [element, hoverOwner]);
 
   // Escape dismisses it, wherever the focus is.
   useEffect(() => {
@@ -108,24 +111,27 @@ export function useHoverTip(
 }
 
 /** Internal: the tooltip with the full text of an element, shown only while its ellipsis cuts the text short. */
-export function useTruncatedTip(element: RefObject<HTMLElement | null>, text: ReactNode) {
-  return useHoverTip(element, text, isTruncated);
+export function useTruncatedTip(element: RefObject<HTMLElement | null>, text: ReactNode, hoverOwner = false) {
+  return useHoverTip(element, text, isTruncated, hoverOwner);
 }
 
 /** Internal: one line of text that ends in an ellipsis when it does not fit, and then shows the whole text in a tooltip. */
 export function TruncatedText({
   children,
   part,
+  hoverOwner,
   className,
   style,
 }: {
   children?: ReactNode;
   part?: string;
+  /** The text sits under its control's hit area (the value of a `Select`): hovering the control shows the tip. */
+  hoverOwner?: boolean;
   className?: string;
   style?: CSSProperties;
 }) {
   const ref = useRef<HTMLSpanElement>(null);
-  const tip = useTruncatedTip(ref, children);
+  const tip = useTruncatedTip(ref, children, hoverOwner);
   return (
     <>
       <span

@@ -113,6 +113,11 @@ A collapsible `overlay` field has no steps: collapsed it is one icon wide, and o
 
 ## Open questions
 
+Resolved 2026-10-11:
+
+- Used where a `TextField` with a search icon stood in for it: the list search of the list and detail page story, and recipes 5, 6 and 7 of `docs/recipes.md`.
+
+
 None.
 
 Resolved 2026-10-10:

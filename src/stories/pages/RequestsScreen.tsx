@@ -1,5 +1,5 @@
 // List and detail: a searchable, filtered list of requests, and the selected one in a detail pane.
-import { Archive, Check, MoreHorizontal, Search, Star, UserPlus, X } from 'lucide-react';
+import { Archive, Check, MoreHorizontal, Star, UserPlus, X } from 'lucide-react';
 import { useState, type CSSProperties } from 'react';
 import { LineChart } from '../../charts';
 import {
@@ -23,6 +23,7 @@ import {
   SegmentedFilter,
   Tabs,
   Tag,
+  SearchField,
   TextField,
   ValuePill,
 } from '../../index';
@@ -53,11 +54,9 @@ function RequestList({ messageId, read, onSelect }: InboxProps) {
       parts={{
         toolbar: (
           <Card.Toolbar style={{ flexDirection: 'column', alignItems: 'stretch' }}>
-            <TextField
-              aria-label="Search requests"
+            <SearchField
+              label="Search requests"
               placeholder="Search requests"
-              prefix={<Search />}
-              clearable
               value={query}
               onChange={setQuery}
             />

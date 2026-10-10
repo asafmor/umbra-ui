@@ -15,11 +15,12 @@ import {
   PageHeader,
   Radio,
   RadioGroup,
+  Select,
   Tag,
   TextField,
   type DataTableColumn,
 } from 'umbra-ui';
-import { money, regions, type Order } from '../data';
+import { clients, money, regions, type Order } from '../data';
 import { navigate } from '../router';
 
 const statusTone = { Open: 'info', Packed: 'warning', Sent: 'success' } as const;
@@ -197,7 +198,11 @@ function OrderForm({
   nextNumber: number;
   onSave: (order: Order) => void;
 }) {
-  const [client, setClient] = useState(order?.client ?? '');
+  // An order made before clients were a choice has a name only: it is found by that name.
+  const [clientId, setClientId] = useState(
+    order ? (clients.find((c) => c.id === order.clientId || c.name === order.client)?.id ?? '') : '',
+  );
+  const client = clients.find((c) => c.id === clientId);
   const [region, setRegion] = useState<string>(order?.region ?? regions[0]);
   const [total, setTotal] = useState(String(order?.total ?? ''));
   const [priority, setPriority] = useState(order?.priority ?? false);
@@ -205,23 +210,23 @@ function OrderForm({
 
   const amount = Number(total);
   const errors = {
-    client: client.trim() ? undefined : 'Enter the client',
+    client: client ? undefined : 'Choose the client',
     total: total !== '' && amount > 0 ? undefined : 'Enter an amount above 0',
   };
   const dirty =
-    client !== (order?.client ?? '') ||
+    (client?.name ?? '') !== (order?.client ?? '') ||
     region !== (order?.region ?? regions[0]) ||
     total !== String(order?.total ?? '') ||
     priority !== (order?.priority ?? false);
 
   const save = () => {
     setSubmitted(true);
-    if (errors.client || errors.total) return;
+    if (!client || errors.total) return;
     onSave({
       id: order?.id ?? `o-${nextNumber}`,
       number: order?.number ?? nextNumber,
-      clientId: order?.clientId ?? '',
-      client: client.trim(),
+      clientId: client.id,
+      client: client.name,
       region,
       status: order?.status ?? 'Open',
       owner: order?.owner ?? 'Person 1',
@@ -252,7 +257,14 @@ function OrderForm({
     >
       <div style={{ display: 'grid', gap: 'var(--umbra-space-5)' }}>
         <FormField label="Client" required error={submitted ? errors.client : undefined}>
-          <TextField value={client} onChange={setClient} placeholder="Client 12" />
+          <Select
+            searchable
+            fullWidth
+            placeholder="Choose a client"
+            options={clients.map((c) => ({ id: c.id, label: c.name }))}
+            value={clientId}
+            onChange={setClientId}
+          />
         </FormField>
         <RadioGroup label="Region" orientation="horizontal" value={region} onChange={setRegion}>
           {regions.map((name) => (

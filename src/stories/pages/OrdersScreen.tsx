@@ -35,7 +35,7 @@ import {
   StatusIndicator,
   SummaryTile,
   Tag,
-  Toggle,
+  Select,
   TrendArrow,
   ValuePill,
   VerticalNav,
@@ -53,6 +53,8 @@ const healthOf: Record<Health, { status: Status; label: string }> = {
 const priorityTone: Record<Order['priority'], Tone> = { High: 'danger', Normal: 'neutral', Low: 'info' };
 const me = 'Person A';
 const stageGroups = stages.map((stage) => ({ key: stage }));
+
+type Grouping = 'stage' | 'none';
 
 const views: [
   id: string,
@@ -75,7 +77,7 @@ const total = (pick: (o: Order) => number, format: (n: number) => string = Strin
 export function OrdersScreen() {
   const [view, setView] = useState('all');
   const [health, setHealth] = useState<string | null>(null);
-  const [grouped, setGrouped] = useState(true);
+  const [grouping, setGrouping] = useState<Grouping>('stage');
   const [openOnly, setOpenOnly] = useState(false);
   const [selected, setSelected] = useState<string[]>([]);
   const [archived, setArchived] = useState<string[]>([]);
@@ -373,9 +375,16 @@ export function OrdersScreen() {
                     count: inView.filter((o) => o.health === id).length,
                   }))}
                 />
-                <Toggle size="small" checked={grouped} onChange={setGrouped}>
-                  Group by stage
-                </Toggle>
+                <Select
+                  aria-label="Group by"
+                  size="small"
+                  value={grouping}
+                  onChange={(id) => setGrouping(id as Grouping)}
+                  options={[
+                    { id: 'stage', label: 'By stage' },
+                    { id: 'none', label: 'No groups' },
+                  ]}
+                />
                 <Checkbox size="small" checked={openOnly} onChange={setOpenOnly}>
                   Hide sent
                 </Checkbox>
@@ -405,7 +414,7 @@ export function OrdersScreen() {
             selectedIds={selected}
             onSelectionChange={setSelected}
             selectRowLabel={(o) => `Select ${o.name}`}
-            groupBy={grouped ? 'stage' : undefined}
+            groupBy={grouping === 'stage' ? 'stage' : undefined}
             groups={stageGroups}
             collapsibleGroups
             stickyGroups

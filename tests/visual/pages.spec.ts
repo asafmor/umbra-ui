@@ -156,7 +156,7 @@ for (const { id, name, tabs, action } of pages) {
       await tabTo(page, main);
       const control = main
         .getByRole('button', { name: action })
-        .or(main.getByRole('textbox', { name: action }));
+        .or(main.getByRole('searchbox', { name: action }));
       await tabTo(page, control.first());
       await expect(control.first()).toBeFocused();
     });
@@ -271,9 +271,9 @@ test.describe('List and detail', () => {
     await expect(title(page)).toHaveText('Schedule clash for Team 2');
     await expect(page.getByText('No answer needed')).toBeVisible();
 
-    await list.getByRole('textbox', { name: 'Search requests' }).fill('invoice');
+    await list.getByRole('searchbox', { name: 'Search requests' }).fill('invoice');
     await expect(list.getByRole('row')).toHaveCount(1);
-    await list.getByRole('textbox', { name: 'Search requests' }).fill('nothing like this');
+    await list.getByRole('searchbox', { name: 'Search requests' }).fill('nothing like this');
     await expect(list.getByText('No requests found')).toBeVisible();
   });
 
@@ -410,8 +410,11 @@ test.describe('Table', () => {
     await expect(page.locator('[data-umbra="summary-tile"]').first()).toContainText('24 orders');
     // Without groups the group header rows go.
     await expect(grid(page).locator('tr[data-kind="group"]')).not.toHaveCount(0);
-    await page.getByText('Group by stage').click();
-    await expect(page.getByRole('switch', { name: 'Group by stage' })).not.toBeChecked();
+    const grouping = page.getByRole('button', { name: /Group by/ });
+    await expect(grouping).toContainText('By stage');
+    await grouping.click();
+    await page.getByRole('option', { name: 'No groups' }).click();
+    await expect(grouping).toContainText('No groups');
     await expect(grid(page).locator('tr[data-kind="group"]')).toHaveCount(0);
   });
 

@@ -84,9 +84,11 @@ test('the app shortcuts and the history keys move between routes', async ({ page
   await page.keyboard.press('n');
   const dialog = page.getByRole('dialog', { name: 'New order' });
   await expect(dialog).toBeVisible();
-  await dialog.getByRole('textbox', { name: 'Client' }).pressSequentially('nn');
+  await dialog.getByRole('button', { name: /Client/ }).click();
+  const filter = page.getByRole('searchbox', { name: 'Filter options' });
+  await filter.pressSequentially('nn');
   expect(await hash(page)).toBe('#/orders/new');
-  await expect(dialog.getByRole('textbox', { name: 'Client' })).toHaveValue('nn');
+  await expect(filter).toHaveValue('nn');
 });
 
 test('selecting a client shows its details and puts it in the route', async ({ page }) => {
@@ -159,10 +161,16 @@ test('the modal form validates, adds a row and edits one', async ({ page }) => {
   const dialog = page.getByRole('dialog', { name: 'New order' });
 
   await dialog.getByRole('button', { name: 'Create order' }).click();
-  await expect(dialog).toContainText('Enter the client');
-  await expect(dialog.getByRole('textbox', { name: 'Client' })).toHaveAttribute('aria-invalid', 'true');
+  await expect(dialog).toContainText('Choose the client');
+  await expect(dialog.locator('[data-umbra="select"]')).toHaveAttribute('data-invalid', 'true');
 
-  await dialog.getByRole('textbox', { name: 'Client' }).fill('Client 99');
+  // The client is a choice: a searchable select over the clients.
+  const choose = async (scope: typeof dialog, name: string) => {
+    await scope.getByRole('button', { name: /Client/ }).click();
+    await page.getByRole('searchbox', { name: 'Filter options' }).fill(name);
+    await page.getByRole('option', { name, exact: true }).click();
+  };
+  await choose(dialog, 'Client 9');
   await dialog.getByRole('radio', { name: 'Region C' }).check({ force: true });
   await dialog.getByRole('spinbutton', { name: 'Total' }).fill('4321');
   await dialog.getByRole('checkbox', { name: 'Priority handling' }).check({ force: true });
@@ -174,7 +182,7 @@ test('the modal form validates, adds a row and edits one', async ({ page }) => {
   // The new row is the last one; sorting by total brings it into view.
   await table(page).getByRole('columnheader', { name: 'Total' }).getByRole('button').click();
   const row = table(page).getByRole('row', { name: /Order 1041/ });
-  await expect(row).toContainText('Client 99');
+  await expect(row).toContainText('Client 9');
   await expect(row).toContainText('4,321 cr');
 
   // Enter on a row opens it in the form; the route names the order.
@@ -182,10 +190,10 @@ test('the modal form validates, adds a row and edits one', async ({ page }) => {
   await page.keyboard.press('Enter');
   expect(await hash(page)).toBe('#/orders/o-1041');
   const edit = page.getByRole('dialog', { name: 'Edit order 1041' });
-  await expect(edit.getByRole('textbox', { name: 'Client' })).toHaveValue('Client 99');
-  await edit.getByRole('textbox', { name: 'Client' }).fill('Client 100');
+  await expect(edit.getByRole('button', { name: /Client/ })).toContainText('Client 9');
+  await choose(edit, 'Client 10');
   await edit.getByRole('button', { name: 'Save order' }).click();
-  await expect(table(page).getByRole('row', { name: /Order 1041/ })).toContainText('Client 100');
+  await expect(table(page).getByRole('row', { name: /Order 1041/ })).toContainText('Client 10');
 
   // Escape closes the form and returns to the list's route.
   await page.keyboard.press('n');
