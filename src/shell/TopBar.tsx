@@ -10,9 +10,10 @@ import {
   type RefObject,
 } from 'react';
 import { IconButton } from '../basics/IconButton';
-import { ActionsOverflow, ForceCollapseContext } from '../internal/overlays';
+import { ForceCollapseContext } from '../internal/contexts';
 import { isOverflowing, useShrinkLevel } from '../internal/useShrinkLevel';
 import { MoreButton } from '../layout/SectionTitle';
+import { ActionsOverflow } from '../overlays/Menu';
 import { Icon } from '../provider/icons';
 import { ScopeProvider, useScope } from '../provider/UmbraProvider';
 import { cx, renderPart, type Part } from '../utils/parts';

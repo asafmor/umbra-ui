@@ -1,0 +1,29 @@
+/* A strip scrolls inside itself without a scrollbar; an edge that hides more content fades out. */
+.strip {
+  --fade: var(--umbra-space-7);
+  --to: right;
+
+  scrollbar-width: none;
+}
+
+.strip[data-vertical] {
+  --to: bottom;
+}
+
+.strip[data-fade-start] {
+  --start: var(--fade);
+}
+
+.strip[data-fade-end] {
+  --end: var(--fade);
+}
+
+.strip:is([data-fade-start], [data-fade-end]) {
+  mask-image: linear-gradient(
+    to var(--to),
+    transparent,
+    #000 var(--start, 0px),
+    #000 calc(100% - var(--end, 0px)),
+    transparent
+  );
+}

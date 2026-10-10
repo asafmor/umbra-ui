@@ -1,0 +1,315 @@
+/* A layout child (plan/layout.md, sizing rule 5): the list takes its height, the panel the rest. */
+.root {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  gap: var(--umbra-tabs-gap, var(--umbra-space-4));
+  min-width: 0;
+  min-height: 0;
+}
+
+.root[data-size='content'] {
+  flex: 0 0 auto;
+}
+
+.root[hidden] {
+  display: none;
+}
+
+.root[data-orientation='vertical'] {
+  flex-direction: row;
+}
+
+.list {
+  --height: var(--umbra-tabs-height, var(--umbra-density-control-height));
+  --pad: var(--umbra-tabs-padding-x, var(--umbra-space-4));
+  --border: var(--umbra-tabs-border, var(--umbra-color-base-border-strong));
+  --bg: var(--umbra-tabs-bg, var(--umbra-color-base-surface1));
+  --selected: var(--umbra-tabs-selected-bg, var(--umbra-color-fixed-selected));
+  --on-selected: var(--umbra-tabs-selected-fg, var(--umbra-color-fixed-on-selected));
+
+  display: flex;
+  flex: 0 1 auto;
+  align-items: center;
+  gap: var(--umbra-space-3);
+  min-width: 0;
+  max-width: 100%;
+  font: var(--umbra-font-body);
+}
+
+.list[data-size='small'] {
+  --height: var(--umbra-tabs-height, calc(var(--umbra-density-table-row) - 2px));
+  --pad: var(--umbra-tabs-padding-x, var(--umbra-space-3));
+
+  font: var(--umbra-font-label);
+}
+
+.list[data-orientation='vertical'] {
+  flex-direction: column;
+  align-items: stretch;
+  min-height: 0;
+  max-width: var(--umbra-tabs-vertical-max-width, 40%);
+}
+
+.strip {
+  position: relative;
+  display: flex;
+  flex: 0 1 auto;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+}
+
+.list[data-full-width] > .strip {
+  flex: 1 1 auto;
+}
+
+.list[data-orientation='vertical'] > .strip {
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+.owner {
+  position: absolute;
+}
+
+.tab {
+  display: flex;
+  flex: none;
+  align-items: center;
+  min-width: 0;
+  max-width: 100%;
+  height: var(--height);
+  white-space: nowrap;
+}
+
+.list[data-full-width] .tab {
+  flex: 1 0 auto;
+}
+
+.tab[data-disabled] {
+  opacity: var(--umbra-state-disabled-opacity);
+}
+
+.trigger {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: center;
+  gap: var(--umbra-space-2);
+  min-width: 0;
+  height: 100%;
+  padding: 0 var(--pad);
+  border: 0;
+  border-radius: inherit;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  transition:
+    background-color var(--umbra-motion-duration-fast),
+    color var(--umbra-motion-duration-fast);
+}
+
+.trigger:disabled {
+  cursor: default;
+}
+
+/* The strip scrolls and clips, so the ring is drawn inwards. */
+.trigger:focus-visible,
+.panel:focus-visible {
+  outline-offset: calc(-1 * var(--umbra-state-focus-ring-width));
+}
+
+.list[data-orientation='vertical'] .trigger {
+  justify-content: flex-start;
+}
+
+.label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.count {
+  flex: none;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+
+.close {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: var(--umbra-space-7);
+  height: var(--umbra-space-7);
+  margin-inline: calc(-1 * var(--umbra-space-3)) var(--umbra-space-2);
+  padding: 0;
+  border: 0;
+  border-radius: var(--umbra-radius-control);
+  background: none;
+  color: inherit;
+  font-size: 0.8em;
+  cursor: pointer;
+}
+
+.close:hover {
+  background: color-mix(in oklab, currentColor 16%, transparent);
+}
+
+.close:active {
+  background: color-mix(in oklab, currentColor 8%, transparent);
+}
+
+/* The mark of the selected tab. It is moved and sized from the selected tab's box (Tabs.tsx). */
+.indicator {
+  --slide: calc(var(--umbra-motion-duration-base) * var(--umbra-motion-scale));
+
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  transition:
+    translate var(--slide) var(--umbra-motion-easing-enter),
+    width var(--slide) var(--umbra-motion-easing-enter),
+    height var(--slide) var(--umbra-motion-easing-enter);
+}
+
+.end {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--umbra-space-2);
+}
+
+/* Underline: text, with a bar under the selected tab (beside it when vertical) and a heavier label. */
+.list[data-variant='underline'] {
+  box-shadow: inset 0 calc(-1 * var(--umbra-border-width)) 0 var(--umbra-color-base-border-subtle);
+}
+
+.list[data-variant='underline'][data-orientation='vertical'] {
+  box-shadow: inset calc(-1 * var(--umbra-border-width)) 0 0 var(--umbra-color-base-border-subtle);
+}
+
+.list[data-variant='underline'] .tab {
+  color: var(--umbra-tabs-fg, var(--umbra-color-base-text-secondary));
+}
+
+.list[data-variant='underline'] .tab[data-selected],
+.list[data-variant='underline'] .tab:not([data-disabled]):hover {
+  color: var(--umbra-tabs-underline-selected-fg, var(--umbra-color-base-text-primary));
+}
+
+.list[data-variant='underline'] .indicator {
+  box-shadow: inset 0 calc(-1 * var(--umbra-space-1)) 0
+    var(--umbra-tabs-indicator-color, var(--umbra-color-base-text-primary));
+}
+
+.list[data-variant='underline'][data-orientation='vertical'] .indicator {
+  box-shadow: inset calc(-1 * var(--umbra-space-1)) 0 0
+    var(--umbra-tabs-indicator-color, var(--umbra-color-base-text-primary));
+}
+
+.tab[data-selected] {
+  font-weight: 700;
+}
+
+/* Pill and button group: bordered buttons; the selected one has the violet fill and a second cue. */
+.list:not([data-variant='underline']) .tab {
+  border: var(--umbra-border-width) solid var(--border);
+  background: var(--bg);
+  color: var(--umbra-tabs-fg, var(--umbra-color-base-text-primary));
+}
+
+.list:not([data-variant='underline']) .tab[data-selected] {
+  border-color: var(--selected);
+  color: var(--on-selected);
+}
+
+.list:not([data-variant='underline']) .indicator {
+  background: var(--selected);
+}
+
+.list:not([data-variant='underline']) .trigger:enabled:hover {
+  background: color-mix(in oklab, #fff 10%, transparent);
+}
+
+.list:not([data-variant='underline']) .trigger:enabled:active,
+.list:not([data-variant='underline']) .tab[data-selected] > .trigger:hover {
+  background: color-mix(in oklab, #000 16%, transparent);
+}
+
+.list[data-variant='pill'] > .strip {
+  gap: var(--umbra-space-2);
+}
+
+.list[data-variant='pill'] :is(.tab, .indicator) {
+  border-radius: var(--umbra-tabs-pill-radius, var(--umbra-radius-pill));
+}
+
+/* The cue of a selected pill is a light ring inside it; of a joined button, a bar under it. */
+.list[data-variant='pill'] .indicator {
+  box-shadow: inset 0 0 0 var(--umbra-space-1) color-mix(in oklab, var(--on-selected) 70%, var(--selected));
+}
+
+.list[data-variant='button-group'] .indicator {
+  box-shadow: inset 0 calc(-1 * var(--umbra-space-1)) 0 var(--on-selected);
+}
+
+.list[data-variant='button-group'] > .strip {
+  border-radius: var(--umbra-tabs-radius, var(--umbra-radius-control));
+}
+
+.list[data-variant='button-group'] .tab:not(:first-of-type) {
+  margin-inline-start: calc(-1 * var(--umbra-border-width));
+}
+
+.list[data-variant='button-group'] .tab:first-of-type {
+  border-start-start-radius: var(--umbra-tabs-radius, var(--umbra-radius-control));
+  border-end-start-radius: var(--umbra-tabs-radius, var(--umbra-radius-control));
+}
+
+.list[data-variant='button-group'] .tab:last-of-type {
+  border-start-end-radius: var(--umbra-tabs-radius, var(--umbra-radius-control));
+  border-end-end-radius: var(--umbra-tabs-radius, var(--umbra-radius-control));
+}
+
+.list[data-variant='button-group'][data-orientation='vertical'] .tab:not(:first-of-type) {
+  margin-block-start: calc(-1 * var(--umbra-border-width));
+  margin-inline-start: 0;
+}
+
+.list[data-variant='button-group'][data-orientation='vertical'] .tab {
+  border-radius: 0;
+}
+
+/* Step 1: the counts hide. */
+.strip:not([data-level='0']) .count {
+  display: none;
+}
+
+/* Step 2: a tab with an icon shows the icon only. The label stays as its accessible name. */
+.strip[data-level='2'] .tab[data-icon] .label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+.panel {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.panel[hidden] {
+  display: none;
+}

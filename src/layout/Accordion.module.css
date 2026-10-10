@@ -1,0 +1,275 @@
+.root {
+  --pad: var(--umbra-accordion-padding, var(--umbra-density-card-padding));
+  --border: var(--umbra-accordion-border, var(--umbra-color-base-border-subtle));
+  --header-height: var(
+    --umbra-accordion-header-height,
+    calc(var(--umbra-density-control-height) + 2 * var(--umbra-space-2))
+  );
+  /* Movement: nothing under reduced motion. Used as a duration and as a delay. */
+  --time: calc(var(--umbra-motion-duration-base) * var(--umbra-motion-scale));
+
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  /* Only when even the headers do not fit: before that, the open panels give way. */
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--umbra-scroll-thumb, var(--umbra-color-base-border-control)) transparent;
+}
+
+.root[data-size='content'] {
+  flex: 0 0 auto;
+}
+
+.root[hidden] {
+  display: none;
+}
+
+.root[data-variant='card'] {
+  gap: var(--umbra-accordion-gap, var(--umbra-space-3));
+}
+
+/*
+ * A closed section keeps its height. An open one gives way when the accordion is short of height, and
+ * its panel scrolls. While a section closes it must still give way, or it would jump to its full
+ * height first: `flex-shrink` changes back only when the close transition has ended.
+ */
+.item {
+  flex: 0 0 auto;
+  min-height: var(--header-height);
+  display: flex;
+  flex-direction: column;
+  container-type: inline-size;
+  transition: flex-shrink 0s linear var(--time);
+}
+
+.item[data-open] {
+  flex-shrink: 1;
+  transition-delay: 0s;
+}
+
+.root[data-variant='plain'] > .item + .item {
+  border-top: var(--umbra-border-width) solid var(--border);
+}
+
+/* The card look reads the card's own tokens, so the two stay alike. */
+.root[data-variant='card'] > .item {
+  --pad: var(--umbra-accordion-padding, var(--umbra-card-padding, var(--umbra-density-card-padding)));
+  --umbra-scroll-fade-color: var(--umbra-card-bg, var(--umbra-context-card-tint));
+  overflow: hidden;
+  border: var(--umbra-border-width) solid
+    var(--umbra-accordion-border, var(--umbra-card-border, var(--umbra-color-base-border-subtle)));
+  border-radius: var(--umbra-card-radius, var(--umbra-radius-card));
+  background: var(--umbra-card-bg, var(--umbra-context-card-tint));
+}
+
+.header {
+  position: relative;
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-space-3);
+  min-height: var(--header-height);
+  padding: var(--umbra-space-2) var(--pad);
+  transition: background-color var(--umbra-motion-duration-fast);
+}
+
+.item:not([data-disabled]) > .header:hover {
+  background: color-mix(in oklab, currentColor 6%, transparent);
+}
+
+.item:not([data-disabled]) > .header:has(.trigger:active) {
+  background: color-mix(in oklab, #000 18%, transparent);
+}
+
+/* Only the button and its chevron are dimmed: the meta text and the actions are not part of the disabled control. */
+.item[data-disabled] > .header > :is(.heading, .chevron) {
+  opacity: var(--umbra-state-disabled-opacity);
+}
+
+.heading {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  margin: 0;
+  font: inherit;
+}
+
+.trigger {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-space-3);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.trigger:disabled,
+.trigger[aria-disabled='true'] {
+  cursor: default;
+}
+
+/* The button covers the whole header, so a press anywhere on it toggles the section. */
+.trigger::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+/* The ring is drawn inwards: a card section and the accordion itself both clip. */
+.trigger:focus-visible {
+  outline: none;
+}
+
+.trigger:focus-visible::after {
+  outline: var(--umbra-state-focus-ring-width) solid
+    var(--umbra-focus-color, var(--umbra-color-fixed-focus-ring));
+  outline-offset: calc(-1 * var(--umbra-state-focus-ring-width));
+  border-radius: var(--umbra-radius-control);
+}
+
+.titles {
+  min-width: 0;
+  display: grid;
+}
+
+.title,
+.subtitle,
+.meta {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.title {
+  font: var(
+    --umbra-accordion-title-font,
+    700 var(--umbra-density-body-size) / 1.375 var(--umbra-font-family-body)
+  );
+}
+
+.root[data-variant='card'] .title {
+  font: var(--umbra-accordion-title-font, var(--umbra-card-title-font, var(--umbra-font-card-title)));
+  text-transform: var(--umbra-font-card-title-transform);
+  letter-spacing: 0.01em;
+}
+
+.subtitle {
+  font: var(--umbra-font-label);
+  color: var(--umbra-color-base-text-secondary);
+}
+
+.meta {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 50%;
+  font: var(--umbra-font-label);
+  color: var(--umbra-color-base-text-secondary);
+}
+
+/* Above the button's cover, so the controls take their own presses. */
+.actions {
+  position: relative;
+  z-index: 1;
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-space-2);
+}
+
+.chevron {
+  flex: none;
+  display: flex;
+  color: var(--umbra-color-base-text-secondary);
+  transition: rotate var(--time) var(--umbra-motion-easing-enter);
+}
+
+.item:not([data-open]) > .header > .chevron {
+  rotate: -90deg;
+}
+
+/* Step 1: a narrow section drops the meta text. */
+@container (max-width: 20em) {
+  .meta {
+    display: none;
+  }
+}
+
+/*
+ * The size animation, in CSS only. Four boxes, outside in:
+ *
+ *   .panel   the ScrollArea. A flex item that shrinks: when the accordion is short of height, this is
+ *            the box that is smaller than the content, and its viewport scrolls.
+ *   .grid    one grid row that goes from 0fr to 1fr. Its height is auto, so a fraction of 1fr is that
+ *            fraction of the content height, and the row can be transitioned.
+ *   .clip    the grid item. `min-height: 0` lets the row go below the content; `overflow: hidden`
+ *            hides what does not fit yet.
+ *   .content the padding. It must not be on .clip: padding would keep the row from reaching 0.
+ *
+ * The grid is not itself the flex item on purpose. A flex item in a container of known height has a
+ * definite height, and a row of 0.5fr would then be half of the box, which is itself half of the
+ * content: the content would open with a gap under it.
+ */
+.panel.panel {
+  flex: 0 1 auto;
+  /* Closed content leaves the tab order and the accessibility tree, after the close transition. */
+  visibility: hidden;
+  transition: visibility 0s linear var(--time);
+}
+
+.item[data-open] > .panel {
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+/*
+ * The viewport scrolls only at rest. While the panel moves it is shorter than its content, and would
+ * show a scrollbar for the length of the transition: so `overflow` turns to `auto` after the delay
+ * (`allow-discrete`; a browser without it shows the scrollbar during the transition, nothing worse).
+ * `hidden`, not `visible`, so a scrolled panel keeps its position while it closes.
+ */
+.item:not([data-open]) > .panel > [data-part='viewport'] {
+  overflow-y: hidden;
+}
+
+.item[data-open] > .panel > [data-part='viewport'] {
+  transition: overflow-y 0s linear var(--time);
+  transition-behavior: allow-discrete;
+}
+
+.item:not([data-open]) > .panel > [data-part='fade'] {
+  display: none;
+}
+
+.grid {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--time) var(--umbra-motion-easing-exit);
+}
+
+.item[data-open] > .panel > [data-part='viewport'] > .grid {
+  grid-template-rows: 1fr;
+  transition-timing-function: var(--umbra-motion-easing-enter);
+}
+
+.clip {
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.content {
+  padding: var(--umbra-space-2) var(--pad) var(--pad);
+}
+
+.content[data-padding='none'] {
+  padding: 0;
+}

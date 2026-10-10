@@ -7,6 +7,68 @@ A token is a CSS variable: set it in CSS on any ancestor, or through the `tokens
 `UmbraProvider` or `UmbraScope` (without the `--umbra-` prefix). Every component also accepts
 `className` and `style` on its root.
 
+## Accordion
+
+A stack of sections that open and close. It fills its slot; an open panel scrolls inside when space is short.
+
+**Tokens**: `--umbra-accordion-border`, `--umbra-accordion-gap`, `--umbra-accordion-header-height`, `--umbra-accordion-padding`, `--umbra-accordion-title-font`, `--umbra-card-bg`, `--umbra-card-border`, `--umbra-card-padding`, `--umbra-card-radius`, `--umbra-card-title-font`, `--umbra-focus-color`, `--umbra-scroll-thumb`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `collapsible` | `boolean` | May every section be closed? Only matters for `type="single"`; when `false`, the open section stays open. |
+| `variant` | `"plain" \| "card"` | `plain`: rules between the sections. `card`: each section looks like a card. |
+| `headingLevel` | `4 \| 3 \| 2 \| 5 \| 6` | Heading level of the section titles. |
+| `keepMounted` | `boolean` | Keeps the content of closed sections in the page (hidden), so it keeps its state. |
+| `aria-label` | `string` | Accessible name of the group of sections. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `children` | `ReactNode` |  |
+| `size` | `number \| "content"` | Share of the parent's space: a weight, or `"content"` to take the size of the content. Default 1. |
+| `priority` | `number` | Which child gives way first when space runs out. Higher stays longer; ties give way from the end. Default 0. |
+| `minWidth` | `number` | Reserved: `Columns` has no rule that uses it yet, so it has no effect. |
+| `minHeight` | `number` | Below this height a parent `Stack` may collapse the child to its header. |
+| `label` | `string` | Tab label when a parent `Columns` shows one child at a time. |
+| `type` | `"single" \| "multiple"` | `single`: one section open at a time. `multiple`: any number. |
+| `value` | `string \| string[] \| null` | The open section (controlled). `null` for none. The open sections (controlled). |
+| `defaultValue` | `string \| string[] \| null` |  |
+| `onChange` | `((value: string \| null) => void) \| ((value: string[]) => void)` | Called with the id of the open section, or `null`. Called with the ids of the open sections. |
+| `items` | `AccordionItemData[]` | The sections. Or pass `Accordion.Item` elements as children. |
+| `parts` | `see Parts` | Replace or hide named pieces. `item` applies to every section built from `items`. |
+
+**Parts**: `item`.
+
+**Blocks**: `Accordion.Root`, `Accordion.Item`, `Accordion.Section`, `Accordion.Header`, `Accordion.Panel`.
+
+## ActionBar
+
+The bar at the bottom of a page, card or modal: a status at the start and the actions at the end.
+
+**Tokens**: `--umbra-action-bar-bg`, `--umbra-action-bar-border`, `--umbra-action-bar-danger-color`, `--umbra-action-bar-gap`, `--umbra-action-bar-info-color`, `--umbra-action-bar-neutral-color`, `--umbra-action-bar-offset`, `--umbra-action-bar-padding-x`, `--umbra-action-bar-padding-y`, `--umbra-action-bar-radius`, `--umbra-action-bar-success-color`, `--umbra-action-bar-warning-color`, `--umbra-icon-size`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `status` | `ReactNode \| { tone?: ActionBarTone; text: ReactNode; }` | The message at the start: a node, or a tone and a text. The tone adds its icon, so it is not colour alone. |
+| `actions` | `ReactNode` | The actions, as nodes. Or use `primary`, `secondary` and `tertiary`. |
+| `primary` | `ReactNode \| ActionBarAction \| ActionBarAction[]` | The main action or actions, at the end. Their labels never hide. |
+| `secondary` | `ReactNode \| ActionBarAction \| ActionBarAction[]` | Before the primary actions. With an icon, they keep only the icon when the bar is narrow. |
+| `tertiary` | `ReactNode \| ActionBarAction \| ActionBarAction[]` | At the start, after the status. They collapse like the secondary ones. |
+| `selectionCount` | `number` | Floating bar: how many things are selected. The bar is open while it is above 0, unless `open` is set. |
+| `selectionLabel` | `((count: number) => string)` | The status text for a selection. |
+| `onClearSelection` | `(() => void)` | Shows a button that clears the selection. |
+| `clearLabel` | `string` | Accessible name of the clear button. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `aria-label` | `string` | Accessible name of the group. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `variant` | `"inline" \| "floating"` | `inline`: in the flow, at the bottom of a page, card or modal. `floating`: over the bottom of its container. |
+| `emphasis` | `"default" \| "strong"` | `strong` fills the bar with the tone, for a status the user has to act on. |
+| `open` | `boolean` | Shows a `floating` bar. Its container needs `position: relative`. |
+| `align` | `"start" \| "center" \| "end"` | Where the actions sit. The status is always at the start. |
+
+**Parts**: `status`, `clear`, `tertiary`, `actions`.
+
+**Blocks**: `ActionBar.Root`, `ActionBar.Status`, `ActionBar.Actions`, `ActionBar.Group`, `ActionBar.Action`, `ActionBar.Clear`.
+
 ## AppShell
 
 The outermost frame: exactly the size of the window, never scrolls, bars above one `Page`.
@@ -129,6 +191,49 @@ A message band inside a card or page: a notice, a warning, or an insight about t
 **Parts**: `icon`, `title`, `description`, `actions`, `dismiss`.
 
 **Blocks**: `Banner.Root`, `Banner.Icon`, `Banner.Content`, `Banner.Title`, `Banner.Description`, `Banner.Actions`, `Banner.Dismiss`.
+
+## BarChart
+
+Compares values across categories: grouped, stacked or diverging around zero, upright or sideways.
+
+**Tokens**: `--umbra-chart-annotation`, `--umbra-chart-annotation-width`, `--umbra-chart-area-opacity`, `--umbra-chart-axis`, `--umbra-chart-axis-width`, `--umbra-chart-band-opacity`, `--umbra-chart-bar-radius`, `--umbra-chart-center-font`, `--umbra-chart-dim-opacity`, `--umbra-chart-fg`, `--umbra-chart-font`, `--umbra-chart-gap`, `--umbra-chart-grid`, `--umbra-chart-grid-dash`, `--umbra-chart-grid-width`, `--umbra-chart-line-width`, `--umbra-chart-point-scale`, `--umbra-chart-tooltip-bg`, `--umbra-chart-tooltip-border`, `--umbra-chart-tooltip-fg`, `--umbra-chart-tooltip-radius`, `--umbra-chart-track`, `--umbra-chart-value-fg`, `--umbra-focus-color`, `--umbra-legend-row-height`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `className` | `string` |  |
+| `style` | `import("react").CSSProperties` |  |
+| `variant` | `"stacked" \| "grouped" \| "diverging"` | `grouped`: the series side by side. `stacked`: on top of each other. `diverging`: every second series is drawn on the other side of zero, with all values shown as positive. |
+| `orientation` | `"vertical" \| "horizontal"` | `horizontal` puts the categories on the left and draws the bars sideways. |
+| `loading` | `boolean` | Shows a placeholder in the chart's shape. |
+| `hiddenIds` | `readonly string[]` | Ids of the series that are switched off (controlled). |
+| `defaultHiddenIds` | `readonly string[]` |  |
+| `onHiddenChange` | `((hiddenIds: string[]) => void)` |  |
+| `error` | `ReactNode` | When set, shown in place of the chart. |
+| `label` | `string` | Accessible name of the chart. Required unless `aria-labelledby` is set. |
+| `thresholds` | `BarThreshold[]` | Colours bars by value. Each threshold also has a fill, so the steps differ without colour. |
+| `formatValue` | `((value: number) => string)` | Formats a value for labels, the tooltip and screen readers. Defaults to the provider's locale. |
+| `categories` (required) | `string[]` |  |
+| `series` (required) | `BarSeries[]` |  |
+| `colorBy` | `"series" \| "sign"` | `sign` colours bars by the sign of their value; negative bars are also striped. |
+| `valueDomain` | `[number, number]` | The range of the value axis. Defaults to round numbers around the data, with zero. |
+| `annotations` | `ChartAnnotation[]` | Reference lines and bands on the value axis. |
+| `xTitle` | `string` | Title of the horizontal axis. |
+| `yTitle` | `string` | Title of the vertical axis. |
+| `aria-labelledby` | `string` | Id of the element that names the chart, for example a card title. |
+| `description` | `string` | What a screen reader hears after the name. Defaults to a generated summary of the data. |
+| `legend` | `string \| number \| bigint \| boolean \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| import("react").ReactPortal \| Promise<string \| number \| bigint \| boolean \| import("react").ReactPortal \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| null \| undefined> \| null` | The legend: `true` or a placement shows the built-in one, `false` hides it, and a node replaces it. By default it is shown below the chart when there is more than one series. |
+| `labels` | `boolean` | Draws labels on the chart itself, so it can be read without the legend or the tooltip. |
+| `onPointPress` | `((point: import(".").ChartPoint) => void)` | Called when a point is clicked, or activated with Enter or Space. |
+| `empty` | `ReactNode` | Shown when there is no data. |
+| `onRetry` | `(() => void)` | Adds a retry button to the error state. |
+| `retryLabel` | `string` |  |
+| `pointsLabel` | `string` | Accessible name of the list of data points. |
+| `legendLabel` | `string` | Accessible name of the legend. |
+
+**Parts**: `legend`, `tooltip`, `skeleton`, `empty`, `error`.
+
+**Blocks**: `BarChart.Root`, `BarChart.Grid`, `BarChart.Annotations`, `BarChart.Bars`, `BarChart.Axes`, `BarChart.ValueLabels`.
 
 ## Button
 
@@ -294,6 +399,52 @@ Shares its width among its children. Below the minimum window it shows one child
 
 **Blocks**: none.
 
+## DonutChart
+
+A ring that shows one value against a total, or how a total splits into segments.
+
+**Tokens**: `--umbra-chart-annotation`, `--umbra-chart-annotation-width`, `--umbra-chart-area-opacity`, `--umbra-chart-axis`, `--umbra-chart-axis-width`, `--umbra-chart-band-opacity`, `--umbra-chart-bar-radius`, `--umbra-chart-center-font`, `--umbra-chart-dim-opacity`, `--umbra-chart-fg`, `--umbra-chart-font`, `--umbra-chart-gap`, `--umbra-chart-grid`, `--umbra-chart-grid-dash`, `--umbra-chart-grid-width`, `--umbra-chart-line-width`, `--umbra-chart-point-scale`, `--umbra-chart-tooltip-bg`, `--umbra-chart-tooltip-border`, `--umbra-chart-tooltip-fg`, `--umbra-chart-tooltip-radius`, `--umbra-chart-track`, `--umbra-chart-value-fg`, `--umbra-focus-color`, `--umbra-legend-row-height`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `centerValue` | `ReactNode` | The large line in the middle. In the single-value form it defaults to the percentage; `null` hides it. |
+| `centerLabel` | `ReactNode` | The caption under it. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `value` | `number` | The single-value form: one value against `max`. |
+| `className` | `string` |  |
+| `style` | `import("react").CSSProperties` |  |
+| `tone` | `DonutTone` | Colour of the single value. The number in the centre is the cue that does not depend on colour. |
+| `loading` | `boolean` | Shows a placeholder in the chart's shape. |
+| `hiddenIds` | `readonly string[]` | Ids of the series that are switched off (controlled). |
+| `defaultHiddenIds` | `readonly string[]` |  |
+| `onHiddenChange` | `((hiddenIds: string[]) => void)` |  |
+| `error` | `ReactNode` | When set, shown in place of the chart. |
+| `label` | `string` | Accessible name of the chart. Required unless `aria-labelledby` is set. |
+| `color` | `string` | Any CSS colour for the single value; wins over `tone`. |
+| `max` | `number` | What a full ring stands for, in the single-value form. |
+| `thresholds` | `{ from: number; tone: DonutTone; }[]` | Picks the tone from the value: the last entry whose `from` the value reaches. |
+| `formatValue` | `((value: number) => string)` | Formats a value for labels, the tooltip and screen readers. Defaults to the provider's locale. |
+| `aria-labelledby` | `string` | Id of the element that names the chart, for example a card title. |
+| `description` | `string` | What a screen reader hears after the name. Defaults to a generated summary of the data. |
+| `legend` | `string \| number \| bigint \| boolean \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| import("react").ReactPortal \| Promise<string \| number \| bigint \| boolean \| import("react").ReactPortal \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| null \| undefined> \| null` | The legend: `true` or a placement shows the built-in one, `false` hides it, and a node replaces it. By default it is shown below the chart when there is more than one series. |
+| `labels` | `boolean` | Draws labels on the chart itself, so it can be read without the legend or the tooltip. |
+| `onPointPress` | `((point: import(".").ChartPoint) => void)` | Called when a point is clicked, or activated with Enter or Space. |
+| `empty` | `ReactNode` | Shown when there is no data. |
+| `onRetry` | `(() => void)` | Adds a retry button to the error state. |
+| `retryLabel` | `string` |  |
+| `pointsLabel` | `string` | Accessible name of the list of data points. |
+| `legendLabel` | `string` | Accessible name of the legend. |
+| `data` | `DonutSegment[]` | The segment form: several values that share the ring. |
+| `thickness` | `number` | Width of the ring in pixels. By default a fifth of the radius. |
+| `startAngle` | `number` | Where the ring starts, in degrees clockwise from 12 o'clock. |
+| `sweep` | `number` | Degrees the ring covers. Less than 360 leaves it open, as a gauge. |
+| `roundedCaps` | `boolean` | Rounds the ends of the value. On by default in the single-value form. |
+| `gap` | `number` | Degrees left empty between segments. |
+
+**Parts**: `legend`, `tooltip`, `skeleton`, `empty`, `error`, `center`.
+
+**Blocks**: `DonutChart.Root`, `DonutChart.Track`, `DonutChart.Segments`, `DonutChart.Labels`, `DonutChart.Center`.
+
 ## EmptyState
 
 Says that a region has nothing to show, or failed to load, and what to do about it.
@@ -404,7 +555,7 @@ A header row for one group of rows inside a list or table.
 
 ## IconButton
 
-A button that shows only an icon. Inside an overflow menu it becomes a row with its icon and label.
+A button that shows only an icon. Inside an overflow menu it becomes a menu item with its icon and label.
 
 **Tokens**: `--umbra-button-accent-bg`, `--umbra-button-accent-border`, `--umbra-button-accent-fg`, `--umbra-button-danger-bg`, `--umbra-button-danger-border`, `--umbra-button-danger-fg`, `--umbra-button-ghost-bg`, `--umbra-button-ghost-border`, `--umbra-button-ghost-fg`, `--umbra-button-height`, `--umbra-button-neutral-bg`, `--umbra-button-neutral-border`, `--umbra-button-neutral-fg`, `--umbra-button-padding-x`, `--umbra-button-primary-bg`, `--umbra-button-primary-border`, `--umbra-button-primary-fg`, `--umbra-button-radius`, `--umbra-focus-color`, `--umbra-focus-offset`, `--umbra-icon-button-size`.
 
@@ -555,6 +706,50 @@ A strip of ticks with a marker that shows where a value sits on a scale.
 
 **Blocks**: `LevelMeter.Root`, `LevelMeter.Label`, `LevelMeter.EndLabel`, `LevelMeter.Strip`, `LevelMeter.Band`, `LevelMeter.Marker`, `LevelMeter.Value`.
 
+## LineChart
+
+One or more series over categories, numbers or time, with a numeric or an ordinal y axis.
+
+**Tokens**: `--umbra-chart-annotation`, `--umbra-chart-annotation-width`, `--umbra-chart-area-opacity`, `--umbra-chart-axis`, `--umbra-chart-axis-width`, `--umbra-chart-band-opacity`, `--umbra-chart-bar-radius`, `--umbra-chart-center-font`, `--umbra-chart-dim-opacity`, `--umbra-chart-fg`, `--umbra-chart-font`, `--umbra-chart-gap`, `--umbra-chart-grid`, `--umbra-chart-grid-dash`, `--umbra-chart-grid-width`, `--umbra-chart-line-width`, `--umbra-chart-point-scale`, `--umbra-chart-tooltip-bg`, `--umbra-chart-tooltip-border`, `--umbra-chart-tooltip-fg`, `--umbra-chart-tooltip-radius`, `--umbra-chart-track`, `--umbra-chart-value-fg`, `--umbra-focus-color`, `--umbra-legend-row-height`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `className` | `string` |  |
+| `style` | `import("react").CSSProperties` |  |
+| `loading` | `boolean` | Shows a placeholder in the chart's shape. |
+| `hiddenIds` | `readonly string[]` | Ids of the series that are switched off (controlled). |
+| `defaultHiddenIds` | `readonly string[]` |  |
+| `onHiddenChange` | `((hiddenIds: string[]) => void)` |  |
+| `error` | `ReactNode` | When set, shown in place of the chart. |
+| `label` | `string` | Accessible name of the chart. Required unless `aria-labelledby` is set. |
+| `formatValue` | `((value: number) => string)` | Formats a value for labels, the tooltip and screen readers. Defaults to the provider's locale. |
+| `categories` | `string[]` | The order of a category x axis. Defaults to the order the names first appear in. |
+| `series` (required) | `LineSeries[]` |  |
+| `annotations` | `ChartAnnotation[]` | Reference lines and bands on either axis. |
+| `xTitle` | `string` |  |
+| `yTitle` | `string` |  |
+| `aria-labelledby` | `string` | Id of the element that names the chart, for example a card title. |
+| `description` | `string` | What a screen reader hears after the name. Defaults to a generated summary of the data. |
+| `legend` | `string \| number \| bigint \| boolean \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| import("react").ReactPortal \| Promise<string \| number \| bigint \| boolean \| import("react").ReactPortal \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| null \| undefined> \| null` | The legend: `true` or a placement shows the built-in one, `false` hides it, and a node replaces it. By default it is shown below the chart when there is more than one series. |
+| `labels` | `boolean` | Draws labels on the chart itself, so it can be read without the legend or the tooltip. |
+| `onPointPress` | `((point: import(".").ChartPoint) => void)` | Called when a point is clicked, or activated with Enter or Space. |
+| `empty` | `ReactNode` | Shown when there is no data. |
+| `onRetry` | `(() => void)` | Adds a retry button to the error state. |
+| `retryLabel` | `string` |  |
+| `pointsLabel` | `string` | Accessible name of the list of data points. |
+| `legendLabel` | `string` | Accessible name of the legend. |
+| `yLevels` | `string[]` | Makes the y axis ordinal: the named levels, from the bottom up. Points then give a level name as `y`. |
+| `yDomain` | `[number, number]` | The range of a numeric y axis. Defaults to round numbers around the data. |
+| `curve` | `LineCurve` | `step` holds each value until the next point. |
+| `area` | `boolean` | Fills the area under each line; the y axis then starts at zero. |
+| `points` | `boolean` | Draws a shape on every value. Points too dense to tell apart are left out. |
+| `formatX` | `((x: LineX) => string)` | Formats an x value for the axis, the tooltip and screen readers. |
+
+**Parts**: `legend`, `tooltip`, `skeleton`, `empty`, `error`.
+
+**Blocks**: `LineChart.Root`, `LineChart.Grid`, `LineChart.Annotations`, `LineChart.Series`, `LineChart.Axes`.
+
 ## Link
 
 A text link: inside a sentence, or on its own line as the way to a fuller view.
@@ -658,6 +853,40 @@ The content of one row of a list: a title with optional lines, and leading and t
 
 **Blocks**: `ListItem.Root`, `ListItem.Leading`, `ListItem.Content`, `ListItem.Overline`, `ListItem.Title`, `ListItem.Description`, `ListItem.End`, `ListItem.Meta`, `ListItem.Unread`, `ListItem.Trailing`.
 
+## Menu
+
+A list of actions or links that opens from a control. One tab stop; arrow keys, type-ahead, and submenus that open with the arrow keys.
+
+**Tokens**: `--umbra-focus-color`, `--umbra-menu-bg`, `--umbra-menu-border`, `--umbra-menu-item-height`, `--umbra-menu-item-hover-bg`, `--umbra-menu-item-radius`, `--umbra-menu-max-width`, `--umbra-menu-min-width`, `--umbra-menu-radius`, `--umbra-scroll-thumb`, `--umbra-scroll-thumb-size`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `items` | `MenuEntry[]` | The rows, as data. |
+| `children` | `ReactNode` | The rows, as `Menu.Item`, `Menu.Section`, `Menu.Separator` and `Menu.Sub` blocks. |
+| `trigger` | `ReactNode` | The control that opens the menu: an umbra-ui button, or a plain `<button>`. Leave it out to use `anchorRef`. |
+| `anchorRef` | `RefObject<Element \| null>` | The element to open against, when there is no `trigger`. Use it with `open`. |
+| `open` | `boolean` | Controlled state. |
+| `defaultOpen` | `boolean` |  |
+| `onOpenChange` | `((open: boolean) => void)` |  |
+| `label` | `string` | Accessible name. A menu with a `trigger` is named by it. |
+| `onAction` | `((id: string) => void)` | Called with the id of the row the user chose. |
+| `selectedIds` | `string[]` | The checked `checkbox` and `radio` rows, in every section and submenu. |
+| `defaultSelectedIds` | `string[]` |  |
+| `onSelectionChange` | `((ids: string[]) => void)` |  |
+| `placement` | `OverlayPlacement` | Side of the anchor and alignment along it. It flips to the other side to stay in the window. |
+| `offset` | `number` | Gap between the anchor and the menu, in pixels. |
+| `matchAnchorWidth` | `boolean` | Makes the menu at least as wide as its anchor. |
+| `maxHeight` | `number` | Tallest the menu may be, in pixels. It is never taller than the room in the window; the rows scroll. |
+| `renderLink` | `((props: MenuLinkProps) => ReactNode)` | Plugs in the app's router link for rows with `href`. Defaults to a plain `<a>`. |
+| `emptyLabel` | `string` | Shown when there are no rows. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `className` | `string` | On the menu's panel. |
+| `style` | `CSSProperties` |  |
+
+**Parts**: `item`, `check`, `sectionHeader`.
+
+**Blocks**: `Menu.Item`, `Menu.Section`, `Menu.Separator`, `Menu.Sub`, `Menu.Context`.
+
 ## Page
 
 The content area under the bars: applies the outer margin and the context tint.
@@ -680,6 +909,77 @@ The content area under the bars: applies the outer margin and the context tint.
 
 **Blocks**: `Page.Root`, `Page.Header`, `Page.Content`, `Page.Footer`.
 
+## PageHeader
+
+The header of a page or of a detail pane: what it shows, facts about it, and its actions.
+
+**Tokens**: `--umbra-focus-color`, `--umbra-focus-offset`, `--umbra-nav-font`, `--umbra-nav-gap`, `--umbra-nav-indicator-color`, `--umbra-page-header-bg`, `--umbra-page-header-border`, `--umbra-page-header-fg`, `--umbra-page-header-media-size`, `--umbra-page-header-media-size-small`, `--umbra-page-header-padding`, `--umbra-page-header-radius`, `--umbra-page-header-title-font`, `--umbra-subnav-indicator-color`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `title` | `ReactNode` |  |
+| `subtitle` | `ReactNode` | A line under the title. |
+| `overline` | `ReactNode` | A small line above the title, for example the kind of thing the page shows. |
+| `media` | `ReactNode` | Leading avatar, entity icon or image. |
+| `meta` | `ReactNode \| PageHeaderFact[]` | A row of facts: `{ label, value }` items, or any node. |
+| `tags` | `ReactNode` | Tags or badges after the title. |
+| `actions` | `ReactNode` | Trailing controls. |
+| `onBack` | `(() => void)` | Shows a back button before the title. |
+| `backLabel` | `string` | Accessible name of the back button. |
+| `breadcrumbs` | `PageHeaderCrumb[]` | The path to this page; the last item is the current page. |
+| `breadcrumbsLabel` | `string` | Accessible name of the breadcrumb landmark. |
+| `renderLink` | `((props: NavLinkProps) => ReactNode)` | Plugs the app's router link into the breadcrumbs. Defaults to a plain `<a>`. |
+| `tabs` | `ReactNode` | A tab list, placed along the bottom edge. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `tone` | `"default" \| "tinted" \| "band"` | `tinted` is a panel in the context tint. `band` fills with the brand colour, or `bandColor`. |
+| `size` | `"compact" \| "default"` | `compact` is for the header of a detail pane inside a card. |
+| `bandColor` | `string` | Colour of the band (hex or `rgb()`); the text colour is chosen for contrast with it. |
+| `headingLevel` | `4 \| 3 \| 1 \| 2 \| 5 \| 6` | Heading level of the title. |
+
+**Parts**: `breadcrumbs`, `back`, `media`, `overline`, `title`, `subtitle`, `meta`, `actions`, `tabs`.
+
+**Blocks**: `PageHeader.Root`, `PageHeader.Breadcrumbs`, `PageHeader.Bar`, `PageHeader.Content`, `PageHeader.Back`, `PageHeader.Media`, `PageHeader.Titles`, `PageHeader.Overline`, `PageHeader.Title`, `PageHeader.Subtitle`, `PageHeader.Meta`, `PageHeader.Actions`, `PageHeader.Tabs`.
+
+## Popover
+
+An anchored panel without a backdrop: the page behind it stays usable. It keeps the density, context tint and tokens of the place it was opened from.
+
+**Tokens**: `--umbra-focus-color`, `--umbra-popover-bg`, `--umbra-popover-border`, `--umbra-popover-max-width`, `--umbra-popover-min-width`, `--umbra-popover-padding`, `--umbra-popover-radius`, `--umbra-popover-shadow`, `--umbra-popover-title-font`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `trigger` | `ReactNode` | The control that opens it: an umbra-ui button, or a plain `<button>`. Leave it out to use `anchorRef`. |
+| `toolbar` | `ReactNode` | Filters or tabs that stay fixed above the body. |
+| `footer` | `ReactNode` | Status or actions fixed below the body. |
+| `children` | `ReactNode \| ((close: () => void) => ReactNode)` | The body. A function receives `close`. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `open` | `boolean` | Controlled state. |
+| `defaultOpen` | `boolean` |  |
+| `size` | `"default" \| "large"` | `large` is a wide panel with room for a toolbar and a footer. |
+| `label` | `string` | Accessible name, when there is no title. |
+| `anchorRef` | `RefObject<Element \| null>` | The element to open against, when there is no `Popover.Trigger`. Use it with `open`. |
+| `placement` | `OverlayPlacement` | Side of the anchor and alignment along it. It flips to the other side to stay in the window. |
+| `offset` | `number` | Gap between the anchor and the panel, in pixels. |
+| `matchAnchorWidth` | `boolean` | Gives the panel the width of its anchor. |
+| `maxHeight` | `number` | Tallest the panel may be, in pixels. It is never taller than the room in the window; the body scrolls. |
+| `arrow` | `boolean` | A small pointer towards the anchor. |
+| `dismissOnBlur` | `boolean` | Closes when keyboard focus leaves the panel. Escape and a press outside always close it. |
+| `onOpenChange` | `((open: boolean) => void)` |  |
+| `subtitle` | `ReactNode` | Second line, in the body font. |
+| `actions` | `ReactNode` | Trailing controls, for example the popover's main action. |
+| `title` | `ReactNode` |  |
+| `closeButton` | `boolean` | Shows a close button. |
+| `closeLabel` | `string` | Accessible name of the close button. |
+| `padding` | `"default" \| "none"` | `none` for edge-to-edge lists and tables. |
+
+**Parts**: `header`, `toolbar`, `body`, `footer`.
+
+**Blocks**: `Popover.Root`, `Popover.Trigger`, `Popover.Content`, `Popover.Header`, `Popover.Toolbar`, `Popover.Body`, `Popover.Footer`.
+
 ## PrimaryNav
 
 The top-level sections of the app, inside the `TopBar`.
@@ -694,6 +994,7 @@ The top-level sections of the app, inside the `TopBar`.
 | `onChange` | `((id: string) => void)` | Called with the id of the item the user chose. |
 | `renderLink` | `((props: import("./nav").NavLinkProps) => ReactNode)` | Plugs in the app's router link. Defaults to a plain `<a>`. |
 | `moreLabel` | `string` | Label of the overflow item. |
+| `submenuLabel` | `((label: string) => string)` | Accessible name of the caret that opens an item's dropdown, from the item's label. |
 | `aria-label` | `string` | Accessible name of the navigation landmark. |
 | `className` | `string` |  |
 | `style` | `import("react").CSSProperties` |  |
@@ -738,6 +1039,46 @@ A bar that fills with a value: progress of a task, or a measured level. Fills th
 **Parts**: `label`, `value`, `track`, `fill`, `target`, `skeleton`.
 
 **Blocks**: `ProgressBar.Root`, `ProgressBar.Label`, `ProgressBar.Value`, `ProgressBar.Track`, `ProgressBar.Fill`, `ProgressBar.Target`.
+
+## RadarChart
+
+Compares one or more series across several axes that share a centre.
+
+**Tokens**: `--umbra-chart-annotation`, `--umbra-chart-annotation-width`, `--umbra-chart-area-opacity`, `--umbra-chart-axis`, `--umbra-chart-axis-width`, `--umbra-chart-band-opacity`, `--umbra-chart-bar-radius`, `--umbra-chart-center-font`, `--umbra-chart-dim-opacity`, `--umbra-chart-fg`, `--umbra-chart-font`, `--umbra-chart-gap`, `--umbra-chart-grid`, `--umbra-chart-grid-dash`, `--umbra-chart-grid-width`, `--umbra-chart-line-width`, `--umbra-chart-point-scale`, `--umbra-chart-tooltip-bg`, `--umbra-chart-tooltip-border`, `--umbra-chart-tooltip-fg`, `--umbra-chart-tooltip-radius`, `--umbra-chart-track`, `--umbra-chart-value-fg`, `--umbra-focus-color`, `--umbra-legend-row-height`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `rings` | `number` | Number of grid rings, the outer one included. |
+| `grid` | `"circle" \| "polygon"` | Shape of the grid rings. |
+| `filled` | `boolean` | Fills the area of each series. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `className` | `string` |  |
+| `style` | `import("react").CSSProperties` |  |
+| `loading` | `boolean` | Shows a placeholder in the chart's shape. |
+| `hiddenIds` | `readonly string[]` | Ids of the series that are switched off (controlled). |
+| `defaultHiddenIds` | `readonly string[]` |  |
+| `onHiddenChange` | `((hiddenIds: string[]) => void)` |  |
+| `error` | `ReactNode` | When set, shown in place of the chart. |
+| `label` | `string` | Accessible name of the chart. Required unless `aria-labelledby` is set. |
+| `max` | `number` | The value at the outer ring. Defaults to a round number above the largest value. |
+| `formatValue` | `((value: number) => string)` | Formats a value for labels, the tooltip and screen readers. Defaults to the provider's locale. |
+| `series` (required) | `RadarSeries[]` |  |
+| `aria-labelledby` | `string` | Id of the element that names the chart, for example a card title. |
+| `description` | `string` | What a screen reader hears after the name. Defaults to a generated summary of the data. |
+| `legend` | `string \| number \| bigint \| boolean \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| import("react").ReactPortal \| Promise<string \| number \| bigint \| boolean \| import("react").ReactPortal \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| null \| undefined> \| null` | The legend: `true` or a placement shows the built-in one, `false` hides it, and a node replaces it. By default it is shown below the chart when there is more than one series. |
+| `labels` | `boolean` | Draws labels on the chart itself, so it can be read without the legend or the tooltip. |
+| `onPointPress` | `((point: import(".").ChartPoint) => void)` | Called when a point is clicked, or activated with Enter or Space. |
+| `empty` | `ReactNode` | Shown when there is no data. |
+| `onRetry` | `(() => void)` | Adds a retry button to the error state. |
+| `retryLabel` | `string` |  |
+| `pointsLabel` | `string` | Accessible name of the list of data points. |
+| `legendLabel` | `string` | Accessible name of the legend. |
+| `startAngle` | `number` | Where the first axis points, in degrees clockwise from 12 o'clock. |
+| `axes` (required) | `RadarAxis[]` |  |
+
+**Parts**: `legend`, `tooltip`, `skeleton`, `empty`, `error`.
+
+**Blocks**: `RadarChart.Root`, `RadarChart.Grid`, `RadarChart.Series`, `RadarChart.AxisLabels`.
 
 ## Radio
 
@@ -840,6 +1181,38 @@ A heading for one section of content inside a card or page, with optional contro
 **Parts**: `title`, `count`, `actions`.
 
 **Blocks**: none.
+
+## SegmentedFilter
+
+A row of joined segments that filters the content below it. One or several can be selected.
+
+**Tokens**: `--umbra-segmented-filter-bg`, `--umbra-segmented-filter-border`, `--umbra-segmented-filter-fg`, `--umbra-segmented-filter-height`, `--umbra-segmented-filter-min-item-width`, `--umbra-segmented-filter-padding-x`, `--umbra-segmented-filter-radius`, `--umbra-segmented-filter-selected-bg`, `--umbra-segmented-filter-selected-border`, `--umbra-segmented-filter-selected-fg`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `all` | `boolean` | Adds a first segment that stands for "no filter". Choosing it clears the others. |
+| `allLabel` | `string` | Label of the "All" segment. |
+| `allCount` | `number` | Count of the "All" segment. |
+| `size` | `"default" \| "small"` | `small` is for table cells and dense toolbars. Otherwise the height follows the density level. |
+| `fullWidth` | `boolean` | Fills the width of its container with equal segments. |
+| `disabled` | `boolean` |  |
+| `aria-label` | `string` | Accessible name of the group. |
+| `aria-labelledby` | `string` | Id of the element that names the group. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `selectionMode` | `"single" \| "multiple"` | `single`: one segment, like radio buttons. `multiple`: any number, like toggle buttons. |
+| `value` | `string \| null` | The selected segment. `null` selects none, or the "All" segment when `all` is set. |
+| `defaultValue` | `string \| null` |  |
+| `onChange` | `((id: string \| null) => void) \| ((ids: string[]) => void)` | Called with the selected id (`null` for "All"), or with the list of ids in `multiple` mode. |
+| `values` | `string[]` | The selected segments in `multiple` mode. An empty list selects the "All" segment when `all` is set. |
+| `defaultValues` | `string[]` |  |
+| `items` | `SegmentedFilterItem[]` | The segments. Leave out to pass `SegmentedFilter.Item` children instead. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `children` | `ReactNode` |  |
+
+**Parts**: `icon`, `count`, `check`, `item`.
+
+**Blocks**: `SegmentedFilter.Root`, `SegmentedFilter.Item`.
 
 ## Skeleton
 
@@ -972,6 +1345,7 @@ The second bar: the pages of the current section, and room for shortcuts at the 
 | `onChange` | `((id: string) => void)` | Called with the id of the item the user chose. |
 | `renderLink` | `((props: import("./nav").NavLinkProps) => ReactNode)` | Plugs in the app's router link. Defaults to a plain `<a>`. |
 | `moreLabel` | `string` | Label of the overflow item. |
+| `submenuLabel` | `((label: string) => string)` | Accessible name of the caret that opens an item's dropdown, from the item's label. |
 | `aria-label` | `string` | Accessible name of the navigation landmark. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
@@ -1011,6 +1385,42 @@ A compact tile that sums up one thing: an icon, a title and one value. The whole
 **Parts**: `icon`, `title`, `value`, `trend`, `caption`, `skeleton`.
 
 **Blocks**: `SummaryTile.Root`, `SummaryTile.Icon`, `SummaryTile.Content`, `SummaryTile.Title`, `SummaryTile.Figure`, `SummaryTile.Value`, `SummaryTile.Trend`, `SummaryTile.Caption`.
+
+## Tabs
+
+Switches between views of the same content area. The panel fills the rest of the slot.
+
+**Tokens**: `--umbra-tabs-bg`, `--umbra-tabs-border`, `--umbra-tabs-fg`, `--umbra-tabs-gap`, `--umbra-tabs-height`, `--umbra-tabs-indicator-color`, `--umbra-tabs-padding-x`, `--umbra-tabs-pill-radius`, `--umbra-tabs-radius`, `--umbra-tabs-selected-bg`, `--umbra-tabs-selected-fg`, `--umbra-tabs-underline-selected-fg`, `--umbra-tabs-vertical-max-width`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `items` | `TabsItem[]` | The tabs and their panels. Leave out to compose `Tabs.List`, `Tabs.Tab` and `Tabs.Panel` yourself. |
+| `aria-label` | `string` | Accessible name of the tab list. |
+| `end` | `ReactNode` | Shown after the tabs, for example an "add" button. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `value` | `string \| null` | The selected tab. |
+| `defaultValue` | `string \| null` |  |
+| `onChange` | `((id: string) => void)` | Called with the id of the tab the user selected. |
+| `variant` | `TabsVariant` | `underline`: text with a bar. `pill`: separate rounded buttons. `button-group`: joined buttons. |
+| `orientation` | `"vertical" \| "horizontal"` | `vertical` puts the tab list beside the panel. |
+| `tabSize` | `"default" \| "small"` | `small` is for dense areas. Otherwise the height follows the density level. |
+| `fullWidth` | `boolean` | The tabs share the width of the list. |
+| `activation` | `"automatic" \| "manual"` | `automatic`: arrow keys select. `manual`: arrow keys move focus, and Enter or Space selects. |
+| `keepMounted` | `boolean` | Keeps the panels that are not selected mounted and hidden, so they keep their state. |
+| `onClose` | `((id: string) => void)` | Makes tabs closable: called with the id of the tab whose close button (or Delete key) was used. |
+| `closeLabel` | `string` | First word of the close button's name: "Close Orders". |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `children` | `ReactNode` |  |
+| `size` | `number \| "content"` | Share of the parent's space: a weight, or `"content"` to take the size of the content. Default 1. |
+| `priority` | `number` | Which child gives way first when space runs out. Higher stays longer; ties give way from the end. Default 0. |
+| `minWidth` | `number` | Reserved: `Columns` has no rule that uses it yet, so it has no effect. |
+| `minHeight` | `number` | Below this height a parent `Stack` may collapse the child to its header. |
+| `label` | `string` | Tab label when a parent `Columns` shows one child at a time. |
+
+**Parts**: `indicator`, `icon`, `count`, `close`, `list`, `tab`, `panel`.
+
+**Blocks**: `Tabs.Root`, `Tabs.List`, `Tabs.Tab`, `Tabs.Panel`.
 
 ## Tag
 
@@ -1104,6 +1514,34 @@ A switch for a setting that takes effect at once: on or off.
 **Parts**: `track`, `label`, `description`.
 
 **Blocks**: `Toggle.Root`, `Toggle.Track`, `Toggle.Label`, `Toggle.Description`.
+
+## Tooltip
+
+A short description of a control, shown on hover and on keyboard focus. Text only: it never holds anything the user could interact with.
+
+**Tokens**: `--umbra-tooltip-bg`, `--umbra-tooltip-border`, `--umbra-tooltip-fg`, `--umbra-tooltip-max-width`, `--umbra-tooltip-radius`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `children` (required) | `ReactNode` | The control the tooltip describes: any umbra-ui control, or a plain focusable element. |
+| `content` | `ReactNode` | The text. Nothing is shown when it is empty (and there is no `title` or `shortcut`). |
+| `title` | `ReactNode` | A heading above the text, for a rich tooltip. |
+| `shortcut` | `string` | Id of a shortcut in the provider's list: its keys are shown as a hint. |
+| `placement` | `OverlayPlacement` |  |
+| `delay` | `number` | Milliseconds before it shows on hover. Keyboard focus shows it at once. |
+| `offset` | `number` | Gap between the control and the tooltip, in pixels. |
+| `open` | `boolean` | Controlled state. |
+| `defaultOpen` | `boolean` |  |
+| `onOpenChange` | `((open: boolean) => void)` |  |
+| `disabled` | `boolean` | Never shows. |
+| `wrap` | `boolean` | Puts the control in a focusable wrapper that carries the tooltip, so it also shows for a control that takes no pointer or focus events. Defaults to the control's own `disabled` prop. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `className` | `string` | On the tooltip itself. |
+| `style` | `CSSProperties` |  |
+
+**Parts**: `title`, `body`, `hint`.
+
+**Blocks**: none.
 
 ## TopBar
 
@@ -1230,3 +1668,40 @@ A value coloured by where it falls on a five-step ramp.
 **Parts**: `value`, `level`, `skeleton`.
 
 **Blocks**: `ValuePill.Root`, `ValuePill.Value`, `ValuePill.Level`.
+
+## VerticalNav
+
+Side navigation for a modal, a settings screen or one column of a page.
+
+**Tokens**: `--umbra-focus-color`, `--umbra-focus-offset`, `--umbra-icon-size`, `--umbra-nav-font`, `--umbra-nav-gap`, `--umbra-nav-indicator-color`, `--umbra-subnav-indicator-color`, `--umbra-vertical-nav-bg`, `--umbra-vertical-nav-current-bg`, `--umbra-vertical-nav-current-fg`, `--umbra-vertical-nav-fg`, `--umbra-vertical-nav-gap`, `--umbra-vertical-nav-padding`, `--umbra-vertical-nav-radius`, `--umbra-vertical-nav-rail-below`, `--umbra-vertical-nav-rail-width`, `--umbra-vertical-nav-row-height`, `--umbra-vertical-nav-stripe-width`, `--umbra-vertical-nav-width`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `items` | `(VerticalNavItem \| VerticalNavSection)[]` | The entries: items, groups (an item with `items`) and sections (`{ type: 'section', label, items }`). |
+| `header` | `ReactNode` | Fixed above the list, for example a title or a search field. |
+| `footer` | `ReactNode` | Fixed below the list. |
+| `collapsible` | `boolean` | Shows the button that lets the user switch to the icon rail and back. |
+| `parts` | `see Parts` | Replace or hide named pieces. `item` applies to every item, also inside groups and sections. |
+| `value` | `string` | The current item. |
+| `onChange` | `((id: string) => void)` | Called with the id of the item the user chose. |
+| `renderLink` | `((props: NavLinkProps) => ReactNode)` | Plugs in the app's router link. Defaults to a plain `<a>`. |
+| `aria-label` | `string` | Accessible name of the navigation landmark. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `collapsed` | `boolean` | Icon-only rail (controlled). Each label stays as the accessible name of its item. |
+| `size` | `number \| "content"` | Share of the parent's space: a weight, or `"content"` to take the size of the content. Default 1. |
+| `label` | `string` | Tab label when a parent `Columns` shows one child at a time. |
+| `priority` | `number` | Which child gives way first when space runs out. Higher stays longer; ties give way from the end. Default 0. |
+| `minWidth` | `number` | Reserved: `Columns` has no rule that uses it yet, so it has no effect. |
+| `minHeight` | `number` | Below this height a parent `Stack` may collapse the child to its header. |
+| `expandedIds` | `string[]` | The open groups (controlled). |
+| `defaultExpandedIds` | `string[]` |  |
+| `onExpandedChange` | `((ids: string[]) => void)` |  |
+| `defaultCollapsed` | `boolean` |  |
+| `onCollapsedChange` | `((collapsed: boolean) => void)` |  |
+| `collapseLabel` | `string` | Accessible names of the button, by what a press does. |
+| `expandLabel` | `string` |  |
+
+**Parts**: `header`, `item`, `footer`, `toggle`.
+
+**Blocks**: `VerticalNav.Root`, `VerticalNav.Header`, `VerticalNav.List`, `VerticalNav.Section`, `VerticalNav.Group`, `VerticalNav.Item`, `VerticalNav.Footer`, `VerticalNav.Toggle`.

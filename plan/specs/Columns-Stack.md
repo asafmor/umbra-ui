@@ -55,7 +55,7 @@ On every child (all umbra-ui layout-aware components accept these; wrap anything
 
 ### 3. Parts
 
-`tabs` (the tab strip shown by `Columns` in tab mode).
+`tabs` (the tab strip shown by `Columns` in tab mode). By default it is the tab list of `Tabs` in its `underline` variant, so it looks, moves and shrinks the same way (`Tabs.md`).
 
 ### 4. Blocks
 
@@ -71,7 +71,7 @@ On every child (all umbra-ui layout-aware components accept these; wrap anything
 
 ## Interaction and accessibility
 
-- In tab mode, `Columns` follows the tabs pattern: one tab stop, arrow keys, each column a `tabpanel`.
+- In tab mode, `Columns` follows the tabs pattern: one tab stop, arrow keys with Home and End, each column a `tabpanel`. Arrow keys select. When the tabs are wider than the window, the strip scrolls inside itself and keeps the selected tab in view.
 - DOM order always equals visual order.
 - Children are found through React context, not by direct parentage, so a child may be wrapped (for example in `UmbraScope`).
 
@@ -83,3 +83,4 @@ Resolved 2026-10-10:
 
 - `Columns` does not collapse low-priority columns before tab mode in Milestone 0.
 - Approved after Milestone 0: in narrow mode every `Columns` becomes tabs, nested ones too; `narrow="keep"` opts one out.
+- Batch 1b: the built-in tab strip was replaced by the one `Tabs` draws. Props and the `tabs` part are unchanged.

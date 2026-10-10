@@ -26,40 +26,7 @@
 
 .tabs {
   flex: none;
-  display: flex;
-  gap: var(--umbra-space-2);
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-
-.tab {
-  flex: none;
-  height: var(--umbra-density-control-height);
-  padding: 0 var(--umbra-space-4);
-  border: var(--umbra-border-width) solid var(--umbra-color-base-border-strong);
-  border-radius: var(--umbra-radius-control);
-  background: var(--umbra-color-base-surface1);
-  color: var(--umbra-color-base-text-primary);
-  font: var(--umbra-font-label);
-  cursor: pointer;
-  transition: background-color var(--umbra-motion-duration-fast);
-}
-
-/* The strip scrolls sideways, which clips a ring drawn outside the tab. */
-.tab:focus-visible {
-  outline-offset: calc(-1 * var(--umbra-state-focus-ring-width));
-}
-
-.tab:hover {
-  background: var(--umbra-color-base-surface2);
-}
-
-.tab[aria-selected='true'] {
-  background: var(--umbra-color-fixed-selected);
-  border-color: var(--umbra-color-fixed-selected);
-  color: var(--umbra-color-fixed-on-selected);
-  /* A bar under the selected tab, so the state does not depend on colour alone. */
-  box-shadow: inset 0 calc(-1 * var(--umbra-space-1)) 0 currentColor;
+  min-width: 0;
 }
 
 /* A Slot's single child fills it; the slot is a size container for the child's container queries. */

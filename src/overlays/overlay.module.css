@@ -1,0 +1,33 @@
+/*
+ * Shared by Popover, Tooltip and Menu (composed into their roots).
+ * Enter: ease-out. Exit: ease-in. A short fade and a 4px slide towards the anchor's side, which
+ * reduced motion removes (plan/interaction.md).
+ */
+.motion {
+  --slide: calc(4px * var(--umbra-motion-scale));
+  transition:
+    opacity var(--umbra-motion-duration-base) var(--umbra-motion-easing-enter),
+    translate var(--umbra-motion-duration-base) var(--umbra-motion-easing-enter);
+}
+
+.motion[data-entering],
+.motion[data-exiting] {
+  opacity: 0;
+  translate: 0 calc(-1 * var(--slide));
+}
+
+.motion[data-placement='top']:is([data-entering], [data-exiting]) {
+  translate: 0 var(--slide);
+}
+
+.motion[data-placement='left']:is([data-entering], [data-exiting]) {
+  translate: var(--slide) 0;
+}
+
+.motion[data-placement='right']:is([data-entering], [data-exiting]) {
+  translate: calc(-1 * var(--slide)) 0;
+}
+
+.motion[data-exiting] {
+  transition-timing-function: var(--umbra-motion-easing-exit);
+}

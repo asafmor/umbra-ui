@@ -1,0 +1,131 @@
+# LineChart
+
+**Tier** 1 · **Group** Meters and charts · **Status** spec written 2026-10-10 (approved under the owner's delegation)
+
+## Purpose
+
+One or more series over categories, numbers or time. The y axis is numeric, or ordinal with named levels.
+
+## Not for
+
+- Comparing separate categories that have no order: use `BarChart`.
+- A trend inside a table cell or a tile: a sparkline, in a later batch (a chart in a very small slot already drops its axes).
+- Part-to-whole: use `DonutChart` or a stacked `BarChart`.
+
+## Evidence
+
+One line with a point on every value over seasons, an ordinal y axis of two or three named levels with a grid line each, x labels thinned to every second or third, single points recoloured green and red (13, 25, 31); two step lines of a running total over time with a vertical divider and an inline legend (35, 36). Curves, areas, bands and the time axis are the library's own additions.
+
+## Anatomy
+
+| Part | Content | Default |
+|---|---|---|
+| `grid` | a dotted line at each y tick or level | shown |
+| `annotations` | reference lines and bands, with labels | from `annotations` |
+| `series` | per series: area, line, points, and its name at the line's end | line and points |
+| `axes` | two axis lines, tick labels, titles | shown |
+| `legend` | one item per series, drawn as its line and point shape | shown with more than one series |
+| `tooltip` | the x value, and each series' value at it | on hover and focus |
+| `skeleton`, `empty`, `error` | the data states | — |
+
+## Variants and states
+
+| Variant | Values | Notes |
+|---|---|---|
+| x axis | category, number, time | Taken from the first point's `x`: string, number or `Date`. Time is drawn and formatted in UTC |
+| y axis | numeric, or `yLevels` | Ordinal: named levels from the bottom up, a grid line per level (source: 13, 25, 31) |
+| `curve` | `linear`, `step`, `smooth` | `step` holds a value until the next point (source: 35, 36); `smooth` is monotone, so it never overshoots |
+| `area` | boolean | Fills under the line; the y axis then starts at zero |
+| `points` | boolean | A shape on every value. Left out when points are under 14px apart, except points with their own colour or shape and values with no neighbours |
+| per point | `color`, `marker` | One point in its own colour and shape (source: green and red points). Give both, so the point differs without colour |
+| `annotations` | line or band, on `x` or `y` | Dashed line or tinted band with a label |
+| `labels` | boolean | The series name at the end of each line, kept a line apart |
+| series cue | point shape and dash | As in `RadarChart` |
+
+A `null` y is a missing value and breaks the line. States: hover, focus, series hidden, series dimmed, loading, empty, error.
+
+## Customisation
+
+### 1. Tokens
+
+Shared by the four charts: `--umbra-chart-font`, `--umbra-chart-fg` (axis and label text), `--umbra-chart-value-fg` (value labels, hover outline), `--umbra-chart-axis`, `--umbra-chart-axis-width`, `--umbra-chart-grid`, `--umbra-chart-grid-width`, `--umbra-chart-grid-dash`, `--umbra-chart-line-width`, `--umbra-chart-point-scale`, `--umbra-chart-area-opacity`, `--umbra-chart-bar-radius`, `--umbra-chart-track`, `--umbra-chart-value`, `--umbra-chart-positive`, `--umbra-chart-negative`, `--umbra-chart-warning`, `--umbra-chart-info`, `--umbra-chart-annotation`, `--umbra-chart-annotation-width`, `--umbra-chart-band-opacity`, `--umbra-chart-dim-opacity`, `--umbra-chart-center-font`, `--umbra-chart-gap`, `--umbra-chart-tooltip-bg`, `--umbra-chart-tooltip-fg`, `--umbra-chart-tooltip-border`, `--umbra-chart-tooltip-radius`. Each falls back to a global token. Series colours are the global palette `--umbra-color-series-1` … `-8`, by position. No global token was added.
+
+### 2. Props
+
+| Prop | Type | Default | Purpose |
+|---|---|---|---|
+| `series` | `{ id, label, data: { x, y, color?, marker? }[], color?, marker?, dash? }[]` | required | |
+| `categories` | string[] | order of first appearance | Order of a category x axis |
+| `yLevels` | string[] | — | Makes the y axis ordinal |
+| `yDomain` | `[min, max]` | round numbers around the data | Range of a numeric y axis |
+| `curve` | see above | `linear` | |
+| `area` | boolean | `false` | |
+| `points` | boolean | `true` | |
+| `annotations` | `{ type: 'line', axis?, value, label?, color? }` or `{ type: 'band', axis?, from, to, label?, color? }` | — | `axis` defaults to `y` |
+| `xTitle` / `yTitle` | string | — | Axis titles |
+| `formatX` | `(x) => string` | number or short date in the provider's locale | Text of x values |
+| `label` / `aria-labelledby` | string | — | Accessible name; one of the two is required |
+| `description` | string | generated summary | What a screen reader hears after the name |
+| `legend` | boolean \| `top` \| `bottom` \| `start` \| `end` \| node | shown below when there is more than one series | The built-in `Legend`, its place, or the app's own node |
+| `hiddenIds` / `defaultHiddenIds` / `onHiddenChange` | string[] / string[] / function | — / `[]` / — | Controlled or uncontrolled set of switched-off series |
+| `labels` | boolean | `false` | Direct labels on the chart (see Variants) |
+| `formatValue` | `(value) => string` | `Intl.NumberFormat` in the provider's locale | Text of values in labels, tooltip, names and table |
+| `onPointPress` | `(point) => void` | — | Click, Enter or Space on a point. `point` is `{ seriesId, seriesLabel, index, x, value }` |
+| `loading` | boolean | `false` | Shows the skeleton |
+| `empty` | node | "No data" | Shown when there is no data |
+| `error` | node | — | When set, shown in place of the chart |
+| `onRetry` / `retryLabel` | function / string | — / "Retry" | Adds a retry button to the error state |
+| `pointsLabel` / `legendLabel` | string | "Data points" / "Legend" | Accessible names of the list of points and of the legend |
+
+### 3. Parts
+
+`legend`, `tooltip`, `skeleton`, `empty`, `error`. Each accepts a node (replace), `null` (hide) or a function receiving the default part's props.
+
+### 4. Blocks
+
+`LineChart.Root`, `LineChart.Grid`, `LineChart.Annotations`, `LineChart.Series`, `LineChart.Axes`. Their order is the drawing order; other SVG elements may be placed between them.
+
+## Behaviour as space shrinks
+
+| Step | Trigger (slot width or height below) | Result |
+|---|---|---|
+| 1 | 360 / 240 | The legend hides |
+| 2 | 280 / 190 | The series names at the line ends and annotation labels hide |
+| 3 | 220 / 150 | The axis titles hide |
+| 4 | 150 / 100 | The axes, tick labels and grid hide: the marks only |
+
+At every size the tick labels thin out to what fits: a value axis asks for fewer round ticks as it gets shorter, and a category axis keeps every second, third, … label. Labels wider than their room are truncated.
+
+## Interaction and accessibility
+
+- The root is a `figure` named by `label` or `aria-labelledby`, and described by a visually hidden summary (`description` replaces the generated one).
+- The marks are one tab stop: a `listbox` named by `pointsLabel`, whose options are the points, each with a readable name ("Plan, Mar: 48"). `aria-activedescendant` follows the arrow keys.
+- Keys: left and right move along x, up and down to the same x in the next series (or the nearest one). `Home` and `End` go to the first and last point of the series. `Enter` and `Space` call `onPointPress`. `Escape` clears the point (and only then takes the key, so a dialog around the chart still closes).
+- With no point chosen the focus ring is on the plot, drawn inwards; with one it is on the point. A hovered point gets a light outline instead, so hover and focus differ.
+- Hover or focus shows the tooltip: the group's title and one row per series at that position, the pointed one in bold. It is positioned inside the plot, above the point unless the point is in the top half, and aligned to the side of the plot the point is on; it is never wider than two thirds of the plot. It is hidden from assistive technology, which has the option names.
+- The legend is the `Legend` component, interactive: an item hides its series (pressed means shown), and hovering or focusing one dims the other series.
+- A visually hidden `table` repeats every value: one row per series, one column per position.
+- Loading sets `aria-busy` and removes the list of points; the error state is an `alert`.
+- Marks fade in over 180ms on the first draw and when the data changes. With reduced motion the duration is 0.
+- Text keeps 4.5:1; axis lines, grid dots and marks keep 3:1 against the card on every tint (checked in `src/charts/scales.test.ts` and by the series palette's own test).
+
+## Open questions
+
+None.
+
+Resolved 2026-10-10:
+
+- Drawn as SVG by the library; `d3-scale` and `d3-shape` only (`plan/decisions/03-charts.md`). Ships from `umbra-ui/charts`.
+- The chart measures its slot with a `ResizeObserver` (`src/charts/internal/useChartSize.ts`) and draws from that; it has no size props. Steps are decided from the slot's width and height together: the smaller one decides.
+- Label widths are estimated from the font size, not measured, so a layout is computed in one pass. The estimate is on the wide side.
+- Not a layout child: a chart goes inside a `Card` or `Slot`, so it takes no `size` or `priority`.
+- The points are a `listbox` with `aria-activedescendant`: one tab stop, real option names, no roving DOM focus inside SVG.
+- The tooltip is the chart's own element inside the plot, not a portal, so it cannot leave the slot. It is clipped if the plot is shorter than the tooltip.
+- Data states are implemented in `src/charts/internal/Frame.tsx` with the agreed prop names (`loading`, `empty`, `error`, `onRetry`, `retryLabel`); `src/internal/dataState.tsx` did not exist in this checkout.
+- While loading, the legend's place is held by a placeholder line, so the plot does not move when the data arrives.
+- The generated summary lists the series and the range; apps that need a sentence in their own language set `description`.
+- A numeric y axis does not start at zero unless `area` is set; `yDomain` sets it.
+- A number or time x axis runs exactly from the first to the last value; a category axis has half a step of room at both ends.
+- Grid lines are dots in the axis colour: each dot keeps 3:1, and the grid still reads lighter than the axes.
+- Labels of vertical annotations sit above the plot, where they cannot cover the marks.
+- Hit areas are a 10px circle around each value; where two overlap, the series drawn last wins.

@@ -85,11 +85,12 @@ States: `collapsed`, `loading`, `empty`, `error`, `focus-within`.
 
 - The root is a `region` named by its title.
 - The collapse caret is a button with `aria-expanded`; `Enter` and `Space` toggle it.
-- A card collapsed by the layout (step 3) opens its popover with `Enter`; `Escape` closes it and returns focus to the header.
+- A card collapsed by the layout (step 3) opens its popover with `Enter`; `Escape` closes it and returns focus to the header. Pressing the header again closes it too. The popover is the public `Popover`: it has no backdrop and the page stays usable.
 - Loading sets `aria-busy`.
 - The popover closes by itself when the layout opens the card again, or when the window enters or leaves tab mode.
 - A card starts a new layout context: a `Slot`, `Stack` or `Columns` inside it belongs to the card, not to the layout around it.
-- The popover of a layout-collapsed card repeats the card's `actions` above its content, because the collapsed header is a single button.
+- The popover of a layout-collapsed card shows the card's `actions` above its content, because the collapsed header is a single button.
+- The card's content exists once. While the popover is open the `toolbar`, `body` and `footer` blocks are rendered into it (a portal) instead of the card; nothing is rendered twice, so ids are not repeated. The body is not mounted while the card is collapsed and the popover closed, as for a card collapsed with its caret.
 - Collapsing with the caret is not size-animated yet: the caret rotates (180ms) and the layout changes at once.
 
 ## Open questions
@@ -100,3 +101,4 @@ Resolved 2026-10-10:
 
 - Default `minHeight` is 72 / 88 / 104px for compact / default / spacious.
 - Approved after Milestone 0: `href` renders a plain `<a>`, not a router link; `toolbar` and `footer` are set through `parts` only, with `Card.Toolbar` and `Card.Footer`.
+- 2026-10-10 (review item 6): the popover moves the content, it does not repeat it. The overflow of `actions` is a `Menu`.

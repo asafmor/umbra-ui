@@ -13,9 +13,12 @@
   display: flex;
   align-items: center;
   overflow: hidden;
-  /* Room for the focus ring of the first and last item, which the clipping would cut. */
-  padding-inline: var(--umbra-space-2);
-  margin-inline: calc(-1 * var(--umbra-space-2));
+  /*
+   * Room for the focus ring of the first and last item, which the clipping would cut, and at the end
+   * for the pointer target of a caret on the last item (below), which must not count as overflow.
+   */
+  padding-inline: var(--umbra-space-2) var(--umbra-space-4);
+  margin-inline: calc(-1 * var(--umbra-space-2)) calc(-1 * var(--umbra-space-4));
 }
 
 /* On the brand bar a resting item is dimmed by colour, computed to keep 4.5:1 on any brand. */
@@ -111,6 +114,24 @@
   opacity: 1;
 }
 
+/*
+ * The caret is as small as its icon. Its pointer target is at least 24px square (WCAG 2.2, target
+ * size): it grows into the gap after the item, away from the item's own link.
+ */
+.caret {
+  position: relative;
+}
+
+.caret::after {
+  content: '';
+  position: absolute;
+  inset-inline-start: 0;
+  top: 50%;
+  width: max(100%, 24px);
+  height: max(100%, 24px);
+  translate: 0 -50%;
+}
+
 .item[data-open] :is(.link, .caret) > :last-child:not(.label) {
   rotate: 180deg;
 }
@@ -132,48 +153,4 @@
   bottom: calc(50% - 0.6em - 7px);
   height: 2px;
   background: var(--umbra-subnav-indicator-color, var(--umbra-color-base-text-primary));
-}
-
-/* Rows inside a dropdown or "More". */
-.menu {
-  display: flex;
-  flex-direction: column;
-  min-width: 180px;
-  padding: var(--umbra-space-2);
-  overflow-y: auto;
-}
-
-.menu .link {
-  justify-content: flex-start;
-  width: 100%;
-  min-height: var(--umbra-density-control-height);
-  padding: 0 var(--umbra-space-4);
-  border-radius: var(--umbra-radius-control);
-  opacity: 1;
-  color: var(--umbra-color-base-text-primary);
-  --umbra-icon-size: 1.25em;
-}
-
-.menu .link:hover {
-  background: var(--umbra-color-base-surface3);
-}
-
-.menu .link[aria-current] {
-  background: var(--umbra-color-fixed-selected);
-  color: var(--umbra-color-fixed-on-selected);
-  /* An edge stripe and weight, so the current page does not depend on colour alone. */
-  box-shadow: inset var(--umbra-space-1) 0 0 currentColor;
-  font-weight: 700;
-}
-
-.menu .link[aria-disabled],
-.menu .link:disabled {
-  opacity: var(--umbra-state-disabled-opacity);
-  pointer-events: none;
-}
-
-.nested {
-  display: flex;
-  flex-direction: column;
-  padding-inline-start: var(--umbra-space-5);
 }

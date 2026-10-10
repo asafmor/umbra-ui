@@ -7,16 +7,19 @@ import ts from 'typescript';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const out = resolve(root, 'docs/customisation-tables.md');
-const entry = resolve(root, 'src/index.ts');
+// Both package entries: `umbra-ui` and `umbra-ui/charts`.
+const entries = ['src/index.ts', 'src/charts/index.ts'].map((file) => resolve(root, file));
 
 const config = ts.parseJsonConfigFileContent(
   ts.readConfigFile(resolve(root, 'tsconfig.json'), ts.sys.readFile).config,
   ts.sys,
   root,
 );
-const program = ts.createProgram([entry], config.options);
+const program = ts.createProgram(entries, config.options);
 const checker = program.getTypeChecker();
-const exported = checker.getExportsOfModule(checker.getSymbolAtLocation(program.getSourceFile(entry)));
+const exported = entries.flatMap((entry) =>
+  checker.getExportsOfModule(checker.getSymbolAtLocation(program.getSourceFile(entry))),
+);
 const resolveAlias = (s) => (s.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(s) : s);
 
 const cell = (text) => text.replace(/\|/g, '\\|').replace(/\s+/g, ' ').trim();

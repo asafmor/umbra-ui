@@ -185,3 +185,89 @@ export type {
 } from './inputs/FormField';
 export { TextField } from './inputs/TextField';
 export type { TextFieldClearProps, TextFieldProps, TextFieldRootProps } from './inputs/TextField';
+export { SegmentedFilter } from './inputs/SegmentedFilter';
+export type {
+  SegmentedFilterItem,
+  SegmentedFilterItemProps,
+  SegmentedFilterProps,
+  SegmentedFilterRootProps,
+} from './inputs/SegmentedFilter';
+export { Tabs } from './inputs/Tabs';
+export type {
+  TabsItem,
+  TabsListProps,
+  TabsPanelProps,
+  TabsProps,
+  TabsRootProps,
+  TabsTabProps,
+  TabsVariant,
+} from './inputs/Tabs';
+export { Accordion } from './layout/Accordion';
+export type {
+  AccordionHeaderProps,
+  AccordionItemData,
+  AccordionItemProps,
+  AccordionPanelProps,
+  AccordionProps,
+  AccordionRootProps,
+  AccordionSectionProps,
+} from './layout/Accordion';
+export { PageHeader } from './shell/PageHeader';
+export type {
+  PageHeaderBackProps,
+  PageHeaderBreadcrumbsProps,
+  PageHeaderCrumb,
+  PageHeaderFact,
+  PageHeaderMetaProps,
+  PageHeaderProps,
+  PageHeaderRootProps,
+  PageHeaderTitleProps,
+} from './shell/PageHeader';
+export { ActionBar } from './overlays/ActionBar';
+export type {
+  ActionBarAction,
+  ActionBarActionProps,
+  ActionBarClearProps,
+  ActionBarGroupKind,
+  ActionBarGroupProps,
+  ActionBarProps,
+  ActionBarRootProps,
+  ActionBarStatusProps,
+  ActionBarTone,
+} from './overlays/ActionBar';
+export { VerticalNav } from './shell/VerticalNav';
+export type {
+  VerticalNavGroupProps,
+  VerticalNavItem,
+  VerticalNavItemProps,
+  VerticalNavProps,
+  VerticalNavRootProps,
+  VerticalNavSection,
+  VerticalNavSectionProps,
+  VerticalNavToggleProps,
+} from './shell/VerticalNav';
+export { Popover } from './overlays/Popover';
+export type {
+  PopoverBodyProps,
+  PopoverContentProps,
+  PopoverHeaderProps,
+  PopoverProps,
+  PopoverRootProps,
+} from './overlays/Popover';
+export { Tooltip } from './overlays/Tooltip';
+export type { TooltipProps } from './overlays/Tooltip';
+export { Menu } from './overlays/Menu';
+export type {
+  MenuContextProps,
+  MenuEntry,
+  MenuItemData,
+  MenuItemPartProps,
+  MenuItemProps,
+  MenuLinkProps,
+  MenuProps,
+  MenuSectionData,
+  MenuSectionProps,
+  MenuSeparatorData,
+  MenuSubProps,
+} from './overlays/Menu';
+export type { OverlayAlign, OverlayPlacement, OverlaySide } from './overlays/shared';

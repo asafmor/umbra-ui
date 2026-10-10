@@ -11,10 +11,12 @@ import {
   type ReactNode,
   type RefObject,
 } from 'react';
+import { createPortal } from 'react-dom';
 import { ButtonBase } from '../basics/Button';
 import { Skeleton } from '../basics/Skeleton';
-import { ActionsOverflow, Popover, useEscapeToClose } from '../internal/overlays';
 import { useShrinkLevel } from '../internal/useShrinkLevel';
+import { ActionsOverflow } from '../overlays/Menu';
+import { Popover } from '../overlays/Popover';
 import { textColourOn } from '../provider/contrast';
 import { Icon, IconSlot } from '../provider/icons';
 import { cx, renderPart, type Part } from '../utils/parts';
@@ -32,10 +34,13 @@ interface CardContextValue {
   collapsedBy: 'user' | 'layout' | null;
   collapsible: boolean;
   toggle: () => void;
-  /** True for the copy of the card's content that is shown in the popover of a layout-collapsed card. */
-  inPopover: boolean;
+  /**
+   * The panel of the popover of a layout-collapsed card, while it is open. The body blocks render into
+   * it (a portal), so the card's content exists once, wherever it is shown.
+   */
+  popover: HTMLElement | null;
   popoverOpen: boolean;
-  openPopover: () => void;
+  togglePopover: () => void;
   collapseLabel: string;
   expandLabel: string;
 }
@@ -105,7 +110,7 @@ function Root({
   const [hasTitle, setHasTitle] = useState(true);
   // eslint-disable-next-line react-hooks/exhaustive-deps -- checked after every render on purpose; an equal value does not render again
   useLayoutEffect(() => setHasTitle(!!document.getElementById(titleId)));
-  const [width, setWidth] = useState(0);
+  const [popover, setPopover] = useState<HTMLElement | null>(null);
 
   // Collapsed, the card is as tall as its header plus its own borders. An open plain header has less
   // padding below than above; collapsed, the two are equal, so the difference is added while open.
@@ -134,11 +139,6 @@ function Root({
   if (narrow !== wasNarrow) setWasNarrow(narrow);
   if (popoverOpen && (collapsedBy !== 'layout' || narrow !== wasNarrow)) setPopoverOpen(false);
 
-  useEscapeToClose(
-    popoverOpen,
-    () => setPopoverOpen(false),
-    () => header.current?.querySelector('button'),
-  );
   const card = useMemo<CardContextValue>(
     () => ({
       titleId,
@@ -151,12 +151,9 @@ function Root({
         setUncontrolled(!userCollapsed);
         onCollapsedChange?.(!userCollapsed);
       },
-      inPopover: false,
+      popover: popoverOpen && collapsedBy === 'layout' ? popover : null,
       popoverOpen: popoverOpen && collapsedBy === 'layout',
-      openPopover: () => {
-        setWidth(ref.current?.offsetWidth ?? 0);
-        setPopoverOpen(true);
-      },
+      togglePopover: () => setPopoverOpen((open) => !open),
       collapseLabel,
       expandLabel,
     }),
@@ -170,13 +167,11 @@ function Root({
       userCollapsed,
       onCollapsedChange,
       popoverOpen,
-      ref,
+      popover,
       collapseLabel,
       expandLabel,
     ],
   );
-  const inPopover = useMemo(() => ({ ...card, inPopover: true }), [card]);
-
   return (
     <HeaderRefContext value={header}>
       <section
@@ -199,18 +194,16 @@ function Root({
           <CardContext value={card}>{children}</CardContext>
         </LayoutProvider>
         {collapsedBy === 'layout' && (
-          <Popover
+          <Popover.Content
             label={expandLabel}
-            triggerRef={header}
+            anchorRef={header}
             open={popoverOpen}
             onOpenChange={setPopoverOpen}
+            matchAnchorWidth
             className={styles.popover}
-            style={{ width }}
           >
-            <LayoutProvider value={null}>
-              <CardContext value={inPopover}>{children}</CardContext>
-            </LayoutProvider>
-          </Popover>
+            <div ref={setPopover} className={styles.popoverContent} />
+          </Popover.Content>
         )}
       </section>
     </HeaderRefContext>
@@ -234,7 +227,7 @@ function Title({ href, onOpen, className, style, children }: CardTitleProps) {
         className={styles.headerButton}
         aria-haspopup="dialog"
         aria-expanded={card.popoverOpen}
-        onClick={card.openPopover}
+        onClick={card.togglePopover}
       >
         {children}
       </button>
@@ -339,10 +332,6 @@ function Header({
   const level = useShrinkLevel(row, steps.length, layoutCollapsed);
   const gone = (step: string) => steps.indexOf(step) < level;
 
-  if (card.inPopover) {
-    // The popover of a layout-collapsed card repeats the actions above the content.
-    return actions ? <div className={styles.popoverActions}>{actions}</div> : null;
-  }
   return (
     <div
       ref={row}
@@ -396,22 +385,29 @@ function Header({
           <Toggle />
         </span>
       ))}
+      {/* The collapsed header is a single button, so the popover shows the actions above the content. */}
+      {actions &&
+        card.popover &&
+        createPortal(<div className={styles.popoverActions}>{actions}</div>, card.popover)}
     </div>
   );
 }
 
-/** Hides a body block while the card is collapsed; the popover copy always shows it. */
-function useBodyVisible() {
+/**
+ * Where a body block goes: in the card while it is open, in the popover of a layout-collapsed card
+ * while that is open, and nowhere while the card is collapsed.
+ */
+function useBodyPlace() {
   const card = useCard();
-  return card.inPopover || card.collapsedBy === null;
+  return (block: ReactNode) =>
+    card.collapsedBy === null ? block : card.popover ? createPortal(block, card.popover) : null;
 }
 
 function Toolbar({ className, style, children }: BlockProps) {
-  if (!useBodyVisible()) return null;
-  return (
+  return useBodyPlace()(
     <div data-part="toolbar" className={cx(styles.toolbar, className)} style={style}>
       {children}
-    </div>
+    </div>,
   );
 }
 
@@ -423,8 +419,7 @@ export interface CardBodyProps
 
 function Body({ padding, className, children, ...scroll }: CardBodyProps) {
   const card = useCard();
-  if (!useBodyVisible()) return null;
-  return (
+  return useBodyPlace()(
     <ScrollArea
       {...scroll}
       data-part="body"
@@ -432,16 +427,15 @@ function Body({ padding, className, children, ...scroll }: CardBodyProps) {
       className={cx(styles.body, className)}
     >
       {children}
-    </ScrollArea>
+    </ScrollArea>,
   );
 }
 
 function Footer({ className, style, children }: BlockProps) {
-  if (!useBodyVisible()) return null;
-  return (
+  return useBodyPlace()(
     <div data-part="footer" className={cx(styles.footer, className)} style={style}>
       {children}
-    </div>
+    </div>,
   );
 }
 

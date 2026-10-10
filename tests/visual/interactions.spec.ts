@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 
 // Behaviour the static captures cannot show: popovers, tab mode keys, overflow menus.
+// The overlays themselves (Popover, Tooltip, Menu) are tested in overlays.spec.ts.
 const open = async (page: Page, id: string, width = 1280, height = 720, density = 'default') => {
   await page.setViewportSize({ width, height });
   await page.goto(`/iframe.html?id=${id}&viewMode=story&globals=density:${density}`);
@@ -74,9 +75,9 @@ test('header actions that do not fit move into one menu', async ({ page }) => {
   const narrow = page.locator('[data-umbra="card"]').nth(2);
   await expect(narrow.getByRole('button', { name: 'Filter' })).toHaveCount(0);
   await narrow.getByRole('button', { name: 'More actions' }).click();
-  const menu = page.getByRole('dialog');
-  await expect(menu.getByRole('button', { name: 'Filter' })).toContainText('Filter');
-  await menu.getByRole('button', { name: 'Export' }).click();
+  const menu = page.getByRole('menu', { name: 'More actions' });
+  await expect(menu.getByRole('menuitem', { name: 'Filter' })).toContainText('Filter');
+  await menu.getByRole('menuitem', { name: 'Export' }).click();
   await expect(menu).toHaveCount(0);
 });
 
@@ -108,13 +109,13 @@ test('nav: one tab stop, arrow keys, a caret that opens the dropdown, and choosi
   await page.keyboard.press('ArrowRight');
   await expect(nav.getByRole('link', { name: 'Orders' })).toBeFocused();
   await page.keyboard.press('ArrowRight');
-  const caret = nav.getByRole('button', { name: 'Orders' });
+  const caret = nav.getByRole('button', { name: 'Orders, submenu' });
   await expect(caret).toBeFocused();
 
   await page.keyboard.press('Enter');
   await expect(caret).toHaveAttribute('aria-expanded', 'true');
-  await page.getByRole('dialog').getByRole('link', { name: 'Returns' }).click();
-  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await page.getByRole('menu', { name: 'Orders' }).getByRole('menuitem', { name: 'Returns' }).click();
+  await expect(page.getByRole('menu')).toHaveCount(0);
 
   await nav.getByRole('link', { name: 'Planning' }).click();
   await expect(nav.getByRole('link', { name: 'Planning' })).toHaveAttribute('aria-current', 'page');
@@ -137,7 +138,9 @@ test('top bar: as it narrows, items move into "More" and the active item stays',
   await expect(nav.getByRole('link', { name: 'Overview' })).toBeVisible();
   await expect(nav.getByRole('button', { name: 'Finance' })).toHaveCount(0);
   await nav.getByRole('button', { name: 'More' }).click();
-  await expect(page.getByRole('dialog').getByRole('button', { name: 'Finance' })).toBeVisible();
+  await expect(
+    page.getByRole('menu', { name: 'More' }).getByRole('menuitem', { name: 'Finance' }),
+  ).toBeVisible();
   await page.keyboard.press('Escape');
 
   // Growing again brings everything back.
@@ -387,9 +390,9 @@ test('section title: onOpen makes the title a button, and actions work from the 
   const narrow = page.locator('[data-umbra="section-title"]').nth(1);
   await expect(narrow.getByRole('button', { name: 'Sort' })).toHaveCount(0);
   await narrow.getByRole('button', { name: 'More actions' }).click();
-  const menu = page.getByRole('dialog', { name: 'More actions' });
-  await expect(menu.getByRole('button', { name: 'Sort' })).toBeVisible();
-  await menu.getByRole('button', { name: 'Export' }).click();
+  const menu = page.getByRole('menu', { name: 'More actions' });
+  await expect(menu.getByRole('menuitem', { name: 'Sort' })).toBeVisible();
+  await menu.getByRole('menuitem', { name: 'Export' }).click();
   await expect(menu).toHaveCount(0);
   await expect(page.getByText('Last action: Export')).toBeVisible();
 });
@@ -575,9 +578,9 @@ test('top bar: the context block hides first, then the actions collapse into a m
   // The search trigger is pinned: it stays in the bar.
   await expect(bar.getByRole('button', { name: 'Search' })).toBeVisible();
   await bar.getByRole('button', { name: 'More actions' }).click();
-  const menu = page.getByRole('dialog', { name: 'More actions' });
-  await expect(menu.getByRole('button', { name: 'Notifications (3)' })).toContainText('Notifications');
-  await menu.getByRole('button', { name: 'Settings' }).click();
+  const menu = page.getByRole('menu', { name: 'More actions' });
+  await expect(menu.getByRole('menuitem', { name: 'Notifications (3)' })).toContainText('Notifications');
+  await menu.getByRole('menuitem', { name: 'Settings' }).click();
   await expect(menu).toHaveCount(0);
   await expect(page.getByText('Last action: Settings')).toBeVisible();
 });
@@ -612,7 +615,7 @@ test('top bar: parts and blocks', async ({ page }) => {
   await expect(bar.getByRole('button', { name: 'Settings' })).toHaveCount(0);
   await bar.getByRole('button', { name: 'More tools' }).click();
   await expect(
-    page.getByRole('dialog', { name: 'More tools' }).getByRole('button', { name: 'Settings' }),
+    page.getByRole('menu', { name: 'More tools' }).getByRole('menuitem', { name: 'Settings' }),
   ).toBeVisible();
 });
 
@@ -628,7 +631,7 @@ test('nav keys: ArrowLeft, Home and End move; ArrowDown opens a dropdown; Escape
   await expect(planning).toBeFocused();
 
   await page.keyboard.press('ArrowLeft');
-  await expect(nav.getByRole('button', { name: 'Orders' })).toBeFocused();
+  await expect(nav.getByRole('button', { name: 'Orders, submenu' })).toBeFocused();
   await page.keyboard.press('Home');
   await expect(nav.getByRole('link', { name: 'Overview' })).toBeFocused();
   await page.keyboard.press('ArrowLeft');
@@ -641,11 +644,12 @@ test('nav keys: ArrowLeft, Home and End move; ArrowDown opens a dropdown; Escape
   const people = nav.getByRole('button', { name: 'People' });
   await expect(people).toBeFocused();
   await page.keyboard.press('ArrowDown');
-  const dialog = page.getByRole('dialog', { name: 'People' });
-  await expect(dialog.getByRole('link', { name: 'Teams' })).toBeVisible();
+  const menu = page.getByRole('menu', { name: 'People' });
+  // Focus moves to the first row of the menu.
+  await expect(menu.getByRole('menuitem', { name: 'Teams' })).toBeFocused();
   await expect(people).toHaveAttribute('aria-expanded', 'true');
   await page.keyboard.press('Escape');
-  await expect(dialog).toHaveCount(0);
+  await expect(menu).toHaveCount(0);
   await expect(people).toBeFocused();
   await expect(people).toHaveAttribute('aria-expanded', 'false');
 
@@ -653,7 +657,7 @@ test('nav keys: ArrowLeft, Home and End move; ArrowDown opens a dropdown; Escape
   await nav.getByRole('link', { name: 'Orders' }).focus();
   await page.keyboard.press('ArrowDown');
   await expect(
-    page.getByRole('dialog', { name: 'Orders' }).getByRole('link', { name: 'Returns' }),
+    page.getByRole('menu', { name: 'Orders' }).getByRole('menuitem', { name: 'Returns' }),
   ).toBeVisible();
 });
 
@@ -671,9 +675,9 @@ test('primary nav: an active item that is not the first stays while the others m
   await expect(nav.getByRole('button', { name: 'Finance' })).toHaveCount(0);
 
   await nav.getByRole('button', { name: 'More' }).click();
-  const menu = page.getByRole('dialog', { name: 'More' });
-  await expect(menu.getByRole('button', { name: 'Finance' })).toBeVisible();
-  await menu.getByRole('link', { name: 'Planning' }).click();
+  const menu = page.getByRole('menu', { name: 'More' });
+  await expect(menu.getByRole('menuitem', { name: 'Finance' })).toHaveAttribute('aria-disabled', 'true');
+  await menu.getByRole('menuitem', { name: 'Planning' }).click();
   await expect(menu).toHaveCount(0);
   // The chosen item is now the one that stays.
   await expect(nav.getByRole('link', { name: 'Planning' })).toHaveAttribute('aria-current', 'page');
@@ -694,15 +698,15 @@ test('primary nav: renderLink, parts and blocks', async ({ page }) => {
   await expect(custom.locator('[data-part="indicator"]')).toHaveCSS('height', '4px');
   await custom.getByRole('button', { name: 'All sections' }).click();
   await expect(
-    page.getByRole('dialog', { name: 'All sections' }).getByRole('button', { name: 'Finance' }),
+    page.getByRole('menu', { name: 'All sections' }).getByRole('menuitem', { name: 'Finance' }),
   ).toBeVisible();
   await page.keyboard.press('Escape');
 
   const blocks = page.getByRole('navigation', { name: 'Built from blocks' });
   await expect(blocks.getByRole('link', { name: 'Reports' })).toHaveAttribute('aria-current', 'page');
   await expect(blocks.getByRole('button', { name: 'People' })).toHaveAttribute('aria-disabled', 'true');
-  await blocks.getByRole('button', { name: 'Reports' }).click();
-  await expect(page.getByRole('dialog', { name: 'Reports' }).getByRole('link')).toHaveText([
+  await blocks.getByRole('button', { name: 'Reports, submenu' }).click();
+  await expect(page.getByRole('menu', { name: 'Reports' }).getByRole('menuitem')).toHaveText([
     'Monthly',
     'Yearly',
   ]);
@@ -720,8 +724,8 @@ test('sub nav: pages move into "More", then the label hides', async ({ page }) =
   await expect(bars.nth(3).getByRole('link', { name: 'Inbox' })).toHaveAttribute('aria-current', 'page');
 
   await bars.nth(3).getByRole('button', { name: 'More' }).click();
-  const menu = page.getByRole('dialog', { name: 'More' });
-  await menu.getByRole('link', { name: 'Reports' }).click();
+  const menu = page.getByRole('menu', { name: 'More' });
+  await menu.getByRole('menuitem', { name: 'Reports' }).click();
   await expect(menu).toHaveCount(0);
   await expect(page.getByText('Current page: reports')).toHaveCount(1);
   await expect(bars.nth(3).getByRole('link', { name: 'Reports' })).toHaveAttribute('aria-current', 'page');
@@ -731,8 +735,8 @@ test('sub nav: icons, a dropdown, parts and blocks', async ({ page }) => {
   await open(page, 'shell-subnav--slots');
   const nav = page.getByRole('navigation', { name: 'Section' });
   await expect(nav.getByRole('link', { name: 'Inbox' }).locator('svg')).toBeVisible();
-  await nav.getByRole('button', { name: 'Reports' }).click();
-  await page.getByRole('dialog', { name: 'Reports' }).getByRole('link', { name: 'Yearly' }).click();
+  await nav.getByRole('button', { name: 'Reports, submenu' }).click();
+  await page.getByRole('menu', { name: 'Reports' }).getByRole('menuitem', { name: 'Yearly' }).click();
   await expect(page.getByText('Current page: yearly')).toBeVisible();
 
   await open(page, 'shell-subnav--parts-and-blocks');
@@ -744,7 +748,7 @@ test('sub nav: icons, a dropdown, parts and blocks', async ({ page }) => {
   await expect(blocks.locator('> [data-part="label"]')).toHaveText('Reports');
   await expect(blocks.locator('[data-part="end"]').getByRole('button', { name: 'Export' })).toBeVisible();
   await blocks.getByRole('button', { name: 'Yearly' }).click();
-  await expect(page.getByRole('dialog', { name: 'Yearly' }).getByRole('link')).toHaveText([
+  await expect(page.getByRole('menu', { name: 'Yearly' }).getByRole('menuitem')).toHaveText([
     'This year',
     'Last year',
   ]);
@@ -847,7 +851,7 @@ test('icon button: the tooltip shows on focus, can be turned off or replaced, an
   const alerts = page.getByRole('button', { name: 'Alerts (120)' });
   await expect(alerts).toBeFocused();
   await expect(tooltip).toHaveText('Alerts (from a part)');
-  await expect(alerts.locator('[data-part="badge"]')).toHaveText('99+');
+  await expect(alerts.locator('[data-part="badge"]')).toHaveText('120');
   await expect(
     page.getByRole('button', { name: 'Muted alerts (3)' }).locator('[data-part="badge"]'),
   ).toHaveCount(0);

@@ -55,9 +55,9 @@
   align-self: stretch;
   display: flex;
   overflow: hidden;
-  /* Room for the focus ring of the first item, which the clipping would cut. */
-  padding-inline: var(--umbra-space-2);
-  margin-inline: calc(-1 * var(--umbra-space-2));
+  /* Room for the focus ring of the first item, which the clipping would cut, and for what the nav keeps past its last item. */
+  padding-inline: var(--umbra-space-2) var(--umbra-space-4);
+  margin-inline: calc(-1 * var(--umbra-space-2)) calc(-1 * var(--umbra-space-4));
 }
 
 .nav > * {
