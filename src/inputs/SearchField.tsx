@@ -1,4 +1,3 @@
-import { CircleAlert, History, X } from 'lucide-react';
 import {
   createContext,
   useContext,
@@ -210,8 +209,8 @@ function Root({
   };
 
   // The shortcut: one from the provider's list, or keys of its own.
-  const { shortcuts } = useUmbra();
-  const registered = !!shortcut && shortcuts.has(shortcut);
+  const { registry, icons } = useUmbra();
+  const registered = !!shortcut && registry.shortcuts.has(shortcut);
   const focus = () => inputRef.current?.focus();
   const fromList = useShortcut(registered ? shortcut : undefined, control.disabled ? undefined : focus);
   useEffect(() => {
@@ -433,9 +432,7 @@ function Input({ className, style }: Omit<BlockProps, 'children'>) {
       />
       {invalid && (
         <span data-part="invalidIcon" className={styles.invalidIcon}>
-          <IconSlot>
-            <CircleAlert />
-          </IconSlot>
+          <IconSlot>{icons.invalid}</IconSlot>
         </span>
       )}
     </>
@@ -544,9 +541,7 @@ function Suggestions({
           children: (
             <>
               {row.recent ? (
-                <IconSlot part="icon">
-                  <History />
-                </IconSlot>
+                <IconSlot part="icon">{icons.recent}</IconSlot>
               ) : (
                 row.suggestion?.icon && <IconSlot part="icon">{row.suggestion.icon}</IconSlot>
               )}
@@ -584,7 +579,7 @@ function Suggestions({
             field.removeRecent?.(row.text);
           }}
         >
-          <X />
+          {icons.close}
         </span>
       )}
     </AriaListBoxItem>

@@ -217,6 +217,8 @@ Compares values across categories: grouped, stacked or diverging around zero, up
 | `formatValue` | `((value: number) => string)` | Formats a value for labels, the tooltip and screen readers. Defaults to the provider's locale. |
 | `description` | `string` | What a screen reader hears after the name. Defaults to a generated summary of the data. |
 | `labels` | `boolean` | Draws labels on the chart itself, so it can be read without the legend or the tooltip. |
+| `onRetry` | `(() => void)` | Adds a retry button to the error state. |
+| `retryLabel` | `string` |  |
 | `categories` (required) | `string[]` |  |
 | `series` (required) | `BarSeries[]` |  |
 | `colorBy` | `"series" \| "sign"` | `sign` colours bars by the sign of their value; negative bars are also striped. |
@@ -227,8 +229,6 @@ Compares values across categories: grouped, stacked or diverging around zero, up
 | `aria-labelledby` | `string` | Id of the element that names the chart, for example a card title. |
 | `legend` | `string \| number \| bigint \| boolean \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| import("react").ReactPortal \| Promise<string \| number \| bigint \| boolean \| import("react").ReactPortal \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| null \| undefined> \| null` | The legend: `true` or a placement shows the built-in one, `false` hides it, and a node replaces it. By default it is shown below the chart when there is more than one series. |
 | `onPointPress` | `((point: import(".").ChartPoint) => void)` | Called when a point is clicked, or activated with Enter or Space. |
-| `onRetry` | `(() => void)` | Adds a retry button to the error state. |
-| `retryLabel` | `string` |  |
 | `pointsLabel` | `string` | Accessible name of the list of data points. |
 | `legendLabel` | `string` | Accessible name of the legend. |
 
@@ -574,11 +574,11 @@ A ring that shows one value against a total, or how a total splits into segments
 | `formatValue` | `((value: number) => string)` | Formats a value for labels, the tooltip and screen readers. Defaults to the provider's locale. |
 | `description` | `string` | What a screen reader hears after the name. Defaults to a generated summary of the data. |
 | `labels` | `boolean` | Draws labels on the chart itself, so it can be read without the legend or the tooltip. |
+| `onRetry` | `(() => void)` | Adds a retry button to the error state. |
+| `retryLabel` | `string` |  |
 | `aria-labelledby` | `string` | Id of the element that names the chart, for example a card title. |
 | `legend` | `string \| number \| bigint \| boolean \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| import("react").ReactPortal \| Promise<string \| number \| bigint \| boolean \| import("react").ReactPortal \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| null \| undefined> \| null` | The legend: `true` or a placement shows the built-in one, `false` hides it, and a node replaces it. By default it is shown below the chart when there is more than one series. |
 | `onPointPress` | `((point: import(".").ChartPoint) => void)` | Called when a point is clicked, or activated with Enter or Space. |
-| `onRetry` | `(() => void)` | Adds a retry button to the error state. |
-| `retryLabel` | `string` |  |
 | `pointsLabel` | `string` | Accessible name of the list of data points. |
 | `legendLabel` | `string` | Accessible name of the legend. |
 | `data` | `DonutSegment[]` | The segment form: several values that share the ring. |
@@ -904,6 +904,8 @@ One or more series over categories, numbers or time, with a numeric or an ordina
 | `formatValue` | `((value: number) => string)` | Formats a value for labels, the tooltip and screen readers. Defaults to the provider's locale. |
 | `description` | `string` | What a screen reader hears after the name. Defaults to a generated summary of the data. |
 | `labels` | `boolean` | Draws labels on the chart itself, so it can be read without the legend or the tooltip. |
+| `onRetry` | `(() => void)` | Adds a retry button to the error state. |
+| `retryLabel` | `string` |  |
 | `categories` | `string[]` | The order of a category x axis. Defaults to the order the names first appear in. |
 | `series` (required) | `LineSeries[]` |  |
 | `annotations` | `ChartAnnotation[]` | Reference lines and bands on either axis. |
@@ -912,8 +914,6 @@ One or more series over categories, numbers or time, with a numeric or an ordina
 | `aria-labelledby` | `string` | Id of the element that names the chart, for example a card title. |
 | `legend` | `string \| number \| bigint \| boolean \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| import("react").ReactPortal \| Promise<string \| number \| bigint \| boolean \| import("react").ReactPortal \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| null \| undefined> \| null` | The legend: `true` or a placement shows the built-in one, `false` hides it, and a node replaces it. By default it is shown below the chart when there is more than one series. |
 | `onPointPress` | `((point: import(".").ChartPoint) => void)` | Called when a point is clicked, or activated with Enter or Space. |
-| `onRetry` | `(() => void)` | Adds a retry button to the error state. |
-| `retryLabel` | `string` |  |
 | `pointsLabel` | `string` | Accessible name of the list of data points. |
 | `legendLabel` | `string` | Accessible name of the legend. |
 | `yLevels` | `string[]` | Makes the y axis ordinal: the named levels, from the bottom up. Points then give a level name as `y`. |
@@ -1318,12 +1318,12 @@ Compares one or more series across several axes that share a centre.
 | `formatValue` | `((value: number) => string)` | Formats a value for labels, the tooltip and screen readers. Defaults to the provider's locale. |
 | `description` | `string` | What a screen reader hears after the name. Defaults to a generated summary of the data. |
 | `labels` | `boolean` | Draws labels on the chart itself, so it can be read without the legend or the tooltip. |
+| `onRetry` | `(() => void)` | Adds a retry button to the error state. |
+| `retryLabel` | `string` |  |
 | `series` (required) | `RadarSeries[]` |  |
 | `aria-labelledby` | `string` | Id of the element that names the chart, for example a card title. |
 | `legend` | `string \| number \| bigint \| boolean \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| import("react").ReactPortal \| Promise<string \| number \| bigint \| boolean \| import("react").ReactPortal \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| null \| undefined> \| null` | The legend: `true` or a placement shows the built-in one, `false` hides it, and a node replaces it. By default it is shown below the chart when there is more than one series. |
 | `onPointPress` | `((point: import(".").ChartPoint) => void)` | Called when a point is clicked, or activated with Enter or Space. |
-| `onRetry` | `(() => void)` | Adds a retry button to the error state. |
-| `retryLabel` | `string` |  |
 | `pointsLabel` | `string` | Accessible name of the list of data points. |
 | `legendLabel` | `string` | Accessible name of the legend. |
 | `startAngle` | `number` | Where the first axis points, in degrees clockwise from 12 o'clock. |
@@ -1411,6 +1411,54 @@ A region that scrolls inside its slot. The only place scrolling happens.
 
 **Blocks**: none.
 
+## SearchField
+
+A field for searching: always an input, or an icon that opens into one. It can list suggestions and recent searches.
+
+**Tokens**: `--umbra-field-description-color`, `--umbra-field-error-color`, `--umbra-field-marker-color`, `--umbra-focus-color`, `--umbra-option-group-gap`, `--umbra-option-group-inline-gap`, `--umbra-option-group-min-option-width`, `--umbra-option-group-text-gap`, `--umbra-search-field-bg`, `--umbra-search-field-border`, `--umbra-search-field-expanded-width`, `--umbra-search-field-fg`, `--umbra-search-field-height`, `--umbra-search-field-icon-color`, `--umbra-search-field-invalid-border`, `--umbra-search-field-list-max-width`, `--umbra-search-field-min-width`, `--umbra-search-field-padding-x`, `--umbra-search-field-placeholder`, `--umbra-search-field-radius`, `--umbra-search-field-shortcut-color`, `--umbra-search-field-width`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `clearLabel` | `string` | Accessible name of the clear button. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `recent` | `string[]` | Earlier searches, shown in the list while the field is empty. |
+| `invalid` | `boolean` | Shows the danger border and an error icon. |
+| `value` | `string` | Controlled text. |
+| `onChange` | `((text: string) => void)` | Called with the text as it changes, after `debounce` milliseconds without typing. |
+| `className` | `string` |  |
+| `style` | `import("react").CSSProperties` |  |
+| `loading` | `boolean` | Shows a spinner in place of the search icon, and skeleton rows in an empty list. |
+| `size` | `"default" \| "small"` | `small` is for table cells and dense toolbars. Otherwise the height follows the density level. |
+| `disabled` | `boolean` |  |
+| `label` | `string` | Accessible name, when there is no `FormField` label. |
+| `readOnly` | `boolean` | Focusable and selectable, but cannot be changed. |
+| `required` | `boolean` |  |
+| `name` | `string` | Form field name. |
+| `id` | `string` |  |
+| `defaultValue` | `string` |  |
+| `placeholder` | `string` |  |
+| `loadingLabel` | `string` | What a screen reader hears while `loading`. |
+| `onSubmit` | `((text: string) => void)` | Called with the text when Enter is pressed, or a recent search is chosen. |
+| `onClear` | `(() => void)` | Called when the field is emptied with its clear button or Escape. |
+| `debounce` | `number` | Milliseconds `onChange` waits after the last keystroke. Submitting and clearing do not wait. |
+| `shortcut` | `string` | A key that focuses the field, shown at its end while it is empty: the id of a shortcut in the provider's list, or the keys themselves (`/`, `Mod+F`). |
+| `collapsible` | `boolean` | Shows only the search icon until it is pressed, focused or has text; it collapses again when empty and blurred. |
+| `expandMode` | `"inline" \| "overlay"` | How a `collapsible` field opens. `overlay`: over the space beside it, so nothing around it moves. `inline`: it takes the space, and what is beside it moves. |
+| `expandTo` | `"start" \| "end"` | The direction an `overlay` field grows in. `start` suits a field at the end of a bar. |
+| `collapsedLabel` | `ReactNode` | Text beside the icon of a collapsed field. |
+| `landmark` | `boolean` | Makes the field a `search` landmark, for the main search of a page. |
+| `suggestions` | `SearchSuggestion[]` | Rows shown in a list under the field, as given: the app filters them. Pass `[]`, not nothing, while there are none. |
+| `onSelect` | `((id: string) => void)` | Called with the id of the suggestion the user chose. Its text becomes the field's text. |
+| `onRemoveRecent` | `((text: string) => void)` | Lets the user remove a recent search: a button on its row, or Shift+Delete. |
+| `maxHeight` | `number` | Tallest the list may be, in pixels. It is never taller than the room in the window; the rows scroll. |
+| `noResultsLabel` | `string` | Shown when there is text and no suggestion for it. |
+| `recentLabel` | `string` | Heading of the recent searches. |
+| `removeRecentLabel` | `string` | Tooltip of the button that removes a recent search. |
+
+**Parts**: `icon`, `input`, `clear`, `shortcut`, `suggestions`, `suggestion`, `empty`.
+
+**Blocks**: `SearchField.Root`, `SearchField.Icon`, `SearchField.Input`, `SearchField.Clear`, `SearchField.Shortcut`, `SearchField.Suggestions`.
+
 ## SectionTitle
 
 A heading for one section of content inside a card or page, with optional controls on the same line.
@@ -1467,6 +1515,67 @@ A row of joined segments that filters the content below it. One or several can b
 **Parts**: `icon`, `count`, `check`, `item`.
 
 **Blocks**: `SegmentedFilter.Root`, `SegmentedFilter.Item`.
+
+## Select
+
+Chooses one option, or several with `multiple`, from a list that opens under a button.
+
+**Tokens**: `--umbra-field-description-color`, `--umbra-field-error-color`, `--umbra-field-marker-color`, `--umbra-focus-color`, `--umbra-focus-offset`, `--umbra-menu-border`, `--umbra-option-group-gap`, `--umbra-option-group-inline-gap`, `--umbra-option-group-min-option-width`, `--umbra-option-group-text-gap`, `--umbra-select-bg`, `--umbra-select-border`, `--umbra-select-fg`, `--umbra-select-ghost-bg`, `--umbra-select-height`, `--umbra-select-icon-color`, `--umbra-select-invalid-border`, `--umbra-select-option-selected-bg`, `--umbra-select-option-stripe-width`, `--umbra-select-padding-x`, `--umbra-select-placeholder`, `--umbra-select-popover-max-width`, `--umbra-select-radius`, `--umbra-select-swatch-size`, `--umbra-select-width`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `children` | `ReactNode` | The choices as `Select.Option` and `Select.Section` blocks, in place of `options`. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `invalid` | `boolean` | Shows the danger border and an error icon. Put the message in the `error` of a `FormField`. |
+| `value` | `string` | The id of the chosen option; `''` is none. Controlled. |
+| `onChange` | `((id: string) => void)` | Called with the id of the chosen option, or `''` when the choice is cleared. |
+| `aria-label` | `string` | Accessible name of a select that has no `FormField` label. |
+| `className` | `string` |  |
+| `style` | `import("react").CSSProperties` |  |
+| `variant` | `"default" \| "ghost" \| "inCell"` | `ghost` has no border until hovered, for toolbars and headers. `inCell` fills a table cell and takes the `tone` or `color` of the chosen option as its fill. |
+| `open` | `boolean` | Controlled state of the list. |
+| `defaultOpen` | `boolean` |  |
+| `size` | `"default" \| "small"` | `small` is for table cells and dense toolbars. Otherwise the height follows the density level. |
+| `disabled` | `boolean` |  |
+| `multiple` | `boolean` | Lets several options be chosen: use `values` and `onValuesChange`. Options show checkboxes. |
+| `readOnly` | `boolean` | Focusable, but the choice cannot be changed and the list does not open. |
+| `required` | `boolean` |  |
+| `name` | `string` | Form field name: the chosen ids are sent with the form. |
+| `id` | `string` |  |
+| `defaultValue` | `string` |  |
+| `placeholder` | `string` | Shown while nothing is chosen. |
+| `onOpenChange` | `((open: boolean) => void)` |  |
+| `options` | `SelectEntry[]` | The choices, as data. Or pass `Select.Option` and `Select.Section` blocks as children. |
+| `values` | `string[]` | The ids of the chosen options of a `multiple` select. Controlled. |
+| `defaultValues` | `string[]` |  |
+| `onValuesChange` | `((ids: string[]) => void)` |  |
+| `clearable` | `boolean` | Shows a button that removes the choice. |
+| `clearLabel` | `string` | Accessible name of the clear button. |
+| `fullWidth` | `boolean` | Fills the width of its slot. Otherwise it is as wide as its value. |
+| `onSearchChange` | `((text: string) => void)` | Called with the text typed in the filter field of a `searchable` select, and with `''` when it closes. |
+| `empty` | `ReactNode \| import("../internal/dataState").DataStateContent` | Shown when there are no options: text, a node, or `{ title, description, icon, action }`. |
+| `error` | `ReactNode \| import("../internal/dataState").DataStateContent` | Shown in place of the data when set: text, a node, `{ title, description, icon, action }`, or `true` for a default text. |
+| `loading` | `boolean` | Shows skeletons in the final layout and marks the component busy. |
+| `placement` | `OverlayPlacement` | Side of the trigger and alignment along it. It flips to the other side to stay in the window. |
+| `offset` | `number` | Gap between the trigger and the list, in pixels. |
+| `maxHeight` | `number` | Tallest the list may be, in pixels. It is never taller than the room in the window; the options scroll. |
+| `onRetry` | `(() => void)` | Adds a retry button to the error state. |
+| `retryLabel` | `string` | Label of the retry button. |
+| `searchable` | `boolean` | Adds a field above the options: typing in it filters them. |
+| `searchPlaceholder` | `string` |  |
+| `searchLabel` | `string` | Accessible name of the filter field. |
+| `filter` | `SelectFilter` | Replaces the built-in filter (label or description contains the text). Pass `() => true` when the server filters. |
+| `loadingLabel` | `string` | What a screen reader hears while `loading`. |
+| `noResultsLabel` | `string` | Shown when the filter leaves no options. |
+| `matchTriggerWidth` | `boolean` | Gives the list the width of the trigger. Otherwise it is at least that wide. |
+| `renderOption` | `((option: SelectOption, state: { selected: boolean; }) => ReactNode)` | Replaces the content of an option row. The check mark stays. |
+| `valueDescription` | `boolean` | Shows the chosen option's description as a second line; the trigger grows taller. |
+| `selectedLabel` | `((count: number) => string)` | The text of a `multiple` select whose labels do not fit. |
+| `renderValue` | `((selected: SelectOption[]) => ReactNode)` | Replaces the content shown for the chosen options. |
+
+**Parts**: `trigger`, `value`, `icon`, `popover`, `option`, `check`, `empty`.
+
+**Blocks**: `Select.Root`, `Select.Trigger`, `Select.Value`, `Select.Popover`, `Select.Option`, `Select.Section`.
 
 ## ShortcutBar
 

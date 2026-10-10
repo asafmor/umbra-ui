@@ -59,6 +59,7 @@ Icon names (`IconName`). Every built-in icon the library draws comes from this m
 | `trendUp`, `trendDown`, `trendFlat` | ArrowUp, ArrowDown, Minus | TrendArrow |
 | `sortAscending`, `sortDescending`, `sortNone` | ArrowUp, ArrowDown, ChevronsUpDown | DataTable |
 | `edit` | Pencil | ShortcutBar |
+| `recent` | History | SearchField |
 | `externalLink` | ExternalLink | Link `external` |
 | `user` | User | Avatar fallback |
 | `panelClose`, `panelOpen` | PanelLeftClose, PanelLeftOpen | VerticalNav rail toggle |
@@ -104,5 +105,5 @@ Resolved 2026-10-10:
 - The icon map starts with the names Milestone 0 uses and grows per milestone. The default set is `lucide-react`.
 - Milestone 1, review item 17: before, the first match in the list won silently, and a reserved key with nothing mounted stopped the search for an app shortcut on the same keys. The rules above replace that.
 - Key hints write the arrow keys as arrows (`Alt+←`).
-- Integration pass: no component imports an icon directly; all 31 names are listed under Props.
+- Integration pass: no component imports an icon directly; all 32 names are listed under Props.
 - Approved after Milestone 0: the shortcut shape `{ id, keys, label, action? }`; token override keys without the `--umbra-` prefix; `brand` reads hex and `rgb()` only for the contrast calculation.

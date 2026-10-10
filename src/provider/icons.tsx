@@ -12,6 +12,7 @@ import {
   CircleMinus,
   Ellipsis,
   ExternalLink,
+  History,
   Info,
   Lightbulb,
   LoaderCircle,
@@ -43,6 +44,7 @@ export const defaultIcons = {
   search: <Search />,
   spinner: <LoaderCircle />,
   edit: <Pencil />,
+  recent: <History />,
   // The direction of a sorted column is the shape of its arrow.
   sortAscending: <ArrowUp />,
   sortDescending: <ArrowDown />,
@@ -82,6 +84,11 @@ export function Icon({ name, spin, part }: { name: IconName; spin?: boolean; par
 
 /** Internal: a built-in icon from the provider's icon map with no wrapper, for a part that sizes its own mark. */
 export function RawIcon({ name }: { name: IconName }) {
+  return useUmbra().icons[name];
+}
+
+/** Internal: a built-in icon without a wrapper, for a component that sizes the icon itself. */
+export function BareIcon({ name }: { name: IconName }) {
   return useUmbra().icons[name];
 }
 

@@ -84,7 +84,7 @@ Clustered from the four inventory files in `plan/inventory/` (40 screenshots).
 | Radio | Radio, RadioCardGroup, OptionTile, InstructionTile | 3, 6, 7, 9, 29, 34 | 1 |
 | Toggle | | 12, 20, 26, 28, 39, 40 | 1 |
 | Slider | intensity bar, timeline scrubber | 36, 38 | 2 |
-| SearchField | only the collapsed trigger is visible; expanded form to be designed | nearly all | 1 |
+| SearchField | the collapsed trigger seen in the source; the expanded field, suggestions and recent searches are this library's own design | nearly all | 1 |
 | FormField | SettingRow: label + description + control | 12, 20, 21, 26 | 1 |
 | TextField | plain text input seen inside search and settings rows; single-line and multiline | 12, 20, 21, 26 (implied) | 1 |
 | Stepper | | 29 | 2 |

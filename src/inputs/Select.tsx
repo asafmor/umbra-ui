@@ -1,4 +1,3 @@
-import { Check, CircleAlert } from 'lucide-react';
 import {
   Children,
   createContext,
@@ -33,7 +32,7 @@ import { useShrinkLevel } from '../internal/useShrinkLevel';
 import { CheckMark } from '../overlays/Menu';
 import menuStyles from '../overlays/Menu.module.css';
 import { toAriaPlacement, useOpenState, type OverlayPlacement } from '../overlays/shared';
-import { Icon, IconSlot } from '../provider/icons';
+import { BareIcon, Icon, IconSlot } from '../provider/icons';
 import { useScopeAttributes } from '../provider/UmbraProvider';
 import { cx, renderPart, type Part } from '../utils/parts';
 import type { BlockProps } from './fieldParts';
@@ -335,7 +334,7 @@ function Trigger({ icon, className, style, children }: SelectTriggerProps) {
       {select.invalid && (
         <span data-part="invalidIcon" className={styles.invalidIcon}>
           <IconSlot>
-            <CircleAlert />
+            <BareIcon name="invalid" />
           </IconSlot>
         </span>
       )}
@@ -556,7 +555,7 @@ function Popover({
         <>
           {select.multiple && (
             <span data-part="check" aria-hidden="true" className={styles.box}>
-              {isSelected && renderPart(parts?.check, {}, () => <Check />)}
+              {isSelected && renderPart(parts?.check, {}, () => <BareIcon name="check" />)}
             </span>
           )}
           {renderPart(

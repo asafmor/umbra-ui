@@ -318,3 +318,27 @@ export type {
 } from './shell/ShortcutBar';
 export { CommandPalette } from './overlays/CommandPalette';
 export type { Command, CommandItemPartProps, CommandPaletteProps } from './overlays/CommandPalette';
+export { Select } from './inputs/Select';
+export type {
+  SelectEntry,
+  SelectFilter,
+  SelectOption,
+  SelectOptionPartProps,
+  SelectOptionProps,
+  SelectPopoverProps,
+  SelectProps,
+  SelectRootProps,
+  SelectSectionData,
+  SelectSectionProps,
+  SelectTriggerProps,
+  SelectValueProps,
+} from './inputs/Select';
+export { SearchField } from './inputs/SearchField';
+export type {
+  SearchFieldClearProps,
+  SearchFieldProps,
+  SearchFieldRootProps,
+  SearchFieldSuggestionPartProps,
+  SearchFieldSuggestionsProps,
+  SearchSuggestion,
+} from './inputs/SearchField';

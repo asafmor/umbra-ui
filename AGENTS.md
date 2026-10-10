@@ -43,7 +43,7 @@ The owner approved the plan and delegated the open questions (`plan/reviews/mile
 |---|---|
 | Review items due before 1a | done |
 | 1a. Data basics (19 components, in `src/data/`) | done |
-| 1b. Inputs (`src/inputs/`) | done except Select and SearchField (in progress) |
+| 1b. Inputs (`src/inputs/`) | done |
 | 1c. Overlays (`src/overlays/`): Popover, Tooltip, Menu, Modal, ActionBar, CommandPalette; `VerticalNav` in `src/shell/` | done |
 | 1d. Table (`src/table/`) | done |
 | 1e. Meters (`src/meters/`) and charts (`src/charts/`) | done |
