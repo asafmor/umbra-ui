@@ -1,0 +1,121 @@
+/* Without a value: a neutral surface. Each ramp step carries dark text, 4.5:1 or more (valueLevel.test.ts). */
+.pill {
+  --fill: var(--umbra-color-base-surface3);
+  --ink: var(--umbra-color-base-text-secondary);
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--umbra-space-2);
+  flex: 0 1 auto;
+  min-width: var(--umbra-value-pill-min-width, 3em);
+  max-width: 100%;
+  padding: var(--umbra-value-pill-padding, 1px var(--umbra-space-3));
+  border-radius: var(--umbra-value-pill-radius, var(--umbra-radius-pill));
+  background: var(--umbra-value-pill-bg, var(--fill));
+  color: var(--umbra-value-pill-fg, var(--ink));
+  font: var(--umbra-value-pill-font, var(--umbra-font-label));
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.pill:not([data-level='none']) {
+  --ink: var(--umbra-color-base-surface1);
+}
+
+.pill[data-level='1'] {
+  --fill: var(--umbra-color-value-ramp-1);
+}
+
+.pill[data-level='2'] {
+  --fill: var(--umbra-color-value-ramp-2);
+}
+
+.pill[data-level='3'] {
+  --fill: var(--umbra-color-value-ramp-3);
+}
+
+.pill[data-level='4'] {
+  --fill: var(--umbra-color-value-ramp-4);
+}
+
+.pill[data-level='5'] {
+  --fill: var(--umbra-color-value-ramp-5);
+}
+
+.pill[data-size='small'] {
+  min-width: var(--umbra-value-pill-min-width, 2.6em);
+  padding: var(--umbra-value-pill-padding, 0 var(--umbra-space-2));
+  font-size: calc(var(--umbra-density-label-size) - 2px);
+}
+
+.pill[data-size='large'] {
+  padding: var(--umbra-value-pill-padding, var(--umbra-space-1) var(--umbra-space-4));
+  font: var(--umbra-value-pill-font, var(--umbra-font-body));
+  font-weight: 700;
+}
+
+.pill[data-shape='square'] {
+  min-width: var(--umbra-value-pill-min-width, 2.2em);
+  padding-inline: var(--umbra-space-2);
+  border-radius: var(--umbra-value-pill-radius, var(--umbra-radius-control));
+}
+
+.pill[data-shape='circle'] {
+  min-width: 0;
+  width: var(--umbra-value-pill-min-width, 2.2em);
+  aspect-ratio: 1;
+  padding: 0;
+  border-radius: 50%;
+}
+
+.value {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Five bars of rising height; the filled ones give the level. */
+.level {
+  display: inline-flex;
+  align-items: flex-end;
+  flex: none;
+  gap: 1px;
+  height: 0.75em;
+}
+
+.level > i {
+  width: 2px;
+  background: currentColor;
+  opacity: 0.3;
+}
+
+.level > i[data-on] {
+  opacity: 1;
+}
+
+.level > i:nth-child(1) {
+  height: 20%;
+}
+
+.level > i:nth-child(2) {
+  height: 40%;
+}
+
+.level > i:nth-child(3) {
+  height: 60%;
+}
+
+.level > i:nth-child(4) {
+  height: 80%;
+}
+
+.level > i:nth-child(5) {
+  height: 100%;
+}
+
+.skeleton {
+  width: 3em;
+}

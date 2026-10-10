@@ -1,0 +1,75 @@
+.link {
+  --ink: var(--umbra-link-color, var(--umbra-color-fixed-accent-text));
+
+  padding: 0;
+  border: 0;
+  border-radius: 2px;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  text-align: start;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color var(--umbra-motion-duration-fast);
+}
+
+.link[data-tone='neutral'] {
+  --ink: var(--umbra-link-neutral-color, currentColor);
+
+  color: inherit;
+}
+
+/* Always underlined, so a link never depends on its colour. Icons are not underlined. */
+.label {
+  text-decoration: underline;
+  text-underline-offset: var(--umbra-link-underline-offset, 3px);
+}
+
+/* Hover lightens one step, press darkens one step (plan/interaction.md). */
+.link:hover:not(:disabled, [aria-disabled='true']) {
+  color: color-mix(in oklab, var(--ink), #fff 30%);
+}
+
+.link:active:not(:disabled, [aria-disabled='true']) {
+  color: color-mix(in oklab, var(--ink), #000 18%);
+}
+
+.link:is(:disabled, [aria-disabled='true']) {
+  opacity: var(--umbra-state-disabled-opacity);
+  cursor: default;
+}
+
+.link > [data-part='icon'],
+.link > [data-part='externalIcon'],
+.link > [data-part='chevron'] {
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.125em;
+}
+
+.link[data-variant='inline'] > .label ~ [data-part] {
+  margin-inline-start: var(--umbra-space-2);
+}
+
+/* One line that truncates; it may sit in a row that clips, so its ring is drawn inwards. */
+.link[data-variant='standalone'] {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--umbra-space-2);
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  font: var(--umbra-link-font, var(--umbra-font-label));
+  font-weight: 700;
+  white-space: nowrap;
+  vertical-align: middle;
+  outline-offset: calc(-1 * var(--umbra-state-focus-ring-width));
+}
+
+.link[data-variant='standalone'] > .label {
+  min-width: 0;
+  /* Room for the underline, which the clipping needed for the ellipsis would otherwise cut off. */
+  padding-block: 0.2em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

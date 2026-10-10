@@ -1,0 +1,110 @@
+import { CircleCheck, CircleMinus, Info, OctagonAlert, TriangleAlert } from 'lucide-react';
+import type { CSSProperties, ReactNode } from 'react';
+import { IconSlot } from '../provider/icons';
+import { cx, renderPart, type Part } from '../utils/parts';
+import shared from './shared.module.css';
+import styles from './StatusIndicator.module.css';
+import { toneProps } from './tone';
+
+export type Status = 'success' | 'warning' | 'danger' | 'info' | 'neutral';
+
+/** One shape per status, so the status does not depend on colour. */
+const icons: Record<Status, ReactNode> = {
+  success: <CircleCheck />,
+  warning: <TriangleAlert />,
+  danger: <OctagonAlert />,
+  info: <Info />,
+  neutral: <CircleMinus />,
+};
+
+interface BlockProps {
+  className?: string;
+  style?: CSSProperties;
+  children?: ReactNode;
+}
+
+export interface StatusIndicatorRootProps extends BlockProps {
+  status?: Status;
+  /** A custom colour (any CSS colour). Replaces the colour of `status`; the shape stays. */
+  color?: string;
+  /** `dot`: a small shape. `icon`: the status icon. `label`: no mark, the label itself is coloured. */
+  variant?: 'dot' | 'icon' | 'label';
+  /** Draws attention with a slow pulse around the dot. With reduced motion the dot stays still. */
+  pulse?: boolean;
+  /** Names an indicator that has no visible label. */
+  'aria-label'?: string;
+}
+
+function Root({
+  status = 'neutral',
+  color,
+  variant = 'dot',
+  pulse,
+  'aria-label': ariaLabel,
+  className,
+  style,
+  children,
+}: StatusIndicatorRootProps) {
+  return (
+    <span
+      {...toneProps(status, color, style)}
+      data-umbra="status-indicator"
+      data-status={status}
+      data-variant={variant}
+      data-pulse={pulse || undefined}
+      role={ariaLabel ? 'img' : undefined}
+      aria-label={ariaLabel}
+      className={cx(shared.tone, styles.root, className)}
+    >
+      {children}
+    </span>
+  );
+}
+
+/** The mark: a dot in the shape of the status, or an icon when it has children. */
+function Indicator({ className, style, children }: BlockProps) {
+  return children ? (
+    <IconSlot part="indicator">{children}</IconSlot>
+  ) : (
+    <span data-part="indicator" aria-hidden="true" className={cx(styles.dot, className)} style={style} />
+  );
+}
+
+function Label({ className, style, children }: BlockProps) {
+  return (
+    <span data-part="label" className={cx(styles.label, className)} style={style}>
+      {children}
+    </span>
+  );
+}
+
+export interface StatusIndicatorProps extends Omit<StatusIndicatorRootProps, 'children'> {
+  /** The label. Without one, give `aria-label`. */
+  children?: ReactNode;
+  /** Replaces the icon of the `icon` variant. */
+  icon?: ReactNode;
+  /** Replace or hide named pieces. */
+  parts?: {
+    indicator?: Part<{ children: ReactNode }>;
+    label?: Part<{ children: ReactNode }>;
+  };
+}
+
+/** A status as a dot or an icon with a label, or as a coloured label. */
+export function StatusIndicator({ children, icon, parts, ...root }: StatusIndicatorProps) {
+  const { status = 'neutral', variant = 'dot' } = root;
+  const mark = variant === 'icon' ? (icon ?? icons[status]) : null;
+  return (
+    <Root {...root}>
+      {variant !== 'label' &&
+        renderPart(parts?.indicator, { children: mark }, (p) => <Indicator>{p.children}</Indicator>)}
+      {children !== undefined &&
+        children !== null &&
+        renderPart(parts?.label, { children }, (p) => <Label>{p.children}</Label>)}
+    </Root>
+  );
+}
+
+StatusIndicator.Root = Root;
+StatusIndicator.Indicator = Indicator;
+StatusIndicator.Label = Label;

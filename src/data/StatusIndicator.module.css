@@ -1,0 +1,88 @@
+.root {
+  --mark: var(--umbra-status-indicator-color, var(--tone));
+
+  display: inline-flex;
+  align-items: center;
+  gap: var(--umbra-status-indicator-gap, var(--umbra-space-2));
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.root > [data-part='indicator'] {
+  color: var(--mark);
+}
+
+.root[data-variant='label'] {
+  color: var(--mark);
+  font-weight: 700;
+}
+
+.label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* The dot: its shape is drawn by ::before, so the pulse ring (::after) is not clipped by it. */
+.dot {
+  position: relative;
+  flex: none;
+  width: var(--umbra-status-indicator-size, 0.625em);
+  height: var(--umbra-status-indicator-size, 0.625em);
+  margin: 0.3em;
+}
+
+.dot::before,
+.dot::after {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: currentColor;
+  content: '';
+}
+
+.dot::after {
+  display: none;
+}
+
+/* One shape per status: circle, triangle, diamond, square, ring. */
+.root[data-status='warning'] > .dot::before {
+  inset: -10%;
+  border-radius: 0;
+  clip-path: polygon(50% 5%, 100% 95%, 0 95%);
+}
+
+.root[data-status='danger'] > .dot::before {
+  inset: -10%;
+  border-radius: 0;
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+
+.root[data-status='info'] > .dot::before {
+  border-radius: 1px;
+}
+
+.root[data-status='neutral'] > .dot::before {
+  border: calc(2 * var(--umbra-border-width)) solid currentColor;
+  background: none;
+}
+
+.root[data-pulse] > .dot::after {
+  display: block;
+  animation: pulse 1.6s var(--umbra-motion-easing-enter) infinite;
+}
+
+/* A ring that grows and fades. With reduced motion the scale is 0: it does not grow, so nothing moves. */
+@keyframes pulse {
+  from {
+    opacity: 0.6;
+  }
+
+  to {
+    opacity: 0;
+    scale: calc(1 + 2 * var(--umbra-motion-scale));
+  }
+}
