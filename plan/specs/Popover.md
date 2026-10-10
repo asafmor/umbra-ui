@@ -94,6 +94,11 @@ States: open, closed, entering, exiting. Data attributes on the root: `data-size
 
 ## Open questions
 
+Resolved 2026-10-11:
+
+- **Flipping when the content arrives late.** React Aria picks the side from the panel's height when it opens and then caps the height at the room on that side, so content that arrived afterwards (the body of a layout-collapsed card near the bottom of the window) stayed cut on the short side. `useFlipWhenCut` (`src/overlays/shared.ts`) lifts a cap the panel has grown into, once, so the real height is measured and the panel flips. `Menu`, `Select` and the `SearchField` suggestions use the same hook; `Tooltip` needs none (its content is there when it opens). Tested at the four corners of the window in three window sizes (`Overlays/Window edges`).
+
+
 None.
 
 Resolved 2026-10-10:

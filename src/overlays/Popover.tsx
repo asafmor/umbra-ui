@@ -2,6 +2,7 @@ import {
   createContext,
   createElement,
   isValidElement,
+  useCallback,
   useContext,
   useEffect,
   useId,
@@ -28,7 +29,7 @@ import { useScopeAttributes } from '../provider/UmbraProvider';
 import { warn } from '../utils/dev';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './Popover.module.css';
-import { toAriaPlacement, useOpenState, type OverlayPlacement } from './shared';
+import { toAriaPlacement, useFlipWhenCut, useOpenState, type OverlayPlacement } from './shared';
 
 interface PopoverContextValue {
   titleId: string;
@@ -128,6 +129,15 @@ function Content({
   const setOpen = root ? root.setOpen : setOwnOpen;
   const anchor = anchorRef ?? fromTrigger?.triggerRef;
   const panel = useRef<HTMLElement>(null);
+  const cap = maxHeight ?? (size === 'large' ? undefined : 480);
+  const flipWhenCut = useFlipWhenCut(cap);
+  const setPanel = useCallback(
+    (element: HTMLElement | null) => {
+      panel.current = element;
+      return flipWhenCut(element);
+    },
+    [flipWhenCut],
+  );
   const titleId = useId();
   // The title can be left out or replaced; the dialog is only named by one that exists.
   const [hasTitle, setHasTitle] = useState(false);
@@ -198,7 +208,7 @@ function Content({
   return (
     <AriaPopover
       {...scope}
-      ref={panel}
+      ref={setPanel}
       triggerRef={anchor}
       isOpen={isOpen}
       onOpenChange={setOpen}
@@ -206,7 +216,7 @@ function Content({
       isNonModal
       placement={toAriaPlacement(placement)}
       offset={offset + (arrow ? ARROW : 0)}
-      maxHeight={maxHeight ?? (size === 'large' ? undefined : 480)}
+      maxHeight={cap}
       // Without a backdrop this only decides whether focus leaving the panel closes it.
       shouldCloseOnInteractOutside={(element) =>
         dismissOnBlur &&

@@ -765,3 +765,80 @@ test('card: the popover of a layout-collapsed card holds the one copy of its con
   await expect(dialog).toHaveCount(0);
   await expect(header).toHaveAttribute('aria-expanded', 'false');
 });
+
+// Placement at the window edges
+
+test.describe('window edges', () => {
+  /** Opens one control of a corner and returns its overlay. */
+  const kinds = {
+    popover: async (page: Page, corner: Locator) => {
+      await corner.getByRole('button', { name: 'Popover' }).click();
+      const overlay = page.locator('[data-umbra="popover"]');
+      // The content arrives after the popover opened.
+      await expect(overlay.getByText('Item 8')).toBeVisible();
+      return overlay;
+    },
+    menu: async (page: Page, corner: Locator) => {
+      await corner.getByRole('button', { name: 'Menu' }).click();
+      return page.locator('[data-umbra="menu"]');
+    },
+    select: async (page: Page, corner: Locator) => {
+      await corner.getByRole('button', { name: /Select/ }).click();
+      return page.locator('[data-umbra="select-popover"]');
+    },
+    search: async (page: Page, corner: Locator) => {
+      await corner.getByRole('combobox', { name: 'Search' }).click();
+      await page.keyboard.press('ArrowDown');
+      return page.locator('[data-umbra="search-field-suggestions"]');
+    },
+    tooltip: async (page: Page, corner: Locator) => {
+      await corner.getByRole('button', { name: 'Tip' }).focus();
+      await page.keyboard.press('Shift+Tab');
+      await page.keyboard.press('Tab');
+      return page.locator('[data-umbra="tooltip"]');
+    },
+  };
+  for (const [width, height] of [
+    [1280, 720],
+    [1024, 600],
+    // Short: no side has room for the whole list, so it is capped and scrolls inside.
+    [1024, 300],
+  ] as const) {
+    for (const corner of ['top start', 'top end', 'bottom start', 'bottom end']) {
+      test(`overlays at the ${corner} corner stay in a ${width}x${height} window and are not cut`, async ({
+        page,
+      }) => {
+        await open(page, 'overlays-window-edges--corners', width, height);
+        const group = page.locator(`[data-corner="${corner}"]`);
+        for (const [kind, show] of Object.entries(kinds)) {
+          const overlay = await show(page, group);
+          await expect(overlay, kind).toBeVisible();
+          // A late flip happens in the frame after a size change.
+          await page.waitForTimeout(150);
+          const rect = await box(overlay);
+          const anchor = (await group.boundingBox())!;
+          expect(rect.x, kind).toBeGreaterThanOrEqual(0);
+          expect(rect.y, kind).toBeGreaterThanOrEqual(0);
+          expect(rect.x + rect.width, kind).toBeLessThanOrEqual(width);
+          expect(rect.y + rect.height, kind).toBeLessThanOrEqual(height);
+          // On the side with room: below a control at the top, above one at the bottom.
+          if (corner.startsWith('top'))
+            expect(rect.y, kind).toBeGreaterThanOrEqual(anchor.y + anchor.height - 8);
+          else expect(rect.y + rect.height, kind).toBeLessThanOrEqual(anchor.y + 8);
+          // Nothing is cut without a way to reach it: the last row can be scrolled into the overlay.
+          const reach = await overlay.evaluate((el) => {
+            const rows = el.querySelectorAll('[role="option"], [role="menuitem"], [data-part="body"] div');
+            const last = [...rows].at(-1);
+            if (!last) return 0;
+            last.scrollIntoView({ block: 'nearest' });
+            const [a, b] = [last.getBoundingClientRect(), el.getBoundingClientRect()];
+            return Math.max(a.bottom - b.bottom, b.top - a.top, 0);
+          });
+          expect(reach, kind).toBeLessThanOrEqual(1);
+          await page.keyboard.press('Escape');
+          await expect(overlay, kind).toHaveCount(0);
+        }
+      });
+    }
+  }
+});

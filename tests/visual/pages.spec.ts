@@ -207,6 +207,13 @@ test.describe('Overview', () => {
     const banner = await popover.locator('[data-umbra="banner"]').boundingBox();
     const body = await popover.locator('[data-part="body"]').boundingBox();
     expect(banner!.width).toBeGreaterThan(body!.width * 0.8);
+    // The card is at the bottom of the window: its popover opens upwards, whole and inside the window.
+    await expect
+      .poll(async () => {
+        const [panel, anchor] = [await popover.boundingBox(), await header.boundingBox()];
+        return panel!.y >= 0 && panel!.y + panel!.height <= anchor!.y && panel!.height > 100;
+      })
+      .toBe(true);
     await page.keyboard.press('Escape');
     await expect(popover).toHaveCount(0);
     await expect(header).toBeFocused();

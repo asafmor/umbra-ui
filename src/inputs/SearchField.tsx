@@ -26,6 +26,7 @@ import menuStyles from '../overlays/Menu.module.css';
 import { BareIcon, Icon, IconSlot } from '../provider/icons';
 import { formatKeys, isTypingTarget, matchesKeys } from '../provider/shortcuts';
 import { useScopeAttributes, useShortcut, useUmbra } from '../provider/UmbraProvider';
+import { useFlipWhenCut } from '../overlays/shared';
 import { cx, renderPart, type Part } from '../utils/parts';
 import type { BlockProps } from './fieldParts';
 import styles from './SearchField.module.css';
@@ -517,6 +518,7 @@ function Suggestions({
 }: SearchFieldSuggestionsProps) {
   const field = useSearchField();
   const scope = useScopeAttributes();
+  const flipWhenCut = useFlipWhenCut(maxHeight);
   if (!field.hasList) return null;
   // Rows without a section come first; each section keeps the place of its first row.
   const groups = new Map<string, Row[]>();
@@ -599,6 +601,7 @@ function Suggestions({
   return (
     <AriaPopover
       {...scope}
+      ref={flipWhenCut}
       triggerRef={field.boxRef}
       placement="bottom start"
       offset={4}
