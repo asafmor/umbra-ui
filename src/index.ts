@@ -291,3 +291,15 @@ export type {
   DataTableSortDirection,
   DataTableSortIndicatorProps,
 } from './table/DataTable';
+export { ConfirmDialog, Modal } from './overlays/Modal';
+export type {
+  ConfirmDialogProps,
+  ModalBodyProps,
+  ModalCloseProps,
+  ModalHeaderProps,
+  ModalNavProps,
+  ModalProps,
+  ModalRootProps,
+  ModalSize,
+  ModalVariant,
+} from './overlays/Modal';

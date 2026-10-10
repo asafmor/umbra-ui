@@ -213,6 +213,7 @@ Compares values across categories: grouped, stacked or diverging around zero, up
 | `label` | `string` | Accessible name of the chart. Required unless `aria-labelledby` is set. |
 | `thresholds` | `BarThreshold[]` | Colours bars by value. Each threshold also has a fill, so the steps differ without colour. |
 | `formatValue` | `((value: number) => string)` | Formats a value for labels, the tooltip and screen readers. Defaults to the provider's locale. |
+| `description` | `string` | What a screen reader hears after the name. Defaults to a generated summary of the data. |
 | `categories` (required) | `string[]` |  |
 | `series` (required) | `BarSeries[]` |  |
 | `colorBy` | `"series" \| "sign"` | `sign` colours bars by the sign of their value; negative bars are also striped. |
@@ -221,7 +222,6 @@ Compares values across categories: grouped, stacked or diverging around zero, up
 | `xTitle` | `string` | Title of the horizontal axis. |
 | `yTitle` | `string` | Title of the vertical axis. |
 | `aria-labelledby` | `string` | Id of the element that names the chart, for example a card title. |
-| `description` | `string` | What a screen reader hears after the name. Defaults to a generated summary of the data. |
 | `legend` | `string \| number \| bigint \| boolean \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| import("react").ReactPortal \| Promise<string \| number \| bigint \| boolean \| import("react").ReactPortal \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| null \| undefined> \| null` | The legend: `true` or a placement shows the built-in one, `false` hides it, and a node replaces it. By default it is shown below the chart when there is more than one series. |
 | `labels` | `boolean` | Draws labels on the chart itself, so it can be read without the legend or the tooltip. |
 | `onPointPress` | `((point: import(".").ChartPoint) => void)` | Called when a point is clicked, or activated with Enter or Space. |
@@ -399,6 +399,37 @@ Shares its width among its children. Below the minimum window it shows one child
 
 **Blocks**: none.
 
+## ConfirmDialog
+
+The confirm step before an action that cannot be undone. An alert dialog: it opens with the focus on Cancel, and cannot be dismissed by a press outside it.
+
+**Tokens**: `--umbra-modal-backdrop-filter`, `--umbra-modal-bg`, `--umbra-modal-border`, `--umbra-modal-duration`, `--umbra-modal-margin`, `--umbra-modal-nav-width`, `--umbra-modal-padding`, `--umbra-modal-radius`, `--umbra-modal-scrim`, `--umbra-modal-shadow`, `--umbra-modal-width`, `--umbra-modal-z-index`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `title` (required) | `ReactNode` |  |
+| `description` | `ReactNode` | What will happen, in a sentence. |
+| `confirmLabel` | `string` |  |
+| `cancelLabel` | `string` |  |
+| `tone` | `"default" \| "danger"` | `danger` makes the confirm button a danger button. |
+| `onConfirm` | `(() => void \| Promise<unknown>)` | Called on confirm. When it returns a promise, the confirm button shows `loading` until it settles: the dialog closes when it resolves and stays open when it rejects. |
+| `onCancel` | `(() => void)` |  |
+| `loadingLabel` | `string` | What a screen reader hears while the confirm action runs. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `icon` | `ReactNode` | Leading icon or image. |
+| `open` | `boolean` | Controlled open state. |
+| `defaultOpen` | `boolean` |  |
+| `size` | `ModalSize` | Width. `full` fills the window minus a margin. A bottom drawer is always as wide as the window. |
+| `onOpenChange` | `((open: boolean) => void)` |  |
+| `trigger` | `ReactNode` | A button that opens the modal. Leave out to control it with `open`. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `children` | `ReactNode` |  |
+
+**Parts**: `cancel`, `confirm`.
+
+**Blocks**: none.
+
 ## DataTable
 
 A table of rows and columns that fills its slot and scrolls inside it: sorting, selection, groups, pinned columns, and columns that hide by priority as it narrows.
@@ -494,8 +525,8 @@ A ring that shows one value against a total, or how a total splits into segments
 | `max` | `number` | What a full ring stands for, in the single-value form. |
 | `thresholds` | `{ from: number; tone: DonutTone; }[]` | Picks the tone from the value: the last entry whose `from` the value reaches. |
 | `formatValue` | `((value: number) => string)` | Formats a value for labels, the tooltip and screen readers. Defaults to the provider's locale. |
-| `aria-labelledby` | `string` | Id of the element that names the chart, for example a card title. |
 | `description` | `string` | What a screen reader hears after the name. Defaults to a generated summary of the data. |
+| `aria-labelledby` | `string` | Id of the element that names the chart, for example a card title. |
 | `legend` | `string \| number \| bigint \| boolean \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| import("react").ReactPortal \| Promise<string \| number \| bigint \| boolean \| import("react").ReactPortal \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| null \| undefined> \| null` | The legend: `true` or a placement shows the built-in one, `false` hides it, and a node replaces it. By default it is shown below the chart when there is more than one series. |
 | `labels` | `boolean` | Draws labels on the chart itself, so it can be read without the legend or the tooltip. |
 | `onPointPress` | `((point: import(".").ChartPoint) => void)` | Called when a point is clicked, or activated with Enter or Space. |
@@ -794,13 +825,13 @@ One or more series over categories, numbers or time, with a numeric or an ordina
 | `error` | `ReactNode` | When set, shown in place of the chart. |
 | `label` | `string` | Accessible name of the chart. Required unless `aria-labelledby` is set. |
 | `formatValue` | `((value: number) => string)` | Formats a value for labels, the tooltip and screen readers. Defaults to the provider's locale. |
+| `description` | `string` | What a screen reader hears after the name. Defaults to a generated summary of the data. |
 | `categories` | `string[]` | The order of a category x axis. Defaults to the order the names first appear in. |
 | `series` (required) | `LineSeries[]` |  |
 | `annotations` | `ChartAnnotation[]` | Reference lines and bands on either axis. |
 | `xTitle` | `string` |  |
 | `yTitle` | `string` |  |
 | `aria-labelledby` | `string` | Id of the element that names the chart, for example a card title. |
-| `description` | `string` | What a screen reader hears after the name. Defaults to a generated summary of the data. |
 | `legend` | `string \| number \| bigint \| boolean \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| import("react").ReactPortal \| Promise<string \| number \| bigint \| boolean \| import("react").ReactPortal \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| null \| undefined> \| null` | The legend: `true` or a placement shows the built-in one, `false` hides it, and a node replaces it. By default it is shown below the chart when there is more than one series. |
 | `labels` | `boolean` | Draws labels on the chart itself, so it can be read without the legend or the tooltip. |
 | `onPointPress` | `((point: import(".").ChartPoint) => void)` | Called when a point is clicked, or activated with Enter or Space. |
@@ -956,6 +987,47 @@ A list of actions or links that opens from a control. One tab stop; arrow keys, 
 **Parts**: `item`, `check`, `sectionHeader`.
 
 **Blocks**: `Menu.Item`, `Menu.Section`, `Menu.Separator`, `Menu.Sub`, `Menu.Context`.
+
+## Modal
+
+A panel over a dimmed page, for a focused task. Focus stays inside it and the page behind is inert until it closes. Its body scrolls inside; the page never does.
+
+**Tokens**: `--umbra-modal-backdrop-filter`, `--umbra-modal-bg`, `--umbra-modal-border`, `--umbra-modal-duration`, `--umbra-modal-margin`, `--umbra-modal-nav-width`, `--umbra-modal-padding`, `--umbra-modal-radius`, `--umbra-modal-scrim`, `--umbra-modal-shadow`, `--umbra-modal-width`, `--umbra-modal-z-index`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `trigger` | `ReactNode` | A button that opens the modal. Leave out to control it with `open`. |
+| `toolbar` | `ReactNode` | Tabs or filters that stay fixed under the header. |
+| `nav` | `ReactNode` | Side navigation at the start: the panel becomes two columns. |
+| `navLabel` | `string` | Text of the toggle that shows `nav` below the minimum window. |
+| `footer` | `ReactNode` | Status and actions, fixed below the body. |
+| `padding` | `"default" \| "none"` | `none` for an edge-to-edge body. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `aria-label` | `string` | Accessible name, for a modal without a title. |
+| `variant` | `ModalVariant` | `alertdialog` asks for a decision: no outside press, no close button. `drawer` slides in from an edge. |
+| `open` | `boolean` | Controlled open state. |
+| `defaultOpen` | `boolean` |  |
+| `size` | `ModalSize` | Width. `full` fills the window minus a margin. A bottom drawer is always as wide as the window. |
+| `headingLevel` | `4 \| 3 \| 1 \| 2 \| 5 \| 6` | Heading level of the title. |
+| `onOpenChange` | `((open: boolean) => void)` |  |
+| `onRequestClose` | `(() => boolean \| void)` | Called before the modal closes, however it was asked to. Return `false` to keep it open (unsaved changes). |
+| `side` | `"start" \| "end" \| "bottom"` | The edge a `drawer` is attached to. |
+| `height` | `"auto" \| "fill"` | `auto`: as tall as the content, up to the window. `fill`: always the full available height. |
+| `dismissOnEscape` | `boolean` |  |
+| `dismissOnOutsidePress` | `boolean` | Default: true, and always false for an `alertdialog`. |
+| `initialFocusRef` | `RefObject<HTMLElement \| null>` | Focused when the modal opens, instead of its first control. An element marked `data-autofocus` works too. |
+| `icon` | `ReactNode` | Leading icon or image. |
+| `title` | `ReactNode` |  |
+| `closeLabel` | `string` | Accessible name of the close button. |
+| `description` | `ReactNode` | A line under the title. It is also what a screen reader hears as the modal's description. |
+| `hideClose` | `boolean` | Default: false, and true for an `alertdialog`. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `children` | `ReactNode` |  |
+
+**Parts**: `header`, `title`, `description`, `close`, `toolbar`, `nav`, `body`, `footer`.
+
+**Blocks**: `Modal.Root`, `Modal.Trigger`, `Modal.Overlay`, `Modal.Content`, `Modal.Header`, `Modal.Title`, `Modal.Description`, `Modal.Toolbar`, `Modal.Nav`, `Modal.Body`, `Modal.Footer`, `Modal.Close`.
 
 ## Page
 
@@ -1132,9 +1204,9 @@ Compares one or more series across several axes that share a centre.
 | `label` | `string` | Accessible name of the chart. Required unless `aria-labelledby` is set. |
 | `max` | `number` | The value at the outer ring. Defaults to a round number above the largest value. |
 | `formatValue` | `((value: number) => string)` | Formats a value for labels, the tooltip and screen readers. Defaults to the provider's locale. |
+| `description` | `string` | What a screen reader hears after the name. Defaults to a generated summary of the data. |
 | `series` (required) | `RadarSeries[]` |  |
 | `aria-labelledby` | `string` | Id of the element that names the chart, for example a card title. |
-| `description` | `string` | What a screen reader hears after the name. Defaults to a generated summary of the data. |
 | `legend` | `string \| number \| bigint \| boolean \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| import("react").ReactPortal \| Promise<string \| number \| bigint \| boolean \| import("react").ReactPortal \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| null \| undefined> \| null` | The legend: `true` or a placement shows the built-in one, `false` hides it, and a node replaces it. By default it is shown below the chart when there is more than one series. |
 | `labels` | `boolean` | Draws labels on the chart itself, so it can be read without the legend or the tooltip. |
 | `onPointPress` | `((point: import(".").ChartPoint) => void)` | Called when a point is clicked, or activated with Enter or Space. |
