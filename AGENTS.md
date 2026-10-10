@@ -43,11 +43,11 @@ The owner approved the plan and delegated the open questions (`plan/reviews/mile
 |---|---|
 | Review items due before 1a | done |
 | 1a. Data basics (19 components, in `src/data/`) | done |
-| 1b. Inputs, starting with Popover, Tooltip and Menu | in progress |
-| 1c. Overlays | — |
-| 1d. Table | — |
-| 1e. Meters and charts | in progress |
-| 1f. Shell extras | — |
+| 1b. Inputs (`src/inputs/`): Popover, Tooltip, Menu, Checkbox, Radio, Toggle, FormField, TextField, SegmentedFilter, Tabs | done; Select and SearchField in progress |
+| 1c. Overlays (`src/overlays/`): ActionBar, VerticalNav done; every Milestone 0 overlay moved to the public ones | Modal and CommandPalette in progress |
+| 1d. Table (`src/table/`) | in progress |
+| 1e. Meters (`src/meters/`) and charts (`src/charts/`) | done |
+| 1f. Shell extras: PageHeader, Accordion done | ShortcutBar, HistoryButtons, PrimaryAction in progress |
 | Full-page stories, guides, `dashboard` and `advanced` examples | — |
 
 **Next step**: finish 1b, then 1c, 1d and 1f in the order of `plan/roadmap.md`. A batch is built from `plan/prompts/component-brief.md`.
@@ -58,7 +58,6 @@ The owner approved the plan and delegated the open questions (`plan/reviews/mile
 - Commit `88f6b37` fails lint: the `lint` script arrived one commit before its config.
 - Commit `973f274` breaks "tests pass at every commit": it adds two navigation tests whose story arrives in the next commit. It was already pushed, so it stays.
 - A card collapsed with its caret is not size-animated; only the caret rotates (open detail in `plan/interaction.md`).
-- Dropdowns and overflow menus are popovers holding links and buttons, not ARIA menus, until the public `Menu` in Milestone 1.
 
 ## Commands
 
@@ -98,7 +97,7 @@ The owner approved the plan and delegated the open questions (`plan/reviews/mile
 | `plan/reference/` | `index.html`: the static reference screen, the visual ground truth for the look (open it in a browser; `?density=compact&context=teal` switches settings). `shot-*.png`: renders at three sizes. |
 | `plan/reviews/` | Review reports. `milestone-0.md`: what the independent review found, what was fixed, and what is open. |
 | `plan/prompts/` | `component-brief.md`: the rules for building a batch of components (read it before adding one). Ready-made prompts for starting a fresh agent session: `milestone-0.md` (used), `verify-milestone-0.md` (independent review of Milestone 0), `milestone-1.md` (plan and build Milestone 1). |
-| `src/` | Library source. `src/styles/`: base CSS and the generated tokens. `src/provider/`: provider, scope, icon map, shortcut registry. `src/layout/`: Page, Columns, Stack, Slot, Card, SectionTitle, ScrollArea (`useSlot.tsx` and `collapse.ts` hold the layout rules). `src/shell/`: AppShell, TopBar, PrimaryNav, SubNav (`nav.tsx` is shared). `src/basics/`: Button, IconButton, Skeleton. `src/data/`: the data basics (Tag, Badge, List, KeyValue, Banner, Legend, EmptyState and the rest of batch 1a). `src/internal/`: not exported; overlays on React Aria and `useShrinkLevel`, the hook behind every "show less as it narrows" rule. `src/utils/`: shared helpers (`parts.ts` implements the parts layer). `src/charts/`: the `umbra-ui/charts` entry. |
+| `src/` | Library source. `src/styles/`: base CSS and the generated tokens. `src/provider/`: provider, scope, icon map, shortcut registry. `src/layout/`: Page, Columns, Stack, Slot, Card, SectionTitle, ScrollArea (`useSlot.tsx` and `collapse.ts` hold the layout rules). `src/shell/`: AppShell, TopBar, PrimaryNav, SubNav (`nav.tsx` is shared). `src/basics/`: Button, IconButton, Skeleton. `src/data/`: the data basics (Tag, Badge, List, KeyValue, Banner, Legend, EmptyState and the rest of batch 1a). `src/inputs/`: form controls, SegmentedFilter, Tabs. `src/overlays/`: Popover, Tooltip, Menu, ActionBar. `src/meters/`: ProgressBar, LevelMeter. `src/internal/`: not exported; shared contexts, the loading/empty/error helper (`dataState.tsx`), series markers and `useShrinkLevel`, the hook behind every "show less as it narrows" rule. `src/utils/`: shared helpers (`parts.ts` implements the parts layer). `src/charts/`: the `umbra-ui/charts` entry (Donut, Radar, Line and Bar charts; `d3-scale` and `d3-shape` only). |
 | `scripts/` | Build scripts: `build-tokens.mjs`, and `build-customisation.mjs` for the customisation tables. |
 | `.storybook/` | Storybook config; the toolbar switches density and context. |
 | `docs/` | Guides in Markdown (`getting-started.md`, `layout.md`) and the generated `customisation-tables.md`. `docs/storybook/*.mdx` show them in Storybook. |
