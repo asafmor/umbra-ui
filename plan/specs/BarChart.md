@@ -74,6 +74,7 @@ Shared by the four charts: `--umbra-chart-font`, `--umbra-chart-fg` (axis and la
 | `error` | node | — | When set, shown in place of the chart |
 | `onRetry` / `retryLabel` | function / string | — / "Retry" | Adds a retry button to the error state |
 | `pointsLabel` / `legendLabel` | string | "Data points" / "Legend" | Accessible names of the list of points and of the legend |
+| `height` | `fill`, `content`, number | `fill` | `fill` takes the height of the parent and falls back to the content's height where the parent has none (flowing content, a popover, a modal body, an accordion panel). `content` is always as tall as the content. A number is pixels. The content height of a chart is `--umbra-chart-content-height` (240px) for the plot, plus the legend. |
 
 ### 3. Parts
 
@@ -113,10 +114,14 @@ Bars share the plot evenly and get narrower with it. In a horizontal chart the c
 
 None.
 
+Resolved 2026-10-11:
+
+- **`height`**, shared with `DataTable` and `List` (`src/internal/height.ts`). The chart used to be zero pixels tall in a parent without a height. The plot now has a content size of its own (`contain-intrinsic-block-size`), which only counts where there is no height to fill, so the fallback needs no measuring. Token: `--umbra-chart-content-height`.
+
 Resolved 2026-10-10:
 
 - Drawn as SVG by the library; `d3-scale` and `d3-shape` only (`plan/decisions/03-charts.md`). Ships from `umbra-ui/charts`.
-- The chart measures its slot with a `ResizeObserver` (`src/charts/internal/useChartSize.ts`) and draws from that; it has no size props. Steps are decided from the slot's width and height together: the smaller one decides.
+- The chart measures its slot with a `ResizeObserver` (`src/charts/internal/useChartSize.ts`) and draws from that; its only size prop is `height` (2026-10-11), for a chart that has no slot height to fill. Steps are decided from the slot's width and height together: the smaller one decides.
 - Label widths are estimated from the font size, not measured, so a layout is computed in one pass. The estimate is on the wide side.
 - Not a layout child: a chart goes inside a `Card` or `Slot`, so it takes no `size` or `priority`.
 - The points are a `listbox` with `aria-activedescendant`: one tab stop, real option names, no roving DOM focus inside SVG.

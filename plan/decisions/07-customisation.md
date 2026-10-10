@@ -38,5 +38,6 @@ The same idea has the same name in every component. New components follow this l
 | Size | `size` is the share of the parent's space on a layout child, and the control size elsewhere. A layout child that also has a control size names it for the part: `tabSize`, `itemSize`. |
 | Colour by meaning | `tone`; a free colour is `color`. `variant` is the shape or look. |
 | Router link | `renderLink(props)` |
+| Height of a component that fills its slot | `height`: `fill` (default; the content's height where there is none to fill), `content`, or pixels. `DataTable`, `List`, the charts (`src/internal/height.ts`). |
 | Loading, empty, error | `loading`, `empty`, `error`, `onRetry`, `retryLabel` (`src/internal/dataState.tsx`) |
 

@@ -63,6 +63,7 @@ States: `loading`, empty, error, `loadingMore`; per row: hover, pressed, selecte
 | `stickyHeaders` | boolean | `true` | Group headers stick while their group scrolls |
 | `loading` / `empty` / `error` / `onRetry` / `retryLabel` | the shared data states (see `EmptyState.md`) | empty text "No items" | |
 | `skeletonRows` | number | 6 | |
+| `height` | `fill`, `content`, number | `fill` | `fill` takes the height of the parent and falls back to the content's height where the parent has none (flowing content, a popover, a modal body, an accordion panel). `content` is always as tall as the content. A number is pixels.  |
 | `onReachEnd` | function | — | The list was scrolled to its end |
 | `loadingMore` / `loadingMoreLabel` | boolean / string | `false` / "Loading more" | |
 | `aria-label` / `aria-labelledby` | string | — | Names the list; one is required |
@@ -100,6 +101,10 @@ States: `loading`, empty, error, `loadingMore`; per row: hover, pressed, selecte
 ## Open questions
 
 None.
+
+Resolved 2026-10-11:
+
+- **`height`**, shared with `DataTable` and the charts (`src/internal/height.ts`): the same values and the same fallback.
 
 Resolved 2026-10-10:
 

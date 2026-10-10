@@ -1004,3 +1004,83 @@ test.describe('tooltips and the actions menu', () => {
     await expect(group.getByText('Last action: archive p2')).toBeVisible();
   });
 });
+
+// `height`: the stories of "Layout/Content height" hold a table, a list and a chart side by side.
+const openHeight = async (page: Page, story: string) => {
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await page.goto(`/iframe.html?id=layout-content-height--${story}&viewMode=story`);
+  await page.locator('#storybook-root > *').first().waitFor();
+  await page.evaluate(() => document.fonts.ready);
+};
+/** The root's height, and how much of its content is scrolled out of view inside it. */
+const heightOf = (root: Locator) =>
+  root.evaluate((el) => {
+    const view = el.querySelector('[data-part="viewport"]');
+    return {
+      mode: el.getAttribute('data-height'),
+      height: Math.round(el.getBoundingClientRect().height),
+      hidden: view ? view.scrollHeight - view.clientHeight : 0,
+    };
+  });
+/** Opens the popover of the card the stack collapsed. */
+const openCollapsed = async (page: Page, title: string) => {
+  await page.locator('[data-collapsed="layout"]').getByRole('button', { name: title }).click();
+  return page.getByRole('dialog');
+};
+
+test.describe('height', () => {
+  const root = (scope: Page | Locator, name: string) =>
+    scope.locator(`[data-umbra="data-table"]:has([role="grid"][aria-label="${name}"])`);
+
+  test('with no height to fill a table is as tall as its rows; "content" and a number say so', async ({
+    page,
+  }) => {
+    await openHeight(page, 'flowing');
+    // In a flowing wrapper: the default falls back to the content, and the next table follows it.
+    const first = await heightOf(root(page, 'First table'));
+    const second = await heightOf(root(page, 'Second table'));
+    expect(first).toMatchObject({ mode: 'fill', hidden: 0 });
+    expect(second).toMatchObject({ mode: 'fill', hidden: 0 });
+    // A header and four or six rows of 26px.
+    expect(first.height).toBeGreaterThanOrEqual(4 * 26 + 26);
+    expect(second.height - first.height).toBe(2 * 26);
+    const [a, b] = [
+      (await root(page, 'First table').boundingBox())!,
+      (await root(page, 'Second table').boundingBox())!,
+    ];
+    expect(b.y).toBeGreaterThanOrEqual(a.y + a.height);
+
+    // In a body that has a height: explicit.
+    const content = await heightOf(root(page, 'Content table'));
+    expect(content).toMatchObject({ mode: 'content', hidden: 0 });
+    expect(content.height).toBe(first.height + 26);
+    const fixed = await heightOf(root(page, 'Fixed table'));
+    expect(fixed).toMatchObject({ mode: 'fixed', height: 120 });
+    expect(fixed.hidden).toBeGreaterThan(100);
+
+    // The default in a slot with a height still fills it and scrolls inside.
+    const filling = root(page, 'Filling table');
+    const body = (await card(page, 'The default still fills').locator('> [data-part="body"]').boundingBox())!;
+    expect((await heightOf(filling)).height).toBe(Math.round(body.height) - 16);
+    expect((await heightOf(filling)).hidden).toBe(0);
+    await page.setViewportSize({ width: 1280, height: 400 });
+    await expect.poll(async () => (await heightOf(filling)).hidden).toBeGreaterThan(100);
+  });
+
+  test('the popover of a collapsed card shows the whole table', async ({ page }) => {
+    await openHeight(page, 'collapsed-cards');
+    const dialog = await openCollapsed(page, 'Table');
+    await expect(dialog.getByRole('grid', { name: 'Collapsed table' }).locator('tbody > tr')).toHaveCount(8);
+    const table = await heightOf(root(dialog, 'Collapsed table'));
+    expect(table.height).toBeGreaterThanOrEqual(8 * 26 + 26);
+    expect(table.hidden).toBe(0);
+  });
+
+  test('a table in an accordion panel has its height', async ({ page }) => {
+    await openHeight(page, 'panel-and-modal');
+    await page.keyboard.press('Escape');
+    const table = await heightOf(root(page, 'Table in a panel'));
+    expect(table.height).toBeGreaterThanOrEqual(3 * 26 + 26);
+    expect(table.hidden).toBe(0);
+  });
+});

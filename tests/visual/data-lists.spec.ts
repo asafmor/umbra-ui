@@ -372,3 +372,50 @@ test.describe('List', () => {
     await expect(card(page, 'Part: loading-more row hidden').getByRole('status')).toHaveCount(0);
   });
 });
+
+// `height`: the stories of "Layout/Content height" hold a table, a list and a chart side by side.
+const openHeight = async (page: Page, story: string) => {
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await page.goto(`/iframe.html?id=layout-content-height--${story}&viewMode=story`);
+  await page.locator('#storybook-root > *').first().waitFor();
+  await page.evaluate(() => document.fonts.ready);
+};
+/** The root's height, and how much of its content is scrolled out of view inside it. */
+const heightOf = (root: Locator) =>
+  root.evaluate((el) => {
+    const view = el.querySelector('[data-part="viewport"]');
+    return {
+      mode: el.getAttribute('data-height'),
+      height: Math.round(el.getBoundingClientRect().height),
+      hidden: view ? view.scrollHeight - view.clientHeight : 0,
+    };
+  });
+/** Opens the popover of the card the stack collapsed. */
+const openCollapsed = async (page: Page, title: string) => {
+  await page.locator('[data-collapsed="layout"]').getByRole('button', { name: title }).click();
+  return page.getByRole('dialog');
+};
+
+test.describe('List height', () => {
+  const root = (scope: Page | Locator, name: string) =>
+    scope.locator(`[data-umbra="list"]:has([role="grid"][aria-label="${name}"])`);
+
+  test('with no height to fill a list is as tall as its rows; "content" says so', async ({ page }) => {
+    await openHeight(page, 'flowing');
+    const flowing = await heightOf(root(page, 'Flowing list'));
+    expect(flowing).toMatchObject({ mode: 'fill', hidden: 0 });
+    expect(flowing.height).toBeGreaterThan(3 * 30);
+    const content = await heightOf(root(page, 'Content list'));
+    expect(content).toMatchObject({ mode: 'content', hidden: 0, height: flowing.height });
+    await expect(root(page, 'Content list').getByRole('row')).toHaveCount(3);
+  });
+
+  test('the popover of a collapsed card shows the whole list', async ({ page }) => {
+    await openHeight(page, 'collapsed-cards');
+    const dialog = await openCollapsed(page, 'List');
+    await expect(dialog.getByRole('row')).toHaveCount(5);
+    const list = await heightOf(root(dialog, 'Collapsed list'));
+    expect(list.height).toBeGreaterThan(5 * 30);
+    expect(list.hidden).toBe(0);
+  });
+});

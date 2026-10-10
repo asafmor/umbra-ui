@@ -25,8 +25,17 @@
   --umbra-icon-button-size: calc(var(--row-h) - 2px);
 }
 
+/* `height="content"`, and what `fill` falls back to by itself in a parent without a height. */
+.root[data-height='content'] {
+  height: auto;
+}
+
+/*
+ * Starts from the height of the rows, which only counts where the table has no height to fill: with a
+ * height, the area grows or shrinks to it and scrolls inside.
+ */
 .scroll {
-  flex: 1 1 0;
+  flex: 1 1 auto;
 }
 
 /*
@@ -43,7 +52,7 @@
 }
 
 .state {
-  flex: 1 1 0;
+  flex: 1 1 auto;
   min-height: 0;
   display: flex;
   flex-direction: column;

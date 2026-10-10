@@ -477,16 +477,13 @@ export function OrdersScreen() {
             onPress={() => setHealth(health === 'late' ? null : 'late')}
           />
           <Card title="By stage" tone="neutral" priority={2} size={1.4} minHeight={192}>
-            {/* A chart fills its slot, and the popover of a collapsed card has no height to fill: this keeps it visible there. */}
-            <div style={{ display: 'flex', height: '100%', minHeight: 120 }}>
-              <DonutChart
-                label="Orders by stage"
-                data={byStage}
-                centerValue={rows.length}
-                centerLabel="orders"
-                legend={<Legend aria-label="Stages" orientation="vertical" items={byStage} />}
-              />
-            </div>
+            <DonutChart
+              label="Orders by stage"
+              data={byStage}
+              centerValue={rows.length}
+              centerLabel="orders"
+              legend={<Legend aria-label="Stages" orientation="vertical" items={byStage} />}
+            />
           </Card>
         </Stack>
       </Columns>

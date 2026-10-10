@@ -16,14 +16,12 @@ import {
   ProgressBar,
   SectionTitle,
   SegmentedFilter,
-  Slot,
   Stack,
   StatusIndicator,
   StatValue,
   Tag,
   TrendArrow,
   type DataTableColumn,
-  type SlotProps,
   type Status,
 } from '../../index';
 import {
@@ -180,17 +178,13 @@ const news: CSSProperties = {
   background: 'var(--umbra-context-card-tint-strong)',
 };
 
-/** A linked section title above content that fills the rest of the slot and scrolls inside it. */
-function Section({ title, onOpen, children, ...slot }: SlotProps & { title: string; onOpen: () => void }) {
-  return (
-    <Stack overflow="keep" gap={3} {...slot}>
-      <Slot size="content">
-        <SectionTitle onOpen={onOpen}>{title}</SectionTitle>
-      </Slot>
-      <Slot>{children}</Slot>
-    </Stack>
-  );
-}
+// The summary: two columns of flowing sections in one card body, which scrolls as a whole.
+const summaryColumns: CSSProperties = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+  gap: 'var(--umbra-space-6)',
+  alignItems: 'start',
+};
 
 function SummaryCard({ go }: { go: (place: Place) => void }) {
   const accent = useMemo(
@@ -204,73 +198,65 @@ function SummaryCard({ go }: { go: (place: Place) => void }) {
   );
   return (
     <Card aria-label="Summary" label="Summary" size={5}>
-      <Columns narrow="keep" gap={6} style={{ height: '100%' }}>
-        <Stack overflow="keep">
-          <Slot size="content">
-            <div style={flow}>
-              <SectionTitle onOpen={() => go('overview/reports')}>Updates</SectionTitle>
-              <div style={news}>
-                <Tag variant="outline">Operations</Tag>
-                <h4 style={{ margin: 0, font: 'var(--umbra-font-title)' }}>
-                  North region lands a new contract
-                </h4>
-                <span
-                  style={{ font: 'var(--umbra-font-label)', color: 'var(--umbra-color-base-text-secondary)' }}
-                >
-                  2d ago · Contracts
-                </span>
-              </div>
-              <KeyValueList
-                aria-label="More updates"
-                striped
-                items={updates.map((u) => ({ key: u.id, label: u.title, value: u.age }))}
+      <div style={summaryColumns}>
+        <div style={flow}>
+          <SectionTitle onOpen={() => go('overview/reports')}>Updates</SectionTitle>
+          <div style={news}>
+            <Tag variant="outline">Operations</Tag>
+            <h4 style={{ margin: 0, font: 'var(--umbra-font-title)' }}>North region lands a new contract</h4>
+            <span
+              style={{ font: 'var(--umbra-font-label)', color: 'var(--umbra-color-base-text-secondary)' }}
+            >
+              2d ago · Contracts
+            </span>
+          </div>
+          <KeyValueList
+            aria-label="More updates"
+            striped
+            items={updates.map((u) => ({ key: u.id, label: u.title, value: u.age }))}
+          />
+          <SectionTitle onOpen={() => go('overview/calendar')}>Delivery schedule</SectionTitle>
+          <DataTable
+            aria-label="Delivery schedule"
+            height="content"
+            data={deliveries}
+            getRowId={(d) => d.id}
+            columns={deliveryColumns}
+            striped
+          />
+        </div>
+        <div style={flow}>
+          <SectionTitle onOpen={() => go('overview/reports')}>Regional ranking</SectionTitle>
+          <DataTable
+            aria-label="Regional ranking"
+            height="content"
+            data={regions}
+            getRowId={(r) => r.id}
+            columns={regionColumns}
+            highlightedRowIds={[ownRegion]}
+            highlightLabel="Your region"
+            rowAccent={accent}
+            striped
+          />
+          <SectionTitle onOpen={() => go('people/teams')}>Top performers</SectionTitle>
+          <List aria-label="Top performers" height="content" striped itemSize="compact">
+            {performers.map((p) => (
+              <List.Item
+                key={p.id}
+                id={p.id}
+                leading={<Avatar size="sm" name={p.who} alt="" />}
+                title={p.label}
+                description={p.who}
+                meta={<b>{p.value}</b>}
               />
-            </div>
-          </Slot>
-          <Section title="Delivery schedule" onOpen={() => go('overview/calendar')}>
-            <DataTable
-              aria-label="Delivery schedule"
-              data={deliveries}
-              getRowId={(d) => d.id}
-              columns={deliveryColumns}
-              striped
-            />
-          </Section>
-        </Stack>
-        <Stack overflow="keep">
-          <Section size={2} title="Regional ranking" onOpen={() => go('overview/reports')}>
-            <DataTable
-              aria-label="Regional ranking"
-              data={regions}
-              getRowId={(r) => r.id}
-              columns={regionColumns}
-              highlightedRowIds={[ownRegion]}
-              highlightLabel="Your region"
-              rowAccent={accent}
-              striped
-            />
-          </Section>
-          <Section title="Top performers" onOpen={() => go('people/teams')}>
-            <List aria-label="Top performers" striped itemSize="compact">
-              {performers.map((p) => (
-                <List.Item
-                  key={p.id}
-                  id={p.id}
-                  leading={<Avatar size="sm" name={p.who} alt="" />}
-                  title={p.label}
-                  description={p.who}
-                  meta={<b>{p.value}</b>}
-                />
-              ))}
-            </List>
-          </Section>
-        </Stack>
-      </Columns>
+            ))}
+          </List>
+        </div>
+      </div>
     </Card>
   );
 }
 
-const chartBox: CSSProperties = { display: 'flex', height: '100%', minHeight: 120 };
 const slotStatus: Status[] = ['info', 'success', 'warning', 'neutral'];
 
 function WeekStrip() {
@@ -330,18 +316,15 @@ function StatusStack() {
           </Tag>
         }
       >
-        {/* A chart fills its slot, and the popover of a collapsed card has no height to fill: this keeps it visible there. */}
-        <div style={chartBox}>
-          <RadarChart
-            label="Insights"
-            axes={insightAxes.map((axis) => ({ id: axis, label: axis }))}
-            max={100}
-            series={[
-              { id: 'own', label: 'Region 5', values: insightValues.own },
-              { id: 'average', label: 'Average', values: insightValues.average },
-            ]}
-          />
-        </div>
+        <RadarChart
+          label="Insights"
+          axes={insightAxes.map((axis) => ({ id: axis, label: axis }))}
+          max={100}
+          series={[
+            { id: 'own', label: 'Region 5', values: insightValues.own },
+            { id: 'average', label: 'Average', values: insightValues.average },
+          ]}
+        />
       </Card>
       <Card title="Project budget" tone="neutral" priority={2}>
         <StatValue

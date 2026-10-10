@@ -15,6 +15,7 @@ import { GridList, GridListHeader, GridListItem, GridListSection } from 'react-a
 import { Skeleton } from '../basics/Skeleton';
 import { Checkbox, CheckboxSlotContext } from '../inputs/Checkbox';
 import { dataState, type DataStateProps } from '../internal/dataState';
+import { heightProps } from '../internal/height';
 import { ScrollArea } from '../layout/ScrollArea';
 import { cx, renderPart, type Part } from '../utils/parts';
 import { GroupHeader, type GroupHeaderProps } from './GroupHeader';
@@ -70,6 +71,13 @@ export interface ListRootProps extends DataStateProps {
   stickyHeaders?: boolean;
   /** Number of skeleton rows shown while `loading`. */
   skeletonRows?: number;
+  /**
+   * `fill` (default) takes the height of the parent, and falls back to the content's height in a parent
+   * that has none (flowing content, a popover, a modal body, an accordion panel). `content` is always
+   * as tall as the content. A number is a height in pixels.
+   */
+  height?: 'fill' | 'content' | number;
+
   /** Called when the list is scrolled to its end, for loading more. */
   onReachEnd?: () => void;
   /** Shows a skeleton row after the last row while more rows load. */
@@ -107,6 +115,7 @@ function Root({
   itemSize,
   stickyHeaders = true,
   skeletonRows = 6,
+  height,
   onReachEnd,
   loadingMore = false,
   loadingMoreLabel = 'Loading more',
@@ -189,9 +198,10 @@ function Root({
       data-striped={striped || undefined}
       data-numbered={numbered || undefined}
       data-loading={data.loading || undefined}
+      data-height={heightProps(height)['data-height']}
       aria-busy={data.loading || undefined}
       className={cx(styles.root, className)}
-      style={style}
+      style={{ ...heightProps(height).style, ...style }}
     >
       <ScrollArea onReachEnd={onReachEnd} label={ariaLabel} className={styles.scroll}>
         <ListContext value={list}>{content}</ListContext>

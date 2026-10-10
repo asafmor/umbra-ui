@@ -84,6 +84,7 @@ Every fill is opaque, mixed into the surface below (`--umbra-table-row-bg`, by d
 | `expandableHidden` | boolean | `false` | Each row can show its hidden columns under it |
 | `loading` / `empty` / `error` / `onRetry` / `retryLabel` | the shared data states | empty text "No rows" | |
 | `skeletonRows` | number | 8 | |
+| `height` | `fill`, `content`, number | `fill` | `fill` takes the height of the parent and falls back to the content's height where the parent has none (flowing content, a popover, a modal body, an accordion panel). `content` is always as tall as the content. A number is pixels. A content-sized table renders every row (no virtualisation) and its header scrolls away with the page around it. |
 | `loadingMore` / `loadingMoreLabel` / `onReachEnd` | boolean / string / function | | Incremental loading |
 | `virtualize` | see above | `auto` | |
 | `highlightChanges` | boolean or column ids | `false` | A changed value flashes once |
@@ -170,6 +171,10 @@ Virtualisation: only the rows in view (plus 8 on each side) are rendered, betwee
 ## Open questions
 
 None.
+
+Resolved 2026-10-11:
+
+- **`height`**, shared with `List` and the charts (`src/internal/height.ts`). The table used to be zero pixels tall in a parent without a height (flowing content in a card body, a popover, an accordion panel). The scrolling area now starts from the height of its rows (`flex: 1 1 auto`), which only counts where there is no height to fill; with one, it grows or shrinks to it and scrolls inside as before. Two tables can flow one after another in one scrolling card body.
 
 Resolved 2026-10-10:
 

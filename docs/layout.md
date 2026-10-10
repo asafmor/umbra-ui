@@ -127,6 +127,48 @@ Every card is a CSS size container, so content can respond to the card's own wid
 
 A card that takes the size of its content (`size="content"`, or collapsed) is a width-only container.
 
+## Tables, lists and charts where there is no height to fill
+
+`DataTable`, `List` and the charts fill the height of their slot and scroll or shrink inside it. Where the
+parent has no height of its own, they take the height of their content instead:
+
+- flowing content inside a card body, an accordion panel or a modal body;
+- the popover of a card the stack has collapsed.
+
+`height` makes the choice explicit, with the same values on all of them:
+
+| Value       | Meaning                                                                                |
+| ----------- | -------------------------------------------------------------------------------------- |
+| `"fill"`    | The default: the parent's height, or the content's height when the parent has none.    |
+| `"content"` | Always the content's height. A table or list shows every row; a chart's plot is 240px. |
+| a number    | That many pixels; the rows scroll inside.                                              |
+
+```tsx
+const deliveries = [
+  { id: 'd1', client: 'Client A', date: '03/09' },
+  { id: 'd2', client: 'Client B', date: '07/09' },
+];
+const perWeek = [{ id: 'orders', label: 'Orders', data: [12, 18, 15, 22].map((y, x) => ({ x, y })) }];
+
+<Card title="Summary">
+  <SectionTitle>Delivery schedule</SectionTitle>
+  <DataTable
+    aria-label="Delivery schedule"
+    height="content"
+    data={deliveries}
+    getRowId={(row) => row.id}
+    columns={[
+      { id: 'date', header: 'Date', accessor: 'date' },
+      { id: 'client', header: 'Client', accessor: 'client' },
+    ]}
+  />
+  <SectionTitle>Orders per week</SectionTitle>
+  <LineChart label="Orders per week" height={180} series={perWeek} />
+</Card>;
+```
+
+The card body scrolls as a whole. `--umbra-chart-content-height` changes the content height of the charts.
+
 ## Checking that the page does not scroll
 
 The rule is tested, not assumed. `npm run test:visual` opens every story at 1920 x 1080, 1280 x 720 and

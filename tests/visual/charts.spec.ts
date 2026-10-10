@@ -512,3 +512,55 @@ test.describe('RadarChart', () => {
     for (const label of await long.locator('[data-part="axis-labels"] text').all()) await inside(label, long);
   });
 });
+
+// `height`: the stories of "Layout/Content height" hold a table, a list and a chart side by side.
+const openHeight = async (page: Page, story: string) => {
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await page.goto(`/iframe.html?id=layout-content-height--${story}&viewMode=story`);
+  await page.locator('#storybook-root > *').first().waitFor();
+  await page.evaluate(() => document.fonts.ready);
+};
+/** Opens the popover of the card the stack collapsed. */
+const openCollapsed = async (page: Page, title: string) => {
+  await page.locator('[data-collapsed="layout"]').getByRole('button', { name: title }).click();
+  return page.getByRole('dialog');
+};
+
+test.describe('height', () => {
+  const plot = async (chart: Locator) =>
+    Math.round((await chart.locator('[data-part="plot"]').boundingBox())!.height);
+
+  test('with no height to fill a chart takes its content height; "content" says so', async ({ page }) => {
+    await openHeight(page, 'flowing');
+    const flowing = page.getByRole('figure', { name: 'Flowing chart' });
+    await flowing.scrollIntoViewIfNeeded();
+    await expect(flowing).toHaveAttribute('data-height', 'fill');
+    expect(await plot(flowing)).toBe(240);
+    await expect(marks(flowing).getByRole('option')).toHaveCount(6);
+    const content = page.getByRole('figure', { name: 'Content chart' });
+    await expect(content).toHaveAttribute('data-height', 'content');
+    expect(await plot(content)).toBe(240);
+    // The token sets the content height; a number sets the whole chart.
+    await content.evaluate((el) => el.style.setProperty('--umbra-chart-content-height', '100px'));
+    await expect.poll(() => plot(content)).toBe(100);
+  });
+
+  test('a chart shows in the popover of a collapsed card, an accordion panel and a modal', async ({
+    page,
+  }) => {
+    await openHeight(page, 'collapsed-cards');
+    const dialog = await openCollapsed(page, 'Chart');
+    const donut = dialog.getByRole('figure', { name: 'Orders by region' });
+    expect(await plot(donut)).toBe(240);
+    await expect(marks(donut).getByRole('option')).toHaveCount(4);
+
+    await openHeight(page, 'panel-and-modal');
+    const inModal = page.getByRole('dialog').getByRole('figure', { name: 'Chart in a modal' });
+    expect(await plot(inModal)).toBe(240);
+    await expect(marks(inModal).getByRole('option')).toHaveCount(4);
+    await page.keyboard.press('Escape');
+    const inPanel = page.getByRole('figure', { name: 'Chart in a panel' });
+    expect(await plot(inPanel)).toBe(240);
+    await expect(marks(inPanel).getByRole('option')).toHaveCount(6);
+  });
+});

@@ -33,6 +33,7 @@ import { GroupHeader } from '../data/GroupHeader';
 import { KeyValueList, type KeyValueItem } from '../data/KeyValue';
 import { Checkbox } from '../inputs/Checkbox';
 import { dataState, type DataStateProps } from '../internal/dataState';
+import { heightProps } from '../internal/height';
 import { ScrollArea } from '../layout/ScrollArea';
 import { Menu, type MenuEntry } from '../overlays/Menu';
 import tipStyles from '../overlays/Tooltip.module.css';
@@ -181,6 +182,12 @@ export interface DataTableRootProps extends BlockProps {
   headerRows?: number;
   /** A line under every row. */
   dividers?: boolean;
+  /**
+   * `fill` (default) takes the height of the parent, and falls back to the content's height in a parent
+   * that has none (flowing content, a popover, a modal body, an accordion panel). `content` is always
+   * as tall as the content. A number is a height in pixels.
+   */
+  height?: 'fill' | 'content' | number;
   /** Marks the table busy for assistive technology. */
   loading?: boolean;
   /** Shown below the header in place of the rows: an empty or error state. */
@@ -204,6 +211,7 @@ function Root({
   width,
   headerRows = 1,
   dividers = true,
+  height,
   loading = false,
   state,
   announcement,
@@ -263,9 +271,10 @@ function Root({
       data-umbra="data-table"
       data-dividers={dividers || undefined}
       data-loading={loading || undefined}
+      data-height={heightProps(height)['data-height']}
       aria-busy={loading || undefined}
       className={cx(styles.root, className)}
-      style={{ ['--head-rows' as string]: headerRows, ...style }}
+      style={{ ['--head-rows' as string]: headerRows, ...heightProps(height).style, ...style }}
     >
       {caption != null && (
         <div id={captionId} data-part="caption" className={showCaption ? styles.caption : srOnly}>
@@ -967,6 +976,13 @@ export interface DataTableProps<Row> extends DataStateProps {
 
   /** Number of skeleton rows shown while `loading`. */
   skeletonRows?: number;
+  /**
+   * `fill` (default) takes the height of the parent, and falls back to the content's height in a parent
+   * that has none (flowing content, a popover, a modal body, an accordion panel). `content` is always
+   * as tall as the content, and shows every row (no virtualisation). A number is a height in pixels.
+   */
+  height?: 'fill' | 'content' | number;
+
   /** Shows a skeleton row after the last row while more rows load. */
   loadingMore?: boolean;
   /** What assistive technology hears while more rows load. */
@@ -1056,6 +1072,7 @@ export function DataTable<Row>({
   loadingMoreLabel = 'Loading more',
   onReachEnd,
   virtualize = 'auto',
+  height,
   highlightChanges = false,
   increasedLabel = 'increased',
   decreasedLabel = 'decreased',
@@ -1275,8 +1292,10 @@ export function DataTable<Row>({
   }, [model, groupedModel, groups, collapsibleGroups, collapsed, showExpander, expanded, striped]);
 
   // --- Virtualisation: only the rows in view are rendered ------------------------------------------
+  // A table as tall as its content shows every row: there is no window to cut them to.
   const virtual =
     !loading &&
+    height !== 'content' &&
     (virtualize === true ||
       (virtualize === 'auto' && data.length > VIRTUAL_FROM && !columns.some((column) => column.wrap)));
   const offsets = useMemo(
@@ -1778,6 +1797,7 @@ export function DataTable<Row>({
         width={totalWidth}
         headerRows={headKeys.length}
         dividers={dividers}
+        height={height}
         loading={loading}
         state={state || undefined}
         announcement={loadingMore ? loadingMoreLabel : undefined}

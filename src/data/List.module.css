@@ -8,8 +8,14 @@
   counter-reset: umbra-list-item;
 }
 
+/* `height="content"`, and what `fill` falls back to by itself in a parent without a height. */
+.root[data-height='content'] {
+  height: auto;
+}
+
+/* Starts from the height of the rows, which only counts where the list has no height to fill. */
 .scroll {
-  flex: 1 1 0;
+  flex: 1 1 auto;
 }
 
 .grid {

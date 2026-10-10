@@ -13,6 +13,7 @@ import {
 import { Button } from '../../basics/Button';
 import { Skeleton } from '../../basics/Skeleton';
 import { Legend, type LegendProps } from '../../data/Legend';
+import { heightProps } from '../../internal/height';
 import { SeriesMarker, type SeriesMarkerKind } from '../../internal/SeriesMarker';
 import { cx, renderPart, type Part } from '../../utils/parts';
 import styles from '../Chart.module.css';
@@ -94,6 +95,12 @@ export interface ChartCommonProps {
   pointsLabel?: string;
   /** Accessible name of the legend. */
   legendLabel?: string;
+  /**
+   * `fill` (default) takes the height of the parent, and falls back to the content's height in a parent
+   * that has none (flowing content, a popover, a modal body, an accordion panel). `content` is always
+   * as tall as the content: the plot is `--umbra-chart-content-height` (240px) high. A number is a height in pixels.
+   */
+  height?: 'fill' | 'content' | number;
   className?: string;
   style?: CSSProperties;
 }
@@ -220,6 +227,7 @@ export function Frame<M extends FrameModel>({
   retryLabel = 'Retry',
   pointsLabel = 'Data points',
   legendLabel = 'Legend',
+  height,
   className,
   style,
 }: FrameProps<M>) {
@@ -367,12 +375,13 @@ export function Frame<M extends FrameModel>({
       data-state={state ?? undefined}
       data-legend={showLegend ? placement : undefined}
       data-pressable={onPointPress ? '' : undefined}
+      data-height={heightProps(height)['data-height']}
       aria-label={label}
       aria-labelledby={labelledBy}
       aria-describedby={descriptionId}
       aria-busy={loading || undefined}
       className={cx(styles.root, className)}
-      style={style}
+      style={{ ...heightProps(height).style, ...style }}
     >
       {showLegend && (placement === 'top' || placement === 'start') && (
         <div className={styles.legend} data-part="legend">
