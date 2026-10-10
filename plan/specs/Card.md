@@ -39,7 +39,7 @@ States: `collapsed`, `loading`, `empty`, `error`, `focus-within`.
 
 ### 1. Tokens
 
-`--umbra-card-bg`, `--umbra-card-border`, `--umbra-card-radius`, `--umbra-card-padding`, `--umbra-card-header-bg`. Padding follows the density level.
+`--umbra-card-bg`, `--umbra-card-border`, `--umbra-card-radius`, `--umbra-card-padding`, `--umbra-card-header-bg`, `--umbra-card-min-height`. Padding and minimum height follow the density level.
 
 ### 2. Props
 
@@ -53,7 +53,7 @@ States: `collapsed`, `loading`, `empty`, `error`, `focus-within`.
 | `headerStyle` | see above | `plain` | |
 | `padding` | see above | `default` | |
 | `size` | number \| `"content"` | `1` | Share of the parent's space (see `layout.md`) |
-| `priority` | number | source order | Which cards collapse first when space runs out |
+| `priority` | number | `0` | Which cards collapse first when space runs out. Higher stays open longer; cards with the same priority collapse from the end of the source order. |
 | `minHeight` | number | per density | Below this the parent may collapse the card |
 | `collapsible` | boolean | `false` | Lets the end user collapse it |
 | `collapsed` / `defaultCollapsed` / `onCollapsedChange` | boolean / boolean / function | — | Controlled or uncontrolled collapse |
@@ -61,10 +61,13 @@ States: `collapsed`, `loading`, `empty`, `error`, `focus-within`.
 | `empty` | node | — | Shown in place of the body when set |
 | `error` | node | — | Shown in place of the body when set |
 | `href` / `onOpen` | string / function | — | Makes the title a link (source: underlined pink titles) |
+| `headingLevel` | 2–6 | 2 | Heading level of the title |
+| `aria-label` | string | — | Names a card that has no title |
+| `moreLabel` / `collapseLabel` / `expandLabel` | string | English text | Accessible names of the overflow menu, the caret, and a collapsed header |
 
 ### 3. Parts
 
-`header`, `title`, `actions`, `toolbar`, `body`, `footer`, `skeleton`. Each accepts a node (replace), `null` (hide) or a function receiving the default part's props.
+`header`, `title`, `actions`, `toolbar`, `body`, `footer`, `skeleton`. Each accepts a node (replace), `null` (hide) or a function receiving the default part's props. `toolbar` and `footer` are empty by default; fill them with the blocks: `parts={{ footer: <Card.Footer>…</Card.Footer> }}`.
 
 ### 4. Blocks
 
@@ -76,7 +79,7 @@ States: `collapsed`, `loading`, `empty`, `error`, `focus-within`.
 |---|---|---|
 | 1 | Header narrower than its content | `subtitle` hides, then `actions` move into an overflow menu; `title` truncates last |
 | 2 | Body taller than the slot | Body scrolls inside the card |
-| 3 | Slot shorter than `minHeight` | The parent `Stack` collapses the card to its header; clicking the header opens the body in a `Popover` anchored to it. A layout-collapsed card shows a small "expand" hint icon in its header, so it looks different from a user-collapsed card (which shows the caret and expands in place). |
+| 3 | The cards of a `Stack` cannot all have their `minHeight` | While they all fit, each open card is held at its `minHeight` or more. When they do not, the parent `Stack` collapses the card to its header; clicking the header opens the body in a `Popover` anchored to it. A layout-collapsed card shows a small "expand" hint icon in its header, so it looks different from a user-collapsed card (which shows the caret and expands in place). |
 
 ## Interaction and accessibility
 
@@ -84,6 +87,8 @@ States: `collapsed`, `loading`, `empty`, `error`, `focus-within`.
 - The collapse caret is a button with `aria-expanded`; `Enter` and `Space` toggle it.
 - A card collapsed by the layout (step 3) opens its popover with `Enter`; `Escape` closes it and returns focus to the header.
 - Loading sets `aria-busy`.
+- The popover of a layout-collapsed card repeats the card's `actions` above its content, because the collapsed header is a single button.
+- Collapsing with the caret is not size-animated yet: the caret rotates (180ms) and the layout changes at once.
 
 ## Open questions
 

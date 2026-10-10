@@ -4,7 +4,7 @@
 
 ## Purpose
 
-The title row of a `Card`: what the card is, and the controls that act on the whole card. It is the `Card.Header` block, specified separately because it has its own shrink rules and is what remains when a card collapses.
+The title row of a `Card`: what the card is, and the controls that act on the whole card. It is the `Card.Header` block, specified separately because it has its own shrink rules and is what remains when a card collapses. There is no separate `CardHeader` export.
 
 ## Not for
 
@@ -41,7 +41,7 @@ States: collapsed by user (caret), collapsed by layout (expand hint; the whole h
 
 ### 2. Props
 
-Set through `Card` (`title`, `subtitle`, `icon`, `actions`, `headerStyle`). As a block it takes the same props plus `bandColor`.
+Set through `Card` (`title`, `subtitle`, `icon`, `actions`, `headerStyle`). As a block it takes the same props plus `bandColor`, `moreLabel` and `href` / `onOpen`. Given children, it renders them in place of the built-in parts and keeps the `toggle`.
 
 ### 3. Parts
 

@@ -52,4 +52,5 @@ Target: WCAG 2.2 AA. This covers text and non-text contrast on every context tin
 
 - Default key bindings the library itself reserves (palette open, shortcuts sheet, history back / forward).
 - Exact skeleton shapes per component.
+- Size animation for a card collapsed with its caret. Today the caret rotates and the layout changes at once.
 - The focus ring colour value, once the final palette is set.

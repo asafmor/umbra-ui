@@ -1,0 +1,77 @@
+.root {
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-space-3);
+  min-width: 0;
+  overflow: hidden;
+  margin-bottom: var(--umbra-space-3);
+  color: var(--umbra-section-title-color, var(--umbra-color-base-text-primary));
+}
+
+/* The title keeps its width until the actions have moved into the overflow menu, then it truncates. */
+.title {
+  flex: none;
+  margin: 0;
+  font: var(--umbra-section-title-font, 700 16px/1.25 var(--umbra-font-family-heading));
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.root[data-shrunk] > .title {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.root[data-variant='link'] > .title,
+.root[data-variant='rule'] > .title {
+  font: var(--umbra-section-title-font, var(--umbra-font-label));
+  font-weight: 700;
+  text-transform: none;
+}
+
+.root[data-variant='link'] {
+  color: var(--umbra-section-link-color, var(--umbra-color-fixed-accent-text));
+}
+
+.root[data-variant='link'] > .title {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.root[data-variant='rule'] {
+  padding-bottom: var(--umbra-space-2);
+  border-bottom: var(--umbra-border-width) solid
+    var(--umbra-section-rule-color, var(--umbra-color-base-border-strong));
+}
+
+.root[data-variant='rule'] > .title {
+  font: var(--umbra-section-title-font, var(--umbra-font-body));
+  font-weight: 700;
+}
+
+.link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: inherit;
+  cursor: pointer;
+}
+
+.count {
+  flex: none;
+  font: var(--umbra-font-label);
+  color: var(--umbra-color-base-text-secondary);
+}
+
+.actions {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-space-2);
+  margin-inline-start: auto;
+  color: var(--umbra-color-base-text-primary);
+}

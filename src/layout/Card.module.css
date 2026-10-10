@@ -1,0 +1,242 @@
+.root {
+  --bg: var(--umbra-card-bg, var(--umbra-context-card-tint));
+  --border: var(--umbra-card-border, var(--umbra-color-base-border-subtle));
+  --pad: var(--umbra-card-padding, var(--umbra-density-card-padding));
+  /* Read by the parent Stack, which holds the card to it only while all its cards fit. */
+  --umbra-slot-min-height: var(--umbra-card-min-height, var(--umbra-density-card-min-height));
+  --umbra-scroll-fade-color: var(--bg);
+
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: var(--umbra-border-width) solid var(--border);
+  border-radius: var(--umbra-card-radius, var(--umbra-radius-card));
+  background: var(--bg);
+  box-shadow: var(--umbra-elevation-card);
+  /* Every slot has a definite size, so content can use container queries on width and height. */
+  container-type: size;
+}
+
+.root[data-size='content'],
+.root[data-collapsed] {
+  flex: 0 0 auto;
+  container-type: inline-size;
+}
+
+.root[hidden] {
+  display: none;
+}
+
+.root[data-tone='tinted'] {
+  --bg: var(--umbra-card-bg, var(--umbra-context-card-tint-strong));
+  --border: var(
+    --umbra-card-border,
+    color-mix(in oklab, var(--umbra-context) 30%, var(--umbra-color-base-border-subtle))
+  );
+}
+
+.root[data-tone='neutral'] {
+  --bg: var(--umbra-card-bg, var(--umbra-color-base-surface-neutral));
+  --border: var(--umbra-card-border, var(--umbra-color-base-border-neutral));
+}
+
+.root:has(:focus-visible) {
+  border-color: var(--umbra-color-base-border-strong);
+}
+
+.header {
+  position: relative;
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-space-3);
+  min-height: var(--umbra-card-header-height, auto);
+  padding: var(--pad) var(--pad) var(--umbra-space-3);
+  overflow: hidden;
+  background: var(--umbra-card-header-bg, transparent);
+  color: var(--umbra-card-header-fg, inherit);
+}
+
+.header[data-header-style='band'] {
+  padding-block: var(--umbra-space-3);
+  background: var(--umbra-card-header-bg, var(--umbra-color-brand));
+  color: var(--umbra-card-header-fg, var(--umbra-color-on-brand, #fff));
+}
+
+.root[data-collapsed] > .header {
+  padding-bottom: var(--pad);
+}
+
+.root[data-collapsed] > .header[data-header-style='band'] {
+  padding-bottom: var(--umbra-space-3);
+}
+
+/* Title and subtitle keep their width until the earlier shrink steps are used up; then the title truncates. */
+.titles {
+  flex: none;
+  min-width: 0;
+}
+
+.header[data-truncate] > .titles {
+  flex: 0 1 auto;
+}
+
+.title {
+  margin: 0;
+  font: var(--umbra-card-title-font, var(--umbra-font-card-title));
+  text-transform: var(--umbra-font-card-title-transform);
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.titleLink,
+.headerButton {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-transform: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+}
+
+.titleLink {
+  color: var(--umbra-color-fixed-accent-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* The button of a layout-collapsed card covers the whole header. */
+.headerButton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+.headerButton:focus-visible {
+  outline: none;
+}
+
+.headerButton:focus-visible::after {
+  outline: var(--umbra-state-focus-ring-width) solid var(--umbra-color-fixed-focus-ring);
+  outline-offset: -2px;
+  border-radius: var(--umbra-card-radius, var(--umbra-radius-card));
+}
+
+.root[data-collapsed='layout'] > .header:hover {
+  background: color-mix(in oklab, currentColor 6%, var(--umbra-card-header-bg, transparent));
+}
+
+.subtitle {
+  font: var(--umbra-font-label);
+  color: var(--umbra-color-base-text-secondary);
+  white-space: nowrap;
+}
+
+.header[data-header-style='band'] .subtitle {
+  color: inherit;
+  opacity: 0.8;
+}
+
+.actions {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-space-2);
+  margin-inline-start: auto;
+}
+
+/* The toggle never hides. */
+.toggle {
+  flex: none;
+  display: flex;
+  align-items: center;
+  margin-inline-start: auto;
+  color: var(--umbra-color-base-text-secondary);
+}
+
+.toggle:empty {
+  display: none;
+}
+
+.actions + .toggle {
+  margin-inline-start: 0;
+}
+
+.caret > * {
+  transition: rotate var(--umbra-motion-duration-base) var(--umbra-motion-easing-enter);
+}
+
+.root[data-collapsed='user'] .caret > * {
+  rotate: -90deg;
+}
+
+.toolbar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-space-3);
+  min-width: 0;
+  padding: 0 var(--pad) var(--umbra-space-4);
+}
+
+.toolbar:first-child {
+  padding-top: var(--pad);
+}
+
+.body > [data-part='viewport'] {
+  padding: 0 var(--pad) var(--pad);
+}
+
+.body:first-child > [data-part='viewport'] {
+  padding-top: var(--pad);
+}
+
+.body[data-padding='none'] > [data-part='viewport'] {
+  padding: 0;
+}
+
+.footer {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-space-3);
+  padding: var(--umbra-space-3) var(--pad);
+  border-top: var(--umbra-border-width) solid var(--border);
+}
+
+.state {
+  height: 100%;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: var(--umbra-space-3);
+  text-align: center;
+  color: var(--umbra-color-base-text-secondary);
+}
+
+/* The popover that shows the content of a card the layout has collapsed. */
+.popover {
+  --pad: var(--umbra-card-padding, var(--umbra-density-card-padding));
+  --border: var(--umbra-color-base-border-strong);
+  --umbra-scroll-fade-color: var(--umbra-color-base-surface2);
+  min-width: 240px;
+}
+
+.popover > .body {
+  flex: 0 1 auto;
+}
+
+.popoverActions {
+  flex: none;
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--umbra-space-2);
+  padding: var(--umbra-space-3) var(--pad) 0;
+}

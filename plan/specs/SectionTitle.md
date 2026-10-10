@@ -49,6 +49,7 @@ The source uses four styles: condensed uppercase (1, "MESSAGES"), pink underline
 | `href` / `onOpen` | string / function | — | Makes it a link |
 | `count` | number | — | |
 | `actions` | node | — | |
+| `moreLabel` | string | "More actions" | Accessible name of the overflow menu button |
 
 ### 3. Parts
 
