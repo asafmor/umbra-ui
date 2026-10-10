@@ -26,7 +26,7 @@ Nearly every screenshot: condensed uppercase items with a caret (1, 14); the act
 
 ## Variants and states
 
-Item states: default, hover, active (current section), open (menu shown), focus, disabled.
+Item states: default, hover, active (current section), open (menu shown), focus, disabled. A disabled item is a button marked `aria-disabled`: it never navigates and does not respond to hover, but it keeps its place in the arrow-key order.
 
 ## Customisation
 

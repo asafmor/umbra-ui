@@ -65,7 +65,7 @@ On every child (all umbra-ui layout-aware components accept these; wrap anything
 
 | Component | Trigger | Result |
 |---|---|---|
-| `Stack` | Sum of the children's `minHeight` (plus gaps) exceeds its height | Lowest-priority cards collapse to their header until the rest fit. Only cards with a header can collapse. If even that is not enough, the minimums are dropped and everything shrinks. |
+| `Stack` | Sum of the children's `minHeight` (plus gaps) exceeds its height | Lowest-priority cards collapse to their header until the rest fit. Only cards with a header can collapse. A collapsed card is exactly as tall as its header and the open cards share the rest. If even that is not enough, the minimums are dropped and everything shrinks, collapsed headers too. |
 | `Columns` | Window below the minimum (`data-narrow` on the shell) | One child at a time, with tabs |
 | both | Otherwise | Children shrink in proportion to `size`; each child applies its own rules |
 

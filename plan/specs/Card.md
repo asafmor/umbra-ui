@@ -87,6 +87,8 @@ States: `collapsed`, `loading`, `empty`, `error`, `focus-within`.
 - The collapse caret is a button with `aria-expanded`; `Enter` and `Space` toggle it.
 - A card collapsed by the layout (step 3) opens its popover with `Enter`; `Escape` closes it and returns focus to the header.
 - Loading sets `aria-busy`.
+- The popover closes by itself when the layout opens the card again, or when the window enters or leaves tab mode.
+- A card starts a new layout context: a `Slot`, `Stack` or `Columns` inside it belongs to the card, not to the layout around it.
 - The popover of a layout-collapsed card repeats the card's `actions` above its content, because the collapsed header is a single button.
 - Collapsing with the caret is not size-animated yet: the caret rotates (180ms) and the layout changes at once.
 
