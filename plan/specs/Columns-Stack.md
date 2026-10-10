@@ -38,7 +38,8 @@ On `Columns` and `Stack`:
 
 | Prop | Type | Default | Purpose |
 |---|---|---|---|
-| `gap` | space token | density | Overrides the gap |
+| `gap` | step of the space scale, `0`–`9` | density | Overrides the gap |
+| `tabsLabel` (`Columns`) | string | "Columns" | Accessible name of the tab strip |
 | `narrow` (`Columns`) | see above | `tabs` | |
 | `overflow` (`Stack`) | see above | `collapse` | |
 
@@ -47,9 +48,10 @@ On every child (all umbra-ui layout-aware components accept these; wrap anything
 | Prop | Type | Default | Purpose |
 |---|---|---|---|
 | `size` | number \| `"content"` | `1` | Weight of the share, or hug the content |
-| `priority` | number | source order, first is highest | Which child gives way first |
-| `minWidth` / `minHeight` | number | per component and density | Below this, the parent applies its shrink rule |
-| `label` | string | the child's title | Tab label when `Columns` is in tab mode |
+| `priority` | number | `0` | Which child gives way first. Higher stays longer; equal priorities give way from the end of the source order. |
+| `minHeight` | number | per component and density | The height the child needs. A `Stack` holds its open children at it while they all fit, and collapses cards when they do not. |
+| `minWidth` | number | — | Reserved. `Columns` has no rule that uses it in Milestone 0, so it has no effect. |
+| `label` | string | the child's title, when it is text | Tab label when `Columns` is in tab mode. A child without one gets its number and a development warning. |
 
 ### 3. Parts
 
@@ -63,7 +65,7 @@ On every child (all umbra-ui layout-aware components accept these; wrap anything
 
 | Component | Trigger | Result |
 |---|---|---|
-| `Stack` | Sum of the children's `minHeight` exceeds its height | Lowest-priority cards collapse to their header until the rest fit |
+| `Stack` | Sum of the children's `minHeight` (plus gaps) exceeds its height | Lowest-priority cards collapse to their header until the rest fit. Only cards with a header can collapse. If even that is not enough, the minimums are dropped and everything shrinks. |
 | `Columns` | Window below the minimum (`data-narrow` on the shell) | One child at a time, with tabs |
 | both | Otherwise | Children shrink in proportion to `size`; each child applies its own rules |
 
@@ -71,6 +73,7 @@ On every child (all umbra-ui layout-aware components accept these; wrap anything
 
 - In tab mode, `Columns` follows the tabs pattern: one tab stop, arrow keys, each column a `tabpanel`.
 - DOM order always equals visual order.
+- Children are found through React context, not by direct parentage, so a child may be wrapped (for example in `UmbraScope`).
 
 ## Open questions
 

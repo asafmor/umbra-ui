@@ -35,3 +35,8 @@
 [data-umbra-reduced-motion='never'] {
   --umbra-motion-scale: 1;
 }
+
+/* A layout child's minimum height is its own; it is not inherited from the layout around it. */
+:where([data-umbra-slot]) {
+  --umbra-slot-min-height: 0px;
+}

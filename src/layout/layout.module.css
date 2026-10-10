@@ -1,0 +1,77 @@
+/* Sizing rule 5 (plan/layout.md): a layout child can always shrink. `size` sets flex-grow inline. */
+.slot {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+}
+
+.slot[data-size='content'] {
+  flex: 0 0 auto;
+}
+
+.slot[hidden] {
+  display: none;
+}
+
+.columns,
+.stack {
+  display: flex;
+  gap: var(--umbra-layout-gap, var(--umbra-density-gap));
+}
+
+.stack,
+.columns[data-tab-mode] {
+  flex-direction: column;
+}
+
+.tabs {
+  flex: none;
+  display: flex;
+  gap: var(--umbra-space-2);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.tab {
+  flex: none;
+  height: var(--umbra-density-control-height);
+  padding: 0 var(--umbra-space-4);
+  border: var(--umbra-border-width) solid var(--umbra-color-base-border-strong);
+  border-radius: var(--umbra-radius-control);
+  background: var(--umbra-color-base-surface1);
+  color: var(--umbra-color-base-text-primary);
+  font: var(--umbra-font-label);
+  cursor: pointer;
+  transition: background-color var(--umbra-motion-duration-fast);
+}
+
+.tab:hover {
+  background: var(--umbra-color-base-surface2);
+}
+
+.tab[aria-selected='true'] {
+  background: var(--umbra-color-fixed-selected);
+  border-color: var(--umbra-color-fixed-selected);
+  color: var(--umbra-color-fixed-on-selected);
+}
+
+/* A Slot's single child fills it; the slot is a size container for the child's container queries. */
+.fill {
+  display: flex;
+  container-type: size;
+}
+
+.fill[data-size='content'] {
+  container-type: normal;
+}
+
+.fill > * {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* While the open children of a Stack all fit, each is held at its minimum height or more. */
+[data-umbra-slot][data-keep-min]:not([data-collapsed], [data-size='content']) {
+  min-height: var(--umbra-slot-min-height);
+}
