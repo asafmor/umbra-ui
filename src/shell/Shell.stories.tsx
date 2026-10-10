@@ -34,13 +34,13 @@ const sections: NavItem[] = [
   { id: 'people', label: 'People', items: [{ id: 'teams', label: 'Teams', href: '#teams' }] },
   { id: 'finance', label: 'Finance', href: '#finance', disabled: true },
 ];
-const pages: NavItem[] = ['Summary', 'Inbox', 'Calendar', 'Reports', 'Data hub'].map((label) => ({
+const pages: NavItem[] = ['Summary', 'Inbox', 'Calendar', 'Reports', 'Insights'].map((label) => ({
   id: label.toLowerCase(),
   label,
   href: `#${label.toLowerCase()}`,
 }));
 
-function Bars({ brand }: { brand?: string }) {
+function Bars({ brand, nav = true }: { brand?: string; nav?: boolean }) {
   const [section, setSection] = useState('overview');
   const [page, setPage] = useState('summary');
   return (
@@ -49,7 +49,7 @@ function Bars({ brand }: { brand?: string }) {
         brand={brand}
         logo="U"
         history
-        nav={<PrimaryNav items={sections} value={section} onChange={setSection} />}
+        nav={nav && <PrimaryNav items={sections} value={section} onChange={setSection} />}
         onSearch={() => {}}
         actions={
           <>
@@ -108,14 +108,14 @@ export const FullScreen: Story = {
             <Card title="Next review" tone="neutral" priority={2}>
               <Value label="Site" value="North depot" />
             </Card>
-            <Card title="Data hub" tone="neutral" size={1.4}>
+            <Card title="Insights" tone="neutral" size={1.4}>
               <Rows count={4} prefix="Measure" />
             </Card>
             <Card title="Project budget" tone="neutral" priority={1}>
-              <Value label="Available" value="80.12M" />
+              <Value label="Available" value="64.0M" />
             </Card>
             <Card title="Payroll budget" tone="neutral">
-              <Value label="Available" value="275K" />
+              <Value label="Available" value="410K" />
             </Card>
             <Card title="This week" tone="neutral">
               <Rows count={3} prefix="Day" />
@@ -152,6 +152,20 @@ export const BarsShrink: Story = {
       {[960, 820, 680, 520, 400].map((width) => (
         <div key={width} style={{ width }}>
           <Bars />
+        </div>
+      ))}
+    </div>
+  ),
+};
+
+/** A bar without a nav shrinks the same way: context, then actions, then the primary action. */
+export const WithoutNav: Story = {
+  parameters: { frame: 'padded' },
+  render: () => (
+    <div style={{ display: 'grid', gap: 16 }}>
+      {[720, 480, 360].map((width) => (
+        <div key={width} style={{ width }}>
+          <Bars nav={false} />
         </div>
       ))}
     </div>

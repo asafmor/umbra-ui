@@ -13,6 +13,9 @@
   display: flex;
   align-items: center;
   overflow: hidden;
+  /* Room for the focus ring of the first and last item, which the clipping would cut. */
+  padding-inline: var(--umbra-space-2);
+  margin-inline: calc(-1 * var(--umbra-space-2));
 }
 
 .primary .list {
@@ -59,16 +62,16 @@
   color: var(--umbra-color-base-text-secondary);
 }
 
-.link:hover,
-.caret:hover,
+.link:not([aria-disabled]):hover,
+.caret:not([aria-disabled]):hover,
 .item[data-active] > .link,
 .item[data-open] > .link,
 .item[data-open] > .caret {
   opacity: 1;
 }
 
-.sub .link:hover,
-.sub .caret:hover,
+.sub .link:not([aria-disabled]):hover,
+.sub .caret:not([aria-disabled]):hover,
 .sub .item[data-active] > .link,
 .sub .item[data-open] > .link {
   color: var(--umbra-color-base-text-primary);
@@ -77,7 +80,7 @@
 .link:focus-visible,
 .caret:focus-visible {
   outline: var(--umbra-state-focus-ring-width) solid var(--umbra-color-fixed-focus-ring);
-  outline-offset: 2px;
+  outline-offset: var(--umbra-focus-offset, 2px);
   border-radius: var(--umbra-radius-control);
 }
 
@@ -85,8 +88,10 @@
   opacity: var(--umbra-state-disabled-opacity);
 }
 
+/* Disabled is 40% of full strength, not of the dimmed resting state. */
 .item[data-disabled] :is(.link, .caret) {
   cursor: default;
+  opacity: 1;
 }
 
 .item[data-open] :is(.link, .caret) > :last-child:not(.label) {

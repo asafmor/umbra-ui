@@ -20,7 +20,7 @@ import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './Card.module.css';
 import { ScrollArea, type ScrollAreaProps } from './ScrollArea';
 import { MoreButton } from './SectionTitle';
-import { useSlot, type SlotProps } from './useSlot';
+import { LayoutProvider, NarrowContext, useSlot, type SlotProps } from './useSlot';
 
 interface CardContextValue {
   titleId: string;
@@ -102,9 +102,14 @@ function Root({
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [width, setWidth] = useState(0);
 
-  // Collapsed, the card is as tall as its header plus its own borders.
-  const headerHeight = (element: HTMLElement) =>
-    header.current ? header.current.offsetHeight + element.offsetHeight - element.clientHeight : null;
+  // Collapsed, the card is as tall as its header plus its own borders. An open plain header has less
+  // padding below than above; collapsed, the two are equal, so the difference is added while open.
+  const headerHeight = (element: HTMLElement) => {
+    if (!header.current) return null;
+    const { paddingTop, paddingBottom } = getComputedStyle(header.current);
+    const grows = Math.max(0, parseFloat(paddingTop) - parseFloat(paddingBottom)) || 0;
+    return header.current.offsetHeight + grows + element.offsetHeight - element.clientHeight;
+  };
   const {
     ref,
     props,
@@ -117,6 +122,12 @@ function Root({
   useLayoutEffect(() => changed?.(), [changed, userCollapsed]);
 
   const collapsedBy = userCollapsed ? 'user' : layoutCollapsed ? 'layout' : null;
+  // The popover belongs to the layout-collapsed state: it closes when the card opens again or is hidden
+  // behind a tab (entering or leaving tab mode), so it cannot come back by itself or stay without its anchor.
+  const narrow = useContext(NarrowContext);
+  const [wasNarrow, setWasNarrow] = useState(narrow);
+  if (narrow !== wasNarrow) setWasNarrow(narrow);
+  if (popoverOpen && (collapsedBy !== 'layout' || narrow !== wasNarrow)) setPopoverOpen(false);
 
   useEscapeToClose(
     popoverOpen,
@@ -176,9 +187,12 @@ function Root({
         data-collapsed={collapsedBy ?? undefined}
         data-loading={loading || undefined}
         className={cx(styles.root, className)}
-        style={{ ...props.style, ...style }}
+        style={{ ...props.style, ...(collapsedBy && { flexGrow: 0 }), ...style }}
       >
-        <CardContext value={card}>{children}</CardContext>
+        {/* Layout children inside the card belong to the card, not to the Stack or Columns around it. */}
+        <LayoutProvider value={null}>
+          <CardContext value={card}>{children}</CardContext>
+        </LayoutProvider>
         {collapsedBy === 'layout' && (
           <Popover
             label={expandLabel}
@@ -188,7 +202,9 @@ function Root({
             className={styles.popover}
             style={{ width }}
           >
-            <CardContext value={inPopover}>{children}</CardContext>
+            <LayoutProvider value={null}>
+              <CardContext value={inPopover}>{children}</CardContext>
+            </LayoutProvider>
           </Popover>
         )}
       </section>
@@ -333,7 +349,8 @@ function Header({
     >
       {children ?? (
         <>
-          {icon && renderPart(parts?.icon, { children: icon }, (p) => <IconSlot>{p.children}</IconSlot>)}
+          {icon &&
+            renderPart(parts?.icon, { children: icon }, (p) => <IconSlot part="icon">{p.children}</IconSlot>)}
           <div className={styles.titles}>
             {renderPart(parts?.title, { href, onOpen, children: title }, (p) => (
               <Title {...p} />

@@ -32,14 +32,14 @@ export const ThreeColumns: Story = {
             <Card title="Next review" tone="neutral" priority={2}>
               <Value label="Site" value="North depot" />
             </Card>
-            <Card title="Data hub" tone="neutral" size={1.4}>
+            <Card title="Insights" tone="neutral" size={1.4}>
               <Rows count={4} prefix="Measure" />
             </Card>
             <Card title="Project budget" tone="neutral" priority={1}>
-              <Value label="Available" value="80.12M" />
+              <Value label="Available" value="64.0M" />
             </Card>
             <Card title="Payroll budget" tone="neutral">
-              <Value label="Available" value="275K" />
+              <Value label="Available" value="410K" />
             </Card>
             <Card title="This week" tone="neutral">
               <Rows count={3} prefix="Day" />
@@ -98,7 +98,7 @@ export const PageContext: Story = {
   ),
 };
 
-const five = ['Next review', 'Data hub', 'Project budget', 'Payroll budget', 'This week'];
+const five = ['Next review', 'Insights', 'Project budget', 'Payroll budget', 'This week'];
 
 /**
  * Layout rule 3. The stack is too short for five cards at their minimum height, so the cards with the

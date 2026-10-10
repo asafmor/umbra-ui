@@ -56,14 +56,17 @@ function Root({ brand, moreLabel = 'More actions', className, style, children }:
   const level = useShrinkLevel(root, 4, undefined, {
     overflowing: () => {
       const slot = nav.current;
+      // Without a nav to give way, the bar itself is what overflows.
+      if (root.current && isOverflowing(root.current)) return true;
       if (!slot) return false;
       return (
         isOverflowing(slot) ||
         [...slot.querySelectorAll<HTMLElement>('[data-overflow-watch]')].some(isOverflowing)
       );
     },
-    // Step 3 belongs to the nav. Step 4 waits until the nav has nothing left to move.
-    canAdvance: (current) => current < 3 || navExhausted.current,
+    // Step 3 belongs to the nav. Step 4 waits until the nav has nothing left to move, or there is none.
+    canAdvance: (current) =>
+      current < 3 || navExhausted.current || !nav.current?.querySelector('[data-overflow-watch]'),
   });
   const report = useCallback((exhausted: boolean) => {
     if (navExhausted.current === exhausted) return;
@@ -212,7 +215,12 @@ export function TopBar({
   const logoNode = renderPart(
     parts?.logo,
     { children: logo },
-    (p) => p.children && <div className={styles.logo}>{p.children}</div>,
+    (p) =>
+      p.children && (
+        <div data-part="logo" className={styles.logo}>
+          {p.children}
+        </div>
+      ),
   );
   const search = onSearch && (
     <IconButton

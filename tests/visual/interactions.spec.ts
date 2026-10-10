@@ -12,7 +12,7 @@ test('a card collapsed by its stack opens its content in a popover, and Escape r
 }) => {
   await open(page, 'layout-page-layouts--stack-collapse');
   const card = page.locator('[data-umbra="card"][data-collapsed="layout"]').first();
-  const header = card.getByRole('button', { name: 'Data hub' });
+  const header = card.getByRole('button', { name: 'Insights' });
   await expect(header).toHaveAttribute('aria-haspopup', 'dialog');
   await expect(card.locator('[data-part="body"]')).toHaveCount(0);
 
@@ -122,18 +122,83 @@ test('top bar: as it narrows, items move into "More" and the active item stays',
   // At the minimum window, hiding the context block and collapsing the actions is enough.
   await page.setViewportSize({ width: 1024, height: 600 });
   await expect(bar).toHaveAttribute('data-shrink', '2');
-  await expect(nav.getByRole('link', { name: 'Finance' })).toBeVisible();
+  await expect(nav.getByRole('button', { name: 'Finance' })).toBeVisible();
 
   await page.setViewportSize({ width: 900, height: 600 });
   await expect(bar).toHaveAttribute('data-shrink', '3');
   await expect(nav.getByRole('link', { name: 'Overview' })).toBeVisible();
-  await expect(nav.getByRole('link', { name: 'Finance' })).toHaveCount(0);
+  await expect(nav.getByRole('button', { name: 'Finance' })).toHaveCount(0);
   await nav.getByRole('button', { name: 'More' }).click();
-  await expect(page.getByRole('dialog').getByRole('link', { name: 'Finance' })).toBeVisible();
+  await expect(page.getByRole('dialog').getByRole('button', { name: 'Finance' })).toBeVisible();
   await page.keyboard.press('Escape');
 
   // Growing again brings everything back.
   await page.setViewportSize({ width: 1920, height: 1080 });
   await expect(bar).toHaveAttribute('data-shrink', '0');
-  await expect(nav.getByRole('link', { name: 'Finance' })).toBeVisible();
+  await expect(nav.getByRole('button', { name: 'Finance' })).toBeVisible();
+});
+
+test('nav: a disabled item does nothing, and arrow keys pass over it', async ({ page }) => {
+  await open(page, 'shell-app-shell--full-screen', 1920, 1080);
+  const nav = page.getByRole('navigation', { name: 'Main' });
+  const finance = nav.getByRole('button', { name: 'Finance' });
+  await expect(finance).toHaveAttribute('aria-disabled', 'true');
+  await finance.click({ force: true });
+  expect(new URL(page.url()).hash).toBe('');
+  await expect(nav.getByRole('link', { name: 'Overview' })).toHaveAttribute('aria-current', 'page');
+
+  // End lands on it, and one more step wraps to the first item: the tab stop is never lost.
+  await nav.getByRole('link', { name: 'Overview' }).focus();
+  await page.keyboard.press('End');
+  await expect(finance).toBeFocused();
+  await page.keyboard.press('ArrowRight');
+  await expect(nav.getByRole('link', { name: 'Overview' })).toBeFocused();
+});
+
+test('top bar without a nav still shrinks, down to the icon of the primary action', async ({ page }) => {
+  await open(page, 'shell-app-shell--without-nav');
+  const bars = page.locator('[data-umbra="top-bar"]');
+  await expect(bars).toHaveCount(3);
+  await expect(bars.nth(0)).toHaveAttribute('data-shrink', '0');
+  await expect(bars.nth(2)).toHaveAttribute('data-shrink', '4');
+  for (const bar of await bars.all()) {
+    expect(await bar.evaluate((el) => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(1);
+  }
+});
+
+test('a card popover closes when its card opens again or the window enters tab mode', async ({ page }) => {
+  await open(page, 'shell-app-shell--full-screen', 1280, 620, 'spacious');
+  const header = page.locator('[data-umbra="card"][data-collapsed="layout"] button[aria-haspopup]').last();
+  await header.click();
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await page.setViewportSize({ width: 1280, height: 1080 });
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await page.setViewportSize({ width: 1280, height: 620 });
+  await expect(header).toHaveAttribute('aria-expanded', 'false');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+
+  await header.click();
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await page.setViewportSize({ width: 1000, height: 620 });
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+});
+
+test('after one large resize the stack collapses enough cards and nothing leaves it', async ({ page }) => {
+  await open(page, 'shell-app-shell--full-screen', 1280, 1080, 'spacious');
+  for (const height of [610, 660, 720, 800]) {
+    await page.setViewportSize({ width: 1280, height: 1080 });
+    await page.setViewportSize({ width: 1280, height });
+    // One measurement: how far the last card leaves the stack, and how much taller than its header a
+    // collapsed card is (it must not take the spare space).
+    const excess = () =>
+      page.evaluate(() => {
+        const stack = [...document.querySelectorAll('[data-umbra="stack"]')].at(-1)!;
+        const bottom = Math.max(...[...stack.children].map((c) => c.getBoundingClientRect().bottom));
+        const grown = [...stack.querySelectorAll('[data-collapsed="layout"]')].map(
+          (c) => c.clientHeight - c.querySelector('[data-part="header"]')!.clientHeight,
+        );
+        return Math.round(Math.max(bottom - stack.getBoundingClientRect().bottom, ...grown));
+      });
+    await expect.poll(excess).toBeLessThanOrEqual(1);
+  }
 });

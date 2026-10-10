@@ -129,10 +129,10 @@ export function Item({ id, href, icon, disabled = false, menu, children }: NavIt
     // A row in a dropdown or in "More". Sub-pages follow, indented.
     return (
       <>
-        {href ? (
+        {href && !disabled ? (
           nav.renderLink({ ...common, href, onClick: choose, children: content })
         ) : (
-          <button type="button" {...common} disabled={disabled} onClick={menu ? undefined : choose}>
+          <button type="button" {...common} onClick={menu ? undefined : choose}>
             {content}
           </button>
         )}
@@ -146,7 +146,7 @@ export function Item({ id, href, icon, disabled = false, menu, children }: NavIt
   // Source behaviour: the label navigates and a separate caret opens the dropdown. An item without
   // `href` opens the dropdown from anywhere on it.
   const onKeyDown = (event: KeyboardEvent) => {
-    if (menu && event.key === 'ArrowDown') {
+    if (menu && !disabled && event.key === 'ArrowDown') {
       event.preventDefault();
       setOpen(true);
     }
@@ -161,18 +161,19 @@ export function Item({ id, href, icon, disabled = false, menu, children }: NavIt
       className={styles.item}
       onKeyDown={onKeyDown}
     >
-      {href ? (
+      {href && !disabled ? (
         nav.renderLink({ ...common, href, onClick: choose, children: content })
       ) : (
+        // A disabled item is a button that does nothing: it never navigates, but it keeps its place in
+        // the arrow-key order, so it is `aria-disabled` and not `disabled`.
         <button
           type="button"
           {...common}
-          {...(menu && popupProps)}
-          disabled={disabled}
-          onClick={menu ? toggle : choose}
+          {...(menu && !href && popupProps)}
+          onClick={menu && !href ? toggle : choose}
         >
           {content}
-          {menu && <Icon name="chevronDown" />}
+          {menu && !href && <Icon name="chevronDown" />}
         </button>
       )}
       {menu && href && (
@@ -183,7 +184,7 @@ export function Item({ id, href, icon, disabled = false, menu, children }: NavIt
           {...popupProps}
           data-nav-focus=""
           tabIndex={-1}
-          disabled={disabled}
+          aria-disabled={disabled || undefined}
           onClick={toggle}
         >
           <Icon name="chevronDown" />
