@@ -72,6 +72,9 @@ writeFileSync(
   new URL('src/styles/tokens.generated.ts', root),
   `// Generated from plan/tokens.json by scripts/build-tokens.mjs. Do not edit.
 export const densities = [${list(t.density)}] as const;
+export const spaces = [${entries(t.space)
+    .map(([k]) => k)
+    .join(', ')}] as const;
 export const contextPresets = [${list(t.color.context.presets)}] as const;
 export type TokenName =
 ${[...base, ...derived].map(([k]) => `  | '${k}'`).join('\n')};
