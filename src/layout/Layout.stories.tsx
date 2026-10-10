@@ -129,6 +129,35 @@ export const StackCollapse: Story = {
   ),
 };
 
+/**
+ * Not even the highest-priority card can have its minimum height (170) here. It stays open with the
+ * space that is left and scrolls inside; the other card collapses. A column is never left with headers only.
+ */
+export const StackTooShort: Story = {
+  render: () => (
+    <AppShell background="flat">
+      <Page>
+        <Columns>
+          {[240, 200].map((height) => (
+            <Slot key={height} label={`${height}px`}>
+              <div style={{ height, display: 'flex' }}>
+                <Stack>
+                  <Card title="Orders" tone="neutral" minHeight={170}>
+                    <Rows count={8} prefix="Order" />
+                  </Card>
+                  <Card title="Reports" tone="neutral" minHeight={170}>
+                    <Rows count={8} prefix="Report" />
+                  </Card>
+                </Stack>
+              </div>
+            </Slot>
+          ))}
+        </Columns>
+      </Page>
+    </AppShell>
+  ),
+};
+
 const twoCards = (
   <Columns>
     <Card title="Orders">

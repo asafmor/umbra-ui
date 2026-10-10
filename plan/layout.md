@@ -47,7 +47,7 @@ Applied in this order, innermost first:
 |---|---|
 | 1. Component | Each component owns its compact modes. `DataTable` drops columns by `priority`; text truncates with an ellipsis; a `Card` hides secondary header parts. |
 | 2. Card body | If content is still taller than the card, the card body scrolls inside (thin thumb, no track). |
-| 3. Stack | If the cards in a `Stack` cannot all keep their minimum height, the lowest-`priority` cards collapse to their header. Clicking a collapsed header opens the card's content in an anchored `Popover`. |
+| 3. Stack | If the cards in a `Stack` cannot all keep their minimum height, the lowest-`priority` cards collapse to their header. Clicking a collapsed header opens the card's content in an anchored `Popover`. The highest-priority card is the last to go, and it stays open when it cannot keep its minimum even with every other card collapsed: it takes the space that is left and scrolls inside (decided 2026-10-11), so a column is not left with headers only. It collapses too only when that space is less than one and a half times its header, which is no room for content. |
 | 4. Columns | Below the minimum window size, `Columns` shows one child at a time, with tabs to switch. |
 
 - **`priority`** is a prop on any child of `Stack` or `Columns`, and on table columns. Higher stays longer. The default follows source order (first = highest).

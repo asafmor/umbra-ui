@@ -72,6 +72,9 @@ Rule 3 in detail:
 - While all cards fit, each open card is at least its minimum height.
 - When they do not fit, cards collapse one at a time, lowest `priority` first, until the rest fit.
 - Only a card with a header can collapse. A card collapsed by the layout shows an "expand" icon.
+- The card with the highest priority goes last. When it cannot have its minimum height even with every
+  other card collapsed, it stays open, takes the space that is left and scrolls inside. It collapses too
+  only when that space is less than one and a half times its header.
 - It happens instantly while the window is resized.
 - `overflow="keep"` on a `Stack` turns it off.
 

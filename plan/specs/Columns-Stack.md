@@ -65,7 +65,7 @@ On every child (all umbra-ui layout-aware components accept these; wrap anything
 
 | Component | Trigger | Result |
 |---|---|---|
-| `Stack` | Sum of the children's `minHeight` (plus gaps) exceeds its height | Lowest-priority cards collapse to their header until the rest fit. Only cards with a header can collapse. A collapsed card is exactly as tall as its header and the open cards share the rest. If even that is not enough, the minimums are dropped and everything shrinks, collapsed headers too. |
+| `Stack` | Sum of the children's `minHeight` (plus gaps) exceeds its height | Lowest-priority cards collapse to their header until the rest fit. Only cards with a header can collapse. A collapsed card is exactly as tall as its header and the open cards share the rest. The highest-priority card (ties: the first in source order) is the last to go. If it cannot keep its minimum with every other card collapsed, it stays open and the minimums are dropped: it takes the space that is left and scrolls inside. It collapses as well only when that space is under one and a half times its header height (no room for content); when even the headers do not fit, everything shrinks, collapsed headers too. |
 | `Columns` | Window below the minimum (`data-narrow` on the shell) | One child at a time, with tabs |
 | both | Otherwise | Children shrink in proportion to `size`; each child applies its own rules |
 
@@ -83,4 +83,5 @@ Resolved 2026-10-10:
 
 - `Columns` does not collapse low-priority columns before tab mode in Milestone 0.
 - Approved after Milestone 0: in narrow mode every `Columns` becomes tabs, nested ones too; `narrow="keep"` opts one out.
+- 2026-10-11: the highest-priority card of a `Stack` stays open when it cannot reach its minimum. Before, every card collapsed and the column was left with headers only (`collapseToFit`, unit-tested).
 - Batch 1b: the built-in tab strip was replaced by the one `Tabs` draws. Props and the `tabs` part are unchanged.

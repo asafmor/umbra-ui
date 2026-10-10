@@ -214,6 +214,31 @@ test('after one large resize the stack collapses enough cards and nothing leaves
   }
 });
 
+test('a stack too short for its highest-priority card keeps that card open, scrolling inside', async ({
+  page,
+}) => {
+  await open(page, 'layout-page-layouts--stack-too-short');
+  for (const stack of await page.locator('[data-umbra="stack"]').all()) {
+    const cards = stack.locator('[data-umbra="card"]');
+    await expect(cards.nth(0)).not.toHaveAttribute('data-collapsed');
+    await expect(cards.nth(1)).toHaveAttribute('data-collapsed', 'layout');
+    // The open card takes what the collapsed header leaves, and nothing leaves the stack.
+    const fit = await stack.evaluate((el) => {
+      const [open, closed] = [...el.querySelectorAll('[data-umbra="card"]')].map((c) =>
+        c.getBoundingClientRect(),
+      );
+      const box = el.getBoundingClientRect();
+      return { open: open!.height, spare: box.bottom - closed!.bottom, top: open!.top - box.top };
+    });
+    expect(fit.open).toBeGreaterThan(60);
+    expect(Math.abs(fit.spare)).toBeLessThanOrEqual(1);
+    expect(fit.top).toBe(0);
+    const body = cards.nth(0).locator('[data-part="body"] > [data-part="viewport"]');
+    await expect(body.getByText('Order 1', { exact: true })).toBeVisible();
+    expect(await body.evaluate((el) => el.scrollHeight > el.clientHeight)).toBe(true);
+  }
+});
+
 // Page, Columns and Stack
 
 test('page: loading replaces the content with a skeleton and marks it busy; header and footer stay', async ({
