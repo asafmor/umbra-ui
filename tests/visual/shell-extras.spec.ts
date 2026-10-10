@@ -677,6 +677,50 @@ test('command palette: Enter runs and closes; Escape, an outside press and Mod+K
   await expect(log).toContainText('Last command: Settings (#settings).');
 });
 
+test('command palette: focus leaves the input as soon as it starts to close', async ({ page }) => {
+  await open(page, 'overlays-commandpalette--default');
+  const { dialog, input } = palette(page);
+  const opener = page.getByRole('button', { name: 'Open the palette' });
+  await expect(input).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(dialog).toHaveCount(0);
+  await opener.focus();
+  await page.keyboard.press('Enter');
+  await expect(input).toBeFocused();
+  // Let it finish opening: closed while it still enters, it leaves the page at once.
+  await page.waitForTimeout(350);
+  // Running a command starts the 240ms exit. Every frame of it is recorded in the page: where the
+  // focus is while the panel is still there.
+  await page.evaluate(() => {
+    const frames: string[] = [];
+    (window as unknown as { paletteFrames: string[] }).paletteFrames = frames;
+    const record = () => {
+      const active = document.activeElement;
+      const where = active?.matches('input, textarea')
+        ? 'input'
+        : active?.textContent?.startsWith('Open the palette')
+          ? 'opener'
+          : 'elsewhere';
+      if (!document.querySelector('[data-umbra="command-palette"]')) return frames.push('gone');
+      frames.push(where);
+      requestAnimationFrame(record);
+    };
+    requestAnimationFrame(record);
+  });
+  await page.keyboard.press('Enter');
+  await expect(dialog).toHaveCount(0);
+  const frames = await page.evaluate(() => (window as unknown as { paletteFrames: string[] }).paletteFrames);
+  const left = frames.indexOf('opener');
+  // Focus is back on the opener within a few frames, long before the panel has gone: a bare-key
+  // shortcut pressed then is not taken for typing in the input.
+  expect(left).toBeGreaterThanOrEqual(0);
+  expect(left).toBeLessThanOrEqual(4);
+  expect(frames.indexOf('gone') - left).toBeGreaterThan(6);
+  expect(frames.slice(left, -1).every((where) => where === 'opener')).toBe(true);
+  await expect(dialog).toHaveCount(0);
+  await expect(opener).toBeFocused();
+});
+
 test('command palette: typing filters and ranks, keywords match, and nothing matching says so', async ({
   page,
 }) => {

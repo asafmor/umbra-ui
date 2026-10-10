@@ -1,5 +1,5 @@
 // What Popover, Tooltip and Menu share: the placement type and the open state.
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState, type RefObject } from 'react';
 
 export type OverlaySide = 'top' | 'bottom' | 'start' | 'end';
 export type OverlayAlign = 'start' | 'center' | 'end';
@@ -79,4 +79,34 @@ export function useFlipWhenCut(maxHeight?: number) {
     },
     [maxHeight],
   );
+}
+
+/**
+ * Gives focus back to what had it before an overlay opened, as soon as the overlay starts to close.
+ * React Aria gives it back when the overlay leaves the page, which is after its exit animation: until
+ * then focus stays in a field that is going away, and a bare-key shortcut pressed in that time is
+ * taken for typing and ignored. `inside` is the overlay's element. Shared by `Modal` and
+ * `CommandPalette`.
+ */
+export function useReturnFocusOnClose(open: boolean, inside: RefObject<Element | null>) {
+  const [state, setState] = useState<{ open: boolean; opener: HTMLElement | null }>({
+    open: false,
+    opener: null,
+  });
+  // Read while rendering the change to open, before the overlay mounts and takes the focus.
+  if (state.open !== open) {
+    setState({ open, opener: open ? (document.activeElement as HTMLElement | null) : state.opener });
+  }
+  useEffect(() => {
+    if (open) return;
+    // In the next frame: by then React Aria has stopped holding focus inside the closing overlay.
+    const frame = requestAnimationFrame(() => {
+      const active = document.activeElement as HTMLElement | null;
+      if (!active || !inside.current?.contains(active)) return;
+      if (state.opener?.isConnected && state.opener !== document.body) state.opener.focus();
+      else active.blur();
+    });
+    return () => cancelAnimationFrame(frame);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- runs when the overlay opens or closes
+  }, [open]);
 }

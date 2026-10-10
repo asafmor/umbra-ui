@@ -23,7 +23,7 @@ import { useScopeAttributes } from '../provider/UmbraProvider';
 import { warn } from '../utils/dev';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './Modal.module.css';
-import { useOpenState } from './shared';
+import { useReturnFocusOnClose, useOpenState } from './shared';
 
 export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'full';
 export type ModalVariant = 'dialog' | 'alertdialog' | 'drawer';
@@ -188,6 +188,8 @@ function Content({ className, style, children }: BlockProps) {
   const modal = useModal();
   const narrow = useNarrow();
   const dialog = useRef<HTMLElement>(null);
+  // Focus leaves the modal when it starts to close, not when its exit animation has ended.
+  useReturnFocusOnClose(modal.open, dialog);
   // The title and description can be left out or replaced; the dialog only points at ones that exist.
   const [has, setHas] = useState({ title: true, description: false });
   // eslint-disable-next-line react-hooks/exhaustive-deps -- checked after every render on purpose; an equal value does not render again

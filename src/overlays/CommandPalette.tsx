@@ -16,7 +16,7 @@ import { cx, renderPart, type Part } from '../utils/parts';
 import { filterCommands } from './commandMatch';
 import styles from './CommandPalette.module.css';
 import { Hint } from './Menu';
-import { useOpenState } from './shared';
+import { useOpenState, useReturnFocusOnClose } from './shared';
 
 /** One entry of the palette: a page to go to, a thing to open, or an action. */
 export interface Command {
@@ -488,6 +488,8 @@ export function CommandPalette({
   const scope = useScopeAttributes();
   const [isOpen, setOpen] = useOpenState(open, defaultOpen, onOpenChange);
   useShortcut(shortcut ?? undefined, shortcut ? () => setOpen(!isOpen) : undefined);
+  const dialog = useRef<HTMLElement>(null);
+  useReturnFocusOnClose(isOpen, dialog);
   return (
     <ModalOverlay
       {...scope}
@@ -499,7 +501,7 @@ export function CommandPalette({
       style={scope.style}
     >
       <Modal data-umbra="command-palette" className={cx(styles.root, className)} style={style}>
-        <Dialog aria-label={label} className={styles.dialog}>
+        <Dialog ref={dialog} aria-label={label} className={styles.dialog}>
           <Panel {...panel} shortcut={shortcut} label={label} close={() => setOpen(false)} />
         </Dialog>
       </Modal>
