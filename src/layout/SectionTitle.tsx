@@ -1,7 +1,7 @@
 import { createElement, useRef, type CSSProperties, type ReactNode } from 'react';
 import { ButtonBase } from '../basics/Button';
-import { ActionsOverflow } from '../internal/overlays';
 import { useShrinkLevel } from '../internal/useShrinkLevel';
+import { ActionsOverflow } from '../overlays/Menu';
 import { Icon } from '../provider/icons';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './SectionTitle.module.css';

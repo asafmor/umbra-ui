@@ -10,7 +10,7 @@ import {
 import { ToggleButton, Toolbar } from 'react-aria-components';
 import { ButtonBase } from '../basics/Button';
 import { Skeleton } from '../basics/Skeleton';
-import { Popover, PopoverTrigger } from '../internal/overlays';
+import { Popover } from '../overlays/Popover';
 import {
   SeriesMarker,
   seriesColour,
@@ -232,14 +232,16 @@ export interface LegendMoreProps {
 function More({ children, label = 'All items', content }: LegendMoreProps) {
   const { interactive } = useLegend();
   const trigger = (
-    <PopoverTrigger>
-      <ButtonBase umbra="button" variant="ghost" size="small" className={styles.more}>
-        {children}
-      </ButtonBase>
-      <Popover label={label} className={styles.all}>
+    <Popover.Root>
+      <Popover.Trigger>
+        <ButtonBase umbra="button" variant="ghost" size="small" className={styles.more}>
+          {children}
+        </ButtonBase>
+      </Popover.Trigger>
+      <Popover.Content label={label} className={styles.all}>
         {content}
-      </Popover>
-    </PopoverTrigger>
+      </Popover.Content>
+    </Popover.Root>
   );
   return interactive ? trigger : <li className={styles.moreItem}>{trigger}</li>;
 }

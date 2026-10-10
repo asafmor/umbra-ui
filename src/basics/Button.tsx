@@ -1,11 +1,16 @@
-import { useContext, useRef, type CSSProperties, type ReactNode } from 'react';
+import { useContext, useId, useRef, type CSSProperties, type ReactNode } from 'react';
 import {
   Button as AriaButton,
   Link as AriaLink,
+  MenuItem as AriaMenuItem,
+  MenuSection as AriaMenuSection,
   ProgressBar as AriaProgressBar,
 } from 'react-aria-components';
-import { ForceCollapseContext, OverflowMenuContext, Tip } from '../internal/overlays';
+import { ForceCollapseContext, OverflowMenuContext } from '../internal/contexts';
 import { useShrinkLevel } from '../internal/useShrinkLevel';
+import { CheckMark, Hint } from '../overlays/Menu';
+import menuStyles from '../overlays/Menu.module.css';
+import { Tooltip } from '../overlays/Tooltip';
 import { Icon, IconSlot } from '../provider/icons';
 import { useShortcut } from '../provider/UmbraProvider';
 import { cx, renderPart, type Part } from '../utils/parts';
@@ -26,9 +31,13 @@ interface BaseProps {
   type?: 'button' | 'submit' | 'reset';
   /** Accessible name, when the visible content is not text. */
   label?: string;
+  /** The label as text, for type-ahead when the button is a row of an overflow menu. */
+  text?: string;
   pressed?: boolean;
   expanded?: boolean;
   tooltip?: ReactNode;
+  /** Id of a shortcut: its keys are shown in the tooltip, or at the end of the row in an overflow menu. */
+  shortcut?: string;
   onPress?: () => void;
   elementRef?: React.RefObject<HTMLElement | null>;
   umbra: string;
@@ -37,7 +46,10 @@ interface BaseProps {
   children: ReactNode;
 }
 
-/** Internal: the element, states and tooltip shared by `Button` and `IconButton`. */
+/**
+ * Internal: the element, states and tooltip shared by `Button` and `IconButton`. Among actions that
+ * moved into an overflow menu it is a menu item: a toggle becomes a checkbox item, a link stays a link.
+ */
 export function ButtonBase({
   variant,
   iconOnly,
@@ -49,9 +61,11 @@ export function ButtonBase({
   href,
   type = 'button',
   label,
+  text,
   pressed,
   expanded,
   tooltip,
+  shortcut,
   onPress,
   elementRef,
   umbra,
@@ -59,20 +73,51 @@ export function ButtonBase({
   style,
   children,
 }: BaseProps) {
-  const menu = useContext(OverflowMenuContext);
-  const inMenu = !!menu;
-  const press = () => {
-    onPress?.();
-    menu?.close();
-  };
+  const inMenu = useContext(OverflowMenuContext);
+  const id = useId();
+  if (inMenu) {
+    const item = (
+      <AriaMenuItem
+        id={id}
+        aria-label={label}
+        textValue={text ?? label ?? ''}
+        href={disabled ? undefined : href}
+        isDisabled={disabled || loading}
+        onAction={onPress}
+        data-part="item"
+        className={cx(menuStyles.item, styles.row)}
+      >
+        {({ hasSubmenu }) => (
+          <>
+            {children}
+            {shortcut && <Hint id={shortcut} />}
+            {/* At the end of the row, so the icons of the rows stay in one column. */}
+            {pressed !== undefined && <CheckMark shown={pressed} />}
+            {hasSubmenu && <Icon name="chevronRight" part="submenuIndicator" />}
+          </>
+        )}
+      </AriaMenuItem>
+    );
+    // A toggle is a checkbox item. Its state stays the button's own `pressed`.
+    return pressed === undefined ? (
+      item
+    ) : (
+      <AriaMenuSection
+        selectionMode="multiple"
+        selectedKeys={pressed ? [id] : []}
+        className={menuStyles.section}
+      >
+        {item}
+      </AriaMenuSection>
+    );
+  }
   const shared = {
     'data-umbra': umbra,
-    'data-variant': inMenu ? 'ghost' : variant,
+    'data-variant': variant,
     'data-size': size,
     'data-shape': shape,
-    'data-icon-only': (iconOnly && !inMenu) || undefined,
-    'data-full-width': fullWidth || inMenu || undefined,
-    'data-in-menu': inMenu || undefined,
+    'data-icon-only': iconOnly || undefined,
+    'data-full-width': fullWidth || undefined,
     'aria-label': label,
     className: cx(styles.button, className),
     style,
@@ -95,12 +140,16 @@ export function ButtonBase({
       isPending={loading}
       aria-pressed={pressed}
       aria-expanded={expanded}
-      onPress={press}
+      onPress={onPress}
     >
       {children}
     </AriaButton>
   );
-  return <Tip content={inMenu ? null : tooltip}>{element}</Tip>;
+  return (
+    <Tooltip content={tooltip} shortcut={shortcut}>
+      {element}
+    </Tooltip>
+  );
 }
 
 /**
@@ -112,17 +161,6 @@ export function Spinner({ label }: { label: string }) {
     <AriaProgressBar isIndeterminate aria-label={label} className={styles.spinner}>
       <Icon name="spinner" spin part="spinner" />
     </AriaProgressBar>
-  );
-}
-
-/** Internal: tooltip content with an optional key hint. */
-export function tipWithHint(text: ReactNode, hint: string | undefined) {
-  if (!text && !hint) return null;
-  return (
-    <>
-      {text}
-      {hint && <kbd>{hint}</kbd>}
-    </>
   );
 }
 
@@ -174,11 +212,11 @@ export function Button({
   ...rest
 }: ButtonProps) {
   const ref = useRef<HTMLElement>(null);
-  const inMenu = !!useContext(OverflowMenuContext);
+  const inMenu = useContext(OverflowMenuContext);
   const canCollapse = collapseTo === 'icon' && !!(iconStart || iconEnd) && !inMenu;
   const forced = useContext(ForceCollapseContext);
   const collapsed = useShrinkLevel(ref, canCollapse ? 1 : 0) === 1 || (canCollapse && forced);
-  const hint = useShortcut(shortcut, rest.disabled || rest.loading ? undefined : onPress);
+  useShortcut(shortcut, rest.disabled || rest.loading ? undefined : onPress);
   const icon = (part: 'iconStart' | 'iconEnd', node: ReactNode) =>
     renderPart(
       parts?.[part],
@@ -193,7 +231,9 @@ export function Button({
       iconOnly={collapsed}
       elementRef={ref}
       label={collapsed && typeof children === 'string' ? children : undefined}
-      tooltip={tipWithHint(collapsed ? children : null, hint)}
+      text={typeof children === 'string' ? children : undefined}
+      tooltip={collapsed ? children : null}
+      shortcut={shortcut}
       onPress={onPress}
     >
       {rest.loading

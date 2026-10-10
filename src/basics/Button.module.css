@@ -128,12 +128,6 @@
   border-radius: 50%;
 }
 
-/* Inside an overflow menu every button is a full-width row. */
-.button[data-in-menu] {
-  justify-content: flex-start;
-  flex: none;
-}
-
 .label {
   min-width: 0;
   overflow: hidden;
@@ -171,8 +165,13 @@
   padding: 0;
 }
 
-.button[data-in-menu] > .badge {
+/* As a row of an overflow menu, the badge and the check of a toggle sit in the row, after the label. */
+.row > .badge {
   position: static;
+  margin-inline-start: auto;
+}
+
+.row > [data-part='check'] {
   margin-inline-start: auto;
 }
 

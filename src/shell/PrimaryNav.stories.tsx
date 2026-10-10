@@ -134,3 +134,27 @@ export const PartsAndBlocks: Story = {
     </div>
   ),
 };
+
+const counted: NavItem[] = [
+  { id: 'overview', label: 'Overview', href: '#overview' },
+  {
+    id: 'orders',
+    // A label that is not text needs `textValue`: it names the caret, the dropdown and its rows.
+    label: (
+      <>
+        Orders <small>(12)</small>
+      </>
+    ),
+    textValue: 'Orders',
+    href: '#orders',
+    items: [
+      { id: 'open', label: 'Open orders', href: '#open' },
+      { id: 'returns', label: 'Returns', href: '#returns' },
+    ],
+  },
+];
+
+/** `submenuLabel` sets the name of the caret (for translation); `textValue` gives a label that is a node its text. */
+export const SubmenuLabel: Story = {
+  render: () => <Nav items={counted} start="overview" submenuLabel={(label) => `Pages under ${label}`} />,
+};

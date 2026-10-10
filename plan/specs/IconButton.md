@@ -46,7 +46,7 @@ States: hover, pressed, focus, disabled, loading, and `pressed` on/off when used
 | `variant` / `shape` | see above | `ghost` / `square` | |
 | `pressed` / `onPressedChange` | boolean / function | — | Toggle behaviour |
 | `badge` | number \| `true` | — | Count, or a dot |
-| `tooltip` | boolean \| node | `true` | Shows `label` on hover and focus |
+| `tooltip` | boolean \| node | `true` | Shows `label` in a `Tooltip` on hover and focus |
 | `shortcut` | shortcut id | — | |
 | `disabled` / `loading` | boolean | `false` | |
 | `onPress` | function | — | |
@@ -61,7 +61,7 @@ None.
 
 ## Behaviour as space shrinks
 
-Does not shrink. Its container decides whether to move it into an overflow menu, where it appears as a menu item with its icon and `label`.
+Does not shrink. Its container decides whether to move it into an overflow menu, where it is a `menuitem` with its icon and `label` (the count of a badge stays in its name). A toggle is a `menuitemcheckbox` with a check at the end of the row.
 
 ## Interaction and accessibility
 

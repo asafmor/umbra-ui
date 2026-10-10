@@ -62,7 +62,7 @@ No variants. Text colour on the bar is computed from the brand colour (light or 
 | Step | Result |
 |---|---|
 | 1 | `context` hides |
-| 2 | `actions` collapse into one overflow menu; the search trigger stays |
+| 2 | `actions` collapse into one overflow `Menu`; the search trigger stays |
 | 3 | `nav` items move into a "More" menu from the end (see `PrimaryNav`) |
 | 4 | `primaryAction` shows its icon only (the button needs an icon and `collapseTo="icon"`) |
 
@@ -72,6 +72,7 @@ The current step is exposed as `data-shrink` (`0`–`4`) on the root. Step 4 wai
 
 - Root is a `banner`.
 - The search trigger is an icon button bound to the reserved `Mod+K` shortcut.
+- The overflow of `actions` is a real menu (`plan/specs/Menu.md`): each `IconButton` or `Button` in it is a `menuitem` with its icon and label (a toggle is a `menuitemcheckbox`, a `Menu` a submenu), with arrow keys and type-ahead.
 - Contrast of text and icons against any brand colour is at least 4.5:1, by computation.
 
 ## Open questions

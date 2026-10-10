@@ -38,12 +38,13 @@ Item states: default, hover, active (current section), open (menu shown), focus,
 
 | Prop | Type | Default | Purpose |
 |---|---|---|---|
-| `items` | list of `{ id, label, icon?, href?, items?, disabled? }` | — | `items` inside an item makes a dropdown |
+| `items` | list of `{ id, label, textValue?, icon?, href?, items?, disabled? }` | — | `items` inside an item makes a dropdown. `textValue` is the label as text, required when `label` is not a string |
 | `value` | id | — | The active item |
 | `onChange` | function | — | |
 | `renderLink` | function | plain `<a>` | Plugs in the app's router link. It receives anchor props to spread: `renderLink={(p) => <RouterLink to={p.href} {...p} />}` |
 | `aria-label` | string | "Main" | Name of the navigation landmark |
 | `moreLabel` | string | "More" | |
+| `submenuLabel` | function (label) | `"<label>, submenu"` | Accessible name of the caret that opens an item's dropdown |
 
 ### 3. Parts
 
@@ -51,7 +52,7 @@ Item states: default, hover, active (current section), open (menu shown), focus,
 
 ### 4. Blocks
 
-`PrimaryNav.Root`, `PrimaryNav.Item`, `PrimaryNav.Menu`. Items can be written as children instead of the `items` prop. `Item` takes `id`, `href`, `icon`, `disabled`, the label as children, and `menu` (a `Menu` holding more `Item`s). Items must be direct children of `Root`, which reads their `id`.
+`PrimaryNav.Root`, `PrimaryNav.Item`, `PrimaryNav.Menu`. Items can be written as children instead of the `items` prop. `Item` takes `id`, `href`, `icon`, `disabled`, `textValue`, the label as children, and `menu` (a `Menu` holding more `Item`s). Items must be direct children of `Root`, which reads their `id`.
 
 ## Behaviour as space shrinks
 
@@ -61,7 +62,10 @@ Items that do not fit move into the "More" menu, last item first. The active ite
 
 - A `navigation` landmark; the active item has `aria-current="page"`.
 - One tab stop; arrow keys move between items and carets; `Enter` (on a caret) or `ArrowDown` opens a dropdown; `Escape` closes it and returns focus.
-- In Milestone 0 a dropdown is a popover holding links, not an ARIA menu. The public `Menu` (Milestone 1) replaces it.
+- A dropdown and "More" are a `Menu` (`plan/specs/Menu.md`): rows are `menuitem` links, with arrow keys and type-ahead; the current page has `aria-current="page"`, the violet fill, an edge stripe and bold text. Opening one moves focus to its first row.
+- In "More", an item with sub-pages is a submenu. When the item is also a link, its own page is the first row of that submenu, above a separator.
+- The caret has its own name, `"<label>, submenu"` (`submenuLabel`), so it is not confused with the link beside it. An item whose label is not a string needs `textValue`; without it the item's `id` is used and a warning is logged in development.
+- The caret's pointer target is at least 24 × 24px (WCAG 2.2 target size). The caret looks no bigger: the target grows into the gap after the item.
 - Overflow is measured again when web fonts finish loading.
 
 ## Open questions
@@ -72,3 +76,4 @@ Resolved 2026-10-10:
 
 - An item with a dropdown does both, as in the source. Its label navigates and a separate caret button opens the menu. An item without `href` opens the menu from anywhere on the item.
 - Approved after Milestone 0: `renderLink` receives anchor props to spread on the app's router link.
+- 2026-10-10 (review items 4 and 7): dropdowns moved to the public `Menu`; the caret is named and has a 24px target. `renderLink` also renders the link rows of the menus.
