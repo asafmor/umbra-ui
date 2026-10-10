@@ -79,6 +79,8 @@ States (list): `loading`, `empty`, `error`. Row height and text size follow the 
 | `empty` | node | "No data" | Shown when there are no items |
 | `error` | node | — | Shown in place of the items; put a retry action inside |
 | `aria-label` | string | — | Names the list |
+| `highlightChanges` | boolean | off | The value flashes softly once when it changes: green when a number rose, red when it fell, neutral otherwise, with a ▲ or ▼ sign as the cue that is not colour. No flash under reduced motion; the sign stays for four seconds. Never counted up or down. |
+| `increasedLabel` / `decreasedLabel` | string | "increased" / "decreased" | What a screen reader hears with the sign |
 
 ### 3. Parts
 
@@ -116,6 +118,7 @@ None.
 
 Resolved 2026-10-10:
 
+- 2026-10-11: `highlightChanges` (plan/interaction.md, "Live updates"), the same as on `DataTable` and from the same code: `src/internal/useChangeHighlight.ts` and `ChangeHighlight.tsx`. `KeyValue.Value` takes the same props, and `changeValue` when its content is a formatted text. Tokens: `--umbra-change-up`, `--umbra-change-down`, `--umbra-change-neutral`.
 - `layout` names how the items are arranged; `orientation` names how one item is arranged. Rows default to inline items; columns and the grid to stacked ones. Either can be overridden.
 - The shared label column is a CSS subgrid: as wide as the longest label, at most 60%, or exactly `labelWidth`. No measuring in JavaScript.
 - `hint` sits under the label when inline and under the value when stacked, so it is always the last line.

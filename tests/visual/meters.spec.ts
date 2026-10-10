@@ -1,4 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
+import { expectChangeHighlights } from './live';
 
 // ProgressBar and LevelMeter: roles and spoken values, positions, motion, and each step of showing
 // less as the container shrinks.
@@ -515,5 +516,14 @@ test.describe('LevelMeter', () => {
     expect(
       await page.evaluate(() => document.activeElement?.closest('[data-umbra="level-meter"]')),
     ).toBeNull();
+  });
+});
+
+test.describe('highlightChanges', () => {
+  test('ProgressBar: a changed value flashes once with a sign for its direction', async ({ page }) => {
+    await expectChangeHighlights(page, 'meters-progressbar--live-updates', false);
+  });
+  test('LevelMeter: a changed value flashes once with a sign for its direction', async ({ page }) => {
+    await expectChangeHighlights(page, 'meters-levelmeter--live-updates', false);
   });
 });

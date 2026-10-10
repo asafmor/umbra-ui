@@ -835,7 +835,8 @@ test.describe('highlightChanges', () => {
     await page.getByRole('button', { name: 'Update values' }).click();
     const flash = table.locator('[data-part="change-flash"]').first();
     await expect(flash).toBeAttached();
-    expect(await flash.evaluate((el) => getComputedStyle(el).animationName)).toBe('none');
+    // The fade has no duration, so nothing is drawn.
+    expect(await flash.evaluate((el) => parseFloat(getComputedStyle(el).animationDuration))).toBe(0);
     expect(await flash.evaluate((el) => getComputedStyle(el).opacity)).toBe('0');
     await expect(table.locator('[data-part="change-sign"]')).toHaveCount(2);
   });

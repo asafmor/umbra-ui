@@ -481,7 +481,7 @@ The confirm step before an action that cannot be undone. An alert dialog: it ope
 
 A table of rows and columns that fills its slot and scrolls inside it: sorting, selection, groups, pinned columns, and columns that hide by priority as it narrows.
 
-**Tokens**: `--umbra-focus-color`, `--umbra-group-header-bg`, `--umbra-group-header-color`, `--umbra-group-header-font`, `--umbra-group-header-height`, `--umbra-scroll-fade-color`, `--umbra-table-border-color`, `--umbra-table-caption-color`, `--umbra-table-cell-padding-x`, `--umbra-table-change-down`, `--umbra-table-change-neutral`, `--umbra-table-change-up`, `--umbra-table-color`, `--umbra-table-detail-bg`, `--umbra-table-edge-padding-x`, `--umbra-table-font`, `--umbra-table-footer-bg`, `--umbra-table-header-active-color`, `--umbra-table-header-bg`, `--umbra-table-header-border-color`, `--umbra-table-header-color`, `--umbra-table-header-font`, `--umbra-table-header-group-color`, `--umbra-table-header-height`, `--umbra-table-highlight-bg`, `--umbra-table-highlight-marker`, `--umbra-table-hover-bg`, `--umbra-table-pin-border-color`, `--umbra-table-row-bg`, `--umbra-table-row-height`, `--umbra-table-selected-bg`, `--umbra-table-stripe-bg`, `--umbra-table-stripe-width`.
+**Tokens**: `--umbra-change-down`, `--umbra-change-neutral`, `--umbra-change-up`, `--umbra-focus-color`, `--umbra-group-header-bg`, `--umbra-group-header-color`, `--umbra-group-header-font`, `--umbra-group-header-height`, `--umbra-scroll-fade-color`, `--umbra-table-border-color`, `--umbra-table-caption-color`, `--umbra-table-cell-padding-x`, `--umbra-table-change-down`, `--umbra-table-change-neutral`, `--umbra-table-change-up`, `--umbra-table-color`, `--umbra-table-detail-bg`, `--umbra-table-edge-padding-x`, `--umbra-table-font`, `--umbra-table-footer-bg`, `--umbra-table-header-active-color`, `--umbra-table-header-bg`, `--umbra-table-header-border-color`, `--umbra-table-header-color`, `--umbra-table-header-font`, `--umbra-table-header-group-color`, `--umbra-table-header-height`, `--umbra-table-highlight-bg`, `--umbra-table-highlight-marker`, `--umbra-table-hover-bg`, `--umbra-table-pin-border-color`, `--umbra-table-row-bg`, `--umbra-table-row-height`, `--umbra-table-selected-bg`, `--umbra-table-stripe-bg`, `--umbra-table-stripe-width`.
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -780,6 +780,10 @@ One label with its value. Use it inside a `KeyValueList`, or on its own.
 | `orientation` | `Orientation` | `inline`: label and value side by side. `stacked`: the label above the value. |
 | `align` | `Align` | Where the value sits. Default: `end` when inline, `start` when stacked. |
 | `wrap` | `boolean` | Lets a long value wrap onto more lines. Without it the value is cut with an ellipsis. |
+| `highlightChanges` | `boolean` | A changed value flashes softly once: green when a number rose, red when it fell, neutral otherwise. A sign shows the direction without colour. No flash under reduced motion; the sign stays. The value is never counted up or down. |
+| `changeValue` | `unknown` | What is compared, when the content is not the value itself (a formatted text). Default: the content, when it is text or a number. |
+| `increasedLabel` | `string` | What a screen reader hears with the sign of a value that rose or fell. |
+| `decreasedLabel` | `string` |  |
 
 **Parts**: `icon`, `label`, `value`, `hint`.
 
@@ -881,6 +885,9 @@ A strip of ticks with a marker that shows where a value sits on a scale.
 | `rangeLabel` | `string` | Names the band for assistive technology. |
 | `zones` | `Zone[]` | Colours the marker by the zone it is in. Zone edges are drawn as taller ticks, and the zone's label is read out. |
 | `boxed` | `boolean` | Draws the box around the ticks. |
+| `highlightChanges` | `boolean` | A changed value flashes softly once: green when a number rose, red when it fell, neutral otherwise. A sign shows the direction without colour. No flash under reduced motion; the sign stays. The value is never counted up or down. |
+| `increasedLabel` | `string` | What a screen reader hears with the sign of a value that rose or fell. |
+| `decreasedLabel` | `string` |  |
 
 **Parts**: `label`, `minLabel`, `maxLabel`, `strip`, `band`, `marker`, `compare`, `value`, `skeleton`.
 
@@ -1030,6 +1037,10 @@ The content of one row of a list: a title with optional lines, and leading and t
 | `selected` | `boolean` | Violet fill with an edge stripe. Inside a `List`, selection sets it. |
 | `unread` | `boolean` | `true`: bold title and a dot. `false`: the title is dimmed as read. Leave unset where rows have no read state. |
 | `disabled` | `boolean` |  |
+| `highlightChanges` | `boolean` | A changed value flashes softly once: green when a number rose, red when it fell, neutral otherwise. A sign shows the direction without colour. No flash under reduced motion; the sign stays. The value is never counted up or down. |
+| `changeValue` | `unknown` | What is compared, when the content is not the value itself (a formatted text). Default: the content, when it is text or a number. |
+| `increasedLabel` | `string` | What a screen reader hears with the sign of a value that rose or fell. |
+| `decreasedLabel` | `string` |  |
 
 **Parts**: `leading`, `overline`, `title`, `description`, `meta`, `unread`, `trailing`.
 
@@ -1293,6 +1304,9 @@ A bar that fills with a value: progress of a task, or a measured level. Fills th
 | `targetLabel` | `string` | Names the target for assistive technology. |
 | `formatValue` | `((value: number, scale: ProgressBarScale) => string)` | Text of a value. The default is a rounded percentage. |
 | `tooltip` | `boolean` | `false` turns off the tooltip that shows the exact value on hover. |
+| `highlightChanges` | `boolean` | A changed value flashes softly once: green when a number rose, red when it fell, neutral otherwise. A sign shows the direction without colour. No flash under reduced motion; the sign stays. The value is never counted up or down. |
+| `increasedLabel` | `string` | What a screen reader hears with the sign of a value that rose or fell. |
+| `decreasedLabel` | `string` |  |
 
 **Parts**: `label`, `value`, `track`, `fill`, `target`, `skeleton`.
 
@@ -1718,6 +1732,10 @@ A large value with its label, and optional unit, trend, caption and meter.
 | `tone` | `StatValueTone` | Colour of the value. A tone that carries meaning needs a second cue: a `trend`, an icon or the label. |
 | `align` | `"start" \| "center" \| "end"` |  |
 | `size` | `"md" \| "lg" \| "xl"` | Size of the value: `md` is the title font, `lg` the display font, `xl` larger still. |
+| `highlightChanges` | `boolean` | A changed value flashes softly once: green when a number rose, red when it fell, neutral otherwise. A sign shows the direction without colour. No flash under reduced motion; the sign stays. The value is never counted up or down. |
+| `changeValue` | `unknown` | What is compared, when the content is not the value itself (a formatted text). Default: the content, when it is text or a number. |
+| `increasedLabel` | `string` | What a screen reader hears with the sign of a value that rose or fell. |
+| `decreasedLabel` | `string` |  |
 
 **Parts**: `icon`, `label`, `value`, `unit`, `trend`, `caption`, `meter`, `skeleton`.
 
@@ -1775,6 +1793,10 @@ A compact tile that sums up one thing: an icon, a title and one value. The whole
 | `priority` | `number` | Which child gives way first when space runs out. Higher stays longer; ties give way from the end. Default 0. |
 | `minWidth` | `number` | Reserved: `Columns` has no rule that uses it yet, so it has no effect. |
 | `minHeight` | `number` | Below this height a parent `Stack` may collapse the child to its header. |
+| `highlightChanges` | `boolean` | A changed value flashes softly once: green when a number rose, red when it fell, neutral otherwise. A sign shows the direction without colour. No flash under reduced motion; the sign stays. The value is never counted up or down. |
+| `changeValue` | `unknown` | What is compared, when the content is not the value itself (a formatted text). Default: the content, when it is text or a number. |
+| `increasedLabel` | `string` | What a screen reader hears with the sign of a value that rose or fell. |
+| `decreasedLabel` | `string` |  |
 
 **Parts**: `icon`, `title`, `value`, `trend`, `caption`, `skeleton`.
 
@@ -2060,6 +2082,9 @@ A value coloured by where it falls on a five-step ramp.
 | `max` | `number` |  |
 | `thresholds` | `readonly number[]` | Ascending boundaries, at most four. A value at a boundary belongs to the band above it. |
 | `ramp` | `"higher-is-better" \| "lower-is-better"` | Which end of the scale gets the top of the ramp. |
+| `highlightChanges` | `boolean` | A changed value flashes softly once: green when a number rose, red when it fell, neutral otherwise. A sign shows the direction without colour. No flash under reduced motion; the sign stays. The value is never counted up or down. |
+| `increasedLabel` | `string` | What a screen reader hears with the sign of a value that rose or fell. |
+| `decreasedLabel` | `string` |  |
 
 **Parts**: `value`, `level`, `skeleton`.
 

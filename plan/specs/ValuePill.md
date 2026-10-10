@@ -62,6 +62,8 @@ How the level is found:
 | `levelLabel` | function of (level, steps) | "Level 4 of 5" | What a screen reader hears for the marker |
 | `emptyLabel` | node | "–" | Shown when there is no value |
 | `loading` | boolean | `false` | Shows a placeholder of the pill's size |
+| `highlightChanges` | boolean | off | The value flashes softly once when it changes: green when a number rose, red when it fell, neutral otherwise, with a ▲ or ▼ sign as the cue that is not colour. No flash under reduced motion; the sign stays for four seconds. Never counted up or down. |
+| `increasedLabel` / `decreasedLabel` | string | "increased" / "decreased" | What a screen reader hears with the sign |
 
 ### 3. Parts
 
@@ -90,6 +92,7 @@ None.
 
 Resolved 2026-10-10:
 
+- 2026-10-11: `highlightChanges` (plan/interaction.md, "Live updates"), the same as on `DataTable` and from the same code: `src/internal/useChangeHighlight.ts` and `ChangeHighlight.tsx`. The number itself is compared, not the formatted text, so `formatValue` keeps the direction. Tokens: `--umbra-change-up`, `--umbra-change-down`, `--umbra-change-neutral`.
 - `ramp` takes `higher-is-better` or `lower-is-better`.
 - Fewer than four thresholds spread over the whole ramp, so a single pass mark gives the two end colours.
 - A value at a threshold belongs to the band above it.

@@ -174,6 +174,7 @@ None.
 
 Resolved 2026-10-11:
 
+- **`highlightChanges` is the shared highlight** (`src/internal/useChangeHighlight.ts`, `ChangeHighlight.tsx`), which the other value components now have too. The table's behaviour and its `--umbra-table-change-*` tokens are unchanged; without them it reads `--umbra-change-*`. The flash now follows the provider's reduced-motion setting, not only the system's.
 - **Pixel widths follow the density.** A width that fitted its text at the default density cut it at spacious, where the font is larger. Pixels are now written for the default density (a 13px cell font) and multiplied by the cell font size over 13 (`resolveWidth` in `src/table/logic.ts`, unit-tested). The table reads its font from a hidden probe of 1ch by 1em, observed for changes, so a density or font token change is followed.
 - **`width: 'content'`**: the longest text of the column (through `format`), its header and a text footer, counted in characters, times the width of a digit, plus the cell padding and room for the sort arrow. It is fixed (no `flex`). `numberColumn` uses it by default; with a `cell` of its own, whose width the text does not tell, it keeps 80 pixels. Dates and other short codes can use `width: 'content'` too.
 - **Stripes share one strength** with `List` and `KeyValueList`: the text colour at `--umbra-state-stripe-strength` (5%). The table's stripe is opaque, so it is mixed in sRGB, which is what a translucent fill composites as; mixed in oklab, as before, the same share was far fainter on a dark surface.

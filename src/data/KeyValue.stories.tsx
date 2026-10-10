@@ -6,6 +6,7 @@ import { Columns } from '../layout/Columns';
 import { Section, Sheet } from '../stories/dataValues';
 import { EntityIcon } from './EntityIcon';
 import { KeyValue, KeyValueList, type KeyValueItem } from './KeyValue';
+import { LiveValues } from '../stories/live';
 
 const meta = {
   title: 'Data/KeyValue',
@@ -218,5 +219,14 @@ export const Customised: Story = {
         </KeyValueList.Root>
       </Section>
     </Sheet>
+  ),
+};
+
+/** `highlightChanges`: press the button and each changed value flashes once, with a sign when a number rose or fell. */
+export const LiveUpdates: Story = {
+  render: () => (
+    <LiveValues>
+      {(value) => <KeyValue label="Orders" value={value} orientation="stacked" highlightChanges />}
+    </LiveValues>
   ),
 };

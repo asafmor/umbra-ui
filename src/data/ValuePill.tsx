@@ -1,5 +1,11 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { Skeleton } from '../basics/Skeleton';
+import {
+  ChangeHighlight,
+  changeHost,
+  splitChange,
+  type ChangeHighlightProps,
+} from '../internal/ChangeHighlight';
 import { cx, renderPart, type Part } from '../utils/parts';
 import shared from './shared.module.css';
 import { rampSteps, valueLevel, type ValueLevelOptions } from './valueLevel';
@@ -42,9 +48,12 @@ function Root({
   );
 }
 
-function Value({ className, style, children }: BlockProps) {
+export type ValuePillValueProps = BlockProps & ChangeHighlightProps;
+
+function Value({ className, style, children, ...change }: ValuePillValueProps) {
   return (
-    <span data-part="value" className={cx(styles.value, className)} style={style}>
+    <span data-part="value" {...changeHost(change)} className={cx(styles.value, className)} style={style}>
+      <ChangeHighlight {...change}>{children}</ChangeHighlight>
       {children}
     </span>
   );
@@ -71,7 +80,11 @@ function Level({ level, label, className, style }: ValuePillLevelProps) {
   );
 }
 
-export interface ValuePillProps extends Omit<ValuePillRootProps, 'level' | 'children'>, ValueLevelOptions {
+export interface ValuePillProps
+  extends
+    Omit<ValuePillRootProps, 'level' | 'children'>,
+    ValueLevelOptions,
+    Omit<ChangeHighlightProps, 'changeValue'> {
   /** The value. `null` or `undefined` shows `emptyLabel` in a neutral pill. */
   value: number | null | undefined;
   /** Turns the value into what is shown: `(v) => v.toFixed(2)`, or a grade letter. */
@@ -105,8 +118,9 @@ export function ValuePill({
   emptyLabel = '–',
   loading = false,
   parts,
-  ...root
+  ...rest
 }: ValuePillProps) {
+  const [change, root] = splitChange(rest);
   if (loading) {
     return renderPart(parts?.skeleton, {}, () => (
       <span
@@ -125,7 +139,9 @@ export function ValuePill({
   return (
     <Root {...root} level={level}>
       {renderPart(parts?.value, { children: text }, (p) => (
-        <Value>{p.children}</Value>
+        <Value {...change} changeValue={value ?? null}>
+          {p.children}
+        </Value>
       ))}
       {showLevel &&
         level !== null &&

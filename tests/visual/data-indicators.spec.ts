@@ -1,4 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
+import { expectChangeHighlights } from './live';
 
 // Tag, Badge, ValuePill, TrendArrow, StatusIndicator and Link: keyboard, focus, accessible text and
 // the shrink steps, which the still captures cannot show.
@@ -275,4 +276,10 @@ test('a standalone link with little room truncates and keeps its chevron; an inl
   await expect(link.locator('[data-part="chevron"]')).toBeVisible();
   const inline = page.getByRole('link', { name: 'the full list of open orders in Region 2' });
   expect(await inline.evaluate((el) => el.getClientRects().length)).toBeGreaterThan(1);
+});
+
+test.describe('highlightChanges', () => {
+  test('ValuePill: a changed value flashes once with a sign for its direction', async ({ page }) => {
+    await expectChangeHighlights(page, 'data-valuepill--live-updates', false);
+  });
 });

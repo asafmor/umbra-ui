@@ -173,11 +173,8 @@ export function rangeIds(order: string[], anchor: string | null, target: string)
   return order.slice(Math.min(from, to), Math.max(from, to) + 1);
 }
 
-/** Which way a value moved, for `highlightChanges`. Only numbers have a direction. */
-export function changeDirection(previous: unknown, next: unknown): 'up' | 'down' | 'neutral' {
-  if (typeof previous !== 'number' || typeof next !== 'number') return 'neutral';
-  return next > previous ? 'up' : next < previous ? 'down' : 'neutral';
-}
+// `changeDirection` lives with the shared highlight; it is still tested with the table's rules.
+export { changeDirection } from '../internal/useChangeHighlight';
 
 /** The order of the groups: the listed keys first, then the others as they first appear. */
 export function orderGroups(listed: string[], found: string[]): string[] {

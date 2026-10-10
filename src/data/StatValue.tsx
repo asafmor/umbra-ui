@@ -9,6 +9,12 @@ import {
 } from 'react';
 import { Skeleton } from '../basics/Skeleton';
 import { IconSlot } from '../provider/icons';
+import {
+  ChangeHighlight,
+  changeHost,
+  splitChange,
+  type ChangeHighlightProps,
+} from '../internal/ChangeHighlight';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './StatValue.module.css';
 
@@ -97,9 +103,12 @@ function Figure({ className, style, children }: BlockProps) {
   );
 }
 
-function Value({ className, style, children }: BlockProps) {
+export type StatValueValueProps = BlockProps & ChangeHighlightProps;
+
+function Value({ className, style, children, ...change }: StatValueValueProps) {
   return (
-    <span data-part="value" className={cx(styles.value, className)} style={style}>
+    <span data-part="value" {...changeHost(change)} className={cx(styles.value, className)} style={style}>
+      <ChangeHighlight {...change}>{children}</ChangeHighlight>
       {children}
     </span>
   );
@@ -137,7 +146,7 @@ function Meter({ className, style, children }: BlockProps) {
   );
 }
 
-export interface StatValueProps extends Omit<StatValueRootProps, 'children'> {
+export interface StatValueProps extends Omit<StatValueRootProps, 'children'>, ChangeHighlightProps {
   /** The value. It never hides. */
   value?: ReactNode;
   /** What the value is. */
@@ -179,8 +188,9 @@ export function StatValue({
   trend,
   meter,
   parts,
-  ...root
+  ...rest
 }: StatValueProps) {
+  const [change, root] = splitChange(rest);
   const { loading } = root;
   const iconNode =
     has(icon) &&
@@ -201,7 +211,7 @@ export function StatValue({
         ) : (
           <>
             {renderPart(parts?.value, { children: value }, (p) => (
-              <Value>{p.children}</Value>
+              <Value {...change}>{p.children}</Value>
             ))}
             {has(unit) && renderPart(parts?.unit, { children: unit }, (p) => <Unit>{p.children}</Unit>)}
             {has(trend) && renderPart(parts?.trend, { children: trend }, (p) => <Trend>{p.children}</Trend>)}

@@ -470,51 +470,27 @@
   z-index: 5;
 }
 
-/* --- Changed values ----------------------------------------------------------------------------------- */
+/* --- Changed values: the shared highlight (src/internal/ChangeHighlight), with the table's tokens --- */
 
-.flash {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: var(--umbra-table-change-neutral, var(--umbra-color-base-text-primary));
-  opacity: 0;
-  animation: umbra-table-flash 1200ms var(--umbra-motion-easing-exit);
+.root [data-part='change-flash'] {
+  background: var(
+    --umbra-table-change-neutral,
+    var(--umbra-change-neutral, var(--umbra-color-base-text-primary))
+  );
 }
 
-.flash[data-direction='up'] {
-  background: var(--umbra-table-change-up, var(--umbra-color-semantic-success));
+.root [data-part='change-flash'][data-direction='up'] {
+  background: var(--umbra-table-change-up, var(--umbra-change-up, var(--umbra-color-semantic-success)));
 }
 
-.flash[data-direction='down'] {
-  background: var(--umbra-table-change-down, var(--umbra-color-semantic-danger));
+.root [data-part='change-flash'][data-direction='down'] {
+  background: var(--umbra-table-change-down, var(--umbra-change-down, var(--umbra-color-semantic-danger)));
 }
 
-@keyframes umbra-table-flash {
-  from {
-    opacity: 0.32;
-  }
-  to {
-    opacity: 0;
-  }
+.root [data-part='change-sign'][data-direction='up'] {
+  color: var(--umbra-table-change-up, var(--umbra-change-up, var(--umbra-color-semantic-success)));
 }
 
-/* Reduced motion: no flash, the sign alone says which way the value moved. */
-@media (prefers-reduced-motion: reduce) {
-  .flash {
-    animation: none;
-  }
-}
-
-.changeSign {
-  margin-inline-end: var(--umbra-space-2);
-  font-size: 0.7em;
-  vertical-align: middle;
-}
-
-.changeSign[data-direction='up'] {
-  color: var(--umbra-table-change-up, var(--umbra-color-semantic-success));
-}
-
-.changeSign[data-direction='down'] {
-  color: var(--umbra-table-change-down, var(--umbra-color-semantic-danger));
+.root [data-part='change-sign'][data-direction='down'] {
+  color: var(--umbra-table-change-down, var(--umbra-change-down, var(--umbra-color-semantic-danger)));
 }

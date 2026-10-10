@@ -37,7 +37,7 @@ Character: **crisp and minimal**. Short fades and small slides only; no sweeps, 
 ## Live updates
 
 - A changed value can flash softly once: green for up, red for down, neutral otherwise. The direction is also shown without colour (a `TrendArrow` or sign) where it matters.
-- **Opt-in** per component (`highlightChanges`), off by default.
+- **Opt-in** per component (`highlightChanges`), off by default. On `DataTable` (per column), `StatValue`, `KeyValue`, `ValuePill`, `SummaryTile`, the `meta` of `ListItem`, and the value text of `ProgressBar` and `LevelMeter`: one shared hook (`src/internal/useChangeHighlight.ts`), so it behaves the same everywhere. The flash plays once over the value's own element and is off under reduced motion; the sign (▲ or ▼, with a text for screen readers) stays for four seconds. Only numbers have a direction: a formatted text flashes neutral unless the number is given as `changeValue`.
 - No animated number counting.
 
 ## Keyboard

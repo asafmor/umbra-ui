@@ -72,6 +72,8 @@ States: hover, pressed, selected, unread, read, accent, disabled, focus.
 | `disabled` | boolean | `false` | |
 | `href` / `onPress` | string / function | — | Makes the whole row a link or a button |
 | `interactive` | boolean | from `href` / `onPress` | Hover and press feedback; `List` sets it |
+| `highlightChanges` | boolean | off | The `meta` text flashes softly once when it changes: green when a number rose, red when it fell, neutral otherwise, with a ▲ or ▼ sign as the cue that is not colour. No flash under reduced motion; the sign stays for four seconds. Never counted up or down. |
+| `increasedLabel` / `decreasedLabel` | string | "increased" / "decreased" | What a screen reader hears with the sign |
 
 ### 3. Parts
 
@@ -106,6 +108,7 @@ None.
 
 Resolved 2026-10-10:
 
+- 2026-10-11: `highlightChanges` (plan/interaction.md, "Live updates"), the same as on `DataTable` and from the same code: `src/internal/useChangeHighlight.ts` and `ChangeHighlight.tsx`. It applies to `meta`, the one live value of a row; `changeValue` gives the number behind a formatted text. Tokens: `--umbra-change-up`, `--umbra-change-down`, `--umbra-change-neutral`.
 - The shrink steps are fixed widths, not measured. Measuring would hide the tag and the time of every row with a long title, because the title "truncates last"; in the source long titles truncate while tags and times stay.
 - The source tints the whole row by category; the library draws a stripe instead, so text contrast does not depend on the app's colour.
 - Added `size="compact"`: the density's list row (72px) fits two-line rows; leaderboard rows in the source are one line.

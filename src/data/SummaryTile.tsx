@@ -4,6 +4,12 @@ import { Skeleton } from '../basics/Skeleton';
 import { useTruncatedTip } from '../internal/TruncatedText';
 import { useSlot, type SlotProps } from '../layout/useSlot';
 import { IconSlot } from '../provider/icons';
+import {
+  ChangeHighlight,
+  changeHost,
+  splitChange,
+  type ChangeHighlightProps,
+} from '../internal/ChangeHighlight';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './SummaryTile.module.css';
 
@@ -116,9 +122,12 @@ function Figure({ className, style, children }: BlockProps) {
   );
 }
 
-function Value({ className, style, children }: BlockProps) {
+export type SummaryTileValueProps = BlockProps & ChangeHighlightProps;
+
+function Value({ className, style, children, ...change }: SummaryTileValueProps) {
   return (
-    <span data-part="value" className={cx(styles.value, className)} style={style}>
+    <span data-part="value" {...changeHost(change)} className={cx(styles.value, className)} style={style}>
+      <ChangeHighlight {...change}>{children}</ChangeHighlight>
       {children}
     </span>
   );
@@ -140,7 +149,7 @@ function Caption({ className, style, children }: BlockProps) {
   );
 }
 
-export interface SummaryTileProps extends Omit<SummaryTileRootProps, 'children'> {
+export interface SummaryTileProps extends Omit<SummaryTileRootProps, 'children'>, ChangeHighlightProps {
   /** Shown in a block at the start of the tile. */
   icon?: ReactNode;
   /** What the tile is about. */
@@ -167,7 +176,8 @@ export interface SummaryTileProps extends Omit<SummaryTileRootProps, 'children'>
 const has = (node: ReactNode) => node != null && node !== false;
 
 /** A compact tile that sums up one thing: an icon, a title and one value. The whole tile can be a link or a button. */
-export function SummaryTile({ icon, title, value, caption, trend, parts, ...root }: SummaryTileProps) {
+export function SummaryTile({ icon, title, value, caption, trend, parts, ...rest }: SummaryTileProps) {
+  const [change, root] = splitChange(rest);
   const { loading } = root;
   return (
     <Root {...root}>
@@ -182,7 +192,7 @@ export function SummaryTile({ icon, title, value, caption, trend, parts, ...root
           ) : (
             <>
               {renderPart(parts?.value, { children: value }, (p) => (
-                <Value>{p.children}</Value>
+                <Value {...change}>{p.children}</Value>
               ))}
               {has(trend) &&
                 renderPart(parts?.trend, { children: trend }, (p) => <Trend>{p.children}</Trend>)}

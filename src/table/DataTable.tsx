@@ -32,6 +32,7 @@ import { Skeleton } from '../basics/Skeleton';
 import { GroupHeader } from '../data/GroupHeader';
 import { KeyValueList, type KeyValueItem } from '../data/KeyValue';
 import { Checkbox } from '../inputs/Checkbox';
+import { ChangeHighlight } from '../internal/ChangeHighlight';
 import { dataState, type DataStateProps } from '../internal/dataState';
 import { heightProps } from '../internal/height';
 import { ScrollArea } from '../layout/ScrollArea';
@@ -46,7 +47,6 @@ import { GridAdapterContext, INTERACTIVE, rowHandlers, useGrid, type GridAdapter
 import {
   defaultWidthMetrics,
   resolveWidth,
-  changeDirection,
   fitColumns,
   offsetsOf,
   orderGroups,
@@ -744,45 +744,6 @@ function GroupRow({
   );
 }
 
-/** How long the sign of a changed value stays, in milliseconds. */
-const CHANGE_MS = 4000;
-
-/** `highlightChanges`: one soft flash when the value changes, and a sign for the direction. */
-function Change({ value, labels }: { value: unknown; labels: { up: string; down: string } }) {
-  const [state, setState] = useState<{
-    value: unknown;
-    direction: 'up' | 'down' | 'neutral' | null;
-    stamp: number;
-  }>({ value, direction: null, stamp: 0 });
-  if (!Object.is(state.value, value)) {
-    setState({ value, direction: changeDirection(state.value, value), stamp: state.stamp + 1 });
-  }
-  useEffect(() => {
-    if (!state.direction) return;
-    const timer = setTimeout(() => setState((s) => ({ ...s, direction: null })), CHANGE_MS);
-    return () => clearTimeout(timer);
-  }, [state.stamp, state.direction]);
-  const { direction } = state;
-  if (!direction) return null;
-  return (
-    <>
-      <span
-        key={state.stamp}
-        aria-hidden="true"
-        data-part="change-flash"
-        data-direction={direction}
-        className={styles.flash}
-      />
-      {direction !== 'neutral' && (
-        <span data-part="change-sign" data-direction={direction} className={styles.changeSign}>
-          <span aria-hidden="true">{direction === 'up' ? '▲' : '▼'}</span>
-          <span className={srOnly}>{labels[direction]}</span>
-        </span>
-      )}
-    </>
-  );
-}
-
 /** A copy of an object without some of its keys: what a block receives from the props of its part. */
 function without<T extends object, K extends keyof T>(value: T, ...keys: K[]): Omit<T, K> {
   const copy = { ...value };
@@ -1460,7 +1421,6 @@ export function DataTable<Row>({
   const flashes = (column: DataTableColumn<Row>) =>
     column.accessor !== undefined &&
     (highlightChanges === true || (Array.isArray(highlightChanges) && highlightChanges.includes(column.id)));
-  const changeLabels = { up: increasedLabel, down: decreasedLabel };
   const linkColumn = (cols.find((c) => c.def?.rowHeader) ?? cols.find((c) => c.def))?.id;
   const firstDataColumn = cols.find((c) => c.def)?.id;
 
@@ -1726,7 +1686,14 @@ export function DataTable<Row>({
           title: !column.cell && !c.numeric && !column.wrap && text ? text : undefined,
           children: (
             <>
-              {flashes(column) && <Change value={value} labels={changeLabels} />}
+              {flashes(column) && (
+                <ChangeHighlight
+                  highlightChanges
+                  changeValue={value ?? null}
+                  increasedLabel={increasedLabel}
+                  decreasedLabel={decreasedLabel}
+                />
+              )}
               {c.id === firstDataColumn && accent && <span className={srOnly}>{accent.label} </span>}
               {c.id === firstDataColumn && highlighted && <span className={srOnly}>{highlightLabel} </span>}
               {href && c.id === linkColumn ? (

@@ -7,6 +7,7 @@ import { Columns } from '../layout/Columns';
 import { Log } from '../stories/placeholders';
 import { ListItem } from './ListItem';
 import { Box, Chip, Dot } from './samples';
+import { LiveValues } from '../stories/live';
 
 const meta = {
   title: 'Data/ListItem',
@@ -226,5 +227,12 @@ export const PartsAndBlocks: Story = {
         </ListItem.Root>
       </Card>
     </Columns>
+  ),
+};
+
+/** `highlightChanges`: press the button and each changed value flashes once, with a sign when a number rose or fell. */
+export const LiveUpdates: Story = {
+  render: () => (
+    <LiveValues>{(value) => <ListItem title="Orders" meta={value} highlightChanges />}</LiveValues>
   ),
 };

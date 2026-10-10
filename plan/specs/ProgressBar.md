@@ -71,6 +71,8 @@ States: `indeterminate`, `loading`, out of range (`data-out-of-range="under"` or
 | `indeterminate` | boolean | `false` | Progress of unknown length |
 | `loading` | boolean | `false` | Skeletons in place of the bar and the value |
 | `tooltip` | boolean | `true` | The exact value in a tooltip on hover |
+| `highlightChanges` | boolean | off | The value text flashes softly once when it changes: green when a number rose, red when it fell, neutral otherwise, with a ▲ or ▼ sign as the cue that is not colour. No flash under reduced motion; the sign stays for four seconds. Never counted up or down. |
+| `increasedLabel` / `decreasedLabel` | string | "increased" / "decreased" | What a screen reader hears with the sign |
 
 ### 3. Parts
 
@@ -107,6 +109,7 @@ None.
 
 Resolved 2026-10-10:
 
+- 2026-10-11: `highlightChanges` (plan/interaction.md, "Live updates"), the same as on `DataTable` and from the same code: `src/internal/useChangeHighlight.ts` and `ChangeHighlight.tsx`. The number itself is compared. The fill moves without a transition of its own, as before. Tokens: `--umbra-change-up`, `--umbra-change-down`, `--umbra-change-neutral`.
 - The stacked data prop is `stack`, not `parts`: every component uses `parts` for the customisation layer.
 - A threshold is `{ from, tone, label? }`; the highest `from` not above the value wins. `thresholds={true}` is thirds of the scale: danger, warning, success, with no labels (a built-in label would need translating).
 - `invert` swaps the tones and patterns of the bands; the labels stay with their bands.

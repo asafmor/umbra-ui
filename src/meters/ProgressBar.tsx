@@ -7,6 +7,12 @@ import {
 import { Skeleton } from '../basics/Skeleton';
 import { useHoverTip } from '../internal/TruncatedText';
 import { useShrinkLevel } from '../internal/useShrinkLevel';
+import {
+  ChangeHighlight,
+  changeHost,
+  splitChange,
+  type ChangeHighlightProps,
+} from '../internal/ChangeHighlight';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './ProgressBar.module.css';
 import {
@@ -267,20 +273,22 @@ function Label({ children, className, style }: BlockProps) {
   return useBar().loading ? <span {...props}>{children}</span> : <AriaLabel {...props}>{children}</AriaLabel>;
 }
 
-export interface ProgressBarValueProps extends BlockProps {
+export interface ProgressBarValueProps extends BlockProps, ChangeHighlightProps {
   /** `inside` draws the value on the bar, at the end of the fill; render it inside `ProgressBar.Track`. */
   placement?: 'outside' | 'inside';
 }
 
 /** The value as text. Hides first when the bar is narrow. `children` replaces the formatted value. */
-function Value({ children, placement = 'outside', className, style }: ProgressBarValueProps) {
+function Value({ children, placement = 'outside', className, style, ...change }: ProgressBarValueProps) {
   const bar = useBar();
+  const mark = <ChangeHighlight {...change}>{children ?? bar.valueText}</ChangeHighlight>;
   if (placement === 'inside') {
     if (bar.loading) return null;
     const fraction = bar.cells.length === 1 ? bar.cells[0]!.fills.reduce((sum, f) => sum + f.fraction, 0) : 1;
     return (
       <div className={styles.inside} style={{ inlineSize: `${fraction * 100}%` }}>
-        <span data-part="value" className={cx(styles.value, className)} style={style}>
+        <span data-part="value" {...changeHost(change)} className={cx(styles.value, className)} style={style}>
+          {mark}
           {children ?? bar.valueText}
         </span>
       </div>
@@ -288,7 +296,8 @@ function Value({ children, placement = 'outside', className, style }: ProgressBa
   }
   if (bar.hideValue) return null;
   return (
-    <span data-part="value" className={cx(styles.value, className)} style={style}>
+    <span data-part="value" {...changeHost(change)} className={cx(styles.value, className)} style={style}>
+      {!bar.loading && mark}
       {bar.loading ? <Skeleton width="3ch" /> : (children ?? bar.valueText)}
     </span>
   );
@@ -395,7 +404,8 @@ function Target({ className, style }: Omit<BlockProps, 'children'>) {
   );
 }
 
-export interface ProgressBarProps extends Omit<ProgressBarRootProps, 'children'> {
+export interface ProgressBarProps
+  extends Omit<ProgressBarRootProps, 'children'>, Omit<ChangeHighlightProps, 'changeValue'> {
   /** The name of the bar, shown beside or above it. */
   label?: ReactNode;
   /** Replaces the formatted value. Setting it shows the value. */
@@ -422,14 +432,21 @@ export function ProgressBar({
   showValue = valueLabel !== undefined,
   valuePlacement = 'outside',
   parts,
-  ...root
+  ...rest
 }: ProgressBarProps) {
+  const [change, root] = splitChange(rest);
   const inside = valuePlacement === 'inside' && root.size === 'thick';
   const value =
     showValue &&
     !root.indeterminate &&
     renderPart(parts?.value, { children: valueLabel }, (p) => (
-      <Value placement={inside ? 'inside' : 'outside'}>{p.children}</Value>
+      <Value
+        placement={inside ? 'inside' : 'outside'}
+        {...change}
+        changeValue={typeof root.value === 'number' ? root.value : undefined}
+      >
+        {p.children}
+      </Value>
     ));
   const over = (
     <>

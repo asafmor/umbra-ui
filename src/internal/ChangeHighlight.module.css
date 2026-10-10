@@ -1,0 +1,58 @@
+/* `highlightChanges`: one soft flash over the value when it changes, and a sign for the direction. */
+
+/* The element of the value: the flash covers it. */
+:global([data-umbra-change]) {
+  position: relative;
+}
+
+.flash {
+  position: absolute;
+  inset: var(--umbra-change-inset, 0);
+  border-radius: inherit;
+  pointer-events: none;
+  background: var(--umbra-change-neutral, var(--umbra-color-base-text-primary));
+  opacity: 0;
+  /* Reduced motion sets the scale to 0: no flash, and the sign alone says which way the value moved. */
+  animation: umbra-change-flash calc(1200ms * var(--umbra-motion-scale)) var(--umbra-motion-easing-exit);
+}
+
+.flash[data-direction='up'] {
+  background: var(--umbra-change-up, var(--umbra-color-semantic-success));
+}
+
+.flash[data-direction='down'] {
+  background: var(--umbra-change-down, var(--umbra-color-semantic-danger));
+}
+
+@keyframes umbra-change-flash {
+  from {
+    opacity: 0.32;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+.sign {
+  margin-inline-end: var(--umbra-space-2);
+  font-size: 0.7em;
+  vertical-align: middle;
+}
+
+.sign[data-direction='up'] {
+  color: var(--umbra-change-up, var(--umbra-color-semantic-success));
+}
+
+.sign[data-direction='down'] {
+  color: var(--umbra-change-down, var(--umbra-color-semantic-danger));
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

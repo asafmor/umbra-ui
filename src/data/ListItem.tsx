@@ -1,5 +1,11 @@
 import { useRef, type CSSProperties, type ReactNode } from 'react';
 import { useTruncatedTip } from '../internal/TruncatedText';
+import {
+  ChangeHighlight,
+  changeHost,
+  splitChange,
+  type ChangeHighlightProps,
+} from '../internal/ChangeHighlight';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './ListItem.module.css';
 
@@ -70,7 +76,16 @@ const Content = block('content', styles.content);
 const Overline = block('overline', styles.overline);
 const Description = block('description', styles.description);
 const End = block('end', styles.end);
-const Meta = block('meta', styles.meta, 'span');
+export type ListItemMetaProps = BlockProps & ChangeHighlightProps;
+
+function Meta({ className, style, children, ...change }: ListItemMetaProps) {
+  return (
+    <span data-part="meta" {...changeHost(change)} className={cx(styles.meta, className)} style={style}>
+      <ChangeHighlight {...change}>{children}</ChangeHighlight>
+      {children}
+    </span>
+  );
+}
 const Trailing = block('trailing', styles.trailing);
 
 export interface ListItemTitleProps extends BlockProps {
@@ -123,7 +138,7 @@ function Unread({ label = 'Unread', className, style }: ListItemUnreadProps) {
   );
 }
 
-export interface ListItemProps extends Omit<ListItemRootProps, 'children'> {
+export interface ListItemProps extends Omit<ListItemRootProps, 'children'>, ChangeHighlightProps {
   /** The main line. Truncates last. */
   title?: ReactNode;
   /** A second line under the title. */
@@ -169,8 +184,9 @@ export function ListItem({
   href,
   onPress,
   parts,
-  ...root
+  ...rest
 }: ListItemProps) {
+  const [change, root] = splitChange(rest);
   return (
     <Root {...root} interactive={root.interactive ?? !!(href || onPress)}>
       {leading && renderPart(parts?.leading, { children: leading }, (p) => <Leading>{p.children}</Leading>)}
@@ -191,7 +207,8 @@ export function ListItem({
           {(meta || root.unread) && (
             <span className={styles.metaRow}>
               {root.unread && renderPart(parts?.unread, { label: unreadLabel }, (p) => <Unread {...p} />)}
-              {meta && renderPart(parts?.meta, { children: meta }, (p) => <Meta>{p.children}</Meta>)}
+              {meta &&
+                renderPart(parts?.meta, { children: meta }, (p) => <Meta {...change}>{p.children}</Meta>)}
             </span>
           )}
           {trailing &&

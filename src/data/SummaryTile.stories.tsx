@@ -7,6 +7,7 @@ import { Stack } from '../layout/Stack';
 import { Section, Sheet, TrendStandIn } from '../stories/dataValues';
 import { Log, Rows } from '../stories/placeholders';
 import { SummaryTile } from './SummaryTile';
+import { LiveValues } from '../stories/live';
 
 const meta = {
   title: 'Data/SummaryTile',
@@ -241,5 +242,12 @@ export const Customised: Story = {
         </SummaryTile.Root>
       </Section>
     </Sheet>
+  ),
+};
+
+/** `highlightChanges`: press the button and each changed value flashes once, with a sign when a number rose or fell. */
+export const LiveUpdates: Story = {
+  render: () => (
+    <LiveValues>{(value) => <SummaryTile title="Orders" value={value} highlightChanges />}</LiveValues>
   ),
 };

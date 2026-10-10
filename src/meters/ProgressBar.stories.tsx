@@ -3,6 +3,7 @@ import { UmbraScope } from '../provider/UmbraProvider';
 import { ProgressBar, type ProgressBarStackItem } from './ProgressBar';
 import type { Threshold } from './scale';
 import { Board, Panel, Width } from './storyKit';
+import { LiveValues } from '../stories/live';
 
 const meta = {
   title: 'Meters/ProgressBar',
@@ -335,5 +336,14 @@ export const Customised: Story = {
         </ProgressBar.Root>
       </Panel>
     </Board>
+  ),
+};
+
+/** `highlightChanges`: press the button and each changed value flashes once, with a sign when a number rose or fell. */
+export const LiveUpdates: Story = {
+  render: () => (
+    <LiveValues kinds={['up', 'down', 'same']}>
+      {(value) => <ProgressBar label="Orders" value={value as number} showValue highlightChanges />}
+    </LiveValues>
   ),
 };

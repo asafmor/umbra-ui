@@ -10,6 +10,12 @@ import {
 import { Skeleton } from '../basics/Skeleton';
 import { useTruncatedTip } from '../internal/TruncatedText';
 import { IconSlot } from '../provider/icons';
+import {
+  ChangeHighlight,
+  changeHost,
+  splitChange,
+  type ChangeHighlightProps,
+} from '../internal/ChangeHighlight';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './KeyValue.module.css';
 
@@ -67,12 +73,21 @@ function Label({ icon, className, style, children }: KeyValueLabelProps) {
   );
 }
 
-function Value({ className, style, children }: BlockProps) {
+export type KeyValueValueProps = BlockProps & ChangeHighlightProps;
+
+function Value({ className, style, children, ...change }: KeyValueValueProps) {
   const ref = useRef<HTMLElement>(null);
   const tip = useTruncatedTip(ref, children);
   return (
     <>
-      <dd ref={ref} data-part="value" className={cx(styles.value, className)} style={style}>
+      <dd
+        ref={ref}
+        data-part="value"
+        {...changeHost(change)}
+        className={cx(styles.value, className)}
+        style={style}
+      >
+        <ChangeHighlight {...change}>{children}</ChangeHighlight>
         {children}
       </dd>
       {tip}
@@ -88,7 +103,7 @@ function Hint({ className, style, children }: BlockProps) {
   );
 }
 
-export interface KeyValueProps extends Omit<KeyValueRootProps, 'children'> {
+export interface KeyValueProps extends Omit<KeyValueRootProps, 'children'>, ChangeHighlightProps {
   /** What the value is. */
   label?: ReactNode;
   /** The value. `children` is used when it is not set. */
@@ -108,7 +123,8 @@ export interface KeyValueProps extends Omit<KeyValueRootProps, 'children'> {
 }
 
 /** One label with its value. Use it inside a `KeyValueList`, or on its own. */
-export function KeyValue({ label, value, children, icon, hint, parts, ...root }: KeyValueProps) {
+export function KeyValue({ label, value, children, icon, hint, parts, ...rest }: KeyValueProps) {
+  const [change, root] = splitChange(rest);
   const iconNode =
     icon != null &&
     icon !== false &&
@@ -119,7 +135,7 @@ export function KeyValue({ label, value, children, icon, hint, parts, ...root }:
         <Label {...p} />
       ))}
       {renderPart(parts?.value, { children: value ?? children }, (p) => (
-        <Value>{p.children}</Value>
+        <Value {...change}>{p.children}</Value>
       ))}
       {hint != null &&
         hint !== false &&

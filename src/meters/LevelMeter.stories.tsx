@@ -3,6 +3,7 @@ import { UmbraScope } from '../provider/UmbraProvider';
 import { LevelMeter, type LevelMeterLevel } from './LevelMeter';
 import type { Zone } from './scale';
 import { Board, Panel, Width } from './storyKit';
+import { LiveValues } from '../stories/live';
 
 const meta = {
   title: 'Meters/LevelMeter',
@@ -291,5 +292,14 @@ export const Customised: Story = {
         </LevelMeter.Root>
       </Panel>
     </Board>
+  ),
+};
+
+/** `highlightChanges`: press the button and each changed value flashes once, with a sign when a number rose or fell. */
+export const LiveUpdates: Story = {
+  render: () => (
+    <LiveValues kinds={['up', 'down', 'same']}>
+      {(value) => <LevelMeter label="Orders" value={value as number} showValue highlightChanges />}
+    </LiveValues>
   ),
 };

@@ -1,4 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
+import { expectChangeHighlights } from './live';
 
 // Behaviour of the Data value components that a still image cannot show: fallbacks, names for
 // assistive technology, keyboard and focus, and every "show less as it shrinks" step.
@@ -335,5 +336,17 @@ test.describe('SummaryTile', () => {
     );
     expect(Math.abs(heights[0]! - heights[1]!)).toBeLessThanOrEqual(1);
     expect(heights[2]! / heights[0]!).toBeGreaterThan(1.9);
+  });
+});
+
+test.describe('highlightChanges', () => {
+  test('StatValue: a changed value flashes once with a sign for its direction', async ({ page }) => {
+    await expectChangeHighlights(page, 'data-statvalue--live-updates');
+  });
+  test('KeyValue: a changed value flashes once with a sign for its direction', async ({ page }) => {
+    await expectChangeHighlights(page, 'data-keyvalue--live-updates');
+  });
+  test('SummaryTile: a changed value flashes once with a sign for its direction', async ({ page }) => {
+    await expectChangeHighlights(page, 'data-summarytile--live-updates');
   });
 });

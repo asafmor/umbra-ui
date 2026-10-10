@@ -1,4 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
+import { expectChangeHighlights } from './live';
 
 // EmptyState, GroupHeader, ListItem and List: keyboard, focus, selection, data states and every shrink step.
 const open = async (page: Page, id: string, width = 1280, height = 720) => {
@@ -455,5 +456,11 @@ test.describe('List selection when the selected row leaves', () => {
     await expect(page.getByRole('row', { name: 'Task B' })).toHaveAttribute('aria-selected', 'false');
     await page.keyboard.press('ArrowDown');
     await settled(page, 'Selected: c · Reports: 2 · Open: b, d, e');
+  });
+});
+
+test.describe('highlightChanges', () => {
+  test('ListItem meta: a changed value flashes once with a sign for its direction', async ({ page }) => {
+    await expectChangeHighlights(page, 'data-listitem--live-updates');
   });
 });

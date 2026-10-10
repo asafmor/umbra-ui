@@ -12,6 +12,12 @@ import { Label as AriaLabel, Meter as AriaMeter } from 'react-aria-components';
 import { Skeleton } from '../basics/Skeleton';
 import { useHoverTip } from '../internal/TruncatedText';
 import { useShrinkLevel } from '../internal/useShrinkLevel';
+import {
+  ChangeHighlight,
+  changeHost,
+  splitChange,
+  type ChangeHighlightProps,
+} from '../internal/ChangeHighlight';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './LevelMeter.module.css';
 import {
@@ -330,16 +336,20 @@ function Marker({ kind = 'value', className, style }: LevelMeterMarkerProps) {
 }
 
 /** The value as text. `children` replaces the formatted value. */
-function Value({ children, className, style }: BlockProps) {
+export type LevelMeterValueProps = BlockProps & ChangeHighlightProps;
+
+function Value({ children, className, style, ...change }: LevelMeterValueProps) {
   const meter = useMeter();
   return (
-    <span data-part="value" className={cx(styles.value, className)} style={style}>
+    <span data-part="value" {...changeHost(change)} className={cx(styles.value, className)} style={style}>
+      {!meter.loading && <ChangeHighlight {...change}>{children ?? meter.valueText}</ChangeHighlight>}
       {meter.loading ? <Skeleton width="3ch" /> : (children ?? meter.valueText)}
     </span>
   );
 }
 
-export interface LevelMeterProps extends Omit<LevelMeterRootProps, 'children'> {
+export interface LevelMeterProps
+  extends Omit<LevelMeterRootProps, 'children'>, Omit<ChangeHighlightProps, 'changeValue'> {
   /** The name of the meter, shown before it. */
   label?: ReactNode;
   /** Captions at the two ends of the scale. */
@@ -371,8 +381,9 @@ export function LevelMeter({
   valueLabel,
   showValue = valueLabel !== undefined,
   parts,
-  ...root
+  ...rest
 }: LevelMeterProps) {
+  const [change, root] = splitChange(rest);
   const has = (node: ReactNode) => node !== undefined && node !== null;
   const over = (
     <>
@@ -403,7 +414,12 @@ export function LevelMeter({
         <Strip skeleton={parts?.skeleton}>{p.children}</Strip>
       ))}
       {end('max', maxLabel)}
-      {showValue && renderPart(parts?.value, { children: valueLabel }, (p) => <Value>{p.children}</Value>)}
+      {showValue &&
+        renderPart(parts?.value, { children: valueLabel }, (p) => (
+          <Value {...change} changeValue={typeof root.value === 'number' ? root.value : undefined}>
+            {p.children}
+          </Value>
+        ))}
     </Root>
   );
 }

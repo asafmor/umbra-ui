@@ -3,6 +3,7 @@ import { Card } from '../layout/Card';
 import { Columns } from '../layout/Columns';
 import { Narrow, Row } from './storyParts';
 import { ValuePill } from './ValuePill';
+import { LiveValues } from '../stories/live';
 
 const meta = {
   title: 'Data/ValuePill',
@@ -109,5 +110,14 @@ export const BehaviourAndParts: Story = {
         </Row>
       </Card>
     </Columns>
+  ),
+};
+
+/** `highlightChanges`: press the button and each changed value flashes once, with a sign when a number rose or fell. */
+export const LiveUpdates: Story = {
+  render: () => (
+    <LiveValues kinds={['up', 'down', 'same']}>
+      {(value) => <ValuePill value={value as number} highlightChanges />}
+    </LiveValues>
   ),
 };
