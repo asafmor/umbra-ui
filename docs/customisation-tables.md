@@ -130,6 +130,49 @@ A message band inside a card or page: a notice, a warning, or an insight about t
 
 **Blocks**: `Banner.Root`, `Banner.Icon`, `Banner.Content`, `Banner.Title`, `Banner.Description`, `Banner.Actions`, `Banner.Dismiss`.
 
+## BarChart
+
+Compares values across categories: grouped, stacked or diverging around zero, upright or sideways.
+
+**Tokens**: `--umbra-chart-annotation`, `--umbra-chart-annotation-width`, `--umbra-chart-area-opacity`, `--umbra-chart-axis`, `--umbra-chart-axis-width`, `--umbra-chart-band-opacity`, `--umbra-chart-bar-radius`, `--umbra-chart-center-font`, `--umbra-chart-dim-opacity`, `--umbra-chart-fg`, `--umbra-chart-font`, `--umbra-chart-gap`, `--umbra-chart-grid`, `--umbra-chart-grid-dash`, `--umbra-chart-grid-width`, `--umbra-chart-line-width`, `--umbra-chart-point-scale`, `--umbra-chart-tooltip-bg`, `--umbra-chart-tooltip-border`, `--umbra-chart-tooltip-fg`, `--umbra-chart-tooltip-radius`, `--umbra-chart-track`, `--umbra-chart-value-fg`, `--umbra-focus-color`, `--umbra-legend-row-height`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `className` | `string` |  |
+| `style` | `import("react").CSSProperties` |  |
+| `variant` | `"stacked" \| "grouped" \| "diverging"` | `grouped`: the series side by side. `stacked`: on top of each other. `diverging`: every second series is drawn on the other side of zero, with all values shown as positive. |
+| `orientation` | `"vertical" \| "horizontal"` | `horizontal` puts the categories on the left and draws the bars sideways. |
+| `loading` | `boolean` | Shows a placeholder in the chart's shape. |
+| `hiddenIds` | `readonly string[]` | Ids of the series that are switched off (controlled). |
+| `defaultHiddenIds` | `readonly string[]` |  |
+| `onHiddenChange` | `((hiddenIds: string[]) => void)` |  |
+| `error` | `ReactNode` | When set, shown in place of the chart. |
+| `label` | `string` | Accessible name of the chart. Required unless `aria-labelledby` is set. |
+| `thresholds` | `BarThreshold[]` | Colours bars by value. Each threshold also has a fill, so the steps differ without colour. |
+| `formatValue` | `((value: number) => string)` | Formats a value for labels, the tooltip and screen readers. Defaults to the provider's locale. |
+| `categories` (required) | `string[]` |  |
+| `series` (required) | `BarSeries[]` |  |
+| `colorBy` | `"series" \| "sign"` | `sign` colours bars by the sign of their value; negative bars are also striped. |
+| `valueDomain` | `[number, number]` | The range of the value axis. Defaults to round numbers around the data, with zero. |
+| `annotations` | `ChartAnnotation[]` | Reference lines and bands on the value axis. |
+| `xTitle` | `string` | Title of the horizontal axis. |
+| `yTitle` | `string` | Title of the vertical axis. |
+| `aria-labelledby` | `string` | Id of the element that names the chart, for example a card title. |
+| `description` | `string` | What a screen reader hears after the name. Defaults to a generated summary of the data. |
+| `legend` | `string \| number \| bigint \| boolean \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| import("react").ReactPortal \| Promise<string \| number \| bigint \| boolean \| import("react").ReactPortal \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| null \| undefined> \| null` | The legend: `true` or a placement shows the built-in one, `false` hides it, and a node replaces it. By default it is shown below the chart when there is more than one series. |
+| `labels` | `boolean` | Draws labels on the chart itself, so it can be read without the legend or the tooltip. |
+| `onPointPress` | `((point: import(".").ChartPoint) => void)` | Called when a point is clicked, or activated with Enter or Space. |
+| `empty` | `ReactNode` | Shown when there is no data. |
+| `onRetry` | `(() => void)` | Adds a retry button to the error state. |
+| `retryLabel` | `string` |  |
+| `pointsLabel` | `string` | Accessible name of the list of data points. |
+| `legendLabel` | `string` | Accessible name of the legend. |
+
+**Parts**: `legend`, `tooltip`, `skeleton`, `empty`, `error`.
+
+**Blocks**: `BarChart.Root`, `BarChart.Grid`, `BarChart.Annotations`, `BarChart.Bars`, `BarChart.Axes`, `BarChart.ValueLabels`.
+
 ## Button
 
 Triggers an action. Text, with an optional icon.
@@ -293,6 +336,52 @@ Shares its width among its children. Below the minimum window it shows one child
 **Parts**: `tabs`.
 
 **Blocks**: none.
+
+## DonutChart
+
+A ring that shows one value against a total, or how a total splits into segments.
+
+**Tokens**: `--umbra-chart-annotation`, `--umbra-chart-annotation-width`, `--umbra-chart-area-opacity`, `--umbra-chart-axis`, `--umbra-chart-axis-width`, `--umbra-chart-band-opacity`, `--umbra-chart-bar-radius`, `--umbra-chart-center-font`, `--umbra-chart-dim-opacity`, `--umbra-chart-fg`, `--umbra-chart-font`, `--umbra-chart-gap`, `--umbra-chart-grid`, `--umbra-chart-grid-dash`, `--umbra-chart-grid-width`, `--umbra-chart-line-width`, `--umbra-chart-point-scale`, `--umbra-chart-tooltip-bg`, `--umbra-chart-tooltip-border`, `--umbra-chart-tooltip-fg`, `--umbra-chart-tooltip-radius`, `--umbra-chart-track`, `--umbra-chart-value-fg`, `--umbra-focus-color`, `--umbra-legend-row-height`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `centerValue` | `ReactNode` | The large line in the middle. In the single-value form it defaults to the percentage; `null` hides it. |
+| `centerLabel` | `ReactNode` | The caption under it. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `value` | `number` | The single-value form: one value against `max`. |
+| `className` | `string` |  |
+| `style` | `import("react").CSSProperties` |  |
+| `tone` | `DonutTone` | Colour of the single value. The number in the centre is the cue that does not depend on colour. |
+| `loading` | `boolean` | Shows a placeholder in the chart's shape. |
+| `hiddenIds` | `readonly string[]` | Ids of the series that are switched off (controlled). |
+| `defaultHiddenIds` | `readonly string[]` |  |
+| `onHiddenChange` | `((hiddenIds: string[]) => void)` |  |
+| `error` | `ReactNode` | When set, shown in place of the chart. |
+| `label` | `string` | Accessible name of the chart. Required unless `aria-labelledby` is set. |
+| `color` | `string` | Any CSS colour for the single value; wins over `tone`. |
+| `max` | `number` | What a full ring stands for, in the single-value form. |
+| `thresholds` | `{ from: number; tone: DonutTone; }[]` | Picks the tone from the value: the last entry whose `from` the value reaches. |
+| `formatValue` | `((value: number) => string)` | Formats a value for labels, the tooltip and screen readers. Defaults to the provider's locale. |
+| `aria-labelledby` | `string` | Id of the element that names the chart, for example a card title. |
+| `description` | `string` | What a screen reader hears after the name. Defaults to a generated summary of the data. |
+| `legend` | `string \| number \| bigint \| boolean \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| import("react").ReactPortal \| Promise<string \| number \| bigint \| boolean \| import("react").ReactPortal \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| null \| undefined> \| null` | The legend: `true` or a placement shows the built-in one, `false` hides it, and a node replaces it. By default it is shown below the chart when there is more than one series. |
+| `labels` | `boolean` | Draws labels on the chart itself, so it can be read without the legend or the tooltip. |
+| `onPointPress` | `((point: import(".").ChartPoint) => void)` | Called when a point is clicked, or activated with Enter or Space. |
+| `empty` | `ReactNode` | Shown when there is no data. |
+| `onRetry` | `(() => void)` | Adds a retry button to the error state. |
+| `retryLabel` | `string` |  |
+| `pointsLabel` | `string` | Accessible name of the list of data points. |
+| `legendLabel` | `string` | Accessible name of the legend. |
+| `data` | `DonutSegment[]` | The segment form: several values that share the ring. |
+| `thickness` | `number` | Width of the ring in pixels. By default a fifth of the radius. |
+| `startAngle` | `number` | Where the ring starts, in degrees clockwise from 12 o'clock. |
+| `sweep` | `number` | Degrees the ring covers. Less than 360 leaves it open, as a gauge. |
+| `roundedCaps` | `boolean` | Rounds the ends of the value. On by default in the single-value form. |
+| `gap` | `number` | Degrees left empty between segments. |
+
+**Parts**: `legend`, `tooltip`, `skeleton`, `empty`, `error`, `center`.
+
+**Blocks**: `DonutChart.Root`, `DonutChart.Track`, `DonutChart.Segments`, `DonutChart.Labels`, `DonutChart.Center`.
 
 ## EmptyState
 
@@ -555,6 +644,50 @@ A strip of ticks with a marker that shows where a value sits on a scale.
 
 **Blocks**: `LevelMeter.Root`, `LevelMeter.Label`, `LevelMeter.EndLabel`, `LevelMeter.Strip`, `LevelMeter.Band`, `LevelMeter.Marker`, `LevelMeter.Value`.
 
+## LineChart
+
+One or more series over categories, numbers or time, with a numeric or an ordinal y axis.
+
+**Tokens**: `--umbra-chart-annotation`, `--umbra-chart-annotation-width`, `--umbra-chart-area-opacity`, `--umbra-chart-axis`, `--umbra-chart-axis-width`, `--umbra-chart-band-opacity`, `--umbra-chart-bar-radius`, `--umbra-chart-center-font`, `--umbra-chart-dim-opacity`, `--umbra-chart-fg`, `--umbra-chart-font`, `--umbra-chart-gap`, `--umbra-chart-grid`, `--umbra-chart-grid-dash`, `--umbra-chart-grid-width`, `--umbra-chart-line-width`, `--umbra-chart-point-scale`, `--umbra-chart-tooltip-bg`, `--umbra-chart-tooltip-border`, `--umbra-chart-tooltip-fg`, `--umbra-chart-tooltip-radius`, `--umbra-chart-track`, `--umbra-chart-value-fg`, `--umbra-focus-color`, `--umbra-legend-row-height`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `className` | `string` |  |
+| `style` | `import("react").CSSProperties` |  |
+| `loading` | `boolean` | Shows a placeholder in the chart's shape. |
+| `hiddenIds` | `readonly string[]` | Ids of the series that are switched off (controlled). |
+| `defaultHiddenIds` | `readonly string[]` |  |
+| `onHiddenChange` | `((hiddenIds: string[]) => void)` |  |
+| `error` | `ReactNode` | When set, shown in place of the chart. |
+| `label` | `string` | Accessible name of the chart. Required unless `aria-labelledby` is set. |
+| `formatValue` | `((value: number) => string)` | Formats a value for labels, the tooltip and screen readers. Defaults to the provider's locale. |
+| `categories` | `string[]` | The order of a category x axis. Defaults to the order the names first appear in. |
+| `series` (required) | `LineSeries[]` |  |
+| `annotations` | `ChartAnnotation[]` | Reference lines and bands on either axis. |
+| `xTitle` | `string` |  |
+| `yTitle` | `string` |  |
+| `aria-labelledby` | `string` | Id of the element that names the chart, for example a card title. |
+| `description` | `string` | What a screen reader hears after the name. Defaults to a generated summary of the data. |
+| `legend` | `string \| number \| bigint \| boolean \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| import("react").ReactPortal \| Promise<string \| number \| bigint \| boolean \| import("react").ReactPortal \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| null \| undefined> \| null` | The legend: `true` or a placement shows the built-in one, `false` hides it, and a node replaces it. By default it is shown below the chart when there is more than one series. |
+| `labels` | `boolean` | Draws labels on the chart itself, so it can be read without the legend or the tooltip. |
+| `onPointPress` | `((point: import(".").ChartPoint) => void)` | Called when a point is clicked, or activated with Enter or Space. |
+| `empty` | `ReactNode` | Shown when there is no data. |
+| `onRetry` | `(() => void)` | Adds a retry button to the error state. |
+| `retryLabel` | `string` |  |
+| `pointsLabel` | `string` | Accessible name of the list of data points. |
+| `legendLabel` | `string` | Accessible name of the legend. |
+| `yLevels` | `string[]` | Makes the y axis ordinal: the named levels, from the bottom up. Points then give a level name as `y`. |
+| `yDomain` | `[number, number]` | The range of a numeric y axis. Defaults to round numbers around the data. |
+| `curve` | `LineCurve` | `step` holds each value until the next point. |
+| `area` | `boolean` | Fills the area under each line; the y axis then starts at zero. |
+| `points` | `boolean` | Draws a shape on every value. Points too dense to tell apart are left out. |
+| `formatX` | `((x: LineX) => string)` | Formats an x value for the axis, the tooltip and screen readers. |
+
+**Parts**: `legend`, `tooltip`, `skeleton`, `empty`, `error`.
+
+**Blocks**: `LineChart.Root`, `LineChart.Grid`, `LineChart.Annotations`, `LineChart.Series`, `LineChart.Axes`.
+
 ## Link
 
 A text link: inside a sentence, or on its own line as the way to a fuller view.
@@ -739,6 +872,46 @@ A bar that fills with a value: progress of a task, or a measured level. Fills th
 
 **Blocks**: `ProgressBar.Root`, `ProgressBar.Label`, `ProgressBar.Value`, `ProgressBar.Track`, `ProgressBar.Fill`, `ProgressBar.Target`.
 
+## RadarChart
+
+Compares one or more series across several axes that share a centre.
+
+**Tokens**: `--umbra-chart-annotation`, `--umbra-chart-annotation-width`, `--umbra-chart-area-opacity`, `--umbra-chart-axis`, `--umbra-chart-axis-width`, `--umbra-chart-band-opacity`, `--umbra-chart-bar-radius`, `--umbra-chart-center-font`, `--umbra-chart-dim-opacity`, `--umbra-chart-fg`, `--umbra-chart-font`, `--umbra-chart-gap`, `--umbra-chart-grid`, `--umbra-chart-grid-dash`, `--umbra-chart-grid-width`, `--umbra-chart-line-width`, `--umbra-chart-point-scale`, `--umbra-chart-tooltip-bg`, `--umbra-chart-tooltip-border`, `--umbra-chart-tooltip-fg`, `--umbra-chart-tooltip-radius`, `--umbra-chart-track`, `--umbra-chart-value-fg`, `--umbra-focus-color`, `--umbra-legend-row-height`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `rings` | `number` | Number of grid rings, the outer one included. |
+| `grid` | `"circle" \| "polygon"` | Shape of the grid rings. |
+| `filled` | `boolean` | Fills the area of each series. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `className` | `string` |  |
+| `style` | `import("react").CSSProperties` |  |
+| `loading` | `boolean` | Shows a placeholder in the chart's shape. |
+| `hiddenIds` | `readonly string[]` | Ids of the series that are switched off (controlled). |
+| `defaultHiddenIds` | `readonly string[]` |  |
+| `onHiddenChange` | `((hiddenIds: string[]) => void)` |  |
+| `error` | `ReactNode` | When set, shown in place of the chart. |
+| `label` | `string` | Accessible name of the chart. Required unless `aria-labelledby` is set. |
+| `max` | `number` | The value at the outer ring. Defaults to a round number above the largest value. |
+| `formatValue` | `((value: number) => string)` | Formats a value for labels, the tooltip and screen readers. Defaults to the provider's locale. |
+| `series` (required) | `RadarSeries[]` |  |
+| `aria-labelledby` | `string` | Id of the element that names the chart, for example a card title. |
+| `description` | `string` | What a screen reader hears after the name. Defaults to a generated summary of the data. |
+| `legend` | `string \| number \| bigint \| boolean \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| import("react").ReactPortal \| Promise<string \| number \| bigint \| boolean \| import("react").ReactPortal \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| null \| undefined> \| null` | The legend: `true` or a placement shows the built-in one, `false` hides it, and a node replaces it. By default it is shown below the chart when there is more than one series. |
+| `labels` | `boolean` | Draws labels on the chart itself, so it can be read without the legend or the tooltip. |
+| `onPointPress` | `((point: import(".").ChartPoint) => void)` | Called when a point is clicked, or activated with Enter or Space. |
+| `empty` | `ReactNode` | Shown when there is no data. |
+| `onRetry` | `(() => void)` | Adds a retry button to the error state. |
+| `retryLabel` | `string` |  |
+| `pointsLabel` | `string` | Accessible name of the list of data points. |
+| `legendLabel` | `string` | Accessible name of the legend. |
+| `startAngle` | `number` | Where the first axis points, in degrees clockwise from 12 o'clock. |
+| `axes` (required) | `RadarAxis[]` |  |
+
+**Parts**: `legend`, `tooltip`, `skeleton`, `empty`, `error`.
+
+**Blocks**: `RadarChart.Root`, `RadarChart.Grid`, `RadarChart.Series`, `RadarChart.AxisLabels`.
+
 ## Radio
 
 One option of a `RadioGroup`.
@@ -840,6 +1013,38 @@ A heading for one section of content inside a card or page, with optional contro
 **Parts**: `title`, `count`, `actions`.
 
 **Blocks**: none.
+
+## SegmentedFilter
+
+A row of joined segments that filters the content below it. One or several can be selected.
+
+**Tokens**: `--umbra-segmented-filter-bg`, `--umbra-segmented-filter-border`, `--umbra-segmented-filter-fg`, `--umbra-segmented-filter-height`, `--umbra-segmented-filter-min-item-width`, `--umbra-segmented-filter-padding-x`, `--umbra-segmented-filter-radius`, `--umbra-segmented-filter-selected-bg`, `--umbra-segmented-filter-selected-border`, `--umbra-segmented-filter-selected-fg`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `all` | `boolean` | Adds a first segment that stands for "no filter". Choosing it clears the others. |
+| `allLabel` | `string` | Label of the "All" segment. |
+| `allCount` | `number` | Count of the "All" segment. |
+| `size` | `"default" \| "small"` | `small` is for table cells and dense toolbars. Otherwise the height follows the density level. |
+| `fullWidth` | `boolean` | Fills the width of its container with equal segments. |
+| `disabled` | `boolean` |  |
+| `aria-label` | `string` | Accessible name of the group. |
+| `aria-labelledby` | `string` | Id of the element that names the group. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `selectionMode` | `"single" \| "multiple"` | `single`: one segment, like radio buttons. `multiple`: any number, like toggle buttons. |
+| `value` | `string \| null` | The selected segment. `null` selects none, or the "All" segment when `all` is set. |
+| `defaultValue` | `string \| null` |  |
+| `onChange` | `((id: string \| null) => void) \| ((ids: string[]) => void)` | Called with the selected id (`null` for "All"), or with the list of ids in `multiple` mode. |
+| `values` | `string[]` | The selected segments in `multiple` mode. An empty list selects the "All" segment when `all` is set. |
+| `defaultValues` | `string[]` |  |
+| `items` | `SegmentedFilterItem[]` | The segments. Leave out to pass `SegmentedFilter.Item` children instead. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `children` | `ReactNode` |  |
+
+**Parts**: `icon`, `count`, `check`, `item`.
+
+**Blocks**: `SegmentedFilter.Root`, `SegmentedFilter.Item`.
 
 ## Skeleton
 
@@ -1011,6 +1216,42 @@ A compact tile that sums up one thing: an icon, a title and one value. The whole
 **Parts**: `icon`, `title`, `value`, `trend`, `caption`, `skeleton`.
 
 **Blocks**: `SummaryTile.Root`, `SummaryTile.Icon`, `SummaryTile.Content`, `SummaryTile.Title`, `SummaryTile.Figure`, `SummaryTile.Value`, `SummaryTile.Trend`, `SummaryTile.Caption`.
+
+## Tabs
+
+Switches between views of the same content area. The panel fills the rest of the slot.
+
+**Tokens**: `--umbra-tabs-bg`, `--umbra-tabs-border`, `--umbra-tabs-fg`, `--umbra-tabs-gap`, `--umbra-tabs-height`, `--umbra-tabs-indicator-color`, `--umbra-tabs-padding-x`, `--umbra-tabs-pill-radius`, `--umbra-tabs-radius`, `--umbra-tabs-selected-bg`, `--umbra-tabs-selected-fg`, `--umbra-tabs-underline-selected-fg`, `--umbra-tabs-vertical-max-width`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `items` | `TabsItem[]` | The tabs and their panels. Leave out to compose `Tabs.List`, `Tabs.Tab` and `Tabs.Panel` yourself. |
+| `aria-label` | `string` | Accessible name of the tab list. |
+| `end` | `ReactNode` | Shown after the tabs, for example an "add" button. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `value` | `string \| null` | The selected tab. |
+| `defaultValue` | `string \| null` |  |
+| `onChange` | `((id: string) => void)` | Called with the id of the tab the user selected. |
+| `variant` | `TabsVariant` | `underline`: text with a bar. `pill`: separate rounded buttons. `button-group`: joined buttons. |
+| `orientation` | `"vertical" \| "horizontal"` | `vertical` puts the tab list beside the panel. |
+| `tabSize` | `"default" \| "small"` | `small` is for dense areas. Otherwise the height follows the density level. |
+| `fullWidth` | `boolean` | The tabs share the width of the list. |
+| `activation` | `"automatic" \| "manual"` | `automatic`: arrow keys select. `manual`: arrow keys move focus, and Enter or Space selects. |
+| `keepMounted` | `boolean` | Keeps the panels that are not selected mounted and hidden, so they keep their state. |
+| `onClose` | `((id: string) => void)` | Makes tabs closable: called with the id of the tab whose close button (or Delete key) was used. |
+| `closeLabel` | `string` | First word of the close button's name: "Close Orders". |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `children` | `ReactNode` |  |
+| `size` | `number \| "content"` | Share of the parent's space: a weight, or `"content"` to take the size of the content. Default 1. |
+| `priority` | `number` | Which child gives way first when space runs out. Higher stays longer; ties give way from the end. Default 0. |
+| `minWidth` | `number` | Reserved: `Columns` has no rule that uses it yet, so it has no effect. |
+| `minHeight` | `number` | Below this height a parent `Stack` may collapse the child to its header. |
+| `label` | `string` | Tab label when a parent `Columns` shows one child at a time. |
+
+**Parts**: `indicator`, `icon`, `count`, `close`, `list`, `tab`, `panel`.
+
+**Blocks**: `Tabs.Root`, `Tabs.List`, `Tabs.Tab`, `Tabs.Panel`.
 
 ## Tag
 

@@ -45,8 +45,8 @@ export const Variants: Story = {
     <Columns style={{ height: '100%' }}>
       {variants.map((variant) => (
         <Stack key={variant}>
-          <Tabs aria-label={`${variant}, default`} variant={variant} items={sections} share={2} />
-          <Tabs aria-label={`${variant}, small`} variant={variant} items={sections} size="small" />
+          <Tabs aria-label={`${variant}, default`} variant={variant} items={sections} size={2} />
+          <Tabs aria-label={`${variant}, small`} variant={variant} items={sections} tabSize="small" />
           <Tabs aria-label={`${variant}, full width`} variant={variant} items={plain} fullWidth />
         </Stack>
       ))}
@@ -79,7 +79,7 @@ export const Vertical: Story = {
 export const InCard: Story = {
   render: () => (
     <Columns style={{ height: '100%' }}>
-      <Tabs.Root defaultValue="orders" variant="button-group" size="small">
+      <Tabs.Root defaultValue="orders" variant="button-group" tabSize="small">
         <Card
           title="Activity"
           parts={{

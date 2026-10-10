@@ -37,7 +37,7 @@ Underline, large text, above a card or in a modal header (3, 9, 10, 20, 21, 26, 
 |---|---|---|
 | `variant` | `underline` (default), `pill`, `button-group` | Text with a bar; separate rounded buttons; joined buttons |
 | `orientation` | `horizontal` (default), `vertical` | `vertical` puts the list beside the panel |
-| `size` | `default`, `small` | The height follows the density level; `small` is the height of a small button |
+| `tabSize` | `default`, `small` | The height follows the density level; `small` is the height of a small button |
 | `fullWidth` | boolean | The tabs share the width of the list |
 | `activation` | `automatic` (default), `manual` | Whether arrow keys select |
 | `keepMounted` | boolean | Panels that are not selected stay mounted and hidden |
@@ -63,7 +63,7 @@ There is no loading, empty or error state: a panel shows those through the data 
 | `onChange` | `(id) => void` | — | Called when the user selects another tab |
 | `variant` | see above | `underline` | |
 | `orientation` | see above | `horizontal` | |
-| `size` | `default` \| `small` | `default` | |
+| `tabSize` | `default` \| `small` | `default` | |
 | `fullWidth` | boolean | `false` | |
 | `activation` | see above | `automatic` | |
 | `keepMounted` | boolean | `false` | |
@@ -71,7 +71,7 @@ There is no loading, empty or error state: a panel shows those through the data 
 | `closeLabel` | string | "Close" | First word of a close button's name |
 | `end` | node | — | Controls after the tabs, for example an "add" button |
 | `aria-label` | string | — | Names the tab list |
-| `share` | number \| `"content"` | `1` | Share of the parent's space. Other layout children call this `size`. |
+| `size` | number \| `"content"` | `1` | Share of the parent's space, as on every layout child |
 | `priority`, `minHeight`, `minWidth`, `label` | — | — | The other slot props (see `Columns-Stack.md`) |
 
 ### 3. Parts
@@ -112,7 +112,7 @@ A vertical list has no steps: its labels truncate with an ellipsis at the list's
 
 Resolved 2026-10-10:
 
-- `size` is the size of the tabs, as on `Button` and `SegmentedFilter`. The share of the parent's space, which other layout children call `size`, is `share` here.
+- `size` is the share of the parent's space, as on every layout child; the size of the tabs themselves is `tabSize`.
 - Built on plain elements with the library's own roving focus, not on React Aria's `Tabs`: that component cannot take ids from outside (which `Columns` needs for its panels), keep a close button out of the tab, or place the list and the panels in different parts of a card.
 - The tab strip of `Columns` is this component's list and tab, in the `underline` variant.
 - With `items`, the first tab that is not disabled is selected when nothing else is, also after the selected tab was closed. With blocks, `defaultValue` or `value` says which.

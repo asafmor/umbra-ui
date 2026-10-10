@@ -40,7 +40,7 @@ interface TabsOptions {
   /** `vertical` puts the tab list beside the panel. */
   orientation?: 'horizontal' | 'vertical';
   /** `small` is for dense areas. Otherwise the height follows the density level. */
-  size?: 'default' | 'small';
+  tabSize?: 'default' | 'small';
   /** The tabs share the width of the list. */
   fullWidth?: boolean;
   /** `automatic`: arrow keys select. `manual`: arrow keys move focus, and Enter or Space selects. */
@@ -73,17 +73,12 @@ interface BlockProps {
   children?: ReactNode;
 }
 
-export interface TabsRootProps extends TabsOptions, BlockProps, Omit<SlotProps, 'size'> {
+export interface TabsRootProps extends TabsOptions, BlockProps, SlotProps {
   /** The selected tab. */
   value?: string | null;
   defaultValue?: string | null;
   /** Called with the id of the tab the user selected. */
   onChange?: (id: string) => void;
-  /**
-   * Share of the parent's space: a weight, or `"content"` to take the size of the content. Default 1.
-   * Other layout children call this `size`; here `size` is the size of the tabs.
-   */
-  share?: SlotProps['size'];
 }
 
 /** Holds the state. The list and the panels can sit anywhere inside it, also apart. */
@@ -93,19 +88,18 @@ function Root({
   onChange,
   variant = 'underline',
   orientation = 'horizontal',
-  size = 'default',
+  tabSize = 'default',
   fullWidth = false,
   activation = 'automatic',
   keepMounted = false,
   onClose,
   closeLabel = 'Close',
-  share,
   className,
   style,
   children,
   ...slot
 }: TabsRootProps) {
-  const { ref, props } = useSlot<HTMLDivElement>({ ...slot, size: share });
+  const { ref, props } = useSlot<HTMLDivElement>(slot);
   const [own, setOwn] = useState(defaultValue);
   const value = controlled === undefined ? own : controlled;
   const baseId = useId();
@@ -120,7 +114,7 @@ function Root({
       panelId: (id) => `${baseId}-panel-${encodeURIComponent(id)}`,
       variant,
       orientation,
-      size,
+      tabSize,
       fullWidth,
       activation,
       keepMounted,
@@ -133,7 +127,7 @@ function Root({
       baseId,
       variant,
       orientation,
-      size,
+      tabSize,
       fullWidth,
       activation,
       keepMounted,
@@ -267,7 +261,7 @@ function List({ 'aria-label': label, end, parts, className, style, children }: T
       data-part="list"
       data-variant={tabs.variant}
       data-orientation={tabs.orientation}
-      data-size={tabs.size}
+      data-size={tabs.tabSize}
       data-full-width={tabs.fullWidth || undefined}
       className={cx(styles.list, className)}
       style={style}
@@ -535,7 +529,7 @@ export function TabStrip({
     panelId: (id) => find(id)?.panelId ?? id,
     variant: 'underline',
     orientation: 'horizontal',
-    size: 'default',
+    tabSize: 'default',
     fullWidth: false,
     activation: 'automatic',
     keepMounted: false,

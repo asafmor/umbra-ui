@@ -185,3 +185,20 @@ export type {
 } from './inputs/FormField';
 export { TextField } from './inputs/TextField';
 export type { TextFieldClearProps, TextFieldProps, TextFieldRootProps } from './inputs/TextField';
+export { SegmentedFilter } from './inputs/SegmentedFilter';
+export type {
+  SegmentedFilterItem,
+  SegmentedFilterItemProps,
+  SegmentedFilterProps,
+  SegmentedFilterRootProps,
+} from './inputs/SegmentedFilter';
+export { Tabs } from './inputs/Tabs';
+export type {
+  TabsItem,
+  TabsListProps,
+  TabsPanelProps,
+  TabsProps,
+  TabsRootProps,
+  TabsTabProps,
+  TabsVariant,
+} from './inputs/Tabs';
