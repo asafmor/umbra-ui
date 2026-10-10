@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { Banner } from '../data/Banner';
 import { AppShell } from '../shell/AppShell';
+import { PageHeader } from '../shell/PageHeader';
 import { Bar, Rows, Value } from '../stories/placeholders';
 import { Card } from './Card';
 import { Columns } from './Columns';
@@ -73,6 +75,35 @@ export const Sizes: Story = {
               </div>
             </Slot>
           </Columns>
+        </Stack>
+      </Page>
+    </AppShell>
+  ),
+};
+
+/**
+ * `Slot size="content"` takes the height of its child and stretches it across the stack, also a child
+ * that would not stretch by itself (a `PageHeader` and a `Banner` are size containers).
+ */
+export const SlotContent: Story = {
+  render: () => (
+    <AppShell background="flat">
+      <Page>
+        <Stack>
+          <Slot size="content">
+            <PageHeader size="compact" headingLevel={2} title="A page header in a slot" subtitle="Region A" />
+          </Slot>
+          <Slot size="content">
+            <Banner title="A banner in a slot">It is as wide as the stack.</Banner>
+          </Slot>
+          <Slot size="content">
+            <div style={{ border: '1px dashed var(--umbra-color-base-border-control)', padding: 12 }}>
+              Any element
+            </div>
+          </Slot>
+          <Card title="Takes the rest">
+            <Rows />
+          </Card>
         </Stack>
       </Page>
     </AppShell>

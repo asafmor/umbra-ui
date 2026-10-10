@@ -84,4 +84,5 @@ Resolved 2026-10-10:
 - `Columns` does not collapse low-priority columns before tab mode in Milestone 0.
 - Approved after Milestone 0: in narrow mode every `Columns` becomes tabs, nested ones too; `narrow="keep"` opts one out.
 - 2026-10-11: the highest-priority card of a `Stack` stays open when it cannot reach its minimum. Before, every card collapsed and the column was left with headers only (`collapseToFit`, unit-tested).
+- 2026-10-11: a `Slot` stretches its child whatever the child's own `flex` is. A child that is `flex: none` and a size container (a `PageHeader`) was a few pixels wide in a `Slot size="content"`.
 - Batch 1b: the built-in tab strip was replaced by the one `Tabs` draws. Props and the `tabs` part are unchanged.

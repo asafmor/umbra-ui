@@ -178,14 +178,12 @@ export function App() {
           <Stack overflow="keep">
             {notice && (
               <Slot size="content">
-                {/* flex: a Slot does not stretch a child that is an inline-size container by itself. */}
                 <Banner
                   tone="warning"
                   compact
                   title="Stock is low on Line C."
                   dismissible
                   onDismiss={() => setNotice(false)}
-                  style={{ flex: 1 }}
                 >
                   Three orders for Region B wait for a delivery due on Thursday.
                 </Banner>

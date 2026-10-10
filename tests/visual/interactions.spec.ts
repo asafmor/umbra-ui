@@ -241,6 +241,21 @@ test('a stack too short for its highest-priority card keeps that card open, scro
 
 // Page, Columns and Stack
 
+test('slot: size="content" hugs its child in height and stretches it across the stack', async ({ page }) => {
+  await open(page, 'layout-page-layouts--slot-content');
+  const stack = page.locator('[data-umbra="stack"]');
+  const width = (await stack.boundingBox())!.width;
+  const slots = stack.locator('> [data-umbra="slot"]');
+  await expect(slots).toHaveCount(3);
+  for (const slot of await slots.all()) {
+    const child = (await slot.locator('> *').boundingBox())!;
+    expect(child.width).toBe(width);
+    expect(child.height).toBeGreaterThan(20);
+    expect((await slot.boundingBox())!.height).toBe(child.height);
+  }
+  await expect(page.getByRole('heading', { name: 'A page header in a slot' })).toBeVisible();
+});
+
 test('page: loading replaces the content with a skeleton and marks it busy; header and footer stay', async ({
   page,
 }) => {
