@@ -17,6 +17,12 @@
   border-radius: var(--umbra-badge-radius, var(--umbra-radius-pill));
   background: var(--umbra-badge-bg, var(--tone));
   color: var(--umbra-badge-fg, var(--on-tone));
+  /*
+   * A ring, drawn only where a surface asks for one. On a filled surface (the brand bar, a band header,
+   * a filled button) the fill can be close to the badge's own colour; the surface sets the ring to its
+   * text colour, which has 4.5:1 or more against it, so the badge keeps its edge on any brand.
+   */
+  box-shadow: 0 0 0 var(--umbra-badge-ring-width, 1px) var(--umbra-badge-ring, var(--ring, transparent));
   font: var(--umbra-badge-font, 700 11px / var(--size) var(--umbra-font-family-body));
   font-variant-numeric: tabular-nums;
   text-align: center;
@@ -41,4 +47,13 @@
   top: calc(-1 * var(--umbra-badge-offset, var(--umbra-space-2)));
   inset-inline-end: calc(-1 * var(--umbra-badge-offset, var(--umbra-space-2)));
   pointer-events: none;
+}
+
+/* Anchored on the corner of a filled button, where it is not inside the button: the same ring. */
+.root[data-anchored]:has(> [data-variant='accent']) > .indicator {
+  --ring: var(--umbra-button-accent-fg, var(--umbra-color-fixed-on-selected));
+}
+
+.root[data-anchored]:has(> [data-variant='primary']) > .indicator {
+  --ring: var(--umbra-button-primary-fg, var(--umbra-color-fixed-on-primary));
 }

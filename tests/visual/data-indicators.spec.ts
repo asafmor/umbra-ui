@@ -283,3 +283,77 @@ test.describe('highlightChanges', () => {
     await expectChangeHighlights(page, 'data-valuepill--live-updates', false);
   });
 });
+
+/** The ring of every badge under `scope`: its width, and its contrast against the fill of `surface`. */
+const badgeRings = (page: Page, scope: string, surface: string) =>
+  page.evaluate(
+    ([scope, surface]) => {
+      const rgba = (colour: string) => {
+        const canvas = document.createElement('canvas').getContext('2d')!;
+        canvas.fillStyle = colour;
+        canvas.fillRect(0, 0, 1, 1);
+        return [...canvas.getImageData(0, 0, 1, 1).data];
+      };
+      const luminance = (colour: number[]) => {
+        const [r, g, b] = colour.map((v) => {
+          const s = v / 255;
+          return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+        });
+        return 0.2126 * r! + 0.7152 * g! + 0.0722 * b!;
+      };
+      const contrast = (a: number[], b: number[]) => {
+        const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+        return (hi! + 0.05) / (lo! + 0.05);
+      };
+      return [...document.querySelectorAll(scope!)].flatMap((root) => {
+        const fill = rgba(getComputedStyle(root.closest(surface!) ?? root).backgroundColor);
+        return [...root.querySelectorAll('[data-umbra="badge"] [data-part="indicator"]')].map((badge) => {
+          const shadow = getComputedStyle(badge).boxShadow;
+          const ring = rgba(/^(rgba?\([^)]*\)|color\([^)]*\))/.exec(shadow)?.[0] ?? 'transparent');
+          return {
+            shown: ring[3]! > 0 && / 1px$/.test(shadow),
+            ringOnSurface: Math.round(contrast(ring, fill) * 10) / 10,
+            badgeOnSurface:
+              Math.round(contrast(rgba(getComputedStyle(badge).backgroundColor), fill) * 10) / 10,
+          };
+        });
+      });
+    },
+    [scope, surface],
+  );
+
+test('a badge on a filled surface has a ring that keeps 3:1 against the fill', async ({ page }) => {
+  // The four brands of the shell: default, dark, light and teal.
+  await open(page, 'shell-app-shell--brands');
+  const bars = await badgeRings(page, '[data-umbra="top-bar"]', '[data-umbra="top-bar"]');
+  expect(bars).toHaveLength(4);
+  for (const ring of bars) {
+    expect(ring.shown).toBe(true);
+    expect(ring.ringOnSurface).toBeGreaterThanOrEqual(4.5);
+  }
+  // Without the ring the default (violet-like) brand leaves the badge under 3:1.
+  expect(Math.min(...bars.map((ring) => ring.badgeOnSurface))).toBeLessThan(3);
+
+  await open(page, 'data-badge--on-filled-surfaces');
+  // A band in the badge's own violet, and a light one.
+  const bands = await badgeRings(
+    page,
+    '[data-part="header"][data-header-style="band"]',
+    '[data-part="header"]',
+  );
+  expect(bands).toHaveLength(2);
+  expect(bands[0]!.badgeOnSurface).toBe(1);
+  for (const ring of bands) expect(ring.ringOnSurface).toBeGreaterThanOrEqual(4.5);
+  // Inside an accent button, and anchored on the corner of an accent and of a primary button.
+  const inside = await badgeRings(page, 'button[data-variant="accent"]', 'button');
+  expect(inside).toEqual([{ shown: true, ringOnSurface: expect.any(Number), badgeOnSurface: 1 }]);
+  expect(inside[0]!.ringOnSurface).toBeGreaterThanOrEqual(4.5);
+  const anchored = (variant: string) =>
+    page
+      .locator(`[data-umbra="badge"]:has(> button[data-variant="${variant}"]) [data-part="indicator"]`)
+      .evaluate((badge) => getComputedStyle(badge).boxShadow);
+  expect(await anchored('accent')).toMatch(/^rgb\(255, 255, 255\).* 1px$/);
+  expect(await anchored('primary')).toMatch(/^rgb\(255, 255, 255\).* 1px$/);
+  // On a neutral surface there is no ring.
+  expect(await anchored('neutral')).toMatch(/^rgba\(0, 0, 0, 0\)/);
+});

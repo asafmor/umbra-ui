@@ -26,6 +26,11 @@
   transition: background-color var(--umbra-motion-duration-fast);
 }
 
+/* On a filled button a badge gets a ring in the button's text colour: a violet badge on `accent` has no edge. */
+.button:is([data-variant='primary'], [data-variant='accent']) {
+  --umbra-badge-ring: var(--fg);
+}
+
 .button[data-variant='primary'] {
   --bg: var(--umbra-button-primary-bg, var(--umbra-color-fixed-primary));
   --fg: var(--umbra-button-primary-fg, var(--umbra-color-fixed-on-primary));

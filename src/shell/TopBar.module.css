@@ -10,6 +10,8 @@
   color: var(--umbra-topbar-fg, var(--umbra-color-on-brand, #fff));
   /* The pink ring does not show on every brand; the provider picks one that does. */
   --umbra-focus-color: var(--umbra-color-on-brand-focus, var(--umbra-color-fixed-focus-ring));
+  /* A badge may be close to the brand colour (violet on a violet brand): it gets a ring in the text colour. */
+  --umbra-badge-ring: var(--umbra-topbar-fg, var(--umbra-color-on-brand, #fff));
   white-space: nowrap;
 }
 

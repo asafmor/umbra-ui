@@ -38,6 +38,7 @@
   --muted: currentColor;
   --rule: color-mix(in oklab, currentColor 40%, transparent);
   --umbra-focus-color: var(--umbra-color-on-brand-focus, #fff);
+  --umbra-badge-ring: var(--umbra-page-header-fg, var(--umbra-color-on-brand, #fff));
   background: var(--umbra-page-header-bg, var(--umbra-color-brand));
   color: var(--umbra-page-header-fg, var(--umbra-color-on-brand, #fff));
 }

@@ -88,6 +88,41 @@ function Counter() {
   );
 }
 
+/**
+ * On a filled surface the badge gets a ring in the surface's text colour, so it keeps its edge when
+ * the fill is close to its own colour: a violet badge on an `accent` button, or on a violet brand.
+ */
+export const OnFilledSurfaces: Story = {
+  render: () => (
+    <Columns style={{ height: '100%' }}>
+      <Card title="Buttons">
+        <div style={{ display: 'flex', gap: 24, paddingTop: 8, alignItems: 'center' }}>
+          {(['accent', 'primary', 'neutral'] as const).map((variant) => (
+            <Badge key={variant} count={3}>
+              <Button variant={variant}>Anchored on {variant}</Button>
+            </Badge>
+          ))}
+          <Button variant="accent">
+            Inside accent <Badge count={3} />
+          </Button>
+        </div>
+      </Card>
+      {['#6a1fd6', '#e8e4f0'].map((brand) => (
+        <Card
+          key={brand}
+          title={`Band ${brand}`}
+          headerStyle="band"
+          parts={{
+            header: <Card.Header title={`Band ${brand}`} bandColor={brand} actions={<Badge count={3} />} />,
+          }}
+        >
+          The band is the surface: the ring is its text colour.
+        </Card>
+      ))}
+    </Columns>
+  ),
+};
+
 /** A count that changes, and the indicator replaced, hidden and composed by hand. */
 export const BehaviourAndParts: Story = {
   render: () => (

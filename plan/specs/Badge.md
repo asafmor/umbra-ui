@@ -39,7 +39,7 @@ States: hidden (count 0 without `showZero`).
 
 ### 1. Tokens
 
-`--umbra-badge-bg`, `--umbra-badge-fg`, `--umbra-badge-size`, `--umbra-badge-dot-size`, `--umbra-badge-padding-x`, `--umbra-badge-radius`, `--umbra-badge-font`, `--umbra-badge-offset` (how far an anchored badge overhangs).
+`--umbra-badge-bg`, `--umbra-badge-fg`, `--umbra-badge-size`, `--umbra-badge-dot-size`, `--umbra-badge-padding-x`, `--umbra-badge-radius`, `--umbra-badge-font`, `--umbra-badge-ring`, `--umbra-badge-ring-width`, `--umbra-badge-offset` (how far an anchored badge overhangs).
 
 ### 2. Props
 
@@ -78,6 +78,10 @@ A badge has a fixed size and does not shrink. Anchored, it takes no space of its
 ## Open questions
 
 None.
+
+Resolved 2026-10-11:
+
+- **A ring on filled surfaces.** A violet badge had almost no edge on a violet-like brand bar or on an `accent` button. The badge draws a 1px ring (`--umbra-badge-ring`, `--umbra-badge-ring-width`), transparent by default. A filled surface sets it to its own text colour, which has 4.5:1 or more against the fill, so the badge keeps at least 3:1 at its edge on any brand: `TopBar`, the band of `Card` and `PageHeader`, and the `primary` and `accent` buttons (a badge inside the button, and one anchored on its corner). Checked on the four brands of `Shell/App shell > Brands`.
 
 Resolved 2026-10-10:
 

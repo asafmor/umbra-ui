@@ -94,6 +94,7 @@
 .header[data-header-style='band'] {
   padding-block: var(--umbra-space-3);
   --header-bg: var(--umbra-card-header-bg, var(--umbra-color-brand));
+  --umbra-badge-ring: var(--umbra-card-header-fg, var(--umbra-color-on-brand, #fff));
   color: var(--umbra-card-header-fg, var(--umbra-color-on-brand, #fff));
 }
 
