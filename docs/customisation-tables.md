@@ -421,6 +421,44 @@ The key for a chart or any colour-coded data: one marker and label per series.
 
 **Blocks**: `Legend.Root`, `Legend.Item`, `Legend.Marker`, `Legend.More`.
 
+## LevelMeter
+
+A strip of ticks with a marker that shows where a value sits on a scale.
+
+**Tokens**: `--umbra-level-meter-band`, `--umbra-level-meter-border`, `--umbra-level-meter-compare`, `--umbra-level-meter-height`, `--umbra-level-meter-length`, `--umbra-level-meter-marker`, `--umbra-level-meter-marker-width`, `--umbra-level-meter-pitch`, `--umbra-level-meter-radius`, `--umbra-level-meter-tick`, `--umbra-level-meter-tick-lit`, `--umbra-level-meter-tick-width`, `--umbra-level-meter-track`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `label` | `ReactNode` | The name of the meter, shown before it. |
+| `minLabel` | `ReactNode` | Captions at the two ends of the scale. |
+| `maxLabel` | `ReactNode` |  |
+| `valueLabel` | `ReactNode` | Replaces the formatted value. Setting it shows the value. |
+| `showValue` | `boolean` | Shows the value as text after the meter. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `value` | `LevelMeterValue` | Where the marker sits. Leave it out to show only a `range`. |
+| `aria-label` | `string` | Names a meter that has no visible label. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `tone` | `MeterTone` | Colour of the marker, when no zone or level sets it. |
+| `orientation` | `"vertical" \| "horizontal"` |  |
+| `loading` | `boolean` | Shows skeletons in place of the ticks and the value. |
+| `size` | `"default" \| "small" \| "large"` |  |
+| `min` | `number` |  |
+| `max` | `number` |  |
+| `formatValue` | `((value: number) => string)` | Text of a position on a numeric scale. A named scale uses the labels of its levels. |
+| `steps` | `number` | Number of ticks on a numeric scale. |
+| `levels` | `LevelMeterLevel[]` | A named scale: one tick per level, and the marker sits on a level. Replaces `min`, `max` and `steps`. |
+| `range` | `[LevelMeterValue, LevelMeterValue]` | Draws a band from the first position to the second, for an estimate or an allowed span. |
+| `compare` | `LevelMeterValue` | A second, smaller marker to compare the value with. |
+| `compareLabel` | `string` | Names the comparison marker for assistive technology. |
+| `rangeLabel` | `string` | Names the band for assistive technology. |
+| `zones` | `Zone[]` | Colours the marker by the zone it is in. Zone edges are drawn as taller ticks, and the zone's label is read out. |
+| `boxed` | `boolean` | Draws the box around the ticks. |
+
+**Parts**: `label`, `minLabel`, `maxLabel`, `strip`, `band`, `marker`, `compare`, `value`, `skeleton`.
+
+**Blocks**: `LevelMeter.Root`, `LevelMeter.Label`, `LevelMeter.EndLabel`, `LevelMeter.Strip`, `LevelMeter.Band`, `LevelMeter.Marker`, `LevelMeter.Value`.
+
 ## Link
 
 A text link: inside a sentence, or on its own line as the way to a fuller view.
@@ -567,6 +605,43 @@ The top-level sections of the app, inside the `TopBar`.
 **Parts**: `indicator`, `more`, `item`.
 
 **Blocks**: `PrimaryNav.Root`, `PrimaryNav.Item`, `PrimaryNav.Menu`.
+
+## ProgressBar
+
+A bar that fills with a value: progress of a task, or a measured level. Fills the width of its container.
+
+**Tokens**: `--umbra-progress-bar-fill`, `--umbra-progress-bar-fill-end`, `--umbra-progress-bar-height`, `--umbra-progress-bar-min-width`, `--umbra-progress-bar-radius`, `--umbra-progress-bar-segment-gap`, `--umbra-progress-bar-target`, `--umbra-progress-bar-target-width`, `--umbra-progress-bar-track`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `label` | `ReactNode` | The name of the bar, shown beside or above it. |
+| `valueLabel` | `ReactNode` | Replaces the formatted value. Setting it shows the value. |
+| `showValue` | `boolean` | Shows the value as text. |
+| `valuePlacement` | `"outside" \| "inside"` | `inside` draws the value on the bar; it needs `size="thick"`, and hides when the bar is too short for it. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `value` | `number` | The current value. A stacked bar defaults to the sum of its parts. |
+| `aria-label` | `string` | Names a bar that has no visible label. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `tone` | `MeterTone` | Colour of the fill. A matching threshold wins over it. |
+| `loading` | `boolean` | Shows skeletons in place of the bar and the value. |
+| `size` | `"default" \| "thin" \| "thick"` |  |
+| `layout` | `"block" \| "inline"` | `inline` puts the label, the bar and the value on one line, for table cells and rows. |
+| `min` | `number` |  |
+| `max` | `number` |  |
+| `kind` | `"progress" \| "meter"` | `progress` for a task that advances (`role="progressbar"`), `meter` for a measured level (`role="meter"`). |
+| `indeterminate` | `boolean` | Progress of unknown length. Moves, or shows a static striped fill when motion is reduced. |
+| `thresholds` | `boolean \| Threshold[]` | Colours the fill by its level. `true` is thirds of the scale: danger, warning, success. Each band also has a pattern. |
+| `invert` | `boolean` | Reverses the tones of the thresholds, for a scale where low is good. |
+| `segments` | `number \| number[]` | Splits the bar: a number of equal segments, or the values where a segment ends. |
+| `stack` | `ProgressBarStackItem[]` | Several coloured parts, one after another. Replaces the single fill. |
+| `target` | `number` | Draws a tick at a goal value. |
+| `targetLabel` | `string` | Names the target for assistive technology. |
+| `formatValue` | `((value: number, scale: ProgressBarScale) => string)` | Text of a value. The default is a rounded percentage. |
+
+**Parts**: `label`, `value`, `track`, `fill`, `target`, `skeleton`.
+
+**Blocks**: `ProgressBar.Root`, `ProgressBar.Label`, `ProgressBar.Value`, `ProgressBar.Track`, `ProgressBar.Fill`, `ProgressBar.Target`.
 
 ## ScrollArea
 

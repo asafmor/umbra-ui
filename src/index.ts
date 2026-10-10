@@ -138,3 +138,24 @@ export type { Status, StatusIndicatorProps, StatusIndicatorRootProps } from './d
 export { Link } from './data/Link';
 export type { LinkProps, LinkRenderProps, LinkRootProps } from './data/Link';
 export type { Tone } from './data/tone';
+export { ProgressBar } from './meters/ProgressBar';
+export type {
+  ProgressBarFillProps,
+  ProgressBarProps,
+  ProgressBarRootProps,
+  ProgressBarScale,
+  ProgressBarStackItem,
+  ProgressBarTrackProps,
+  ProgressBarValueProps,
+} from './meters/ProgressBar';
+export { LevelMeter } from './meters/LevelMeter';
+export type {
+  LevelMeterEndLabelProps,
+  LevelMeterLevel,
+  LevelMeterMarkerProps,
+  LevelMeterProps,
+  LevelMeterRootProps,
+  LevelMeterStripProps,
+  LevelMeterValue,
+} from './meters/LevelMeter';
+export type { MeterPattern, MeterTone, Threshold, Zone } from './meters/scale';
