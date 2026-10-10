@@ -73,8 +73,11 @@
   margin-inline-start: auto;
 }
 
-/* An error is marked by its colour and, for assistive technology, by `role="alert"` on the root. */
-.root[data-tone='error'] > :is(.icon, .title) {
+/*
+ * An error is marked by its icon, in the danger colour, and by `role="alert"` on the root. The title
+ * keeps the text colour: the danger colour does not reach 4.5:1 on every surface and tint.
+ */
+.root[data-tone='error'] > .icon {
   color: var(--umbra-empty-state-error-color, var(--umbra-color-semantic-danger));
 }
 

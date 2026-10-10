@@ -23,7 +23,7 @@ import { ButtonBase, Spinner } from '../basics/Button';
 import { Skeleton } from '../basics/Skeleton';
 import { useShrinkLevel } from '../internal/useShrinkLevel';
 import menuStyles from '../overlays/Menu.module.css';
-import { Icon, IconSlot } from '../provider/icons';
+import { BareIcon, Icon, IconSlot } from '../provider/icons';
 import { formatKeys, isTypingTarget, matchesKeys } from '../provider/shortcuts';
 import { useScopeAttributes, useShortcut, useUmbra } from '../provider/UmbraProvider';
 import { cx, renderPart, type Part } from '../utils/parts';
@@ -209,7 +209,7 @@ function Root({
   };
 
   // The shortcut: one from the provider's list, or keys of its own.
-  const { registry, icons } = useUmbra();
+  const { registry } = useUmbra();
   const registered = !!shortcut && registry.shortcuts.has(shortcut);
   const focus = () => inputRef.current?.focus();
   const fromList = useShortcut(registered ? shortcut : undefined, control.disabled ? undefined : focus);
@@ -432,7 +432,9 @@ function Input({ className, style }: Omit<BlockProps, 'children'>) {
       />
       {invalid && (
         <span data-part="invalidIcon" className={styles.invalidIcon}>
-          <IconSlot>{icons.invalid}</IconSlot>
+          <IconSlot>
+            <BareIcon name="invalid" />
+          </IconSlot>
         </span>
       )}
     </>
@@ -541,7 +543,9 @@ function Suggestions({
           children: (
             <>
               {row.recent ? (
-                <IconSlot part="icon">{icons.recent}</IconSlot>
+                <IconSlot part="icon">
+                  <BareIcon name="recent" />
+                </IconSlot>
               ) : (
                 row.suggestion?.icon && <IconSlot part="icon">{row.suggestion.icon}</IconSlot>
               )}
@@ -579,7 +583,7 @@ function Suggestions({
             field.removeRecent?.(row.text);
           }}
         >
-          {icons.close}
+          <BareIcon name="close" />
         </span>
       )}
     </AriaListBoxItem>

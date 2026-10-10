@@ -30,7 +30,7 @@ Heading plus paragraph in a card (2, 19, 27); one centred line filling a card (2
 | Variant | Values | Notes |
 |---|---|---|
 | `variant` | `block`, `inline` | `block` is centred in its slot; `inline` is one line of text |
-| `tone` | `neutral`, `error` | `error` colours the icon and title with the danger colour |
+| `tone` | `neutral`, `error` | `error` shows a danger-coloured icon (the built-in one unless `icon` is given; `null` hides it). The title keeps the text colour, because the danger colour does not reach 4.5:1 on every surface and tint. |
 
 States: none of its own.
 
@@ -74,7 +74,7 @@ The steps are measured, not fixed sizes, and undo when the slot grows. They work
 
 - No role by default: it is static text. With `role="alert"` (what the data components set for an error) it is announced when it appears.
 - The icon is decorative and hidden from assistive technology.
-- The error tone is not carried by colour alone in the data components: the role and the text say it.
+- The error tone is not carried by colour alone: the icon's shape, the role and the text say it.
 - The action is an ordinary control in the tab order.
 
 ### The shared data states (`src/internal/dataState.tsx`, not exported)

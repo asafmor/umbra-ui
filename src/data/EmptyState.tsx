@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { useShrinkLevel } from '../internal/useShrinkLevel';
-import { IconSlot } from '../provider/icons';
+import { BareIcon, IconSlot } from '../provider/icons';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './EmptyState.module.css';
 
@@ -13,7 +13,7 @@ interface BlockProps {
 export interface EmptyStateRootProps extends BlockProps {
   /** `block` is centred in its slot; `inline` is one line of text. */
   variant?: 'block' | 'inline';
-  /** `error` marks a failure: danger-coloured icon and title. */
+  /** `error` marks a failure: a danger-coloured icon, the built-in one unless `icon` is given. */
   tone?: 'neutral' | 'error';
   /** `alert` announces the content when it appears (for an error); `status` announces it politely. */
   role?: 'alert' | 'status';
@@ -115,9 +115,11 @@ export interface EmptyStateProps extends Omit<EmptyStateRootProps, 'children'> {
 
 /** Says that a region has nothing to show, or failed to load, and what to do about it. */
 export function EmptyState({ title, description, icon, action, parts, ...root }: EmptyStateProps) {
+  // An error always carries a mark that is not colour; `icon={null}` leaves it out.
+  const shown = icon === undefined && root.tone === 'error' ? <BareIcon name="danger" /> : icon;
   return (
     <Root {...root}>
-      {icon && renderPart(parts?.icon, { children: icon }, (p) => <Icon>{p.children}</Icon>)}
+      {shown && renderPart(parts?.icon, { children: shown }, (p) => <Icon>{p.children}</Icon>)}
       {title && renderPart(parts?.title, { children: title }, (p) => <Title>{p.children}</Title>)}
       {description &&
         renderPart(parts?.description, { children: description }, (p) => (

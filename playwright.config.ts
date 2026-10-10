@@ -12,8 +12,9 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   reporter: [['list']],
   use: { baseURL: `http://localhost:${port}`, browserName: 'chromium' },
-  // Strict on purpose: with the default colour threshold, a dark border that moves on a dark page passes.
-  expect: { toHaveScreenshot: { threshold: 0.05, maxDiffPixelRatio: 0.0002 } },
+  // Strict on purpose. With the default colour threshold a dark border that moves on a dark page passes,
+  // and with a looser one a small badge that changes from magenta to violet did.
+  expect: { toHaveScreenshot: { threshold: 0.01, maxDiffPixels: 20 } },
   webServer: {
     command: `npx vite preview --outDir storybook-static --port ${port} --strictPort`,
     url: `http://localhost:${port}/index.json`,
