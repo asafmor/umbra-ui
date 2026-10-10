@@ -28,6 +28,53 @@ The outermost frame: exactly the size of the window, never scrolls, bars above o
 
 **Blocks**: `AppShell.Root`, `AppShell.Background`, `AppShell.Bars`, `AppShell.Main`.
 
+## Avatar
+
+A person or entity: its image, or its initials, or a silhouette.
+
+**Tokens**: `--umbra-avatar-bg`, `--umbra-avatar-fallback-fg`, `--umbra-avatar-fg`, `--umbra-avatar-group-border`, `--umbra-avatar-group-overlap`, `--umbra-avatar-radius`, `--umbra-avatar-ring`, `--umbra-avatar-size`, `--umbra-avatar-status-size`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `src` | `string` | The image. When it is missing or fails to load, the initials or the silhouette show instead. |
+| `alt` | `string` | Accessible name. Defaults to `name`. Pass `""` when the name is written next to the avatar. |
+| `name` | `string` | The person or entity. Gives the initials shown without an image. |
+| `fallbackIcon` | `ReactNode` | Replaces the silhouette shown when there is no image and no name. |
+| `status` | `ReactNode` | A small node at the corner, for example a status dot. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `size` | `AvatarSize` | Fixed size. Without it the avatar is as tall as a control, so it follows the density level. |
+| `shape` | `AvatarShape` |  |
+| `ring` | `string \| boolean` | A ring around the avatar: `true` for the accent colour, or any CSS colour. |
+
+**Parts**: `image`, `initials`, `fallback`, `status`.
+
+**Blocks**: `Avatar.Root`, `Avatar.Image`, `Avatar.Initials`, `Avatar.Fallback`, `Avatar.Status`.
+
+## AvatarGroup
+
+A row of overlapping avatars. Those that do not fit are counted in a "+N" at the end.
+
+**Tokens**: `--umbra-avatar-bg`, `--umbra-avatar-fallback-fg`, `--umbra-avatar-fg`, `--umbra-avatar-group-border`, `--umbra-avatar-group-overlap`, `--umbra-avatar-radius`, `--umbra-avatar-ring`, `--umbra-avatar-size`, `--umbra-avatar-status-size`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `children` | `ReactNode` | The avatars. |
+| `max` | `number` | Shows at most this many avatars; the rest are counted in "+N". Fewer show when the group is narrow. |
+| `total` | `number` | The number of members, when it is larger than the number of avatars given. |
+| `moreLabel` | `((count: number) => string)` | Accessible name of the "+N" counter. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `aria-label` | `string` | Names the group for assistive technology. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `size` | `AvatarSize` | Size and shape of every avatar in the group. |
+| `shape` | `AvatarShape` |  |
+
+**Parts**: `overflow`.
+
+**Blocks**: `AvatarGroup.Root`, `AvatarGroup.Overflow`.
+
 ## Banner
 
 A message band inside a card or page: a notice, a warning, or an insight about the data beside it.
@@ -180,6 +227,31 @@ Says that a region has nothing to show, or failed to load, and what to do about 
 
 **Blocks**: `EmptyState.Root`, `EmptyState.Icon`, `EmptyState.Title`, `EmptyState.Description`, `EmptyState.Action`.
 
+## EntityIcon
+
+A small mark for an entity (a logo, a flag, a category glyph), with an optional name next to it.
+
+**Tokens**: `--umbra-entity-icon-bg`, `--umbra-entity-icon-fg`, `--umbra-entity-icon-gap`, `--umbra-entity-icon-radius`, `--umbra-entity-icon-size`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `src` | `string` | An image: a logo or a flag. When it is missing or fails to load, `icon` or the generated mark shows. |
+| `icon` | `ReactNode` | An icon node, used when there is no image. |
+| `name` | `string` | The entity. Names the mark, and gives the letters and colour of the generated mark. |
+| `alt` | `string` | Accessible name of the mark, when it differs from `name`. |
+| `label` | `ReactNode` | Text shown next to the mark, truncated when it does not fit. `true` shows `name`. |
+| `letters` | `1 \| 2` | Letters in the generated mark. Default: 1 up to `sm`, 2 from `md`. |
+| `color` | `string` | Background of the generated mark, in place of the colour derived from `name`. White text must keep 4.5:1 on it. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `size` | `EntityIconSize` | Fixed size of the mark. Without it the mark follows the size of the text around it. |
+| `shape` | `EntityIconShape` |  |
+
+**Parts**: `mark`, `label`.
+
+**Blocks**: `EntityIcon.Root`, `EntityIcon.Mark`, `EntityIcon.Label`.
+
 ## GroupHeader
 
 A header row for one group of rows inside a list or table.
@@ -238,6 +310,61 @@ A button that shows only an icon. Inside an overflow menu it becomes a row with 
 **Parts**: `icon`, `badge`, `tooltip`.
 
 **Blocks**: none.
+
+## KeyValue
+
+One label with its value. Use it inside a `KeyValueList`, or on its own.
+
+**Tokens**: `--umbra-key-value-divider`, `--umbra-key-value-gap`, `--umbra-key-value-hint-fg`, `--umbra-key-value-label-fg`, `--umbra-key-value-label-width`, `--umbra-key-value-min-column`, `--umbra-key-value-padding-x`, `--umbra-key-value-row-height`, `--umbra-key-value-stripe`, `--umbra-key-value-value-fg`, `--umbra-key-value-value-font`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `label` | `ReactNode` | What the value is. |
+| `value` | `ReactNode` | The value. `children` is used when it is not set. |
+| `children` | `ReactNode` |  |
+| `icon` | `ReactNode` | Shown before the label. |
+| `hint` | `ReactNode` | A secondary line: under the label when inline, under the value when stacked. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `orientation` | `Orientation` | `inline`: label and value side by side. `stacked`: the label above the value. |
+| `align` | `Align` | Where the value sits. Default: `end` when inline, `start` when stacked. |
+| `wrap` | `boolean` | Lets a long value wrap onto more lines. Without it the value is cut with an ellipsis. |
+
+**Parts**: `icon`, `label`, `value`, `hint`.
+
+**Blocks**: `KeyValue.Root`, `KeyValue.Label`, `KeyValue.Value`, `KeyValue.Hint`.
+
+## KeyValueList
+
+A group of labels with their values, in rows, columns or a grid.
+
+**Tokens**: `--umbra-key-value-divider`, `--umbra-key-value-gap`, `--umbra-key-value-hint-fg`, `--umbra-key-value-label-fg`, `--umbra-key-value-label-width`, `--umbra-key-value-min-column`, `--umbra-key-value-padding-x`, `--umbra-key-value-row-height`, `--umbra-key-value-stripe`, `--umbra-key-value-value-fg`, `--umbra-key-value-value-font`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `items` | `KeyValueItem[]` | The rows as data. Use this or `children`. |
+| `children` | `ReactNode` | The rows as `KeyValue` elements. |
+| `loading` | `boolean` | Shows skeleton rows in the final layout. |
+| `skeletonRows` | `number` | Number of skeleton rows. |
+| `empty` | `ReactNode` | Shown when there are no items. |
+| `error` | `ReactNode` | Shown in place of the items when set. Put a retry action inside it. |
+| `parts` | `see Parts` | Replace or hide named pieces. `item` receives the props of each row built from `items`. |
+| `aria-label` | `string` | Names the list for assistive technology. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `orientation` | `Orientation` | Orientation of every item. Default: `inline` in rows, `stacked` in columns and in the grid. |
+| `align` | `Align` | Where every value sits. |
+| `wrap` | `boolean` | Lets long values wrap instead of being cut. |
+| `layout` | `"columns" \| "rows" \| "grid"` | `rows`: one row per item, sharing one label column. `columns`: side by side. `grid`: in `columns` columns. |
+| `columns` | `number` | Most columns of the `grid` layout. Fewer are used when the list is narrow. |
+| `striped` | `boolean` | Shades every other row (`rows` layout). |
+| `dividers` | `boolean` | Draws a line between items (`rows` and `columns` layouts). |
+| `labelWidth` | `string \| number` | Width of the shared label column in the `rows` layout: pixels or any CSS length. Default: as wide as the longest label, at most 60%. |
+
+**Parts**: `item`, `skeleton`, `empty`, `error`.
+
+**Blocks**: `KeyValueList.Root`, `KeyValueList.Item`.
 
 ## Legend
 
@@ -501,6 +628,34 @@ Shares its height among its children.
 
 **Blocks**: none.
 
+## StatValue
+
+A large value with its label, and optional unit, trend, caption and meter.
+
+**Tokens**: `--umbra-stat-value-caption-fg`, `--umbra-stat-value-fg`, `--umbra-stat-value-font`, `--umbra-stat-value-font-small`, `--umbra-stat-value-gap`, `--umbra-stat-value-label-fg`, `--umbra-stat-value-unit-fg`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `value` | `ReactNode` | The value. It never hides. |
+| `label` | `ReactNode` | What the value is. |
+| `icon` | `ReactNode` | Shown before the label. |
+| `unit` | `ReactNode` | Shown after the value, smaller. |
+| `caption` | `ReactNode` | A secondary line under the value. |
+| `trend` | `ReactNode` | A node after the value that shows its direction, for example a `TrendArrow`. |
+| `meter` | `ReactNode` | A node under the caption that shows the value as a share, for example a `ProgressBar`. |
+| `loading` | `boolean` | Shows skeletons in place of the value, caption and meter. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `aria-label` | `string` | Accessible name, for a stat without a label. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `tone` | `StatValueTone` | Colour of the value. A tone that carries meaning needs a second cue: a `trend`, an icon or the label. |
+| `align` | `"start" \| "center" \| "end"` |  |
+| `size` | `"md" \| "lg" \| "xl"` | Size of the value: `md` is the title font, `lg` the display font, `xl` larger still. |
+
+**Parts**: `icon`, `label`, `value`, `unit`, `trend`, `caption`, `meter`, `skeleton`.
+
+**Blocks**: `StatValue.Root`, `StatValue.Label`, `StatValue.Figure`, `StatValue.Value`, `StatValue.Unit`, `StatValue.Trend`, `StatValue.Caption`, `StatValue.Meter`.
+
 ## SubNav
 
 The second bar: the pages of the current section, and room for shortcuts at the end.
@@ -524,6 +679,38 @@ The second bar: the pages of the current section, and room for shortcuts at the 
 **Parts**: `indicator`, `more`, `label`, `item`, `end`.
 
 **Blocks**: `SubNav.Root`, `SubNav.Label`, `SubNav.Item`, `SubNav.Menu`, `SubNav.End`.
+
+## SummaryTile
+
+A compact tile that sums up one thing: an icon, a title and one value. The whole tile can be a link or a button.
+
+**Tokens**: `--umbra-focus-color`, `--umbra-summary-tile-bg`, `--umbra-summary-tile-border`, `--umbra-summary-tile-caption-fg`, `--umbra-summary-tile-fg`, `--umbra-summary-tile-icon-bg`, `--umbra-summary-tile-icon-size`, `--umbra-summary-tile-min-height`, `--umbra-summary-tile-min-width`, `--umbra-summary-tile-padding`, `--umbra-summary-tile-radius`, `--umbra-summary-tile-selected-bg`, `--umbra-summary-tile-selected-fg`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `icon` | `ReactNode` | Shown in a block at the start of the tile. |
+| `title` | `ReactNode` | What the tile is about. |
+| `value` | `ReactNode` | The one value the tile shows. |
+| `caption` | `ReactNode` | A secondary line under the value. |
+| `trend` | `ReactNode` | A node after the value that shows its direction, for example a `TrendArrow`. |
+| `loading` | `boolean` | Shows skeletons in place of the value and caption. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `aria-label` | `string` | Accessible name, when the content does not name the tile. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `href` | `string` | Makes the whole tile one link. |
+| `size` | `number \| "content"` | Share of the parent's space: a weight, or `"content"` to take the size of the content. Default 1. |
+| `selected` | `boolean` | Marks the tile as the current one: a link gets `aria-current`, a button `aria-pressed`. |
+| `disabled` | `boolean` |  |
+| `label` | `string` | Tab label when a parent `Columns` shows one child at a time. |
+| `onPress` | `(() => void)` | Makes the whole tile one button. |
+| `priority` | `number` | Which child gives way first when space runs out. Higher stays longer; ties give way from the end. Default 0. |
+| `minWidth` | `number` | Reserved: `Columns` has no rule that uses it yet, so it has no effect. |
+| `minHeight` | `number` | Below this height a parent `Stack` may collapse the child to its header. |
+
+**Parts**: `icon`, `title`, `value`, `trend`, `caption`, `skeleton`.
+
+**Blocks**: `SummaryTile.Root`, `SummaryTile.Icon`, `SummaryTile.Content`, `SummaryTile.Title`, `SummaryTile.Figure`, `SummaryTile.Value`, `SummaryTile.Trend`, `SummaryTile.Caption`.
 
 ## TopBar
 

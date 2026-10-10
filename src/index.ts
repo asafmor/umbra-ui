@@ -87,3 +87,41 @@ export type {
   ListProps,
   ListRootProps,
 } from './data/List';
+export { Avatar, AvatarGroup } from './data/Avatar';
+export type {
+  AvatarFallbackProps,
+  AvatarGroupOverflowProps,
+  AvatarGroupProps,
+  AvatarGroupRootProps,
+  AvatarImageProps,
+  AvatarProps,
+  AvatarRootProps,
+  AvatarShape,
+  AvatarSize,
+} from './data/Avatar';
+export { EntityIcon } from './data/EntityIcon';
+export type {
+  EntityIconMarkProps,
+  EntityIconProps,
+  EntityIconRootProps,
+  EntityIconShape,
+  EntityIconSize,
+} from './data/EntityIcon';
+export { KeyValue, KeyValueList } from './data/KeyValue';
+export type {
+  KeyValueItem,
+  KeyValueLabelProps,
+  KeyValueListProps,
+  KeyValueListRootProps,
+  KeyValueProps,
+  KeyValueRootProps,
+} from './data/KeyValue';
+export { StatValue } from './data/StatValue';
+export type {
+  StatValueLabelProps,
+  StatValueProps,
+  StatValueRootProps,
+  StatValueTone,
+} from './data/StatValue';
+export { SummaryTile } from './data/SummaryTile';
+export type { SummaryTileProps, SummaryTileRootProps } from './data/SummaryTile';
