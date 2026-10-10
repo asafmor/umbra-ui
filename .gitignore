@@ -17,4 +17,5 @@ src/styles/tokens.generated.ts
 # local, per-developer files
 *.local
 .claude/settings.local.json
+.serena/
 blob-report/
