@@ -87,9 +87,12 @@ export function IconButton({
             aria-hidden="true"
             data-part="badge"
             data-dot={badge === true || undefined}
+            // A count is drawn by CSS from this attribute: it is already part of the button's name, and as
+            // text in the button it would read as a visible label that the name does not start with.
+            data-count={typeof p.children === 'number' ? p.children : undefined}
             className={styles.badge}
           >
-            {p.children}
+            {typeof p.children === 'number' ? null : p.children}
           </span>
         ))}
     </ButtonBase>

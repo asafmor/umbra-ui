@@ -18,4 +18,5 @@ src/styles/tokens.generated.ts
 *.local
 .claude/settings.local.json
 .serena/
+.claude/worktrees/
 blob-report/

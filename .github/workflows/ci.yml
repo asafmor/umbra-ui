@@ -4,6 +4,10 @@ on:
     branches: [main]
   pull_request:
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   check:
     runs-on: ubuntu-latest
@@ -18,15 +22,30 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
-      # The example imports the built package, so this checks the published entries and types.
-      - run: npm run build -w examples/basic
-      # Every story: captures at three sizes, three densities and four tints, the no-page-scroll check,
-      # the automated accessibility check and the interaction tests.
+      # The examples import the built package, so this checks the published entries and types.
+      - run: npm run build --workspaces --if-present
+
+  # Every story: captures at three sizes, three densities and four tints, the no-page-scroll check,
+  # the automated accessibility check and the interaction tests. Split so it stays fast as stories grow.
+  browser:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4, 5, 6]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
       - run: npx playwright install --with-deps chromium
-      - run: npm run test:visual
+      - run: npm run build-storybook -- --quiet
+      - run: npx playwright test --shard=${{ matrix.shard }}/6
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: test-results
+          name: test-results-${{ matrix.shard }}
           path: test-results
           retention-days: 7

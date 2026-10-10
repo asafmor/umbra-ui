@@ -160,6 +160,10 @@
   text-align: center;
 }
 
+.badge[data-count]::after {
+  content: attr(data-count);
+}
+
 .badge[data-dot] {
   min-width: 8px;
   width: 8px;
