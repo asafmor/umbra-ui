@@ -18,6 +18,7 @@ const base = [
     entries(t.color[g]).map(([k, v]) => [`color-${g}-${kebab(k)}`, v]),
   ),
   ...entries(t.color.valueRamp).map(([k, v]) => [`color-value-ramp-${k}`, v]),
+  ...entries(t.color.series).map(([k, v]) => [`color-series-${k}`, v]),
   ['color-brand', t.color.brand.default],
   ['context', t.color.context.presets.violet],
   ...entries(t.font.family).map(([k, v]) => [`font-family-${k}`, v]),

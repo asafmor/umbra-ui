@@ -1,0 +1,176 @@
+.root {
+  --tone: var(--umbra-banner-info-color, var(--umbra-color-semantic-info));
+  --bg: var(
+    --umbra-banner-bg,
+    color-mix(in oklab, var(--tone) var(--umbra-banner-subtle-strength, 16%), transparent)
+  );
+  --fg: var(--umbra-banner-fg, var(--umbra-color-base-text-primary));
+  --border: var(--umbra-banner-border, color-mix(in oklab, var(--tone) 45%, transparent));
+  --icon: var(--umbra-banner-icon-color, var(--tone));
+  --stripe: var(--tone);
+  /* The first line of text, the icon and the buttons are all centred on a row of this height. */
+  --row: var(--umbra-banner-row-height, var(--umbra-density-control-height));
+
+  container-type: inline-size;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  column-gap: var(--umbra-space-3);
+  flex: 0 1 auto;
+  min-width: 0;
+  padding: var(--umbra-banner-padding-y, var(--umbra-space-1))
+    var(--umbra-banner-padding-x, var(--umbra-space-4));
+  border: var(--umbra-border-width) solid var(--border);
+  border-radius: var(--umbra-banner-radius, var(--umbra-radius-control));
+  background: var(--bg);
+  color: var(--fg);
+  font: var(--umbra-font-body);
+}
+
+.root[data-tone='success'] {
+  --tone: var(--umbra-banner-success-color, var(--umbra-color-semantic-success));
+}
+
+.root[data-tone='warning'] {
+  --tone: var(--umbra-banner-warning-color, var(--umbra-color-semantic-warning));
+}
+
+.root[data-tone='danger'] {
+  --tone: var(--umbra-banner-danger-color, var(--umbra-color-semantic-danger));
+}
+
+.root[data-tone='neutral'] {
+  --tone: var(--umbra-banner-neutral-color, var(--umbra-color-base-text-secondary));
+}
+
+.root[data-tone='accent'] {
+  --tone: var(--umbra-banner-accent-color, var(--umbra-color-fixed-accent-text));
+}
+
+/*
+ * Solid: the text is the dark surface colour, which has 4.5:1 on every tone colour. The accent tone is
+ * filled with the fixed violet instead, under its own light text.
+ */
+.root[data-variant='solid'] {
+  --bg: var(--umbra-banner-bg, var(--tone));
+  --fg: var(--umbra-banner-solid-fg, var(--umbra-color-base-surface1));
+  --border: var(--umbra-banner-border, transparent);
+  --icon: var(--umbra-banner-icon-color, var(--fg));
+  --stripe: color-mix(in oklab, var(--fg) 70%, var(--bg));
+  /* The pink ring has too little contrast on a filled banner; rings inside it take the text colour. */
+  --umbra-focus-color: var(--fg);
+}
+
+.root[data-variant='solid'][data-tone='accent'] {
+  --bg: var(--umbra-banner-bg, var(--umbra-color-fixed-selected));
+  --fg: var(--umbra-banner-solid-fg, var(--umbra-color-fixed-on-selected));
+}
+
+.root[data-variant='outline'] {
+  --bg: var(--umbra-banner-bg, transparent);
+  --border: var(--umbra-banner-border, var(--tone));
+}
+
+.root[data-emphasis='insight'] {
+  border-inline-start: var(--umbra-banner-stripe-width, var(--umbra-space-2)) solid var(--stripe);
+  border-start-start-radius: 0;
+  border-end-start-radius: 0;
+}
+
+.root[data-compact] {
+  --row: var(--umbra-banner-row-height, var(--umbra-density-table-row));
+  font: var(--umbra-font-label);
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  flex: none;
+  height: var(--row);
+  color: var(--icon);
+}
+
+.content {
+  flex: 1 1 0;
+  min-width: 0;
+  /* Centres a single line on the row; further lines grow downwards. */
+  padding-block: calc((var(--row) - 1lh) / 2);
+  overflow-wrap: anywhere;
+}
+
+.title {
+  font-weight: 700;
+}
+
+.description[data-clamp] {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: var(--lines);
+  line-clamp: var(--lines);
+  overflow: hidden;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--umbra-space-2) var(--umbra-space-3);
+  flex: 0 1 auto;
+  min-width: 0;
+  min-height: var(--row);
+}
+
+.dismiss {
+  display: flex;
+  flex: none;
+  margin-inline-end: calc(-1 * var(--umbra-space-3));
+  --umbra-icon-button-size: var(--row);
+}
+
+/* Compact: one line. The title keeps its width as long as it can; the description truncates first. */
+.root[data-compact] .content {
+  display: flex;
+  gap: var(--umbra-space-3);
+  white-space: nowrap;
+  overflow-wrap: normal;
+}
+
+.root[data-compact] :is(.title, .description) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.root[data-compact] .title {
+  flex: 0 1 auto;
+  max-width: 100%;
+}
+
+.root[data-compact] .description {
+  display: block;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* Step 1: the actions move below the text, in line with it. */
+@container (max-width: 26em) {
+  .root:not([data-compact]) > .actions {
+    order: 1;
+    flex-basis: 100%;
+    padding-block-end: var(--umbra-space-2);
+  }
+
+  .root:not([data-compact]) > .icon ~ .actions {
+    padding-inline-start: calc(var(--umbra-icon-size, 1.25em) + var(--umbra-space-3));
+  }
+}
+
+/* Step 2: the icon hides. The title and the role still say what the banner is. */
+@container (max-width: 14em) {
+  .root > .icon {
+    display: none;
+  }
+
+  .root:not([data-compact]) > .icon ~ .actions {
+    padding-inline-start: 0;
+  }
+}
