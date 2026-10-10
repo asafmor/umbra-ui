@@ -540,7 +540,7 @@ A header row for one group of rows inside a list or table.
 | `meta` | `ReactNode` | Trailing text, for example a total. Hides when the header is too narrow. |
 | `actions` | `ReactNode` | Trailing controls. They move into an overflow menu when they do not fit. |
 | `moreLabel` | `string` | Accessible name of the overflow menu button. |
-| `level` | `4 \| 3 \| 2 \| 5 \| 6` | Heading level of the title. |
+| `headingLevel` | `4 \| 3 \| 2 \| 5 \| 6` | Heading level of the title. |
 | `collapsible` | `boolean` | Adds a caret button that collapses the group. The app (or `List`) hides the rows. |
 | `collapsed` | `boolean` | Controlled collapse state. |
 | `defaultCollapsed` | `boolean` |  |
@@ -794,8 +794,8 @@ A vertical list of rows that scrolls inside its slot, with optional groups, sele
 | `renderItem` | `((item: T, index: number) => ReactNode)` | Returns the `List.Item` of one row. |
 | `children` | `ReactNode` | `List.Item` and `List.Group` elements. |
 | `selectionMode` | `"none" \| "single" \| "multiple"` | `single` and `multiple` let the user select rows. |
-| `selectedKeys` | `ListKey[]` | Controlled selection: the keys of the selected rows. |
-| `defaultSelectedKeys` | `ListKey[]` |  |
+| `selectedIds` | `ListKey[]` | Controlled selection: the keys of the selected rows. |
+| `defaultSelectedIds` | `ListKey[]` |  |
 | `onSelectionChange` | `((keys: ListKey[]) => void)` |  |
 | `selectionBehavior` | `"toggle" \| "replace"` | `replace`: a click selects only that row, a double click or Enter activates it, and selection follows the arrow keys. `toggle`: a click or Space toggles the row. Default: `replace` when `onAction` is set, otherwise `toggle`. |
 | `disallowEmptySelection` | `boolean` | The user cannot deselect the last selected row. Default: on with `replace` (so a double click does not deselect), otherwise off. |
@@ -1175,7 +1175,7 @@ A heading for one section of content inside a card or page, with optional contro
 |---|---|---|
 | `children` | `ReactNode` | The title. |
 | `variant` | `"heading" \| "link" \| "rule"` | `link` is chosen automatically when `href` or `onOpen` is set. |
-| `level` | `4 \| 3 \| 2 \| 5 \| 6` | Heading level. |
+| `headingLevel` | `4 \| 3 \| 2 \| 5 \| 6` | Heading level. |
 | `href` | `string` | Makes the title a link to a fuller view of the section. |
 | `onOpen` | `(() => void)` |  |
 | `count` | `number` | A number shown after the title. |
@@ -1658,11 +1658,11 @@ A value coloured by where it falls on a five-step ramp.
 
 | Prop | Type | Purpose |
 |---|---|---|
-| `value` (required) | `number \| null` | The value. `null` or `undefined` shows `emptyText` in a neutral pill. |
-| `format` | `((value: number) => ReactNode)` | Turns the value into what is shown: `(v) => v.toFixed(2)`, or a grade letter. |
+| `value` (required) | `number \| null` | The value. `null` or `undefined` shows `emptyLabel` in a neutral pill. |
+| `formatValue` | `((value: number) => ReactNode)` | Turns the value into what is shown: `(v) => v.toFixed(2)`, or a grade letter. |
 | `showLevel` | `boolean` | Adds a small bar marker of the level, for readers who cannot tell the colours apart. |
 | `levelLabel` | `((level: number, steps: number) => string)` | What a screen reader hears for the marker. |
-| `emptyText` | `ReactNode` | Shown when there is no value. |
+| `emptyLabel` | `ReactNode` | Shown when there is no value. |
 | `loading` | `boolean` | Shows a placeholder of the pill's size. |
 | `parts` | `see Parts` | Replace or hide named pieces. |
 | `className` | `string` |  |

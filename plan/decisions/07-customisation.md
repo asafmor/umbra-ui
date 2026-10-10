@@ -21,3 +21,22 @@ Rules:
 - **Each component's spec lists all four layers**: its tokens, props, part names and blocks. The per-component customisation table in the docs is generated from the source, so it cannot go out of date.
 
 **Rejected**: props only (prop bloat; unusual cases stay impossible). Building blocks only (simple cases need too much code).
+
+## Prop names (added in the integration pass, 2026-10-10)
+
+The same idea has the same name in every component. New components follow this list.
+
+| Idea | Name |
+|---|---|
+| A press | `onPress`. A row or point chosen from a collection: `onAction(id)`. Never `onClick`. |
+| State flags | `disabled`, `readOnly`, `invalid`, `required`, `loading`, `selected`, `checked`, `pressed`, `open`, `collapsed`. No `is` prefix. |
+| A changing value | `value` / `defaultValue` / `onChange`. Other state: `<name>` / `default<Name>` / `on<Name>Change` (`collapsed`, `open`). |
+| Lists of ids | `<what>Ids`: `selectedIds`, `hiddenIds`, `expandedIds`. Items are identified by `id`. |
+| Heading level | `headingLevel` |
+| A built-in string | `<what>Label` with an English default: `moreLabel`, `closeLabel`, `emptyLabel`, `retryLabel` |
+| Text of a number | `formatValue` |
+| Size | `size` is the share of the parent's space on a layout child, and the control size elsewhere. A layout child that also has a control size names it for the part: `tabSize`, `itemSize`. |
+| Colour by meaning | `tone`; a free colour is `color`. `variant` is the shape or look. |
+| Router link | `renderLink(props)` |
+| Loading, empty, error | `loading`, `empty`, `error`, `onRetry`, `retryLabel` (`src/internal/dataState.tsx`) |
+

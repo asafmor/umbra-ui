@@ -52,12 +52,12 @@ function Root({
 
 export interface GroupHeaderTitleProps extends BlockProps {
   /** Heading level. */
-  level?: 2 | 3 | 4 | 5 | 6;
+  headingLevel?: 2 | 3 | 4 | 5 | 6;
 }
 
-function Title({ level = 3, className, style, children }: GroupHeaderTitleProps) {
+function Title({ headingLevel = 3, className, style, children }: GroupHeaderTitleProps) {
   return createElement(
-    `h${level}`,
+    `h${headingLevel}`,
     { 'data-part': 'title', className: cx(styles.title, className), style },
     children,
   );
@@ -125,7 +125,7 @@ export interface GroupHeaderProps extends Omit<GroupHeaderRootProps, 'children' 
   /** Accessible name of the overflow menu button. */
   moreLabel?: string;
   /** Heading level of the title. */
-  level?: 2 | 3 | 4 | 5 | 6;
+  headingLevel?: 2 | 3 | 4 | 5 | 6;
   /** Adds a caret button that collapses the group. The app (or `List`) hides the rows. */
   collapsible?: boolean;
   /** Controlled collapse state. */
@@ -153,7 +153,7 @@ export function GroupHeader({
   count,
   meta,
   actions,
-  level = 3,
+  headingLevel = 3,
   collapsible = false,
   collapsed: controlled,
   defaultCollapsed = false,
@@ -189,7 +189,7 @@ export function GroupHeader({
         )}
       {icon &&
         renderPart(parts?.icon, { children: icon }, (p) => <IconSlot part="icon">{p.children}</IconSlot>)}
-      {renderPart(parts?.title, { level, children: title }, (p) => (
+      {renderPart(parts?.title, { headingLevel, children: title }, (p) => (
         <Title {...p} />
       ))}
       {count !== undefined &&

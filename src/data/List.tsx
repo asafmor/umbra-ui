@@ -42,8 +42,8 @@ export interface ListRootProps extends DataStateProps {
   /** `single` and `multiple` let the user select rows. */
   selectionMode?: 'none' | 'single' | 'multiple';
   /** Controlled selection: the keys of the selected rows. */
-  selectedKeys?: ListKey[];
-  defaultSelectedKeys?: ListKey[];
+  selectedIds?: ListKey[];
+  defaultSelectedIds?: ListKey[];
   onSelectionChange?: (keys: ListKey[]) => void;
   /**
    * `replace`: a click selects only that row, a double click or Enter activates it, and selection follows
@@ -92,8 +92,8 @@ export interface ListRootProps extends DataStateProps {
 function Root({
   children,
   selectionMode = 'none',
-  selectedKeys,
-  defaultSelectedKeys,
+  selectedIds,
+  defaultSelectedIds,
   onSelectionChange,
   selectionBehavior: behavior,
   disallowEmptySelection,
@@ -162,8 +162,8 @@ function Root({
         selectionMode={selectionMode}
         selectionBehavior={selectionBehavior}
         disallowEmptySelection={disallowEmptySelection ?? selectionBehavior === 'replace'}
-        selectedKeys={selectedKeys}
-        defaultSelectedKeys={defaultSelectedKeys}
+        selectedKeys={selectedIds}
+        defaultSelectedKeys={defaultSelectedIds}
         onSelectionChange={(selection) =>
           onSelectionChange?.(selection === 'all' ? [...keys.current] : ([...selection] as ListKey[]))
         }

@@ -52,7 +52,7 @@ States: `collapsed`, `sticky`.
 | `actions` | node | — | Trailing controls. They move into an overflow menu when they do not fit. |
 | `moreLabel` | string | "More actions" | Name of the overflow menu button |
 | `variant` | see above | `strip` | |
-| `level` | 2–6 | 3 | Heading level of the title |
+| `headingLevel` | 2–6 | 3 | Heading level of the title |
 | `sticky` | boolean | `false` | Sticks to the top of the scroll area while its group scrolls |
 | `collapsible` | boolean | `false` | Adds the caret button |
 | `collapsed` / `defaultCollapsed` / `onCollapsedChange` | boolean / boolean / function | — | Controlled or uncontrolled collapse |
@@ -76,7 +76,7 @@ States: `collapsed`, `sticky`.
 
 ## Interaction and accessibility
 
-- The title is a heading (`level`).
+- The title is a heading (`headingLevel`).
 - The caret is a button with `aria-expanded`; `Enter` and `Space` toggle it. Its name includes a text title, so several carets in one list are told apart.
 - The header only reports the collapse; the owner of the rows hides them. `List.Group` does this by itself.
 - `sticky` needs the header and its rows to share a parent element, so the header leaves with its group.

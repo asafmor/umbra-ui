@@ -54,7 +54,7 @@ States: `loading`, empty, error, `loadingMore`; per row: hover, pressed, selecte
 | `groups` | array of `{ key, items, …GroupHeader props }` | — | Grouped rows as data |
 | `children` | `List.Item`, `List.Group` | — | Rows as elements |
 | `selectionMode` | see above | `none` | |
-| `selectedKeys` / `defaultSelectedKeys` / `onSelectionChange` | key array / key array / function | — | Controlled or uncontrolled selection, as plain arrays of keys |
+| `selectedIds` / `defaultSelectedIds` / `onSelectionChange` | id array / id array / function | — | Controlled or uncontrolled selection, as plain arrays of keys |
 | `selectionBehavior` | see above | see above | |
 | `disallowEmptySelection` | boolean | on with `replace` | The user cannot deselect the last selected row |
 | `onAction` | function (key) | — | A row was activated |

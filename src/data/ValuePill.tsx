@@ -72,16 +72,16 @@ function Level({ level, label, className, style }: ValuePillLevelProps) {
 }
 
 export interface ValuePillProps extends Omit<ValuePillRootProps, 'level' | 'children'>, ValueLevelOptions {
-  /** The value. `null` or `undefined` shows `emptyText` in a neutral pill. */
+  /** The value. `null` or `undefined` shows `emptyLabel` in a neutral pill. */
   value: number | null | undefined;
   /** Turns the value into what is shown: `(v) => v.toFixed(2)`, or a grade letter. */
-  format?: (value: number) => ReactNode;
+  formatValue?: (value: number) => ReactNode;
   /** Adds a small bar marker of the level, for readers who cannot tell the colours apart. */
   showLevel?: boolean;
   /** What a screen reader hears for the marker. */
   levelLabel?: (level: number, steps: number) => string;
   /** Shown when there is no value. */
-  emptyText?: ReactNode;
+  emptyLabel?: ReactNode;
   /** Shows a placeholder of the pill's size. */
   loading?: boolean;
   /** Replace or hide named pieces. */
@@ -99,10 +99,10 @@ export function ValuePill({
   max,
   thresholds,
   ramp,
-  format,
+  formatValue,
   showLevel = false,
   levelLabel = (level, steps) => `Level ${level} of ${steps}`,
-  emptyText = '–',
+  emptyLabel = '–',
   loading = false,
   parts,
   ...root
@@ -121,7 +121,7 @@ export function ValuePill({
   }
   const level = valueLevel(value, { min, max, thresholds, ramp });
   // `level` is only set for a finite number, so `value` is one here.
-  const text = level === null ? emptyText : format ? format(value as number) : value;
+  const text = level === null ? emptyLabel : formatValue ? formatValue(value as number) : value;
   return (
     <Root {...root} level={level}>
       {renderPart(parts?.value, { children: text }, (p) => (
