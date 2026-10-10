@@ -42,3 +42,22 @@ export { IconButton } from './basics/IconButton';
 export type { IconButtonProps } from './basics/IconButton';
 export { Skeleton } from './basics/Skeleton';
 export type { SkeletonProps } from './basics/Skeleton';
+export { Banner } from './data/Banner';
+export type {
+  BannerDescriptionProps,
+  BannerDismissProps,
+  BannerProps,
+  BannerRootProps,
+  BannerTone,
+  BannerVariant,
+} from './data/Banner';
+export { Legend } from './data/Legend';
+export type {
+  LegendItem,
+  LegendItemProps,
+  LegendMarker,
+  LegendMarkerProps,
+  LegendMoreProps,
+  LegendProps,
+  LegendRootProps,
+} from './data/Legend';

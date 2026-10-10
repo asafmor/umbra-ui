@@ -28,6 +28,37 @@ The outermost frame: exactly the size of the window, never scrolls, bars above o
 
 **Blocks**: `AppShell.Root`, `AppShell.Background`, `AppShell.Bars`, `AppShell.Main`.
 
+## Banner
+
+A message band inside a card or page: a notice, a warning, or an insight about the data beside it.
+
+**Tokens**: `--umbra-banner-accent-color`, `--umbra-banner-bg`, `--umbra-banner-border`, `--umbra-banner-danger-color`, `--umbra-banner-fg`, `--umbra-banner-icon-color`, `--umbra-banner-info-color`, `--umbra-banner-neutral-color`, `--umbra-banner-padding-x`, `--umbra-banner-padding-y`, `--umbra-banner-radius`, `--umbra-banner-row-height`, `--umbra-banner-solid-fg`, `--umbra-banner-stripe-width`, `--umbra-banner-subtle-strength`, `--umbra-banner-success-color`, `--umbra-banner-warning-color`, `--umbra-icon-size`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `title` | `ReactNode` | The headline, in bold. |
+| `children` | `ReactNode` | The description. |
+| `icon` | `ReactNode` | Replaces the tone's default icon. `null` hides it. |
+| `actions` | `ReactNode` | Trailing controls, usually one or two buttons. They move below the text when the banner is narrow. |
+| `dismissible` | `boolean` | Shows a dismiss button. |
+| `dismissLabel` | `string` | Accessible name of the dismiss button. |
+| `maxLines` | `number` | Clamps the description to this many lines. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `compact` | `boolean` | One line: the title and the description share it and truncate. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `tone` | `BannerTone` | What the message is. Each tone has its own colour and its own default icon. |
+| `variant` | `BannerVariant` | `subtle`: tinted fill. `solid`: filled with the tone colour. `outline`: border only. |
+| `emphasis` | `"default" \| "insight"` | `insight` adds a stripe on the leading edge, for a finding or recommendation about the data beside it. |
+| `live` | `"polite" \| "assertive" \| "off"` | How a screen reader announces the banner when it appears. `polite` is a `status`, `assertive` an `alert`, `off` is not announced. Defaults to `assertive` for the `danger` tone and `polite` otherwise. |
+| `open` | `boolean` | Controlled visibility. Set it to `false` in `onDismiss`. |
+| `defaultOpen` | `boolean` |  |
+| `onDismiss` | `(() => void)` | Called when the dismiss button is pressed. |
+
+**Parts**: `icon`, `title`, `description`, `actions`, `dismiss`.
+
+**Blocks**: `Banner.Root`, `Banner.Icon`, `Banner.Content`, `Banner.Title`, `Banner.Description`, `Banner.Actions`, `Banner.Dismiss`.
+
 ## Button
 
 Triggers an action. Text, with an optional icon.
@@ -154,6 +185,37 @@ A button that shows only an icon. Inside an overflow menu it becomes a row with 
 **Parts**: `icon`, `badge`, `tooltip`.
 
 **Blocks**: none.
+
+## Legend
+
+The key for a chart or any colour-coded data: one marker and label per series.
+
+**Tokens**: `--umbra-focus-color`, `--umbra-focus-offset`, `--umbra-legend-fg`, `--umbra-legend-font`, `--umbra-legend-gap`, `--umbra-legend-item-radius`, `--umbra-legend-row-gap`, `--umbra-legend-row-height`, `--umbra-legend-value-fg`, `--umbra-series-marker-size`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `items` (required) | `LegendItem[]` |  |
+| `marker` | `SeriesMarkerKind` | The marker of every item that does not set its own. Patterns (`stripes`, `dots`) do not depend on colour. |
+| `loading` | `boolean` | Shows placeholder items while the data loads. |
+| `loadingCount` | `number` | Number of placeholder items while `loading`. |
+| `moreLabel` | `((count: number) => string)` | Text of the button that stands for the items that did not fit. |
+| `allLabel` | `string` | Accessible name of the popover with the full list. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `aria-label` | `string` | Accessible name of the legend. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `orientation` | `"vertical" \| "horizontal"` |  |
+| `align` | `"start" \| "center" \| "end"` | Where the items sit along the legend. A vertical legend with values always fills its width. |
+| `interactive` | `boolean` | Makes each item a toggle button that switches its series on and off. |
+| `onHighlight` | `((id: string \| null) => void)` | Called with an item's id while it is hovered or focused, and with `null` when it no longer is. |
+| `maxRows` | `number` | The most rows a horizontal legend wraps to. |
+| `hiddenIds` | `readonly string[]` | Ids of the items that are switched off (controlled). |
+| `defaultHiddenIds` | `readonly string[]` |  |
+| `onHiddenChange` | `((hiddenIds: string[]) => void)` |  |
+
+**Parts**: `item`, `marker`, `label`, `value`, `more`, `skeleton`.
+
+**Blocks**: `Legend.Root`, `Legend.Item`, `Legend.Marker`, `Legend.More`.
 
 ## Page
 
