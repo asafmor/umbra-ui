@@ -89,7 +89,6 @@ export function ButtonBase({
       ref={elementRef as React.RefObject<HTMLButtonElement>}
       type={type}
       isPending={loading}
-      aria-busy={loading || undefined}
       aria-pressed={pressed}
       aria-expanded={expanded}
       onPress={press}
