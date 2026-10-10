@@ -73,9 +73,9 @@ export function IconButton({
       onPress={press}
     >
       {rest.loading ? (
-        <Icon name="spinner" spin />
+        <Icon name="spinner" spin part="spinner" />
       ) : (
-        renderPart(parts?.icon, { children: icon }, (p) => <IconSlot>{p.children}</IconSlot>)
+        renderPart(parts?.icon, { children: icon }, (p) => <IconSlot part="icon">{p.children}</IconSlot>)
       )}
       {inMenu && <span className={styles.label}>{label}</span>}
       {badge !== undefined &&

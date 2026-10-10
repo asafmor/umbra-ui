@@ -89,6 +89,7 @@ export function ButtonBase({
       ref={elementRef as React.RefObject<HTMLButtonElement>}
       type={type}
       isPending={loading}
+      aria-busy={loading || undefined}
       aria-pressed={pressed}
       aria-expanded={expanded}
       onPress={press}
@@ -161,7 +162,11 @@ export function Button({
   const collapsed = useShrinkLevel(ref, canCollapse ? 1 : 0) === 1 || (canCollapse && forced);
   const hint = useShortcut(shortcut, rest.disabled || rest.loading ? undefined : onPress);
   const icon = (part: 'iconStart' | 'iconEnd', node: ReactNode) =>
-    renderPart(parts?.[part], { children: node }, (p) => p.children && <IconSlot>{p.children}</IconSlot>);
+    renderPart(
+      parts?.[part],
+      { children: node },
+      (p) => p.children && <IconSlot part={part}>{p.children}</IconSlot>,
+    );
   return (
     <ButtonBase
       {...rest}
@@ -174,7 +179,7 @@ export function Button({
       onPress={onPress}
     >
       {rest.loading
-        ? renderPart(parts?.spinner, {}, () => <Icon name="spinner" spin />)
+        ? renderPart(parts?.spinner, {}, () => <Icon name="spinner" spin part="spinner" />)
         : icon('iconStart', iconStart)}
       {!collapsed &&
         renderPart(parts?.label, { children }, (p) => (

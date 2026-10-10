@@ -30,18 +30,18 @@ export type IconName = keyof typeof defaultIcons;
 export type IconMap = Record<IconName, ReactNode>;
 
 /** Internal: renders a built-in icon from the provider's icon map. Decorative, so hidden from screen readers. */
-export function Icon({ name, spin }: { name: IconName; spin?: boolean }) {
+export function Icon({ name, spin, part }: { name: IconName; spin?: boolean; part?: string }) {
   return (
-    <span className={styles.icon} data-spin={spin || undefined} aria-hidden="true">
+    <span className={styles.icon} data-part={part} data-spin={spin || undefined} aria-hidden="true">
       {useUmbra().icons[name]}
     </span>
   );
 }
 
 /** Internal: wraps an icon node supplied by the app so it gets the same size as built-in icons. */
-export function IconSlot({ children }: { children: ReactNode }) {
+export function IconSlot({ children, part }: { children: ReactNode; part?: string }) {
   return (
-    <span className={styles.icon} aria-hidden="true">
+    <span className={styles.icon} data-part={part} aria-hidden="true">
       {children}
     </span>
   );
