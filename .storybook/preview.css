@@ -1,0 +1,15 @@
+body {
+  margin: 0;
+}
+
+.story-frame {
+  width: 100dvw;
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--umbra-context-page-background);
+}
+
+.story-frame[data-padded] {
+  padding: var(--umbra-density-page-margin);
+  overflow: auto;
+}
