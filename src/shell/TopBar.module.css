@@ -70,6 +70,8 @@
   align-self: stretch;
   display: flex;
   --umbra-button-height: 100%;
+  /* The button touches the edges of the window. */
+  --umbra-focus-offset: calc(-1 * var(--umbra-state-focus-ring-width));
   --umbra-button-radius: 0;
   --umbra-button-padding-x: var(--umbra-space-6);
 }

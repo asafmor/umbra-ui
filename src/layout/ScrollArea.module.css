@@ -14,6 +14,11 @@
   --thumb: var(--umbra-scroll-thumb, var(--umbra-color-base-border-strong));
 }
 
+/* A viewport that takes focus to be scrolled by keyboard is usually clipped by its card. */
+.viewport:focus-visible {
+  outline-offset: calc(-1 * var(--umbra-state-focus-ring-width));
+}
+
 .root[data-axis='vertical'] > .viewport,
 .root[data-axis='both'] > .viewport {
   overflow-y: auto;

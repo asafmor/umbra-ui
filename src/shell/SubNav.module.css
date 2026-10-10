@@ -24,6 +24,8 @@
   gap: var(--umbra-space-2);
   overflow: hidden;
   margin-inline-start: auto;
+  /* The slot clips, and its controls are nearly as tall as it. */
+  --umbra-focus-offset: calc(-1 * var(--umbra-state-focus-ring-width));
   --umbra-button-height: 22px;
 }
 

@@ -45,6 +45,11 @@
   transition: background-color var(--umbra-motion-duration-fast);
 }
 
+/* The strip scrolls sideways, which clips a ring drawn outside the tab. */
+.tab:focus-visible {
+  outline-offset: calc(-1 * var(--umbra-state-focus-ring-width));
+}
+
 .tab:hover {
   background: var(--umbra-color-base-surface2);
 }

@@ -13,7 +13,7 @@
 
 :where([data-umbra-scope] :focus-visible) {
   outline: var(--umbra-state-focus-ring-width) solid var(--umbra-color-fixed-focus-ring);
-  outline-offset: 2px;
+  outline-offset: var(--umbra-focus-offset, 2px);
 }
 
 /* Reduced motion: movement is multiplied by --umbra-motion-scale, so it disappears and fades stay. */

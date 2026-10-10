@@ -75,7 +75,7 @@
 
 .button[data-focus-visible] {
   outline: var(--umbra-state-focus-ring-width) solid var(--umbra-color-fixed-focus-ring);
-  outline-offset: 2px;
+  outline-offset: var(--umbra-focus-offset, 2px);
 }
 
 .button[data-disabled] {
