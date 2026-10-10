@@ -44,6 +44,8 @@ import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './DataTable.module.css';
 import { GridAdapterContext, INTERACTIVE, rowHandlers, useGrid, type GridAdapter } from './grid';
 import {
+  defaultWidthMetrics,
+  resolveWidth,
   changeDirection,
   fitColumns,
   offsetsOf,
@@ -69,8 +71,15 @@ export interface DataTableSort {
   direction: DataTableSortDirection;
 }
 
-/** A fixed width in pixels, or a flexible width: at least `min`, at most `max`, sharing spare width by `flex`. */
-export type DataTableColumnWidth = number | { min?: number; max?: number; flex?: number };
+/**
+ * A fixed width in pixels, a flexible width (at least `min`, at most `max`, sharing spare width by
+ * `flex`), or `content`: as wide as the longest text of the column and its header, counted in
+ * characters of the cell font.
+ *
+ * Pixels are written for the default density and scale with the cell font size (13px there), so a
+ * width that fits its text at one density fits it at the others: 80 is 74px at compact and 86px at spacious.
+ */
+export type DataTableColumnWidth = number | 'content' | { min?: number; max?: number; flex?: number };
 
 /** What a cell renderer receives besides the row. */
 export interface DataTableCellContext<Row> {
@@ -327,6 +336,8 @@ function Root({
           {state}
         </div>
       )}
+      {/* 1ch wide, 1em high, with a cell's padding: what column widths are measured in. */}
+      <span data-part="font-probe" aria-hidden="true" className={styles.probe} />
       <div role="status" className={srOnly}>
         {announcement}
       </div>
@@ -882,11 +893,9 @@ const valueOf = <Row,>(column: DataTableColumn<Row>, row: Row): unknown =>
       ? row[column.accessor]
       : undefined;
 
-const sizeOf = <Row,>(column: DataTableColumn<Row>): ColumnSize => {
-  const { width, id, priority = 0 } = column;
-  if (typeof width === 'number') return { id, min: width, max: width, flex: 0, priority };
-  const min = width?.min ?? 96;
-  return { id, min, max: Math.max(min, width?.max ?? Infinity), flex: width?.flex ?? 1, priority };
+const textOf = <Row,>(column: DataTableColumn<Row>, row: Row): string => {
+  const value = valueOf(column, row);
+  return column.format ? column.format(value, row) : value == null ? '' : String(value);
 };
 
 /** A laid-out column: one of the app's, or the checkbox or disclosure column the table adds. */
@@ -1104,6 +1113,7 @@ export function DataTable<Row>({
   );
   const [expanded, setExpanded] = useState<string[]>([]);
   const [size, setSize] = useState<{ width: number; height: number } | null>(null);
+  const [widthMetrics, setWidthMetrics] = useState(defaultWidthMetrics);
   const [scrollTop, setScrollTop] = useState(0);
   const [metrics, setMetrics] = useState({
     row: 26,
@@ -1125,15 +1135,62 @@ export function DataTable<Row>({
         previous?.width === width && previous.height === height ? previous : { width, height },
       );
     };
-    measure();
-    const observer = new ResizeObserver(() => flushSync(measure));
+    // What widths are measured in: the cell font and padding. The probe is 1ch by 1em, so the observer
+    // also reports a change of density or of the font tokens.
+    const probe = root.current?.querySelector<HTMLElement>('[data-part="font-probe"]');
+    const measureFont = () => {
+      if (!probe) return;
+      const box = probe.getBoundingClientRect();
+      const css = getComputedStyle(probe);
+      const padding = parseFloat(css.paddingLeft) + parseFloat(css.paddingRight) || 0;
+      const next = {
+        fontSize: box.height || defaultWidthMetrics.fontSize,
+        ch: box.width - padding || defaultWidthMetrics.ch,
+        padding: padding || defaultWidthMetrics.padding,
+      };
+      setWidthMetrics((previous) =>
+        previous.fontSize === next.fontSize && previous.ch === next.ch && previous.padding === next.padding
+          ? previous
+          : next,
+      );
+    };
+    const all = () => {
+      measureFont();
+      measure();
+    };
+    all();
+    const observer = new ResizeObserver(() => flushSync(all));
     observer.observe(el);
+    if (probe) observer.observe(probe);
     return () => observer.disconnect();
   }, []);
 
+  // The longest text of every `content` column, in characters: its header, its rows and its footer text.
+  const contentChars = useMemo(() => {
+    const chars: Record<string, number> = {};
+    for (const column of columns) {
+      if (column.width !== 'content') continue;
+      const header = typeof column.header === 'string' ? column.header : (column.headerLabel ?? '');
+      let longest = Math.max(header.length, typeof column.footer === 'string' ? column.footer.length : 0);
+      for (const row of data) longest = Math.max(longest, textOf(column, row).length);
+      chars[column.id] = longest;
+    }
+    return chars;
+  }, [columns, data]);
+
   // --- Columns: which fit, how wide, and where the pinned ones stick -------------------------------
   const fit = useMemo(() => {
-    const sizes: ColumnSize[] = columns.map(sizeOf);
+    const sizes: ColumnSize[] = columns.map((column) => ({
+      id: column.id,
+      priority: column.priority ?? 0,
+      // A sortable header keeps room for its arrow: one line of the font.
+      ...resolveWidth(
+        column.width,
+        widthMetrics,
+        contentChars[column.id],
+        column.sortable ? widthMetrics.fontSize + 4 : 0,
+      ),
+    }));
     if (selectable) {
       sizes.unshift({
         id: SELECT,
@@ -1145,7 +1202,7 @@ export function DataTable<Row>({
       });
     }
     return fitColumns(sizes, size?.width ?? null, expandableHidden ? UTILITY_WIDTH : 0);
-  }, [columns, selectable, expandableHidden, size?.width]);
+  }, [columns, selectable, expandableHidden, size?.width, widthMetrics, contentChars]);
   const hiddenKey = fit.hidden.join('\n');
   const showExpander = expandableHidden && fit.hidden.length > 0;
 
@@ -1521,7 +1578,7 @@ export function DataTable<Row>({
     const column = c.def!;
     const original = row.original;
     const value = valueOf(column, original);
-    const text = column.format ? column.format(value, original) : value == null ? '' : String(value);
+    const text = textOf(column, original);
     const content = column.cell
       ? column.cell(original, {
           value,
@@ -1823,9 +1880,19 @@ export function DataTable<Row>({
   );
 }
 
-/** A column of numbers: aligned to the end, tabular figures, a fixed width, largest first when sorted. */
+/**
+ * A column of numbers: aligned to the end, tabular figures, largest first when sorted, and as wide as
+ * its longest value (`width: 'content'`). With a `cell` of its own, whose width the text does not
+ * tell, it is 80 pixels: give such a column its `width`.
+ */
 export function numberColumn<Row>(column: DataTableColumn<Row>): DataTableColumn<Row> {
-  return { align: 'end', numeric: true, width: 80, sortDescFirst: true, ...column };
+  return {
+    align: 'end',
+    numeric: true,
+    width: column.cell ? 80 : 'content',
+    sortDescFirst: true,
+    ...column,
+  };
 }
 
 /**

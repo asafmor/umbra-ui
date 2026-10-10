@@ -50,7 +50,10 @@
 }
 
 .root[data-striped] .item:nth-child(odd) {
-  --umbra-list-item-bg: var(--umbra-list-stripe-bg, color-mix(in oklab, currentColor 4%, transparent));
+  --umbra-list-item-bg: var(
+    --umbra-list-stripe-bg,
+    color-mix(in srgb, var(--umbra-color-base-text-primary) var(--umbra-state-stripe-strength), transparent)
+  );
 }
 
 /* The position of each row, for a ranking. Read from a counter, so it follows the rows as they change. */

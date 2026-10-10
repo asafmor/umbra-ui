@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  resolveWidth,
   changeDirection,
   fitColumns,
   offsetsOf,
@@ -146,4 +147,22 @@ describe('orderGroups', () => {
     expect(orderGroups(['open', 'done'], ['late', 'done', 'open'])).toEqual(['open', 'done', 'late']);
     expect(orderGroups([], ['b', 'a', 'b'])).toEqual(['b', 'a']);
   });
+});
+
+it('pixel widths are written for the default density and follow the cell font size', () => {
+  const at = (fontSize: number) => ({ fontSize, ch: fontSize * 0.6, padding: 16 });
+  expect(resolveWidth(80, at(13))).toEqual({ min: 80, max: 80, flex: 0 });
+  expect(resolveWidth(80, at(12))).toEqual({ min: 74, max: 74, flex: 0 });
+  expect(resolveWidth(80, at(14))).toEqual({ min: 86, max: 86, flex: 0 });
+  expect(resolveWidth({ min: 104, max: 260, flex: 2 }, at(14))).toEqual({ min: 112, max: 280, flex: 2 });
+  expect(resolveWidth(undefined, at(13))).toEqual({ min: 96, max: Infinity, flex: 1 });
+  expect(resolveWidth({ min: 200, max: 100 }, at(13))).toMatchObject({ min: 200, max: 200 });
+});
+
+it('a content width is the character count in the cell font, plus the padding', () => {
+  const metrics = { fontSize: 13, ch: 7.5, padding: 16 };
+  expect(resolveWidth('content', metrics, 6)).toEqual({ min: 61, max: 61, flex: 0 });
+  expect(resolveWidth('content', metrics, 6, 18)).toEqual({ min: 79, max: 79, flex: 0 });
+  // The same six characters need more room in a larger font.
+  expect(resolveWidth('content', { fontSize: 14, ch: 8.1, padding: 16 }, 6).min).toBe(65);
 });

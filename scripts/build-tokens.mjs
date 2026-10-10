@@ -31,6 +31,7 @@ const base = [
   ...entries(t.motion.easing).map(([k, v]) => [`motion-easing-${k}`, v]),
   ['state-disabled-opacity', t.state.disabledOpacity],
   ['state-focus-ring-width', px(t.state.focusRingWidth)],
+  ['state-stripe-strength', t.state.stripeStrength],
   ...densityDecls('default'),
 ];
 

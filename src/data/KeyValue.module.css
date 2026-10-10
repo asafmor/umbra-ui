@@ -104,7 +104,7 @@
 .list[data-striped][data-layout='rows'] > .root:nth-child(odd) {
   background: var(
     --umbra-key-value-stripe,
-    color-mix(in oklab, var(--umbra-color-base-text-primary) 5%, transparent)
+    color-mix(in srgb, var(--umbra-color-base-text-primary) var(--umbra-state-stripe-strength), transparent)
   );
 }
 

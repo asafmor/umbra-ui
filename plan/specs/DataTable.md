@@ -106,7 +106,7 @@ A column (`DataTableColumn<Row>`):
 | `cell` | `(row, context) => node` | the value as text | `context`: `value`, `text`, `rowId`, `rowIndex`, `selected`, `highlighted`, `disabled` |
 | `format` | `(value, row) => string` | `String` | The value as text: the cell, its tooltip, `context.text` |
 | `align` / `numeric` | see above / boolean | by the first row's value | |
-| `width` | px, or `{ min, max, flex }` | `{ min: 96, flex: 1 }` | A number is a fixed width |
+| `width` | px, `{ min, max, flex }`, or `content` | `{ min: 96, flex: 1 }` | A number is a fixed width. Pixels are written for the default density and scale with the cell font size (80 is 74px at compact, 86px at spacious). `content` is as wide as the longest text of the column and its header, counted in characters of the cell font. |
 | `priority` | number or `always` | 0 | Higher stays longer |
 | `sortable` / `sortFn` / `sortDescFirst` | boolean / `(a, b) => number` / boolean | | |
 | `wrap` | boolean | `false` | |
@@ -135,7 +135,7 @@ Helpers: `numberColumn(column)` (end-aligned, tabular, 80px, largest first) and 
 | 4 | Rows taller than the slot | The body scrolls; header, group rows and footer stick |
 | 5 | Empty or error state larger than the slot | It follows `EmptyState` |
 
-How step 2 is decided: the width of the scroll area is measured (a `ResizeObserver`, applied before paint), and `fitColumns` (`src/table/logic.ts`, unit-tested) returns the hidden columns and every width. Column widths come from the column definitions, never from the content, so the answer depends on the available width alone: it cannot oscillate at a threshold, is right after one large resize, and does not change when a font loads. The vertical scrollbar always keeps its room, so it cannot change the width either. Spare width goes to the flexible columns by `flex` up to `max`; what is left over is shared evenly, so rows always span the full width.
+How step 2 is decided: the width of the scroll area is measured (a `ResizeObserver`, applied before paint), and `fitColumns` (`src/table/logic.ts`, unit-tested) returns the hidden columns and every width. Column widths come from the column definitions and the cell font (its size, and the width of a digit), never from the rendered cells, so the answer depends on the available width alone: it cannot oscillate at a threshold and is right after one large resize. A `content` width is computed from the text of the data, not measured in the page. The vertical scrollbar always keeps its room, so it cannot change the width either. Spare width goes to the flexible columns by `flex` up to `max`; what is left over is shared evenly, so rows always span the full width.
 
 ## Interaction and accessibility
 
@@ -173,6 +173,11 @@ Virtualisation: only the rows in view (plus 8 on each side) are rendered, betwee
 None.
 
 Resolved 2026-10-11:
+
+- **Pixel widths follow the density.** A width that fitted its text at the default density cut it at spacious, where the font is larger. Pixels are now written for the default density (a 13px cell font) and multiplied by the cell font size over 13 (`resolveWidth` in `src/table/logic.ts`, unit-tested). The table reads its font from a hidden probe of 1ch by 1em, observed for changes, so a density or font token change is followed.
+- **`width: 'content'`**: the longest text of the column (through `format`), its header and a text footer, counted in characters, times the width of a digit, plus the cell padding and room for the sort arrow. It is fixed (no `flex`). `numberColumn` uses it by default; with a `cell` of its own, whose width the text does not tell, it keeps 80 pixels. Dates and other short codes can use `width: 'content'` too.
+- **Stripes share one strength** with `List` and `KeyValueList`: the text colour at `--umbra-state-stripe-strength` (5%). The table's stripe is opaque, so it is mixed in sRGB, which is what a translucent fill composites as; mixed in oklab, as before, the same share was far fainter on a dark surface.
+- **The "ResizeObserver loop completed with undelivered notifications" message** on the Table page does not come from the table: no `DataTable` story raises it (every story was loaded with a listener for it). It is raised by rows that show less as they narrow (`useShrinkLevel`: the top bar, the navigation, `Tabs`, `ShortcutBar`), by `BarChart`, and by React Aria's popover when it caps its own height. It is a notice that one observation is delivered a frame later, not a failure; it is left as it is.
 
 - **`height`**, shared with `List` and the charts (`src/internal/height.ts`). The table used to be zero pixels tall in a parent without a height (flowing content in a card body, a popover, an accordion panel). The scrolling area now starts from the height of its rows (`flex: 1 1 auto`), which only counts where there is no height to fill; with one, it grows or shrinks to it and scrolls inside as before. Two tables can flow one after another in one scrolling card body.
 

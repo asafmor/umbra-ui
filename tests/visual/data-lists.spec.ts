@@ -419,3 +419,41 @@ test.describe('List height', () => {
     expect(list.hidden).toBe(0);
   });
 });
+
+test.describe('List selection when the selected row leaves', () => {
+  const story = 'data-list--removed-on-selection';
+  const log = (page: Page) => card(page, 'Open tasks').locator('[data-part="footer"]');
+  /** The text of the log now, and after the list had time to react to itself. */
+  const settled = async (page: Page, text: string) => {
+    await expect(log(page)).toHaveText(text);
+    await page.waitForTimeout(300);
+    await expect(log(page)).toHaveText(text);
+  };
+
+  test('with the mouse: only the pressed row is selected, not the row that slides under the pointer', async ({
+    page,
+  }) => {
+    await open(page, story);
+    const rows = page.locator('[role="row"][aria-selected]');
+    await expect(rows).toHaveCount(5);
+    // Pressed and released at the same place: by then "Task C" is under the pointer.
+    await rows.filter({ hasText: 'Task B' }).click();
+    await settled(page, 'Selected: b · Reports: 1 · Open: a, c, d, e');
+    // The selection stays on the row that left; no other row is marked selected.
+    await expect(page.locator('[role="row"][aria-selected="true"]')).toHaveCount(0);
+
+    // A press and a release on the same row still select it.
+    await rows.filter({ hasText: 'Task E' }).click();
+    await settled(page, 'Selected: e · Reports: 2 · Open: a, c, d');
+  });
+
+  test('with the keyboard: focus moves to the next row, the selection does not', async ({ page }) => {
+    await open(page, story);
+    await page.keyboard.press('Tab');
+    await settled(page, 'Selected: a · Reports: 1 · Open: b, c, d, e');
+    await expect(page.getByRole('row', { name: 'Task B' })).toBeFocused();
+    await expect(page.getByRole('row', { name: 'Task B' })).toHaveAttribute('aria-selected', 'false');
+    await page.keyboard.press('ArrowDown');
+    await settled(page, 'Selected: c · Reports: 2 · Open: b, d, e');
+  });
+});

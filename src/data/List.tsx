@@ -127,6 +127,14 @@ function Root({
   ...data
 }: ListRootProps) {
   const selectionBehavior = behavior ?? (onAction ? 'replace' : 'toggle');
+  // The selection is always given to React Aria, so that a change can be refused (see `press`). A row
+  // that leaves the list stays selected: the selection is the app's, and it does not move by itself.
+  const [ownSelection, setOwnSelection] = useState<ListKey[]>(defaultSelectedIds ?? []);
+  // One press of the pointer changes the selection once, at most. Without this, selecting a row that
+  // leaves the list (a filter on "unread") goes on by itself: focus falls back to the list, React Aria
+  // selects the row it lands on because selection follows focus, that row leaves too, and the row that
+  // slides under the pointer is selected again when the button is released.
+  const press = useRef({ active: false, used: false });
   // Every row's key, so "select all" can be reported as a plain array.
   const keys = useRef(new Set<ListKey>());
   const list = useMemo<ListContextValue>(
@@ -173,11 +181,16 @@ function Root({
         selectionMode={selectionMode}
         selectionBehavior={selectionBehavior}
         disallowEmptySelection={disallowEmptySelection ?? selectionBehavior === 'replace'}
-        selectedKeys={selectedIds}
-        defaultSelectedKeys={defaultSelectedIds}
-        onSelectionChange={(selection) =>
-          onSelectionChange?.(selection === 'all' ? [...keys.current] : ([...selection] as ListKey[]))
-        }
+        selectedKeys={selectedIds ?? ownSelection}
+        onSelectionChange={(selection) => {
+          if (press.current.active) {
+            if (press.current.used) return;
+            press.current.used = true;
+          }
+          const next = selection === 'all' ? [...keys.current] : ([...selection] as ListKey[]);
+          setOwnSelection(next);
+          onSelectionChange?.(next);
+        }}
         onAction={onAction}
         className={styles.grid}
       >
@@ -202,6 +215,13 @@ function Root({
       aria-busy={data.loading || undefined}
       className={cx(styles.root, className)}
       style={{ ...heightProps(height).style, ...style }}
+      onPointerDownCapture={() => {
+        press.current = { active: true, used: false };
+        // The release, and the click and focus changes that come with it, are handled in one task.
+        const end = () => setTimeout(() => (press.current.active = false));
+        document.addEventListener('pointerup', end, { once: true, capture: true });
+        document.addEventListener('pointercancel', end, { once: true, capture: true });
+      }}
     >
       <ScrollArea onReachEnd={onReachEnd} label={ariaLabel} className={styles.scroll}>
         <ListContext value={list}>{content}</ListContext>

@@ -253,6 +253,60 @@ export const States: Story = {
   ),
 };
 
+function TasksCard() {
+  const [selected, setSelected] = useState<ListKey[]>([]);
+  const [done, setDone] = useState<ListKey[]>([]);
+  const [reports, setReports] = useState(0);
+  const open = ['a', 'b', 'c', 'd', 'e'].filter((id) => !done.includes(id));
+  return (
+    <Card
+      title="Open tasks"
+      padding="none"
+      parts={{
+        footer: (
+          <Card.Footer>
+            <Log>
+              Selected: {selected.join(', ') || 'none'} · Reports: {reports} · Open: {open.join(', ')}
+            </Log>
+          </Card.Footer>
+        ),
+      }}
+    >
+      <List
+        aria-label="Open tasks"
+        itemSize="compact"
+        selectionMode="single"
+        selectedIds={selected}
+        onAction={() => {}}
+        onSelectionChange={(ids) => {
+          setSelected(ids);
+          setReports((count) => count + 1);
+          // The filter: a selected task is done, and leaves the list.
+          setDone((all) => [...all, ...ids]);
+        }}
+      >
+        <List.Group title="Today" variant="strip">
+          {open.map((id) => (
+            <List.Item key={id} id={id} title={`Task ${id.toUpperCase()}`} />
+          ))}
+        </List.Group>
+      </List>
+    </Card>
+  );
+}
+
+/**
+ * A row that leaves the list when it is selected. The selection is the app's: it stays on the row
+ * that left, and does not jump to the next row, which would remove that one too.
+ */
+export const RemovedOnSelection: Story = {
+  render: () => (
+    <Columns style={{ height: '100%' }}>
+      <TasksCard />
+    </Columns>
+  ),
+};
+
 /** Parts replaced by a node or a function, or hidden with `null`; and the blocks composed by hand. */
 export const PartsAndBlocks: Story = {
   render: () => (

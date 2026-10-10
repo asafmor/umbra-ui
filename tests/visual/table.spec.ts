@@ -1063,8 +1063,9 @@ test.describe('height', () => {
     const body = (await card(page, 'The default still fills').locator('> [data-part="body"]').boundingBox())!;
     expect((await heightOf(filling)).height).toBe(Math.round(body.height) - 16);
     expect((await heightOf(filling)).hidden).toBe(0);
-    await page.setViewportSize({ width: 1280, height: 400 });
-    await expect.poll(async () => (await heightOf(filling)).hidden).toBeGreaterThan(100);
+    // Shorter, and still above the minimum window (below it the columns would be tabs).
+    await page.setViewportSize({ width: 1280, height: 600 });
+    await expect.poll(async () => (await heightOf(filling)).hidden).toBeGreaterThan(40);
   });
 
   test('the popover of a collapsed card shows the whole table', async ({ page }) => {
@@ -1082,5 +1083,71 @@ test.describe('height', () => {
     const table = await heightOf(root(page, 'Table in a panel'));
     expect(table.height).toBeGreaterThanOrEqual(3 * 26 + 26);
     expect(table.hidden).toBe(0);
+  });
+});
+
+test.describe('column widths', () => {
+  const at = async (page: Page, story: string, density: string, width = 1280) => {
+    await page.setViewportSize({ width, height: 720 });
+    await page.goto(`/iframe.html?id=data-datatable--${story}&viewMode=story&globals=density:${density}`);
+    await page.locator('#storybook-root > *').first().waitFor();
+    await page.evaluate(() => document.fonts.ready);
+  };
+
+  test('a width in pixels is for the default density and scales with the cell font', async ({ page }) => {
+    // "Won" is 64 pixels wide at the default density, where the cell font is 13px.
+    for (const [density, width] of [
+      ['compact', 59],
+      ['default', 64],
+      ['spacious', 69],
+    ] as const) {
+      await at(page, 'ranking', density);
+      const table = page.getByRole('grid').first();
+      await expect.poll(async () => (await header(table, 'Won').boundingBox())!.width, density).toBe(width);
+    }
+  });
+
+  test('a content width fits the longest text of its column at every density', async ({ page }) => {
+    for (const density of ['compact', 'default', 'spacious']) {
+      // Wide enough for every column of the three tables.
+      await at(page, 'sorting', density, 2400);
+      const table = page.getByRole('grid').first();
+      const cut = await table.evaluate((el) =>
+        [...el.querySelectorAll<HTMLElement>('[data-col="score"], [data-col="tasks"]')]
+          .filter((cell) => cell.scrollWidth > cell.clientWidth)
+          .map((cell) => cell.textContent),
+      );
+      expect(cut, density).toEqual([]);
+      // As wide as its text needs, not a fixed 80 pixels.
+      const tasks = (await header(table, 'Tasks').boundingBox())!.width;
+      expect(tasks, density).toBeLessThan(80);
+      expect(tasks, density).toBeGreaterThan(40);
+    }
+  });
+
+  test('stripes have the strength of the stripes of List and KeyValueList', async ({ page }) => {
+    await at(page, 'ranking', 'default');
+    const table = page.getByRole('grid').first();
+    /** The red channel of a row's fill, 0 to 255. Chromium reports a mixed colour as `color(srgb r g b)`. */
+    const light = (row: string) =>
+      table
+        .locator(`tbody > tr[data-kind="row"]${row} > td`)
+        .nth(1)
+        .evaluate((cell) => {
+          const colour = getComputedStyle(cell).backgroundColor;
+          const red = Number(colour.match(/[0-9.]+/)![0]);
+          return colour.startsWith('color(') ? red * 255 : red;
+        });
+    const [striped, plain] = [
+      await light('[data-striped]:not([data-highlighted])'),
+      await light(':not([data-striped], [data-highlighted])'),
+    ];
+    // 5% of the text colour over the surface: about 12 levels of 255 on a dark card (it was 3).
+    expect(striped - plain).toBeGreaterThanOrEqual(8);
+    expect(
+      await page.evaluate(() =>
+        getComputedStyle(document.documentElement).getPropertyValue('--umbra-state-stripe-strength'),
+      ),
+    ).toBe('5%');
   });
 });

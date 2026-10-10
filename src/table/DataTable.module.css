@@ -68,6 +68,21 @@
   white-space: nowrap;
 }
 
+/*
+ * Measures the cell font: 1ch wide (the digit "0", in tabular figures), 1em high, with the padding of a
+ * cell at the edge of the table (the larger one), so a `content` column fits its text there too.
+ */
+.probe {
+  position: absolute;
+  visibility: hidden;
+  pointer-events: none;
+  box-sizing: content-box;
+  width: 1ch;
+  height: 1em;
+  padding: 0 var(--pad-x) 0 var(--edge-x);
+  font-variant-numeric: tabular-nums;
+}
+
 .srOnly {
   position: absolute;
   width: 1px;
@@ -280,10 +295,18 @@
   --bg: var(--surface);
 }
 
+/*
+ * The stripe of List and KeyValueList, made opaque: mixed in sRGB, as their translucent fill is when
+ * it is drawn over the surface. (Mixed in oklab, the same share is far fainter on a dark surface.)
+ */
 .row[data-striped] {
   --bg: var(
     --umbra-table-stripe-bg,
-    color-mix(in oklab, var(--umbra-color-base-text-primary) 4%, var(--surface))
+    color-mix(
+      in srgb,
+      var(--umbra-color-base-text-primary) var(--umbra-state-stripe-strength),
+      var(--surface)
+    )
   );
 }
 

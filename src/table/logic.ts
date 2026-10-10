@@ -16,6 +16,49 @@ export interface ColumnSize {
   utility?: boolean;
 }
 
+/** What a column width is measured in. Read from the table itself, so density and tokens are followed. */
+export interface WidthMetrics {
+  /** The cell font size in pixels. */
+  fontSize: number;
+  /** The width of the digit "0" in the cell font. */
+  ch: number;
+  /** The horizontal padding of a cell, both sides together. */
+  padding: number;
+}
+
+/** The cell font size at the default density: pixel widths are written for it. */
+export const BASE_FONT_SIZE = 13;
+export const defaultWidthMetrics: WidthMetrics = { fontSize: BASE_FONT_SIZE, ch: 7.5, padding: 16 };
+
+/**
+ * A column's `width` as the fit rule needs it.
+ *
+ * - Pixels (a number, or `min` and `max`) are written for the default density and scale with the cell
+ *   font size, so text that fits at one density fits at the others: 80 is 80px at the default density
+ *   (13px font), 74px at compact (12px) and 86px at spacious (14px).
+ * - `content` is as wide as `chars` characters of the cell font, plus the cell padding and `extra`
+ *   (room for a sort arrow).
+ */
+export function resolveWidth(
+  width: number | 'content' | { min?: number; max?: number; flex?: number } | undefined,
+  metrics: WidthMetrics,
+  chars = 0,
+  extra = 0,
+): Pick<ColumnSize, 'min' | 'max' | 'flex'> {
+  const px = (value: number) => Math.round((value * metrics.fontSize) / BASE_FONT_SIZE);
+  if (width === 'content') {
+    const fixed = Math.ceil(chars * metrics.ch + metrics.padding + extra);
+    return { min: fixed, max: fixed, flex: 0 };
+  }
+  if (typeof width === 'number') return { min: px(width), max: px(width), flex: 0 };
+  const min = px(width?.min ?? 96);
+  return {
+    min,
+    max: Math.max(min, width?.max === undefined ? Infinity : px(width.max)),
+    flex: width?.flex ?? 1,
+  };
+}
+
 export interface ColumnFit {
   /** Ids of the columns that do not fit, in source order. */
   hidden: string[];
