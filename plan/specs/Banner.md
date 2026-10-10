@@ -88,7 +88,7 @@ Text contrast, computed for the ten card surfaces (default and tinted card on ea
 
 ## Behaviour as space shrinks
 
-The banner measures its own width (a container query), in units of its font size, so the steps follow the density level.
+The banner takes the full width of its container, also as a child of a row (a `Slot`, a card footer). It measures its own width (a container query), in units of its font size, so the steps follow the density level.
 
 | Step | Trigger | Result |
 |---|---|---|

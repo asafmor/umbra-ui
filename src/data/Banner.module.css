@@ -17,6 +17,8 @@
   align-items: flex-start;
   column-gap: var(--umbra-space-3);
   flex: 0 1 auto;
+  /* A size container has no width of its own: without this it collapses in a row of a flex parent. */
+  width: 100%;
   min-width: 0;
   padding: var(--umbra-banner-padding-y, var(--umbra-space-1))
     var(--umbra-banner-padding-x, var(--umbra-space-4));
