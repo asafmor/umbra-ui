@@ -22,6 +22,7 @@ import { useScopeAttributes } from '../provider/UmbraProvider';
 import { warn } from '../utils/dev';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './Modal.module.css';
+import { useOpenState } from './shared';
 
 export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'full';
 export type ModalVariant = 'dialog' | 'alertdialog' | 'drawer';
@@ -194,6 +195,24 @@ function Content({ className, style, children }: BlockProps) {
     const description = !!document.getElementById(modal.descriptionId);
     if (title !== has.title || description !== has.description) setHas({ title, description });
   });
+
+  // What had the focus when the modal opened: the trigger, or a control of the modal below.
+  const [opener] = useState(() => document.activeElement as HTMLElement | null);
+  useEffect(
+    () => () => {
+      // React Aria gives the focus back, except when a press on the backdrop took it first and the modal
+      // below caught it. Then it sits on nothing, or on a dialog element: send it to the opener.
+      requestAnimationFrame(() => {
+        const active = document.activeElement;
+        if (
+          opener?.isConnected &&
+          (!active || active === document.body || active.matches('[role$="dialog"]'))
+        )
+          opener.focus();
+      });
+    },
+    [opener],
+  );
 
   useEffect(() => {
     const el = dialog.current;
@@ -368,7 +387,10 @@ function Nav({ label = 'Sections', className, style, children }: ModalNavProps) 
   const shown = !narrow || open;
   // Choosing a section shows it: the list closes again.
   const onClick = (event: MouseEvent) => {
-    if (narrow && (event.target as Element).closest('a, button, [role="tab"], [role="option"]'))
+    if (
+      narrow &&
+      (event.target as Element).closest('a, button:not([aria-expanded]), [role="tab"], [role="option"]')
+    )
       setOpen(false);
   };
   return (
@@ -541,7 +563,7 @@ export interface ConfirmDialogProps
  */
 export function ConfirmDialog({
   open: controlled,
-  defaultOpen = false,
+  defaultOpen,
   onOpenChange,
   trigger,
   icon,
@@ -559,12 +581,8 @@ export function ConfirmDialog({
   style,
   children,
 }: ConfirmDialogProps) {
-  const [uncontrolled, setUncontrolled] = useState(defaultOpen);
+  const [isOpen, setOpen] = useOpenState(controlled, defaultOpen, onOpenChange);
   const [loading, setLoading] = useState(false);
-  const setOpen = (next: boolean) => {
-    setUncontrolled(next);
-    onOpenChange?.(next);
-  };
   const run = async (action: (() => void | Promise<unknown>) | undefined) => {
     try {
       const result = action?.();
@@ -582,7 +600,7 @@ export function ConfirmDialog({
   return (
     <Modal
       variant="alertdialog"
-      open={controlled ?? uncontrolled}
+      open={isOpen}
       // While the confirm action runs, nothing closes the dialog.
       onOpenChange={(next) => loading || setOpen(next)}
       trigger={trigger}

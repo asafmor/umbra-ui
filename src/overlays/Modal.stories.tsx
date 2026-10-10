@@ -11,7 +11,10 @@ import { Card } from '../layout/Card';
 import { Columns } from '../layout/Columns';
 import { Page } from '../layout/Page';
 import { AppShell } from '../shell/AppShell';
+import { VerticalNav } from '../shell/VerticalNav';
 import { Log, Rows } from '../stories/placeholders';
+import { ActionBar } from './ActionBar';
+import { Menu } from './Menu';
 import { ConfirmDialog, Modal, type ModalProps } from './Modal';
 
 /** The page a modal opens over. Its button must not react while a modal is open. */
@@ -95,29 +98,6 @@ export const FillHeight: Story = { args: { ...sized('md', 'height fill').args, h
 
 const sectionNames = ['General', 'Display', 'Notifications', 'Accessibility', 'Shortcuts', 'Advanced'];
 
-/** A stand-in for `VerticalNav`: any node can be the `nav`. */
-function SectionList({ value, onChange }: { value: string; onChange: (value: string) => void }) {
-  return (
-    <div role="group" aria-label="Sections" style={{ display: 'grid', gap: 4 }}>
-      {sectionNames.map((name) => (
-        <Button
-          key={name}
-          fullWidth
-          variant={name === value ? 'neutral' : 'ghost'}
-          onPress={() => onChange(name)}
-          style={{
-            justifyContent: 'flex-start',
-            fontWeight: name === value ? 700 : undefined,
-            boxShadow: name === value ? 'inset 3px 0 0 var(--umbra-color-fixed-selected)' : undefined,
-          }}
-        >
-          {name}
-        </Button>
-      ))}
-    </div>
-  );
-}
-
 function SettingRows({ section, count = 4 }: { section: string; count?: number }) {
   return (
     <div style={{ display: 'grid', gap: 8 }}>
@@ -139,7 +119,8 @@ function SettingRows({ section, count = 4 }: { section: string; count?: number }
 }
 
 /**
- * A settings screen: `nav` makes the panel two columns, and the body scrolls beside it. Below the
+ * A settings screen: a `VerticalNav` as `nav` makes the panel two columns, an `ActionBar` is the footer,
+ * and the body scrolls between them. Below the
  * minimum window the modal fills the window and the navigation moves behind a "Sections" toggle.
  */
 export const WithNav: Story = {
@@ -154,15 +135,20 @@ export const WithNav: Story = {
         icon={<Settings />}
         title="Preferences"
         description="Changes apply to this workspace."
-        nav={<SectionList value={section} onChange={setSection} />}
+        nav={
+          <VerticalNav
+            aria-label="Sections"
+            value={section}
+            onChange={setSection}
+            items={sectionNames.map((name) => ({ id: name, label: name }))}
+          />
+        }
         footer={
-          <>
-            <Button variant="ghost" style={{ marginInlineEnd: 'auto' }}>
-              Reset to default
-            </Button>
-            <Modal.Close>Cancel</Modal.Close>
-            <Modal.Close variant="primary">Confirm</Modal.Close>
-          </>
+          <ActionBar
+            tertiary={{ label: 'Reset to default' }}
+            secondary={<Modal.Close>Cancel</Modal.Close>}
+            primary={<Modal.Close variant="primary">Confirm</Modal.Close>}
+          />
         }
       >
         <SettingRows section={section} count={9} />
@@ -171,7 +157,10 @@ export const WithNav: Story = {
   },
 };
 
-/** `toolbar`: tabs or filters that stay fixed under the header while the body scrolls. */
+/**
+ * `toolbar`: tabs or filters that stay fixed under the header while the body scrolls. A menu opened
+ * inside the modal is above it, and Escape closes the menu first.
+ */
 export const ToolbarTabs: Story = {
   render: function ToolbarTabs() {
     const [tab, setTab] = useState('overview');
@@ -200,6 +189,13 @@ export const ToolbarTabs: Story = {
               items={[
                 { id: 'week', label: 'Week' },
                 { id: 'month', label: 'Month' },
+              ]}
+            />
+            <Menu
+              trigger={<Button>More</Button>}
+              items={[
+                { id: 'export', label: 'Export' },
+                { id: 'share', label: 'Share' },
               ]}
             />
           </>
@@ -243,15 +239,18 @@ export const Form: Story = {
           return false;
         }}
         footer={
-          <>
-            <span style={{ marginInlineEnd: 'auto', font: 'var(--umbra-font-label)' }} role="status">
-              {dirty ? `Unsaved changes. Close blocked: ${blocked}` : 'No changes'}
-            </span>
-            <Button onPress={() => setName('Person A')}>Discard</Button>
-            <Modal.Close variant="primary" onPress={() => setName('Person A')}>
-              Save
-            </Modal.Close>
-          </>
+          <ActionBar
+            status={{
+              tone: dirty ? 'warning' : 'neutral',
+              text: dirty ? `Unsaved changes. Close blocked: ${blocked}` : 'No changes',
+            }}
+            secondary={<Button onPress={() => setName('Person A')}>Discard</Button>}
+            primary={
+              <Modal.Close variant="primary" onPress={() => setName('Person A')}>
+                Save
+              </Modal.Close>
+            }
+          />
         }
       >
         <div style={{ display: 'grid', gap: 8 }}>
@@ -314,12 +313,19 @@ export const AlertDialog: Story = {
 
 /**
  * `ConfirmDialog` with an `onConfirm` that returns a promise: the confirm button shows `loading` until
- * it settles. The first try fails and the dialog stays open; the second succeeds and closes it.
+ * it settles. The request is simulated: press Delete, then choose how it ends. When it fails the
+ * dialog stays open; when it succeeds the dialog closes.
  */
 export const Confirm: Story = {
   render: function Confirm() {
-    const [tries, setTries] = useState(0);
+    const [request, setRequest] = useState<{ resolve: () => void; reject: (error: Error) => void }>();
     const [result, setResult] = useState('nothing yet');
+    const settle = (next: string) => {
+      setResult(next);
+      setRequest(undefined);
+      if (next === 'deleted') request?.resolve();
+      else request?.reject(new Error('offline'));
+    };
     return (
       <>
         <Log>Result: {result}</Log>
@@ -332,23 +338,19 @@ export const Confirm: Story = {
           description="The report and its 12 exports are removed for everyone. This cannot be undone."
           confirmLabel="Delete"
           onCancel={() => setResult('cancelled')}
-          onConfirm={() =>
-            new Promise<void>((resolve, reject) => {
-              setTries(tries + 1);
-              setTimeout(() => {
-                if (tries === 0) {
-                  setResult('failed');
-                  reject(new Error('offline'));
-                } else {
-                  setResult('deleted');
-                  resolve();
-                }
-              }, 1200);
-            })
-          }
+          onConfirm={() => new Promise<void>((resolve, reject) => setRequest({ resolve, reject }))}
         >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <span style={{ font: 'var(--umbra-font-label)' }}>Simulated request:</span>
+            <Button size="small" disabled={!request} onPress={() => settle('failed')}>
+              Fails
+            </Button>
+            <Button size="small" disabled={!request} onPress={() => settle('deleted')}>
+              Succeeds
+            </Button>
+          </div>
           {result === 'failed' && (
-            <p role="alert" style={{ margin: 0, color: 'var(--umbra-color-semantic-danger)' }}>
+            <p role="alert" style={{ margin: '8px 0 0', color: 'var(--umbra-color-semantic-danger)' }}>
               Could not delete the report. Try again.
             </p>
           )}

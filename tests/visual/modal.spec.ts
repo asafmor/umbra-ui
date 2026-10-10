@@ -155,13 +155,34 @@ test('nested: Escape and an outside press close only the top modal', async ({ pa
   await expect(outer.getByRole('button', { name: 'Add a note' })).toBeFocused();
 
   await page.keyboard.press('Enter');
-  await expect(inner).toBeVisible();
+  await expect(page.getByRole('textbox', { name: 'Note' })).toBeFocused();
   await pressOutside(page);
   await expect(inner).toBeHidden();
   await expect(outer).toBeVisible();
   await expect(outer.getByRole('button', { name: 'Add a note' })).toBeFocused();
   await page.keyboard.press('Escape');
   await expect(outer).toBeHidden();
+});
+
+test('a menu opened inside a modal is above it, and Escape closes the menu first', async ({ page }) => {
+  await open(page, 'toolbar-tabs');
+  const modal = dialog(page, 'Region 2');
+  await modal.getByRole('button', { name: 'More' }).focus();
+  await page.keyboard.press('Enter');
+  const item = page.getByRole('menuitem', { name: 'Export' });
+  await expect(item).toBeFocused();
+  expect(
+    await item.evaluate((el) => {
+      const { x, y, width, height } = el.getBoundingClientRect();
+      return el.contains(document.elementFromPoint(x + width / 2, y + height / 2));
+    }),
+  ).toBe(true);
+  await page.keyboard.press('Escape');
+  await expect(item).toBeHidden();
+  await expect(page.locator('[data-umbra="modal"]')).toBeVisible();
+  await expect(modal.getByRole('button', { name: 'More' })).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('[data-umbra="modal"]')).toBeHidden();
 });
 
 test('ConfirmDialog: loading while the action runs, open after a failure, closed after a success', async ({
@@ -180,11 +201,15 @@ test('ConfirmDialog: loading while the action runs, open after a failure, closed
   await page.keyboard.press('Escape');
   await expect(confirm).toBeVisible();
   // The action fails: the dialog stays open and can be tried again.
+  await confirm.getByRole('button', { name: 'Fails' }).click();
   await expect(confirm.getByRole('alert')).toHaveText('Could not delete the report. Try again.');
   await expect(submit).not.toHaveAttribute('data-pending', 'true');
+  await expect(cancel).toBeEnabled();
   await expect(confirm).toBeVisible();
 
   await submit.click();
+  await expect(cancel).toBeDisabled();
+  await confirm.getByRole('button', { name: 'Succeeds' }).click();
   await expect(confirm).toBeHidden();
   await expect(page.getByText('Result: deleted')).toBeVisible();
 
@@ -311,29 +336,30 @@ test.describe('parts and motion', () => {
   test('opening animates the backdrop and the panel; reduced motion keeps only the fade', async ({
     page,
   }) => {
+    // Which properties start a transition on the panel and on the backdrop as the modal opens.
     const entering = async () => {
+      await page.evaluate(() => {
+        const seen = ((window as unknown as { seen: string[] }).seen = [] as string[]);
+        document.addEventListener('transitionrun', (event) => {
+          const part = (event.target as Element).getAttribute('data-umbra');
+          if (part?.startsWith('modal')) seen.push(`${part} ${event.propertyName}`);
+        });
+      });
       await page.getByRole('button', { name: 'Open report' }).click();
-      return page.locator('[data-umbra="modal"]').evaluate((el) => ({
-        panel: el
-          .getAnimations()
-          .map((a) => (a as CSSTransition).transitionProperty)
-          .sort(),
-        backdrop: el.parentElement!.getAnimations().map((a) => (a as CSSTransition).transitionProperty),
-        duration: getComputedStyle(el).transitionDuration,
-      }));
+      await expect(dialog(page, 'Export report (md)')).toBeVisible();
+      await expect(page.locator('[data-umbra="modal"]')).toHaveCSS('opacity', '1');
+      return page.evaluate(() => [...new Set((window as unknown as { seen: string[] }).seen)].sort());
     };
     await open(page, 'medium');
+    await expect(page.locator('[data-umbra="modal"]')).toHaveCSS('transition-duration', '0s');
     await page.keyboard.press('Escape');
     await expect(dialog(page, 'Export report (md)')).toBeHidden();
-    expect(await entering()).toEqual({
-      panel: ['opacity', 'translate'],
-      backdrop: ['opacity'],
-      duration: '0.24s, 0.24s',
-    });
+    expect(await entering()).toEqual(['modal opacity', 'modal translate', 'modal-backdrop opacity']);
+    await expect(page.locator('[data-umbra="modal"]')).toHaveCSS('transition-duration', '0.24s, 0.24s');
 
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.keyboard.press('Escape');
     await expect(dialog(page, 'Export report (md)')).toBeHidden();
-    expect((await entering()).panel).toEqual(['opacity']);
+    expect(await entering()).toEqual(['modal opacity', 'modal-backdrop opacity']);
   });
 });
