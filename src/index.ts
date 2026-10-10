@@ -125,3 +125,16 @@ export type {
 } from './data/StatValue';
 export { SummaryTile } from './data/SummaryTile';
 export type { SummaryTileProps, SummaryTileRootProps } from './data/SummaryTile';
+export { Tag } from './data/Tag';
+export type { TagProps, TagRemoveProps, TagRootProps } from './data/Tag';
+export { Badge } from './data/Badge';
+export type { BadgeIndicatorProps, BadgeProps, BadgeRootProps } from './data/Badge';
+export { ValuePill } from './data/ValuePill';
+export type { ValuePillLevelProps, ValuePillProps, ValuePillRootProps } from './data/ValuePill';
+export { TrendArrow } from './data/TrendArrow';
+export type { TrendArrowProps, TrendArrowRootProps, TrendDirection, TrendTone } from './data/TrendArrow';
+export { StatusIndicator } from './data/StatusIndicator';
+export type { Status, StatusIndicatorProps, StatusIndicatorRootProps } from './data/StatusIndicator';
+export { Link } from './data/Link';
+export type { LinkProps, LinkRenderProps, LinkRootProps } from './data/Link';
+export type { Tone } from './data/tone';

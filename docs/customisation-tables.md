@@ -75,6 +75,30 @@ A row of overlapping avatars. Those that do not fit are counted in a "+N" at the
 
 **Blocks**: `AvatarGroup.Root`, `AvatarGroup.Overflow`.
 
+## Badge
+
+A count or a dot, alone or on the corner of another element.
+
+**Tokens**: `--umbra-badge-bg`, `--umbra-badge-dot-size`, `--umbra-badge-fg`, `--umbra-badge-font`, `--umbra-badge-offset`, `--umbra-badge-radius`, `--umbra-badge-size`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `count` | `number` | The number to show. |
+| `dot` | `boolean` | Shows a dot instead of a number. |
+| `max` | `number` | Counts above this show as "99+". |
+| `showZero` | `boolean` | Shows the badge when `count` is 0. |
+| `label` | `string \| ((count: number) => string)` | What a screen reader hears: a string, or a function of the count (`(n) => n + ' unread'`). By default the full count is read, also above `max`. A dot is silent without it. |
+| `children` | `ReactNode` | The element the badge sits on the corner of. Without it the badge stands alone. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `tone` | `Tone` | What the colour means. `accent` is the fixed violet. |
+| `color` | `string` | A custom colour (any CSS colour). Replaces `tone`. |
+
+**Parts**: `indicator`.
+
+**Blocks**: `Badge.Root`, `Badge.Indicator`.
+
 ## Banner
 
 A message band inside a card or page: a notice, a warning, or an insight about the data beside it.
@@ -397,6 +421,32 @@ The key for a chart or any colour-coded data: one marker and label per series.
 
 **Blocks**: `Legend.Root`, `Legend.Item`, `Legend.Marker`, `Legend.More`.
 
+## Link
+
+A text link: inside a sentence, or on its own line as the way to a fuller view.
+
+**Tokens**: `--umbra-link-color`, `--umbra-link-font`, `--umbra-link-neutral-color`, `--umbra-link-underline-offset`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `chevron` | `boolean` | Adds a trailing chevron: "See all ›". |
+| `externalLabel` | `string` | What a screen reader hears after the text of an `external` link. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `href` | `string` | Where it goes. Without it the link is a button that calls `onPress`. |
+| `onPress` | `(() => void)` |  |
+| `external` | `boolean` | Opens in a new tab, with `rel="noopener noreferrer"`. |
+| `renderLink` | `((props: LinkRenderProps) => ReactNode)` | Plugs in the app's router link. Defaults to a plain `<a>`. |
+| `disabled` | `boolean` |  |
+| `variant` | `"inline" \| "standalone"` | `inline` sits in a sentence and wraps with it. `standalone` is one line on its own ("See all"). |
+| `tone` | `"neutral" \| "accent"` | `neutral` takes the colour of the text around it. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `children` | `ReactNode` |  |
+
+**Parts**: `label`, `externalIcon`, `chevron`.
+
+**Blocks**: `Link.Root`, `Link.Label`, `Link.Icon`.
+
 ## List
 
 A vertical list of rows that scrolls inside its slot, with optional groups, selection and row actions.
@@ -628,6 +678,29 @@ Shares its height among its children.
 
 **Blocks**: none.
 
+## StatusIndicator
+
+A status as a dot or an icon with a label, or as a coloured label.
+
+**Tokens**: `--umbra-status-indicator-color`, `--umbra-status-indicator-gap`, `--umbra-status-indicator-size`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `children` | `ReactNode` | The label. Without one, give `aria-label`. |
+| `icon` | `ReactNode` | Replaces the icon of the `icon` variant. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `aria-label` | `string` | Names an indicator that has no visible label. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `pulse` | `boolean` | Draws attention with a slow pulse around the dot. With reduced motion the dot stays still. |
+| `variant` | `"icon" \| "dot" \| "label"` | `dot`: a small shape. `icon`: the status icon. `label`: no mark, the label itself is coloured. |
+| `status` | `Status` |  |
+| `color` | `string` | A custom colour (any CSS colour). Replaces the colour of `status`; the shape stays. |
+
+**Parts**: `indicator`, `label`.
+
+**Blocks**: `StatusIndicator.Root`, `StatusIndicator.Indicator`, `StatusIndicator.Label`.
+
 ## StatValue
 
 A large value with its label, and optional unit, trend, caption and meter.
@@ -712,6 +785,33 @@ A compact tile that sums up one thing: an icon, a title and one value. The whole
 
 **Blocks**: `SummaryTile.Root`, `SummaryTile.Icon`, `SummaryTile.Content`, `SummaryTile.Title`, `SummaryTile.Figure`, `SummaryTile.Value`, `SummaryTile.Trend`, `SummaryTile.Caption`.
 
+## Tag
+
+A small label chip: a category, a status code or a value with an icon.
+
+**Tokens**: `--umbra-tag-bg`, `--umbra-tag-border`, `--umbra-tag-fg`, `--umbra-tag-font`, `--umbra-tag-gap`, `--umbra-tag-padding`, `--umbra-tag-radius`, `--umbra-tag-stripe-width`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `children` | `ReactNode` | The label. |
+| `icon` | `ReactNode` | A leading icon, avatar or flag. |
+| `onRemove` | `(() => void)` | Shows a remove button. |
+| `removeLabel` | `string` | Accessible name of the remove button; a text label is added to it ("Remove Region 2"). |
+| `loading` | `boolean` | Shows a placeholder of the tag's size. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `tone` | `Tone` | What the colour means. |
+| `variant` | `"subtle" \| "solid" \| "outline"` | `outline`: coloured border. `subtle`: tinted fill. `solid`: filled, for short status codes. |
+| `size` | `"default" \| "small"` | `small` is for use inside table cells. |
+| `color` | `string` | A custom colour (any CSS colour). Replaces `tone`. |
+| `stripe` | `(string & {}) \| Tone` | A second colour on the trailing edge: a tone name or any CSS colour. |
+| `stripeLabel` | `string` | What the stripe means, for screen readers and as a tooltip. |
+
+**Parts**: `icon`, `label`, `remove`, `skeleton`.
+
+**Blocks**: `Tag.Root`, `Tag.Icon`, `Tag.Label`, `Tag.Remove`.
+
 ## TopBar
 
 The brand-coloured bar at the top: where the user is, the main sections, and the one primary action.
@@ -740,6 +840,31 @@ The brand-coloured bar at the top: where the user is, the main sections, and the
 **Parts**: `start`, `logo`, `nav`, `actions`, `context`, `primaryAction`.
 
 **Blocks**: `TopBar.Root`, `TopBar.Start`, `TopBar.Nav`, `TopBar.Actions`, `TopBar.End`.
+
+## TrendArrow
+
+The direction of a change: up, down or flat.
+
+**Tokens**: `--umbra-trend-arrow-bad`, `--umbra-trend-arrow-gap`, `--umbra-trend-arrow-good`, `--umbra-trend-arrow-neutral`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `positive` | `"up" \| "down"` | Which direction is good: it gets the success colour, the other the danger colour. `flat` is neutral. |
+| `value` | `ReactNode` | Text after the arrow, for example the size of the change. |
+| `icon` | `ReactNode` | Replaces the arrow. Keep a different shape per direction: the shape is the cue that is not colour. |
+| `label` | `string` | What a screen reader hears for the direction. Defaults to the label of the direction below. |
+| `upLabel` | `string` |  |
+| `downLabel` | `string` |  |
+| `flatLabel` | `string` |  |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `tone` | `TrendTone` | The colour of the arrow. |
+| `direction` (required) | `TrendDirection` |  |
+
+**Parts**: `icon`, `value`.
+
+**Blocks**: `TrendArrow.Root`, `TrendArrow.Icon`, `TrendArrow.Value`.
 
 ## UmbraProvider
 
@@ -784,3 +909,31 @@ The same `context`, `density`, `brand` and `tokens` as the provider, for one sub
 **Parts**: none.
 
 **Blocks**: none.
+
+## ValuePill
+
+A value coloured by where it falls on a five-step ramp.
+
+**Tokens**: `--umbra-value-pill-bg`, `--umbra-value-pill-fg`, `--umbra-value-pill-font`, `--umbra-value-pill-min-width`, `--umbra-value-pill-padding`, `--umbra-value-pill-radius`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `value` (required) | `number \| null` | The value. `null` or `undefined` shows `emptyText` in a neutral pill. |
+| `format` | `((value: number) => ReactNode)` | Turns the value into what is shown: `(v) => v.toFixed(2)`, or a grade letter. |
+| `showLevel` | `boolean` | Adds a small bar marker of the level, for readers who cannot tell the colours apart. |
+| `levelLabel` | `((level: number, steps: number) => string)` | What a screen reader hears for the marker. |
+| `emptyText` | `ReactNode` | Shown when there is no value. |
+| `loading` | `boolean` | Shows a placeholder of the pill's size. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `size` | `"default" \| "small" \| "large"` | `small` is for use inside table cells. |
+| `shape` | `"square" \| "circle" \| "pill"` | `square` for values in dense rows, `circle` for grades of one or two characters. |
+| `min` | `number` | The bottom and top of the scale, split into five equal bands. |
+| `max` | `number` |  |
+| `thresholds` | `readonly number[]` | Ascending boundaries, at most four. A value at a boundary belongs to the band above it. |
+| `ramp` | `"higher-is-better" \| "lower-is-better"` | Which end of the scale gets the top of the ramp. |
+
+**Parts**: `value`, `level`, `skeleton`.
+
+**Blocks**: `ValuePill.Root`, `ValuePill.Value`, `ValuePill.Level`.
