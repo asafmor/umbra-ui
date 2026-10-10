@@ -1,6 +1,6 @@
-import { Check } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Switch as AriaSwitch } from 'react-aria-components';
+import { RawIcon } from '../provider/icons';
 import { cx, renderPart, type Part } from '../utils/parts';
 import { SlotDescription, SlotLabel, TextSlotsProvider, useTextSlots, type BlockProps } from './fieldParts';
 import styles from './Toggle.module.css';
@@ -79,7 +79,7 @@ function Track({ className, style, children }: BlockProps) {
   return (
     <span data-part="track" aria-hidden="true" className={cx(styles.track, className)} style={style}>
       <span data-part="thumb" className={styles.thumb}>
-        {children ?? <Check />}
+        {children ?? <RawIcon name="check" />}
       </span>
     </span>
   );

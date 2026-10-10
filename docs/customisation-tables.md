@@ -278,7 +278,7 @@ The container for one unit of content on a page. Fills the slot its parent gives
 | `empty` | `ReactNode` | Shown in place of the body when set (and not loading or in error). |
 | `error` | `ReactNode` | Shown in place of the body when set. Put a retry action inside it. |
 | `parts` | `see Parts` | Replace or hide named pieces. `toolbar` and `footer` are empty unless given, as `Card.Toolbar` and `Card.Footer`. |
-| `tone` | `"default" \| "tinted" \| "neutral"` | `tinted` takes more of the context tint; `neutral` ignores it. |
+| `tone` | `"neutral" \| "default" \| "tinted"` | `tinted` takes more of the context tint; `neutral` ignores it. |
 | `headerStyle` | `"plain" \| "band"` | `band` fills the header with the brand colour, or the header's `bandColor`. |
 | `padding` | `"default" \| "none"` | `none` for edge-to-edge tables and media. |
 | `collapsible` | `boolean` | Lets the end user collapse the card to its header. |
@@ -320,6 +320,8 @@ A box that is checked or not: one yes-or-no choice, or one of several in a `Chec
 | `description` | `ReactNode` | A second line under the label. |
 | `error` | `ReactNode` | An error message under the checkbox, shown with an icon. Setting it makes the checkbox invalid. |
 | `parts` | `see Parts` | Replace or hide named pieces. |
+| `indeterminate` | `boolean` | Shows the "some, not all" mark, whatever `checked` is. |
+| `invalid` | `boolean` |  |
 | `value` | `string` | The form value when checked; inside a `CheckboxGroup`, the entry in the group's `value`. |
 | `onChange` | `((checked: boolean) => void)` |  |
 | `aria-label` | `string` | Accessible name of a checkbox that has no visible label. |
@@ -327,11 +329,9 @@ A box that is checked or not: one yes-or-no choice, or one of several in a `Chec
 | `style` | `import("react").CSSProperties` |  |
 | `size` | `"default" \| "small"` | `small` is for use inside table cells. Otherwise the size follows the density level. |
 | `disabled` | `boolean` |  |
-| `indeterminate` | `boolean` | Shows the "some, not all" mark, whatever `checked` is. |
 | `checked` | `boolean` | Controlled state. |
 | `defaultChecked` | `boolean` |  |
 | `readOnly` | `boolean` | Focusable, but cannot be changed. |
-| `invalid` | `boolean` |  |
 | `required` | `boolean` |  |
 | `requiredLabel` | `string` | The text of the required marker after the label. |
 | `name` | `string` | Form field name. |
@@ -355,6 +355,7 @@ Several checkboxes that answer one question, with a shared label, description an
 | `error` | `ReactNode` | An error message under the checkboxes, shown with an icon. Setting it makes the group invalid. |
 | `columns` | `number` | Lays the checkboxes in a grid of at most this many columns; columns drop as the group narrows. |
 | `parts` | `see Parts` | Replace or hide named pieces. |
+| `invalid` | `boolean` |  |
 | `value` | `string[]` | Controlled: the `value` of every checked checkbox. |
 | `onChange` | `((value: string[]) => void)` |  |
 | `aria-label` | `string` | Accessible name of a group that has no visible label. |
@@ -363,7 +364,6 @@ Several checkboxes that answer one question, with a shared label, description an
 | `orientation` | `"vertical" \| "horizontal"` | `horizontal` puts the checkboxes on one line, wrapping when they do not fit. |
 | `disabled` | `boolean` |  |
 | `readOnly` | `boolean` |  |
-| `invalid` | `boolean` |  |
 | `required` | `boolean` | At least one checkbox must be checked. |
 | `requiredLabel` | `string` | The text of the required marker after the group label. |
 | `name` | `string` | Form field name of every checkbox in the group. |
@@ -506,12 +506,12 @@ Pairs a label, a description and an error message with one control: a row of a f
 | `description` | `ReactNode` | A line that explains the setting. |
 | `error` | `ReactNode` | An error message, shown with an icon. Setting it makes the control invalid. |
 | `parts` | `see Parts` | Replace or hide named pieces. |
+| `invalid` | `boolean` | Marks the control invalid. Set by itself when the field has an error. |
 | `className` | `string` |  |
 | `style` | `import("react").CSSProperties` |  |
 | `disabled` | `boolean` | Disables the control. |
 | `layout` | `"inline" \| "stacked" \| "row"` | `row`: label and description at the start, control at the end, as in a settings list. `stacked`: label above the control. `inline`: label and control on one line, the description and error under the control. `row` and `inline` stack when the field is narrow. |
 | `labelWidth` | `string \| number` | The width of the label column of a `row` or `inline` field: a number of pixels, or any CSS width. |
-| `invalid` | `boolean` | Marks the control invalid. Set by itself when the field has an error. |
 | `required` | `boolean` | Marks the control required and shows the required marker. |
 | `requiredLabel` | `string` | The text of the required marker. |
 | `id` | `string` | The id of the control. Generated when not set. |
@@ -798,7 +798,7 @@ A vertical list of rows that scrolls inside its slot, with optional groups, sele
 | `dividers` | `boolean` | A line between rows. |
 | `striped` | `boolean` | A faint fill on every other row. |
 | `numbered` | `boolean` | Shows each row's position, for a ranking. |
-| `itemVariant` | `"default" \| "message"` | Default `variant` of every `List.Item`, and the layout of the skeleton rows. |
+| `itemVariant` | `"message" \| "default"` | Default `variant` of every `List.Item`, and the layout of the skeleton rows. |
 | `itemSize` | `"compact" \| "default"` | Default `size` of every `List.Item`, and of the skeleton rows. |
 | `stickyHeaders` | `boolean` | Group headers stick to the top while their group scrolls. |
 | `skeletonRows` | `number` | Number of skeleton rows shown while `loading`. |
@@ -842,7 +842,7 @@ The content of one row of a list: a title with optional lines, and leading and t
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
 | `accent` | `string` | A colour for an edge stripe that carries a category. Give `accentLabel` too, so it is not colour alone. |
-| `variant` | `"default" \| "message"` | `message`: sender and tag on the first line, title and time on the second. |
+| `variant` | `"message" \| "default"` | `message`: sender and tag on the first line, title and time on the second. |
 | `interactive` | `boolean` | Shows hover and press feedback. Set by `List`, and by `href` or `onPress`. |
 | `size` | `"compact" \| "default"` | `compact` is one control high, for leaderboards and short lists. Otherwise the height follows the density level. |
 | `selected` | `boolean` | Violet fill with an edge stripe. Inside a `List`, selection sets it. |
@@ -1016,6 +1016,7 @@ A bar that fills with a value: progress of a task, or a measured level. Fills th
 | `showValue` | `boolean` | Shows the value as text. |
 | `valuePlacement` | `"outside" \| "inside"` | `inside` draws the value on the bar; it needs `size="thick"`, and hides when the bar is too short for it. |
 | `parts` | `see Parts` | Replace or hide named pieces. |
+| `indeterminate` | `boolean` | Progress of unknown length. Moves, or shows a static striped fill when motion is reduced. |
 | `value` | `number` | The current value. A stacked bar defaults to the sum of its parts. |
 | `aria-label` | `string` | Names a bar that has no visible label. |
 | `className` | `string` |  |
@@ -1027,7 +1028,6 @@ A bar that fills with a value: progress of a task, or a measured level. Fills th
 | `min` | `number` |  |
 | `max` | `number` |  |
 | `kind` | `"progress" \| "meter"` | `progress` for a task that advances (`role="progressbar"`), `meter` for a measured level (`role="meter"`). |
-| `indeterminate` | `boolean` | Progress of unknown length. Moves, or shows a static striped fill when motion is reduced. |
 | `thresholds` | `boolean \| Threshold[]` | Colours the fill by its level. `true` is thirds of the scale: danger, warning, success. Each band also has a pattern. |
 | `invert` | `boolean` | Reverses the tones of the thresholds, for a scale where low is good. |
 | `segments` | `number \| number[]` | Splits the bar: a number of equal segments, or the values where a segment ends. |
@@ -1116,6 +1116,7 @@ A choice of exactly one option among a few, all visible at once.
 | `error` | `ReactNode` | An error message under the options, shown with an icon. Setting it makes the group invalid. |
 | `columns` | `number` | Lays the options in a grid of at most this many columns; columns drop as the group narrows. `card` options are always in a grid, of one column by default. |
 | `parts` | `see Parts` | Replace or hide named pieces. |
+| `invalid` | `boolean` |  |
 | `value` | `string \| null` | Controlled: the `value` of the chosen option. |
 | `onChange` | `((value: string) => void)` |  |
 | `aria-label` | `string` | Accessible name of a group that has no visible label. |
@@ -1125,7 +1126,6 @@ A choice of exactly one option among a few, all visible at once.
 | `orientation` | `"vertical" \| "horizontal"` | The direction of the options, and of the arrow keys that move between them. |
 | `disabled` | `boolean` |  |
 | `readOnly` | `boolean` |  |
-| `invalid` | `boolean` |  |
 | `required` | `boolean` |  |
 | `requiredLabel` | `string` | The text of the required marker after the group label. |
 | `name` | `string` | Form field name. |
@@ -1462,6 +1462,7 @@ A box for typing one line of text, or several with `multiline`.
 | `clearable` | `boolean` | Shows a button that empties the field while it holds text. |
 | `clearLabel` | `string` | Accessible name of the clear button. |
 | `parts` | `see Parts` | Replace or hide named pieces. |
+| `invalid` | `boolean` | Shows the danger border and an error icon. Put the message in the `error` of a `FormField`. |
 | `value` | `string` | Controlled text. |
 | `onChange` | `((value: string) => void)` |  |
 | `aria-label` | `string` | Accessible name of a field that has no `FormField` label. |
@@ -1471,7 +1472,6 @@ A box for typing one line of text, or several with `multiline`.
 | `disabled` | `boolean` |  |
 | `rows` | `number` | Visible lines of a `multiline` field. |
 | `readOnly` | `boolean` | Focusable and selectable, but cannot be changed. |
-| `invalid` | `boolean` | Shows the danger border and an error icon. Put the message in the `error` of a `FormField`. |
 | `required` | `boolean` |  |
 | `name` | `string` | Form field name. |
 | `id` | `string` |  |

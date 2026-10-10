@@ -1,4 +1,3 @@
-import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import {
   createContext,
   Fragment,
@@ -14,7 +13,7 @@ import { flushSync } from 'react-dom';
 import { ButtonBase } from '../basics/Button';
 import { ScrollArea } from '../layout/ScrollArea';
 import { useSlot, type SlotProps } from '../layout/useSlot';
-import { Icon, IconSlot } from '../provider/icons';
+import { Icon, IconSlot, RawIcon } from '../provider/icons';
 import { cx, renderPart, type Part } from '../utils/parts';
 import type { NavLinkProps } from './nav';
 import styles from './VerticalNav.module.css';
@@ -373,7 +372,7 @@ function Toggle({
         expanded={!nav.rail}
         onPress={nav.toggleRail}
       >
-        <IconSlot>{nav.rail ? <PanelLeftOpen /> : <PanelLeftClose />}</IconSlot>
+        <IconSlot>{nav.rail ? <RawIcon name="panelOpen" /> : <RawIcon name="panelClose" />}</IconSlot>
       </ButtonBase>
     </div>
   );

@@ -1,4 +1,3 @@
-import { User } from 'lucide-react';
 import {
   Children,
   createContext,
@@ -9,6 +8,7 @@ import {
   type ReactNode,
 } from 'react';
 import { useShrinkLevel } from '../internal/useShrinkLevel';
+import { RawIcon } from '../provider/icons';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './Avatar.module.css';
 import { initialsOf } from './entity';
@@ -92,7 +92,7 @@ function Initials({ label, className, style, children }: AvatarFallbackProps) {
 function Fallback({ label, className, style, children }: AvatarFallbackProps) {
   return (
     <span data-part="fallback" {...named(label)} className={cx(styles.media, className)} style={style}>
-      {children ?? <User />}
+      {children ?? <RawIcon name="user" />}
     </span>
   );
 }

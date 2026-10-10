@@ -1,4 +1,3 @@
-import { Check } from 'lucide-react';
 import {
   Children,
   Fragment,
@@ -24,7 +23,7 @@ import {
   SubmenuTrigger,
 } from 'react-aria-components';
 import { OverflowMenuContext } from '../internal/contexts';
-import { Icon, IconSlot } from '../provider/icons';
+import { Icon, IconSlot, RawIcon } from '../provider/icons';
 import { useScopeAttributes, useShortcut } from '../provider/UmbraProvider';
 import { warn } from '../utils/dev';
 import { cx, renderPart, type Part } from '../utils/parts';
@@ -172,7 +171,7 @@ export function Hint({ id }: { id: string }) {
 export function CheckMark({ shown, part }: { shown: boolean; part?: Part }) {
   return (
     <span data-part="check" className={styles.check} aria-hidden="true">
-      {shown && renderPart(part, {}, () => <Check />)}
+      {shown && renderPart(part, {}, () => <RawIcon name="check" />)}
     </span>
   );
 }

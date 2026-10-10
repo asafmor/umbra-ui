@@ -1,4 +1,3 @@
-import { Check } from 'lucide-react';
 import {
   Children,
   Fragment,
@@ -10,7 +9,7 @@ import {
   type ReactNode,
 } from 'react';
 import { ToggleButton, ToggleButtonGroup } from 'react-aria-components';
-import { IconSlot } from '../provider/icons';
+import { IconSlot, RawIcon } from '../provider/icons';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './SegmentedFilter.module.css';
 import { nameWithCount, useStrip } from './strip';
@@ -183,7 +182,7 @@ function Item({ id, icon, count, disabled, parts, className, style, children }: 
             isSelected &&
             renderPart(parts?.check, {}, () => (
               <IconSlot part="check">
-                <Check />
+                <RawIcon name="check" />
               </IconSlot>
             ))}
           {renderPart(

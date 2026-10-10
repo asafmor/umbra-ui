@@ -56,6 +56,13 @@
   stroke-width: 3.5;
 }
 
+.box > :is(.check, .dash) > :is(svg, img) {
+  display: block;
+  width: 100%;
+  height: 100%;
+  stroke-width: 3.5;
+}
+
 .root[data-selected] > .box > :not(.dash),
 .root[data-indeterminate] > .box > .dash {
   display: block;

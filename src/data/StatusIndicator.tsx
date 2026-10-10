@@ -1,6 +1,5 @@
-import { CircleCheck, CircleMinus, Info, OctagonAlert, TriangleAlert } from 'lucide-react';
 import type { CSSProperties, ReactNode } from 'react';
-import { IconSlot } from '../provider/icons';
+import { IconSlot, RawIcon } from '../provider/icons';
 import { cx, renderPart, type Part } from '../utils/parts';
 import shared from './shared.module.css';
 import styles from './StatusIndicator.module.css';
@@ -10,11 +9,11 @@ export type Status = 'success' | 'warning' | 'danger' | 'info' | 'neutral';
 
 /** One shape per status, so the status does not depend on colour. */
 const icons: Record<Status, ReactNode> = {
-  success: <CircleCheck />,
-  warning: <TriangleAlert />,
-  danger: <OctagonAlert />,
-  info: <Info />,
-  neutral: <CircleMinus />,
+  success: <RawIcon name="success" />,
+  warning: <RawIcon name="warning" />,
+  danger: <RawIcon name="danger" />,
+  info: <RawIcon name="info" />,
+  neutral: <RawIcon name="neutral" />,
 };
 
 interface BlockProps {

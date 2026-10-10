@@ -1,6 +1,6 @@
-import { Check, Minus } from 'lucide-react';
 import { useContext, type ReactNode } from 'react';
 import { Checkbox as AriaCheckbox, CheckboxGroup as AriaCheckboxGroup } from 'react-aria-components';
+import { RawIcon } from '../provider/icons';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './Checkbox.module.css';
 import {
@@ -107,8 +107,12 @@ function Box({ className, style, children }: BlockProps) {
     <span data-part="box" aria-hidden="true" className={cx(styles.box, className)} style={style}>
       {children ?? (
         <>
-          <Check className={styles.check} />
-          <Minus className={styles.dash} />
+          <span className={styles.check}>
+            <RawIcon name="check" />
+          </span>
+          <span className={styles.dash}>
+            <RawIcon name="indeterminate" />
+          </span>
         </>
       )}
     </span>
