@@ -16,7 +16,7 @@ React components for full-window, data-dense applications: dashboards, consoles,
 Until the first release, install from GitHub (this builds the package on install):
 
 ```sh
-npm install github:asafmor/umbra-ui react-aria-components lucide-react
+npm install github:asafmor/umbra-ui
 ```
 
 It needs React 19 or later. The fonts are loaded by your app, not shipped by the library:
@@ -27,9 +27,15 @@ npm install @fontsource/figtree @fontsource/barlow-condensed
 
 ## A first full-window page
 
+In a fresh Vite app, replace `src/App.tsx` with this, import it in `main.tsx` as `{ App }`, and remove the
+template's own `index.css` and `App.css` (their colours and centring fight the library's).
+
 ```tsx
+import '@fontsource/barlow-condensed/600.css';
 import '@fontsource/barlow-condensed/700.css';
 import '@fontsource/figtree/400.css';
+import '@fontsource/figtree/500.css';
+import '@fontsource/figtree/700.css';
 import 'umbra-ui/styles.css';
 import { AppShell, Card, Columns, Page, Stack, TopBar, UmbraProvider } from 'umbra-ui';
 
@@ -43,11 +49,11 @@ export function App() {
             <Card title="Summary" size={2}>
               Twice the width of its siblings.
             </Card>
-            <Stack>
+            <Stack label="Status">
               <Card title="Budget" priority={1}>
                 Stays open longest.
               </Card>
-              <Card title="Schedule">Collapses to its header first.</Card>
+              <Card title="Schedule">Collapses to its header first, when the stack runs out of room.</Card>
             </Stack>
           </Columns>
         </Page>
@@ -57,8 +63,10 @@ export function App() {
 }
 ```
 
-That page fills any window from 1024 x 600 up. Make the window shorter and the lowest-priority card in
-the stack collapses to its header; below 1024 x 600 the columns become tabs.
+That page fills any window from 1024 x 600 up, and never scrolls. When a stack holds more cards than
+fit at their minimum height, the lowest-priority ones collapse to their headers (two cards always fit,
+so add a few to see it). Below 1024 x 600 the columns become tabs, labelled by each card's title or the
+stack's `label`.
 
 ## Learn more
 

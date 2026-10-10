@@ -3,7 +3,7 @@
 ## 1. Install
 
 ```sh
-npm install github:asafmor/umbra-ui react-aria-components lucide-react
+npm install github:asafmor/umbra-ui
 npm install @fontsource/figtree @fontsource/barlow-condensed
 ```
 
