@@ -18,4 +18,6 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+      # The example imports the built package, so this checks the published entries and types.
+      - run: npm run build -w examples/basic
       # Visual tests run locally for now (npm run test:visual): baselines are recorded on one machine.
