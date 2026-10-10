@@ -81,7 +81,7 @@ None.
 
 Resolved 2026-10-10:
 
-- The colour is a hash of the lower-cased name mapped to a hue at 60% saturation; the lightness starts at 42% and is lowered until white text reaches 4.5:1. It does not use the context tint, so an entity keeps its colour on every page.
+- The colour is a hash of the lower-cased name (FNV-1a with a final mixing step, so names that differ in one character, the last one too, get unrelated hues; unit-tested with "Client A" to "Client Z") mapped to a hue at 60% saturation; the lightness starts at 42% and is lowered until white text reaches 4.5:1. It does not use the context tint, so an entity keeps its colour on every page.
 - Letters are the first letters of the first and last words. One letter by default up to `sm`, where two would be unreadable.
 - `label` is a prop of this component (with truncation), as the task set; there is no separate `EntityLabel`.
 - With no `size` the mark scales with the font, so it fits table cells, list rows and headings without a prop.

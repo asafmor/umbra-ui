@@ -20,13 +20,24 @@ function hslToRgb(h: number, s: number, l: number): [number, number, number] {
 }
 
 /**
+ * The hue (0–359) of a name. FNV-1a, then the murmur3 finaliser: a change of one character, the last
+ * one too, moves every bit, so names such as "Client A" and "Client B" land far apart.
+ */
+export function hueOf(name: string): number {
+  let hash = 0x811c9dc5;
+  for (const char of name.trim().toLowerCase()) hash = Math.imul(hash ^ char.codePointAt(0)!, 0x01000193);
+  hash = Math.imul(hash ^ (hash >>> 16), 0x85ebca6b);
+  hash = Math.imul(hash ^ (hash >>> 13), 0xc2b2ae35);
+  return ((hash ^ (hash >>> 16)) >>> 0) % 360;
+}
+
+/**
  * A background colour for a name: the same name always gives the same colour, and white text on it
  * always has at least 4.5:1. The hue comes from a hash of the name; the lightness is lowered until
  * the contrast holds.
  */
 export function colourOf(name: string): string {
-  let hash = 0;
-  for (const char of name.trim().toLowerCase()) hash = (hash * 31 + char.codePointAt(0)!) % 360;
+  const hash = hueOf(name);
   let lightness = 0.42;
   let rgb = hslToRgb(hash, 0.6, lightness);
   while (contrastRatio(rgb, white) < 4.5) rgb = hslToRgb(hash, 0.6, (lightness -= 0.02));
