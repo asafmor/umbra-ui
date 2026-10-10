@@ -33,7 +33,7 @@
     "tokens": "node scripts/build-tokens.mjs",
     "build": "npm run tokens && vite build && tsc -p tsconfig.build.json",
     "typecheck": "npm run tokens && tsc --noEmit",
-    "lint": "eslint . && prettier --check .",
+    "lint": "eslint . && prettier --check . && node scripts/build-customisation.mjs --check",
     "format": "prettier --write .",
     "test": "vitest run",
     "storybook": "npm run tokens && storybook dev -p 6006",
@@ -43,7 +43,8 @@
     "changeset": "changeset",
     "version": "changeset version",
     "release": "npm run lint && npm run typecheck && npm test && npm run build && changeset publish",
-    "prepare": "npm run tokens"
+    "prepare": "npm run build",
+    "docs:tables": "npm run tokens && node scripts/build-customisation.mjs"
   },
   "peerDependencies": {
     "react": ">=19",

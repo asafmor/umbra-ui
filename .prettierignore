@@ -12,3 +12,4 @@ test-results
 playwright-report
 .changeset/*.md
 CHANGELOG.md
+docs/customisation-tables.md
