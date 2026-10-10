@@ -55,9 +55,10 @@ test('below the minimum window, columns become tabs driven by arrow keys', async
   await expect(tabs.nth(1)).toHaveAttribute('aria-selected', 'true');
   await expect(page.getByRole('tabpanel')).toContainText('Update 1');
 
-  // Exactly the minimum window is not narrow.
+  // Exactly the minimum window is not narrow: the columns come back.
   await page.setViewportSize({ width: 1024, height: 600 });
   await expect(page.getByRole('tab')).toHaveCount(0);
+  await expect(page.locator('[data-umbra="card"]', { hasText: 'Summary' })).toBeVisible();
 });
 
 test('header actions that do not fit move into one menu', async ({ page }) => {
@@ -85,4 +86,54 @@ test('the skip link is the first focus stop', async ({ page }) => {
   await open(page, 'layout-page-layouts--three-columns');
   await page.keyboard.press('Tab');
   await expect(page.getByRole('link', { name: 'Skip to content' })).toBeFocused();
+});
+
+test('nav: one tab stop, arrow keys, a caret that opens the dropdown, and choosing an item', async ({
+  page,
+}) => {
+  await open(page, 'shell-app-shell--full-screen', 1920, 1080);
+  const nav = page.getByRole('navigation', { name: 'Main' });
+  const overview = nav.getByRole('link', { name: 'Overview' });
+  await expect(overview).toHaveAttribute('aria-current', 'page');
+
+  await overview.focus();
+  await page.keyboard.press('ArrowRight');
+  await expect(nav.getByRole('link', { name: 'Orders' })).toBeFocused();
+  await page.keyboard.press('ArrowRight');
+  const caret = nav.getByRole('button', { name: 'Orders' });
+  await expect(caret).toBeFocused();
+
+  await page.keyboard.press('Enter');
+  await expect(caret).toHaveAttribute('aria-expanded', 'true');
+  await page.getByRole('dialog').getByRole('link', { name: 'Returns' }).click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+
+  await nav.getByRole('link', { name: 'Planning' }).click();
+  await expect(nav.getByRole('link', { name: 'Planning' })).toHaveAttribute('aria-current', 'page');
+});
+
+test('top bar: as it narrows, items move into "More" and the active item stays', async ({ page }) => {
+  await open(page, 'shell-app-shell--full-screen', 1920, 1080);
+  const bar = page.locator('[data-umbra="top-bar"]');
+  const nav = page.getByRole('navigation', { name: 'Main' });
+  await expect(bar).toHaveAttribute('data-shrink', '0');
+  await expect(nav.getByRole('button', { name: 'More' })).toHaveCount(0);
+
+  // At the minimum window, hiding the context block and collapsing the actions is enough.
+  await page.setViewportSize({ width: 1024, height: 600 });
+  await expect(bar).toHaveAttribute('data-shrink', '2');
+  await expect(nav.getByRole('link', { name: 'Finance' })).toBeVisible();
+
+  await page.setViewportSize({ width: 900, height: 600 });
+  await expect(bar).toHaveAttribute('data-shrink', '3');
+  await expect(nav.getByRole('link', { name: 'Overview' })).toBeVisible();
+  await expect(nav.getByRole('link', { name: 'Finance' })).toHaveCount(0);
+  await nav.getByRole('button', { name: 'More' }).click();
+  await expect(page.getByRole('dialog').getByRole('link', { name: 'Finance' })).toBeVisible();
+  await page.keyboard.press('Escape');
+
+  // Growing again brings everything back.
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  await expect(bar).toHaveAttribute('data-shrink', '0');
+  await expect(nav.getByRole('link', { name: 'Finance' })).toBeVisible();
 });

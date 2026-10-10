@@ -2,7 +2,6 @@ import {
   createContext,
   createElement,
   useContext,
-  useEffect,
   useId,
   useLayoutEffect,
   useMemo,
@@ -14,7 +13,7 @@ import {
 } from 'react';
 import { ButtonBase } from '../basics/Button';
 import { Skeleton } from '../basics/Skeleton';
-import { ActionsOverflow, Popover } from '../internal/overlays';
+import { ActionsOverflow, Popover, useEscapeToClose } from '../internal/overlays';
 import { useShrinkLevel } from '../internal/useShrinkLevel';
 import { Icon, IconSlot } from '../provider/icons';
 import { cx, renderPart, type Part } from '../utils/parts';
@@ -119,27 +118,11 @@ function Root({
 
   const collapsedBy = userCollapsed ? 'user' : layoutCollapsed ? 'layout' : null;
 
-  // React Aria moves focus into the popover only after its enter transition, and the page behind is
-  // inert meanwhile, so for a moment focus is nowhere. Escape must still close the popover then, and
-  // focus must return to the header once the page is interactive again.
-  useEffect(() => {
-    if (!popoverOpen) return;
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== 'Escape') return;
-      setPopoverOpen(false);
-      const started = performance.now();
-      const refocus = () => {
-        const button = header.current?.querySelector('button');
-        if (!button || (document.activeElement && document.activeElement !== document.body)) return;
-        button.focus();
-        if (document.activeElement !== button && performance.now() - started < 1000)
-          requestAnimationFrame(refocus);
-      };
-      refocus();
-    };
-    document.addEventListener('keydown', onKeyDown);
-    return () => document.removeEventListener('keydown', onKeyDown);
-  }, [popoverOpen]);
+  useEscapeToClose(
+    popoverOpen,
+    () => setPopoverOpen(false),
+    () => header.current?.querySelector('button'),
+  );
   const card = useMemo<CardContextValue>(
     () => ({
       titleId,

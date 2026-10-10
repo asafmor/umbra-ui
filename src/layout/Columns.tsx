@@ -71,14 +71,16 @@ export function Columns({
   const { ref, props } = useSlot<HTMLDivElement>(slot);
   const tabMode = useContext(NarrowContext) && narrow === 'tabs';
   const layout = useLayoutParent(ref, { tabs: tabMode });
-  const tabs = layout.tabList.map((tab, index) => {
+  // Outside tab mode there is no tab state, whatever the list still holds from before.
+  const tabState = layout.value.tabs;
+  const tabs = (tabState ? layout.tabList : []).map((tab, index) => {
     if (!tab.label) warn('a child of <Columns> has no `label` (or title) for its tab.');
     return {
       id: tab.id,
       label: tab.label ?? String(index + 1),
       selected: tab.id === layout.activeId,
-      tabId: layout.value.tabs!.tabId(tab.id),
-      panelId: layout.value.tabs!.panelId(tab.id),
+      tabId: tabState!.tabId(tab.id),
+      panelId: tabState!.panelId(tab.id),
     };
   });
   return (

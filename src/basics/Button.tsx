@@ -1,6 +1,6 @@
 import { useContext, useRef, type CSSProperties, type ReactNode } from 'react';
 import { Button as AriaButton, Link as AriaLink } from 'react-aria-components';
-import { OverflowMenuContext, Tip } from '../internal/overlays';
+import { ForceCollapseContext, OverflowMenuContext, Tip } from '../internal/overlays';
 import { useShrinkLevel } from '../internal/useShrinkLevel';
 import { Icon, IconSlot } from '../provider/icons';
 import { useShortcut } from '../provider/UmbraProvider';
@@ -157,7 +157,8 @@ export function Button({
   const ref = useRef<HTMLElement>(null);
   const inMenu = !!useContext(OverflowMenuContext);
   const canCollapse = collapseTo === 'icon' && !!(iconStart || iconEnd) && !inMenu;
-  const collapsed = useShrinkLevel(ref, canCollapse ? 1 : 0) === 1;
+  const forced = useContext(ForceCollapseContext);
+  const collapsed = useShrinkLevel(ref, canCollapse ? 1 : 0) === 1 || (canCollapse && forced);
   const hint = useShortcut(shortcut, rest.disabled || rest.loading ? undefined : onPress);
   const icon = (part: 'iconStart' | 'iconEnd', node: ReactNode) =>
     renderPart(parts?.[part], { children: node }, (p) => p.children && <IconSlot>{p.children}</IconSlot>);

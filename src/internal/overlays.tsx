@@ -1,6 +1,6 @@
 // Minimal internal overlays for Milestone 0, built on React Aria and not exported. The public Popover,
 // Menu and Tooltip components come in Milestone 1 (plan/decisions/02-behaviour-base.md).
-import { createContext, type CSSProperties, type ReactNode, type RefObject } from 'react';
+import { createContext, useEffect, type CSSProperties, type ReactNode, type RefObject } from 'react';
 import {
   Dialog,
   DialogTrigger,
@@ -112,4 +112,38 @@ export function ActionsOverflow({
       </Popover>
     </PopoverTrigger>
   );
+}
+
+/** Set by a container (the TopBar) to make buttons with `collapseTo="icon"` show their icon only. */
+export const ForceCollapseContext = createContext(false);
+
+/**
+ * For a popover opened from a plain element. React Aria moves focus into the popover only after its
+ * enter transition, and the page behind is inert meanwhile, so for a moment focus is nowhere. Escape
+ * must still close the popover then, and focus must return to `target` once the page is interactive.
+ */
+export function useEscapeToClose(
+  open: boolean,
+  close: () => void,
+  target: () => HTMLElement | null | undefined,
+) {
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      close();
+      const started = performance.now();
+      const refocus = () => {
+        const element = target();
+        if (!element || (document.activeElement && document.activeElement !== document.body)) return;
+        element.focus();
+        if (document.activeElement !== element && performance.now() - started < 1000)
+          requestAnimationFrame(refocus);
+      };
+      refocus();
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `close` and `target` are read when the key is pressed
+  }, [open]);
 }

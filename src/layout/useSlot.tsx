@@ -204,7 +204,12 @@ export function useLayoutParent(
     if (!container || !collapse) return;
     const observer = new ResizeObserver(() => flushSync(apply));
     observer.observe(container);
-    return () => observer.disconnect();
+    // Header heights measured before a web font arrived may be off; apply again when fonts finish loading.
+    document.fonts?.addEventListener('loadingdone', apply);
+    return () => {
+      observer.disconnect();
+      document.fonts?.removeEventListener('loadingdone', apply);
+    };
   }, [element, collapse, apply]);
 
   const activeId = tabs ? (tabList.find((t) => t.id === selected)?.id ?? tabList[0]?.id ?? null) : null;
