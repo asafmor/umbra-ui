@@ -1,0 +1,482 @@
+/* Fills its slot; the table scrolls inside in both directions. */
+.root {
+  --row-h: var(--umbra-table-row-height, var(--umbra-density-table-row));
+  --head-h: var(--umbra-table-header-height, calc(var(--row-h) + var(--umbra-space-2)));
+  --pad-x: var(--umbra-table-cell-padding-x, var(--umbra-space-3));
+  --edge-x: var(--umbra-table-edge-padding-x, var(--umbra-density-card-padding));
+  /* Sticky cells cover what scrolls under them, so every fill is opaque: mixed into the surface below. */
+  --surface: var(--umbra-table-row-bg, var(--umbra-scroll-fade-color, var(--umbra-context-card-tint)));
+  --line: var(--umbra-table-border-color, var(--umbra-color-base-border-subtle));
+  --group-bg: var(
+    --umbra-group-header-bg,
+    color-mix(in oklab, var(--umbra-color-base-surface2) 80%, var(--surface))
+  );
+
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  color: var(--umbra-table-color, var(--umbra-color-base-text-primary));
+  font: var(--umbra-table-font, var(--umbra-font-table-cell));
+  /* The table clips, so focus rings are drawn inside the cells and the controls in them. */
+  --umbra-focus-offset: calc(-1 * var(--umbra-state-focus-ring-width));
+  /* The library's own controls at table density. */
+  --umbra-icon-button-size: calc(var(--row-h) - 2px);
+}
+
+.scroll {
+  flex: 1 1 0;
+}
+
+/*
+ * The vertical scrollbar always has its room, so the width the columns are fitted to does not change
+ * when it comes and goes. With no track and nothing to scroll, the room is simply empty.
+ */
+.root > .scroll.scroll > [data-part='viewport'] {
+  overflow-y: scroll;
+}
+
+/* With an empty or error state, the table is only its header and the state takes the rest. */
+.scroll.hug {
+  flex: none;
+}
+
+.state {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.caption {
+  flex: none;
+  padding: var(--umbra-space-3) var(--edge-x);
+  color: var(--umbra-table-caption-color, var(--umbra-color-base-text-secondary));
+  font: var(--umbra-font-label);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  outline: none;
+}
+
+.table[data-fixed] {
+  table-layout: fixed;
+}
+
+/* --- Cells ---------------------------------------------------------------------------------------- */
+
+.cell,
+.headerCell,
+.headerFiller,
+.groupCell {
+  box-sizing: border-box;
+  position: relative;
+  padding: 0 var(--pad-x);
+  text-align: start;
+  vertical-align: middle;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: inherit;
+}
+
+:is(.cell, .headerCell, .headerFiller, .groupCell):first-child {
+  padding-inline-start: var(--edge-x);
+}
+
+:is(.cell, .headerCell, .headerFiller, .groupCell):last-child {
+  padding-inline-end: var(--edge-x);
+}
+
+:is(.cell, .headerCell)[data-align='center'] {
+  text-align: center;
+}
+
+:is(.cell, .headerCell)[data-align='end'] {
+  text-align: end;
+}
+
+.cell {
+  height: var(--row-h);
+  background: var(--bg);
+}
+
+.cell[data-numeric] {
+  font-variant-numeric: tabular-nums;
+}
+
+.cell[data-wrap] {
+  padding-block: var(--umbra-space-2);
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+/* Widgets sit on the row's centre line, whatever their own box is. */
+.cell > *,
+.widget {
+  vertical-align: middle;
+}
+
+.widget {
+  display: inline-flex;
+}
+
+.root[data-dividers] :is(.cell, .groupCell) {
+  border-bottom: var(--umbra-border-width) solid var(--line);
+}
+
+/* The focused cell: a ring inside it. Never violet, so focus and selection cannot be confused. */
+:is(.cell, .headerCell, .groupCell):focus-visible {
+  outline: var(--umbra-state-focus-ring-width) solid
+    var(--umbra-focus-color, var(--umbra-color-fixed-focus-ring));
+  outline-offset: calc(-1 * var(--umbra-state-focus-ring-width));
+}
+
+/* Pinned cells stay in view while the table scrolls sideways. */
+:is(.cell, .headerCell, .headerFiller)[data-pin] {
+  position: sticky;
+  z-index: 1;
+}
+
+.root[data-scrolled-start] [data-pin='start'][data-pin-edge] {
+  border-inline-end: var(--umbra-border-width) solid
+    var(--umbra-table-pin-border-color, var(--umbra-color-base-border-strong));
+}
+
+.root[data-scrolled-end] [data-pin='end'][data-pin-edge] {
+  border-inline-start: var(--umbra-border-width) solid
+    var(--umbra-table-pin-border-color, var(--umbra-color-base-border-strong));
+}
+
+/* --- Header --------------------------------------------------------------------------------------- */
+
+.headerCell,
+.headerFiller {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  height: var(--head-h);
+  border-bottom: var(--umbra-border-width) solid
+    var(--umbra-table-header-border-color, var(--umbra-color-base-border-strong));
+  background: var(--umbra-table-header-bg, var(--surface));
+  color: var(--umbra-table-header-color, var(--umbra-color-base-text-muted));
+  font: var(--umbra-table-header-font, var(--umbra-font-label));
+}
+
+:is(.headerCell, .headerFiller)[data-pin] {
+  z-index: 5;
+}
+
+/* A second header row sticks below the first. */
+.header > tr + tr > * {
+  top: var(--head-h);
+}
+
+.header > tr:not(:last-child) > * {
+  border-bottom-color: transparent;
+}
+
+.header > tr > .columnGroup {
+  border-bottom: var(--umbra-border-width) solid var(--line);
+  color: var(--umbra-table-header-group-color, var(--umbra-color-base-text-secondary));
+}
+
+.headerLabel {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* A sortable header is one button as wide as the cell. */
+.sortButton {
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-space-2);
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: inherit;
+  cursor: pointer;
+}
+
+.sortButton:hover,
+.headerCell:is([data-sort='asc'], [data-sort='desc']) {
+  color: var(--umbra-table-header-active-color, var(--umbra-color-base-text-primary));
+}
+
+.headerCell[data-align='center'] > .sortButton {
+  justify-content: center;
+}
+
+/* Numbers end at the cell's edge, so their header does too: the arrow goes before the label. */
+.headerCell[data-align='end'] > .sortButton {
+  flex-direction: row-reverse;
+}
+
+.sortIndicator {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.sortIndicator > svg {
+  width: 1em;
+  height: 1em;
+}
+
+/* An unsorted column shows its arrows only when it is pointed at or focused, and keeps no room for them. */
+.sortIndicator[data-direction='none'] {
+  display: none;
+}
+
+.sortButton:hover > .sortIndicator,
+.headerCell:focus-visible .sortIndicator {
+  display: inline-flex;
+}
+
+.sortIndex {
+  font-size: 0.85em;
+}
+
+/* --- Rows ----------------------------------------------------------------------------------------- */
+
+.row {
+  --bg: var(--surface);
+}
+
+.row[data-striped] {
+  --bg: var(
+    --umbra-table-stripe-bg,
+    color-mix(in oklab, var(--umbra-color-base-text-primary) 4%, var(--surface))
+  );
+}
+
+/* Highlighted ("my row"): a stronger fill, bold text and an edge marker. */
+.row[data-highlighted] {
+  --bg: var(
+    --umbra-table-highlight-bg,
+    color-mix(in oklab, var(--umbra-color-fixed-accent-text) 14%, var(--surface))
+  );
+  --accent: var(--umbra-table-highlight-marker, var(--umbra-color-fixed-accent-text));
+  font-weight: 700;
+}
+
+/* Selected: violet, plus the checked box as the cue that is not colour. */
+.row[data-selected] {
+  --bg: var(
+    --umbra-table-selected-bg,
+    color-mix(in oklab, var(--umbra-color-fixed-selected) 32%, var(--surface))
+  );
+}
+
+.row[data-interactive] {
+  cursor: pointer;
+}
+
+/* Hover lightens the row across its full width. */
+.body > .row[data-kind='row']:hover > .cell {
+  background: var(
+    --umbra-table-hover-bg,
+    color-mix(in oklab, var(--umbra-color-base-text-primary) 8%, var(--bg))
+  );
+}
+
+.body > .row[data-interactive]:active > .cell {
+  background: color-mix(in oklab, #000 14%, var(--bg));
+}
+
+/* Disabled: the content is dimmed, the fill is not, so pinned cells stay opaque. */
+.row[data-disabled] {
+  cursor: default;
+}
+
+.row[data-disabled] > .cell > * {
+  opacity: var(--umbra-state-disabled-opacity);
+}
+
+.row[data-disabled] > .cell {
+  color: color-mix(in oklab, currentColor 55%, var(--bg));
+}
+
+/* The edge stripe of an accent, or the marker of a highlighted row: drawn at the row's start. */
+.row:is([data-accent], [data-highlighted]) > :first-child::before {
+  content: '';
+  position: absolute;
+  inset-block: 1px;
+  inset-inline-start: 0;
+  width: var(--umbra-table-stripe-width, 3px);
+  background: var(--accent);
+}
+
+.rowLink {
+  color: inherit;
+  text-decoration: none;
+}
+
+.rowLink:hover {
+  text-decoration: underline;
+}
+
+.spacer > td {
+  padding: 0;
+  border: 0;
+}
+
+.skeleton {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* --- Group header rows, in the look of GroupHeader -------------------------------------------------- */
+
+.groupRow {
+  --bg: var(--group-bg);
+  color: var(--umbra-group-header-color, var(--umbra-color-base-text-secondary));
+  font: var(--umbra-group-header-font, var(--umbra-font-label));
+}
+
+/* The title and the detail stick to the start while the table scrolls sideways, so their cells must not clip. */
+.groupCell,
+.detailCell.detailCell {
+  overflow: visible;
+}
+
+.groupRow > * {
+  height: var(--umbra-group-header-height, calc(var(--row-h) + var(--umbra-space-2)));
+  background: var(--bg);
+}
+
+.groupRow[data-sticky] > * {
+  position: sticky;
+  top: calc(var(--head-h) * var(--head-rows, 1));
+  z-index: 2;
+}
+
+.groupRow[data-sticky] > [data-pin] {
+  z-index: 3;
+}
+
+/* The title stays in view while the table scrolls sideways. */
+.groupContent {
+  position: sticky;
+  inset-inline-start: var(--edge-x);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--umbra-space-3);
+  max-width: 100%;
+  vertical-align: middle;
+}
+
+.groupTitle {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 700;
+  color: var(--umbra-color-base-text-primary);
+}
+
+.groupMeta {
+  flex: none;
+}
+
+/* --- Detail rows: the hidden columns of a row ------------------------------------------------------- */
+
+.detailCell.detailCell {
+  padding: 0;
+  white-space: normal;
+  background: var(--umbra-table-detail-bg, color-mix(in oklab, #000 18%, var(--surface)));
+}
+
+.detail {
+  position: sticky;
+  inset-inline-start: 0;
+  box-sizing: border-box;
+  max-width: 100%;
+  padding: var(--umbra-space-3) var(--edge-x);
+}
+
+/* --- Footer ----------------------------------------------------------------------------------------- */
+
+.footer > tr > * {
+  position: sticky;
+  bottom: 0;
+  z-index: 4;
+  border-top: var(--umbra-border-width) solid
+    var(--umbra-table-header-border-color, var(--umbra-color-base-border-strong));
+  border-bottom: 0;
+  background: var(--umbra-table-footer-bg, var(--umbra-table-header-bg, var(--surface)));
+  font-weight: 700;
+}
+
+.footer > tr > [data-pin] {
+  z-index: 5;
+}
+
+/* --- Changed values ----------------------------------------------------------------------------------- */
+
+.flash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: var(--umbra-table-change-neutral, var(--umbra-color-base-text-primary));
+  opacity: 0;
+  animation: umbra-table-flash 1200ms var(--umbra-motion-easing-exit);
+}
+
+.flash[data-direction='up'] {
+  background: var(--umbra-table-change-up, var(--umbra-color-semantic-success));
+}
+
+.flash[data-direction='down'] {
+  background: var(--umbra-table-change-down, var(--umbra-color-semantic-danger));
+}
+
+@keyframes umbra-table-flash {
+  from {
+    opacity: 0.32;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* Reduced motion: no flash, the sign alone says which way the value moved. */
+@media (prefers-reduced-motion: reduce) {
+  .flash {
+    animation: none;
+  }
+}
+
+.changeSign {
+  margin-inline-end: var(--umbra-space-2);
+  font-size: 0.7em;
+  vertical-align: middle;
+}
+
+.changeSign[data-direction='up'] {
+  color: var(--umbra-table-change-up, var(--umbra-color-semantic-success));
+}
+
+.changeSign[data-direction='down'] {
+  color: var(--umbra-table-change-down, var(--umbra-color-semantic-danger));
+}
