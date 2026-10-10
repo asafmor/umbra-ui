@@ -42,6 +42,7 @@ Item states are the same as `PrimaryNav`.
 | `value` / `onChange` | id / function | — | |
 | `renderLink` | function | plain `<a>` | |
 | `end` | node | — | |
+| `moreLabel` / `aria-label` | string | "More" / "Section" | |
 
 ### 3. Parts
 
@@ -55,7 +56,7 @@ Item states are the same as `PrimaryNav`.
 
 | Step | Result |
 |---|---|
-| 1 | `end` content shrinks first (the `ShortcutBar` moves items into its own overflow) |
+| 1 | `end` content shrinks first (the `ShortcutBar` moves items into its own overflow; until that component exists the slot clips its content) |
 | 2 | Items move into a "More" menu, last first; the active item stays |
 | 3 | `label` hides |
 

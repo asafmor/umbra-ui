@@ -41,7 +41,8 @@ Item states: default, hover, active (current section), open (menu shown), focus,
 | `items` | list of `{ id, label, icon?, href?, items?, disabled? }` | — | `items` inside an item makes a dropdown |
 | `value` | id | — | The active item |
 | `onChange` | function | — | |
-| `renderLink` | function | plain `<a>` | Plugs in the app's router link |
+| `renderLink` | function | plain `<a>` | Plugs in the app's router link. It receives anchor props to spread: `renderLink={(p) => <RouterLink to={p.href} {...p} />}` |
+| `aria-label` | string | "Main" | Name of the navigation landmark |
 | `moreLabel` | string | "More" | |
 
 ### 3. Parts
@@ -50,7 +51,7 @@ Item states: default, hover, active (current section), open (menu shown), focus,
 
 ### 4. Blocks
 
-`PrimaryNav.Root`, `PrimaryNav.Item`, `PrimaryNav.Menu`. Items can be written as children instead of the `items` prop.
+`PrimaryNav.Root`, `PrimaryNav.Item`, `PrimaryNav.Menu`. Items can be written as children instead of the `items` prop. `Item` takes `id`, `href`, `icon`, `disabled`, the label as children, and `menu` (a `Menu` holding more `Item`s). Items must be direct children of `Root`, which reads their `id`.
 
 ## Behaviour as space shrinks
 
@@ -59,7 +60,9 @@ Items that do not fit move into the "More" menu, last item first. The active ite
 ## Interaction and accessibility
 
 - A `navigation` landmark; the active item has `aria-current="page"`.
-- One tab stop; arrow keys move between items; `Enter` or `ArrowDown` opens a dropdown; `Escape` closes it.
+- One tab stop; arrow keys move between items and carets; `Enter` (on a caret) or `ArrowDown` opens a dropdown; `Escape` closes it and returns focus.
+- In Milestone 0 a dropdown is a popover holding links, not an ARIA menu. The public `Menu` (Milestone 1) replaces it.
+- Overflow is measured again when web fonts finish loading.
 
 ## Open questions
 

@@ -44,9 +44,10 @@ No variants. Text colour on the bar is computed from the brand colour (light or 
 | `actions` | node | — | |
 | `context` | node | — | |
 | `primaryAction` | node | — | |
-| `history` | boolean \| node | `false` | Shows back and forward buttons |
+| `history` | boolean \| node | `false` | `true` shows back and forward buttons that use the browser history; a node replaces them |
 | `onSearch` | function | — | Shows the search trigger and is called when it is used. From Milestone 1 it opens the `CommandPalette`. |
 | `brand` | colour | provider | Overrides the brand for this bar only |
+| `searchLabel` / `backLabel` / `forwardLabel` / `moreLabel` | string | English text | Accessible names of the built-in buttons |
 
 ### 3. Parts
 
@@ -54,7 +55,7 @@ No variants. Text colour on the bar is computed from the brand colour (light or 
 
 ### 4. Blocks
 
-`TopBar.Root`, `TopBar.Start`, `TopBar.Nav`, `TopBar.Actions`, `TopBar.End`.
+`TopBar.Root`, `TopBar.Start`, `TopBar.Nav`, `TopBar.Actions`, `TopBar.End`. `TopBar.Actions` takes `pinned` for content that stays out of the overflow menu (the search trigger).
 
 ## Behaviour as space shrinks
 
@@ -63,11 +64,14 @@ No variants. Text colour on the bar is computed from the brand colour (light or 
 | 1 | `context` hides |
 | 2 | `actions` collapse into one overflow menu; the search trigger stays |
 | 3 | `nav` items move into a "More" menu from the end (see `PrimaryNav`) |
-| 4 | `primaryAction` shows its icon only |
+| 4 | `primaryAction` shows its icon only (the button needs an icon and `collapseTo="icon"`) |
+
+The current step is exposed as `data-shrink` (`0`–`4`) on the root. Step 4 waits until the nav has nothing left to move.
 
 ## Interaction and accessibility
 
 - Root is a `banner`.
+- The search trigger is an icon button bound to the reserved `Mod+K` shortcut.
 - Contrast of text and icons against any brand colour is at least 4.5:1, by computation.
 
 ## Open questions

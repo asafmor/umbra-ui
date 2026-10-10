@@ -15,6 +15,13 @@ export type { Part } from './utils/parts';
 
 export { AppShell } from './shell/AppShell';
 export type { AppShellProps, AppShellRootProps } from './shell/AppShell';
+export { TopBar } from './shell/TopBar';
+export type { TopBarActionsProps, TopBarProps, TopBarRootProps } from './shell/TopBar';
+export { PrimaryNav } from './shell/PrimaryNav';
+export type { PrimaryNavProps, PrimaryNavRootProps } from './shell/PrimaryNav';
+export { SubNav } from './shell/SubNav';
+export type { SubNavProps, SubNavRootProps } from './shell/SubNav';
+export type { NavItem, NavItemProps, NavLinkProps } from './shell/nav';
 export { Page } from './layout/Page';
 export type { PageProps, PageRootProps } from './layout/Page';
 export { Columns } from './layout/Columns';

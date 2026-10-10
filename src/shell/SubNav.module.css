@@ -1,0 +1,32 @@
+.root {
+  flex: none;
+  height: var(--umbra-subnav-height, var(--umbra-size-sub-nav-height));
+  gap: var(--umbra-space-5);
+  padding: 0 var(--umbra-density-page-margin);
+  background: var(--umbra-subnav-bg, color-mix(in oklab, var(--umbra-color-brand) 35%, #05020a));
+  color: var(--umbra-color-base-text-primary);
+  font: var(--umbra-font-label);
+}
+
+.label {
+  flex: none;
+  padding-inline-end: var(--umbra-space-5);
+  border-inline-end: var(--umbra-border-width) solid var(--umbra-color-base-border-strong);
+  font-weight: 700;
+}
+
+/* Shrinks long before the items do, so its own content gives way first. */
+.end {
+  flex: 0 1000 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-space-2);
+  overflow: hidden;
+  margin-inline-start: auto;
+  --umbra-button-height: 22px;
+}
+
+.end > * {
+  flex: none;
+}

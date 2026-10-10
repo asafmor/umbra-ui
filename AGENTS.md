@@ -30,12 +30,12 @@ The design is **inspired by** 40 screenshots of a game UI in `screenshots/`. It 
 |---|---|
 | 1. Repo setup: package, tokens, Storybook, visual tests, lint, changelog, CI | done |
 | 2. UmbraProvider and UmbraScope | done |
-| 3. Layout: AppShell, Page, Columns, Stack, Slot, Card, CardHeader, SectionTitle, ScrollArea | next |
-| 4. Shell: TopBar, PrimaryNav, SubNav | not started |
-| 5. Basics: Button, IconButton, Skeleton | not started |
-| 6. Docs: README, guides, `basic` example, customisation table generator | not started |
+| 3. Layout: AppShell, Page, Columns, Stack, Slot, Card, CardHeader, SectionTitle, ScrollArea | done |
+| 4. Shell: TopBar, PrimaryNav, SubNav | done |
+| 5. Basics: Button, IconButton, Skeleton | done (built before the cards, which use them) |
+| 6. Docs: README, guides, `basic` example, customisation table generator | next |
 
-**Next step**: step 3, the layout components (`plan/layout.md` and their specs).
+**Next step**: step 6, the docs.
 
 ## Commands
 
@@ -53,6 +53,7 @@ The design is **inspired by** 40 screenshots of a game UI in `screenshots/`. It 
 
 - Run lint, typecheck, unit and visual tests before every commit; all must pass.
 - Do not run `npm run release` or publish to npm without the owner's go-ahead.
+- Component conventions: CSS Modules; a token is read as `var(--umbra-<component>-<name>, <fallback>)` and never declared on the component, so apps can set it from any ancestor; roots carry `data-umbra="<name>"`, parts `data-part="<name>"`, state as `data-` attributes; `parts` props go through `renderPart`; React Aria types stay out of public props.
 - Stories get the whole window (`layout: 'fullscreen'`). For a small component, set `parameters: { frame: 'padded' }`.
 
 ## Repo map
@@ -71,10 +72,10 @@ The design is **inspired by** 40 screenshots of a game UI in `screenshots/`. It 
 | `plan/roadmap.md` | Pre-code tasks, milestones, build order, and the per-component definition of done. |
 | `plan/reference/` | `index.html`: the static reference screen, the visual ground truth for the look (open it in a browser; `?density=compact&context=teal` switches settings). `shot-*.png`: renders at three sizes. |
 | `plan/prompts/` | Ready-made prompts for starting a coding session (`milestone-0.md`). |
-| `src/` | Library source. `src/styles/`: base CSS and the generated tokens. `src/provider/`: provider, scope, icon map, shortcut registry. `src/utils/`: shared helpers (`parts.ts` implements the parts layer). `src/charts/`: the `umbra-ui/charts` entry. |
+| `src/` | Library source. `src/styles/`: base CSS and the generated tokens. `src/provider/`: provider, scope, icon map, shortcut registry. `src/layout/`: Page, Columns, Stack, Slot, Card, SectionTitle, ScrollArea (`useSlot.tsx` and `collapse.ts` hold the layout rules). `src/shell/`: AppShell, TopBar, PrimaryNav, SubNav (`nav.tsx` is shared). `src/basics/`: Button, IconButton, Skeleton. `src/internal/`: not exported; overlays on React Aria and `useShrinkLevel`, the hook behind every "show less as it narrows" rule. `src/utils/`: shared helpers (`parts.ts` implements the parts layer). `src/charts/`: the `umbra-ui/charts` entry. |
 | `scripts/` | Build scripts (`build-tokens.mjs`). |
 | `.storybook/` | Storybook config; the toolbar switches density and context. |
-| `tests/visual/` | Playwright visual tests and their baseline images. |
+| `tests/visual/` | Playwright tests against the built Storybook: `stories.spec.ts` (captures and the no-page-scroll check) and `interactions.spec.ts` (popovers, tab mode, overflow menus, keys), with the baseline images. |
 
 ## Decisions that bind every task
 

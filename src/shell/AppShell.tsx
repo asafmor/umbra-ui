@@ -95,9 +95,9 @@ function Background({ className, style }: Omit<BlockProps, 'children'>) {
 
 function Bars({ className, style, children }: BlockProps) {
   return (
-    <header data-part="bars" className={cx(styles.bars, className)} style={style}>
+    <div data-part="bars" className={cx(styles.bars, className)} style={style}>
       {children}
-    </header>
+    </div>
   );
 }
 

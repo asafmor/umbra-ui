@@ -1,0 +1,84 @@
+.root {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-space-6);
+  height: var(--umbra-topbar-height, var(--umbra-size-top-bar-height));
+  padding-inline-start: var(--umbra-space-4);
+  overflow: hidden;
+  background: var(--umbra-topbar-bg, var(--umbra-color-brand));
+  color: var(--umbra-topbar-fg, var(--umbra-color-on-brand, #fff));
+  white-space: nowrap;
+}
+
+.start,
+.actions,
+.end {
+  flex: none;
+  display: flex;
+  align-items: center;
+}
+
+.start {
+  gap: var(--umbra-space-3);
+}
+
+.actions {
+  gap: var(--umbra-space-2);
+}
+
+.end {
+  align-self: stretch;
+  gap: var(--umbra-space-5);
+  margin-inline-start: auto;
+}
+
+.logo {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--umbra-topbar-fg, var(--umbra-color-on-brand, #fff));
+  color: var(--umbra-topbar-bg, var(--umbra-color-brand));
+  font: 700 20px var(--umbra-font-family-heading);
+}
+
+/* The nav takes the room that is left; the bar watches it to know when to shed things. */
+.nav {
+  flex: 1 1 0;
+  min-width: 0;
+  align-self: stretch;
+  display: flex;
+  overflow: hidden;
+}
+
+.nav > * {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.context {
+  font: var(--umbra-font-label);
+  text-align: end;
+}
+
+/* The primary action fills the height of the bar at its end. */
+.primaryAction {
+  align-self: stretch;
+  display: flex;
+  --umbra-button-height: 100%;
+  --umbra-button-radius: 0;
+  --umbra-button-padding-x: var(--umbra-space-6);
+}
+
+.primaryAction > [data-umbra='button']:not([data-icon-only]) {
+  min-width: 180px;
+  justify-content: space-between;
+}
+
+.primaryAction > [data-icon-only] {
+  --umbra-icon-button-size: var(--umbra-topbar-height, var(--umbra-size-top-bar-height));
+}

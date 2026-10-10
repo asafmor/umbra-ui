@@ -61,7 +61,7 @@ Every full screenshot: bars on top, content filling the rest, themed background 
 
 ## Interaction and accessibility
 
-- Landmarks: bars in `header`, `main` for the page.
+- Landmarks: the `TopBar` is the `banner`, the `SubNav` a `navigation`, and `main` holds the page. The bars wrapper itself is a plain element, so the banner is not nested.
 - A "skip to content" link is the first focus stop.
 
 ## Open questions

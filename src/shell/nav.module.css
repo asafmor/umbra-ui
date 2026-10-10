@@ -1,0 +1,154 @@
+.nav {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+/* The list clips, and its items keep their width, so it can tell when they no longer fit. */
+.list {
+  flex: 0 1 auto;
+  min-width: 0;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+.primary .list {
+  gap: var(--umbra-nav-gap, var(--umbra-space-7));
+  font: var(--umbra-nav-font, var(--umbra-font-nav));
+  text-transform: var(--umbra-font-nav-transform);
+}
+
+.sub .list {
+  gap: var(--umbra-space-5);
+  font: var(--umbra-font-label);
+}
+
+.item {
+  position: relative;
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-space-1);
+  height: 100%;
+}
+
+.link,
+.caret {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--umbra-space-2);
+  padding: var(--umbra-space-2) 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-transform: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  opacity: 0.8;
+  transition: opacity var(--umbra-motion-duration-fast);
+  --umbra-icon-size: 0.9em;
+}
+
+.sub .link,
+.sub .caret {
+  opacity: 1;
+  color: var(--umbra-color-base-text-secondary);
+}
+
+.link:hover,
+.caret:hover,
+.item[data-active] > .link,
+.item[data-open] > .link,
+.item[data-open] > .caret {
+  opacity: 1;
+}
+
+.sub .link:hover,
+.sub .caret:hover,
+.sub .item[data-active] > .link,
+.sub .item[data-open] > .link {
+  color: var(--umbra-color-base-text-primary);
+}
+
+.link:focus-visible,
+.caret:focus-visible {
+  outline: var(--umbra-state-focus-ring-width) solid var(--umbra-color-fixed-focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--umbra-radius-control);
+}
+
+.item[data-disabled] {
+  opacity: var(--umbra-state-disabled-opacity);
+}
+
+.item[data-disabled] :is(.link, .caret) {
+  cursor: default;
+}
+
+.item[data-open] :is(.link, .caret) > :last-child:not(.label) {
+  rotate: 180deg;
+}
+
+/* The underline under the active item. */
+.indicator {
+  position: absolute;
+  inset-inline: 0;
+  pointer-events: none;
+}
+
+.primary .indicator {
+  bottom: calc(50% - 0.6em - 9px);
+  height: 3px;
+  background: var(--umbra-nav-indicator-color, currentColor);
+}
+
+.sub .indicator {
+  bottom: calc(50% - 0.6em - 7px);
+  height: 2px;
+  background: var(--umbra-subnav-indicator-color, var(--umbra-color-base-text-primary));
+}
+
+/* Rows inside a dropdown or "More". */
+.menu {
+  display: flex;
+  flex-direction: column;
+  min-width: 180px;
+  padding: var(--umbra-space-2);
+  overflow-y: auto;
+}
+
+.menu .link {
+  justify-content: flex-start;
+  width: 100%;
+  min-height: var(--umbra-density-control-height);
+  padding: 0 var(--umbra-space-4);
+  border-radius: var(--umbra-radius-control);
+  opacity: 1;
+  color: var(--umbra-color-base-text-primary);
+  --umbra-icon-size: 1.25em;
+}
+
+.menu .link:hover {
+  background: var(--umbra-color-base-surface3);
+}
+
+.menu .link[aria-current] {
+  background: var(--umbra-color-fixed-selected);
+  color: var(--umbra-color-fixed-on-selected);
+}
+
+.menu .link[aria-disabled],
+.menu .link:disabled {
+  opacity: var(--umbra-state-disabled-opacity);
+  pointer-events: none;
+}
+
+.nested {
+  display: flex;
+  flex-direction: column;
+  padding-inline-start: var(--umbra-space-5);
+}
