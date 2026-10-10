@@ -1,4 +1,5 @@
-import { useContext, type CSSProperties, type KeyboardEvent, type ReactNode } from 'react';
+import { useContext, type CSSProperties, type ReactNode } from 'react';
+import { TabStrip } from '../inputs/Tabs';
 import { warn } from '../utils/dev';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './layout.module.css';
@@ -23,38 +24,6 @@ export interface ColumnsProps extends SlotProps {
   className?: string;
   style?: CSSProperties;
   children?: ReactNode;
-}
-
-function Tabs({ tabs, onSelect, label }: ColumnsTabsProps & { label: string }) {
-  // The tabs pattern: one tab stop, arrow keys move and select.
-  const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    const index = tabs.findIndex((t) => t.selected);
-    const next = { ArrowRight: index + 1, ArrowLeft: index - 1, Home: 0, End: tabs.length - 1 }[event.key];
-    const target = next === undefined ? undefined : tabs[(next + tabs.length) % tabs.length];
-    if (!target) return;
-    event.preventDefault();
-    onSelect(target.id);
-    document.getElementById(target.tabId)?.focus();
-  };
-  return (
-    <div role="tablist" aria-label={label} className={styles.tabs} data-part="tabs" onKeyDown={onKeyDown}>
-      {tabs.map((tab) => (
-        <button
-          key={tab.id}
-          type="button"
-          role="tab"
-          id={tab.tabId}
-          aria-selected={tab.selected}
-          aria-controls={tab.panelId}
-          tabIndex={tab.selected ? 0 : -1}
-          className={styles.tab}
-          onClick={() => onSelect(tab.id)}
-        >
-          {tab.label}
-        </button>
-      ))}
-    </div>
-  );
 }
 
 /** Shares its width among its children. Below the minimum window it shows one child at a time. */
@@ -95,7 +64,10 @@ export function Columns({
       >
         {tabMode &&
           renderPart(parts?.tabs, { tabs, onSelect: layout.select }, (p) => (
-            <Tabs {...p} label={tabsLabel} />
+            // The strip is the one `Tabs` draws, so it looks, moves and shrinks the same way.
+            <div data-part="tabs" className={styles.tabs}>
+              <TabStrip {...p} label={tabsLabel} />
+            </div>
           ))}
         {children}
       </div>

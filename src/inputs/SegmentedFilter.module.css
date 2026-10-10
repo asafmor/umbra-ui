@@ -1,0 +1,138 @@
+.root {
+  --height: var(--umbra-segmented-filter-height, var(--umbra-density-control-height));
+  --bg: var(--umbra-segmented-filter-bg, var(--umbra-color-base-surface1));
+  --selected: var(--umbra-segmented-filter-selected-bg, var(--umbra-color-fixed-selected));
+
+  display: inline-flex;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  border-radius: var(--umbra-segmented-filter-radius, var(--umbra-radius-control));
+  font: var(--umbra-font-body);
+  white-space: nowrap;
+}
+
+.root[data-size='small'] {
+  --height: var(--umbra-segmented-filter-height, calc(var(--umbra-density-table-row) - 2px));
+
+  font: var(--umbra-font-label);
+}
+
+.item {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: var(--umbra-space-2);
+  height: var(--height);
+  padding: 0 var(--umbra-segmented-filter-padding-x, var(--umbra-space-4));
+  margin-inline-start: calc(-1 * var(--umbra-border-width));
+  border: var(--umbra-border-width) solid
+    var(--umbra-segmented-filter-border, var(--umbra-color-base-border-strong));
+  background: var(--bg);
+  color: var(--umbra-segmented-filter-fg, var(--umbra-color-base-text-primary));
+  font: inherit;
+  cursor: pointer;
+  transition: background-color var(--umbra-motion-duration-fast);
+}
+
+.root[data-size='small'] > .item {
+  padding: 0 var(--umbra-segmented-filter-padding-x, var(--umbra-space-3));
+}
+
+.item:first-child {
+  margin-inline-start: 0;
+  border-start-start-radius: inherit;
+  border-end-start-radius: inherit;
+}
+
+.item:last-child {
+  border-start-end-radius: inherit;
+  border-end-end-radius: inherit;
+}
+
+.item[data-hovered] {
+  background: color-mix(in oklab, var(--bg), #fff 10%);
+}
+
+.item[data-pressed] {
+  background: color-mix(in oklab, var(--bg), #000 18%);
+}
+
+/*
+ * Selected: the violet fill with a lighter edge (which also keeps two selected neighbours apart), a
+ * heavier label and a bar under it; a check where several can be selected.
+ */
+.item[data-selected] {
+  --bg: var(--selected);
+
+  z-index: 1;
+  border-color: var(--umbra-segmented-filter-selected-border, color-mix(in oklab, var(--selected), #fff 35%));
+  color: var(--umbra-segmented-filter-selected-fg, var(--umbra-color-fixed-on-selected));
+  font-weight: 700;
+}
+
+.root[data-selection='single'] > .item[data-selected] {
+  box-shadow: inset 0 calc(-1 * var(--umbra-space-1)) 0 currentColor;
+}
+
+/* A fill that carries light text darkens on hover, so the text keeps its contrast. */
+.item[data-selected][data-hovered] {
+  background: color-mix(in oklab, var(--bg), #000 12%);
+}
+
+.item[data-selected][data-pressed] {
+  background: color-mix(in oklab, var(--bg), #000 26%);
+}
+
+/* The control scrolls and clips, so the ring is drawn inwards. */
+.item[data-focus-visible] {
+  z-index: 2;
+  outline-offset: calc(-1 * var(--umbra-state-focus-ring-width));
+}
+
+.item[data-disabled] {
+  opacity: var(--umbra-state-disabled-opacity);
+  cursor: default;
+}
+
+.label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.count {
+  flex: none;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Full width: equal segments, which do not shrink until the last step. */
+.root[data-full-width] {
+  display: flex;
+  width: 100%;
+}
+
+.root[data-full-width] > .item {
+  flex: 1 0 0;
+  min-width: max-content;
+}
+
+/* Step 1: the counts hide. */
+.root:not([data-level='0']) .count {
+  display: none;
+}
+
+/* Step 2: the segments share the width equally and their labels truncate. Past their minimum width, the control scrolls. */
+.root[data-level='2'] {
+  display: flex;
+  width: 100%;
+}
+
+.root[data-level='2'] > .item {
+  flex: 1 1 0;
+  min-width: var(--umbra-segmented-filter-min-item-width, 4.5em);
+}
