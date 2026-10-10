@@ -86,6 +86,7 @@ Clustered from the four inventory files in `plan/inventory/` (40 screenshots).
 | Slider | intensity bar, timeline scrubber | 36, 38 | 2 |
 | SearchField | only the collapsed trigger is visible; expanded form to be designed | nearly all | 1 |
 | FormField | SettingRow: label + description + control | 12, 20, 21, 26 | 1 |
+| TextField | plain text input seen inside search and settings rows; single-line and multiline | 12, 20, 21, 26 (implied) | 1 |
 | Stepper | | 29 | 2 |
 | ColorScaleEditor | ColorScalePreview: editable value-to-colour ramp | 26 | 2 |
 

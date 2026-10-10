@@ -1,0 +1,118 @@
+/*
+ * One grid for the three layouts. The blocks are placed by name, so `row` and `inline` become
+ * `stacked` (step 1 below) by letting every block span the whole width in source order.
+ */
+.root {
+  container-type: inline-size;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  column-gap: var(--umbra-form-field-gap, var(--umbra-space-5));
+  align-items: center;
+  min-width: 0;
+  color: var(--umbra-color-base-text-primary);
+  font: var(--umbra-font-body);
+}
+
+.root[data-surface] {
+  padding: var(--umbra-form-field-padding-y, var(--umbra-space-3))
+    var(--umbra-form-field-padding-x, var(--umbra-space-4));
+  border-radius: var(--umbra-form-field-radius, var(--umbra-radius-control));
+  background: var(--umbra-form-field-bg, var(--umbra-color-base-surface2));
+}
+
+.label {
+  display: block;
+  font: var(--umbra-font-label);
+  font-weight: 700;
+}
+
+.root[data-disabled] > .label {
+  opacity: var(--umbra-state-disabled-opacity);
+}
+
+.control {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+/* Stacked: label, description, control, error, with a little room around the control. */
+.control {
+  margin-block: var(--umbra-form-field-control-gap, var(--umbra-space-2));
+}
+
+.error {
+  margin-block-start: var(--umbra-space-1);
+}
+
+/* Row: the text column takes the room the control leaves; the control is at the end. */
+.root[data-layout='row'] {
+  grid-template-columns: minmax(0, 1fr) fit-content(var(--umbra-form-field-control-max-width, 60%));
+}
+
+.root[data-layout='row'][data-label-width] {
+  grid-template-columns: var(--label-width) minmax(0, 1fr);
+}
+
+.root[data-layout='row'] > .label {
+  grid-area: 1 / 1;
+  font: var(--umbra-font-body);
+  font-weight: 700;
+}
+
+.root[data-layout='row'] > .description {
+  grid-area: 2 / 1;
+}
+
+.root[data-layout='row'] > .error {
+  grid-area: 3 / 1;
+}
+
+.root[data-layout='row'] > .control {
+  grid-area: 1 / 2 / span 3;
+  justify-content: flex-end;
+  margin-block: 0;
+}
+
+.root[data-layout='row'][data-label-width] > .control {
+  justify-content: flex-start;
+}
+
+/* Inline: label and control share a line; the description and the error sit under the control. */
+.root[data-layout='inline'] {
+  grid-template-columns: var(--label-width, fit-content(40%)) minmax(0, 1fr);
+}
+
+.root[data-layout='inline'] > .label {
+  grid-area: 1 / 1;
+}
+
+.root[data-layout='inline'] > .control {
+  grid-area: 1 / 2;
+  margin-block: 0;
+}
+
+.root[data-layout='inline'] > .description {
+  grid-area: 2 / 2;
+  margin-block-start: var(--umbra-space-1);
+}
+
+.root[data-layout='inline'] > .error {
+  grid-area: 3 / 2;
+}
+
+/* Step 1: a narrow `row` or `inline` field stacks. The control starts under the text and may fill the width. */
+@container (max-width: 20em) {
+  .root:is([data-layout='row'], [data-layout='inline']) > :is(.label, .description, .control, .error) {
+    grid-area: auto / 1 / auto / -1;
+  }
+
+  .root:is([data-layout='row'], [data-layout='inline']) > .control {
+    justify-content: flex-start;
+    margin-block: var(--umbra-form-field-control-gap, var(--umbra-space-2));
+  }
+
+  .root[data-layout='inline'] > .description {
+    margin-block-start: 0;
+  }
+}
