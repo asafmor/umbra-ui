@@ -95,6 +95,7 @@ Clustered from the four inventory files in `plan/inventory/` (40 screenshots).
 | Component | Absorbs | Seen in | Tier |
 |---|---|---|---|
 | Modal | dimmed backdrop, optional VerticalNav | 3, 12, 20–22, 26, 29, 34, 35 | 1 |
+| ConfirmDialog | built on Modal; the confirm step before a destructive action | not in screenshots | 1 |
 | Popover | large anchored panel with own tabs and footer; no backdrop | 11, 28 | 1 |
 | Tooltip | plain and rich | 40 | 1 |
 | ActionBar | footer with status + actions; Undo / Redo / Reset / Confirm; "Must Respond" | 7, 10, 12, 14, 16, 20–23, 26, 33, 34, 36 | 1 |
