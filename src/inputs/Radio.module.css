@@ -1,0 +1,223 @@
+.root {
+  --size: var(--umbra-radio-size, calc(var(--umbra-density-control-height) / 2));
+  --fill: var(--umbra-radio-selected-bg, var(--umbra-color-fixed-selected));
+
+  display: inline-grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  min-width: 0;
+  max-width: 100%;
+  color: var(--umbra-color-base-text-primary);
+  font: var(--umbra-font-body);
+  cursor: pointer;
+}
+
+.mark {
+  display: grid;
+  place-items: center;
+}
+
+.ring {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: var(--size);
+  height: var(--size);
+  margin-block: max(0px, (1lh - var(--size)) / 2);
+  border: var(--umbra-radio-border-width, calc(var(--umbra-border-width) * 2)) solid
+    var(--umbra-radio-border, var(--umbra-color-base-border-control));
+  border-radius: 50%;
+  background: var(--umbra-radio-bg, transparent);
+  transition:
+    background-color var(--umbra-motion-duration-fast),
+    border-color var(--umbra-motion-duration-fast);
+}
+
+/* The pointer target is at least 24px. */
+.ring::after {
+  content: '';
+  position: absolute;
+  inset: min(0px, (var(--size) - 24px) / 2 - var(--umbra-border-width) * 2);
+}
+
+/* The dot: chosen is the filled ring and the dot, so it does not depend on colour. */
+.ring::before {
+  content: '';
+  width: 40%;
+  height: 40%;
+  border-radius: 50%;
+  background: var(--umbra-radio-mark-color, var(--umbra-color-fixed-on-selected));
+  opacity: 0;
+}
+
+.root[data-selected] .ring {
+  border-color: var(--fill);
+  background: var(--fill);
+}
+
+.root[data-selected] .ring::before {
+  opacity: 1;
+}
+
+.root[data-hovered] .ring {
+  border-color: var(--umbra-color-base-text-primary);
+}
+
+.root[data-hovered][data-selected] .ring {
+  border-color: color-mix(in oklab, var(--fill), #000 12%);
+  background: color-mix(in oklab, var(--fill), #000 12%);
+}
+
+.root[data-pressed] .ring {
+  background: color-mix(in oklab, var(--umbra-color-base-text-primary) 12%, transparent);
+}
+
+.root[data-pressed][data-selected] .ring {
+  border-color: color-mix(in oklab, var(--fill), #000 26%);
+  background: color-mix(in oklab, var(--fill), #000 26%);
+}
+
+.root[data-invalid] .ring {
+  border-color: var(--umbra-radio-invalid-border, var(--umbra-color-semantic-danger));
+}
+
+.root[data-variant='default'][data-focus-visible] .ring {
+  outline: var(--umbra-state-focus-ring-width) solid
+    var(--umbra-focus-color, var(--umbra-color-fixed-focus-ring));
+  outline-offset: var(--umbra-focus-offset, 2px);
+}
+
+.root[data-disabled] {
+  opacity: var(--umbra-state-disabled-opacity);
+  cursor: default;
+}
+
+.root[data-readonly] {
+  cursor: default;
+}
+
+.label,
+.description {
+  grid-column: 2;
+  margin-inline-start: var(--umbra-radio-gap, var(--umbra-space-3));
+}
+
+.media {
+  display: none;
+}
+
+/*
+ * Card: a bordered tile. The mark sits in its own cell behind a divider, then the media, then the
+ * title over the description.
+ */
+.root[data-variant='card'] {
+  --bg: var(--umbra-radio-card-bg, var(--umbra-color-base-surface2));
+  --pad: var(--umbra-radio-card-padding, var(--umbra-space-4));
+
+  container-type: inline-size;
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr);
+  /* The title and the description sit between two rows that share the spare height. */
+  grid-template-rows: 1fr auto auto 1fr;
+  align-items: center;
+  width: 100%;
+  min-height: var(--umbra-radio-card-min-height, calc(var(--umbra-density-control-height) + 2 * var(--pad)));
+  padding: var(--pad);
+  border: var(--umbra-border-width) solid
+    var(--umbra-radio-card-border, var(--umbra-color-base-border-strong));
+  border-radius: var(--umbra-radio-card-radius, var(--umbra-radius-control));
+  background: var(--bg);
+  transition: background-color var(--umbra-motion-duration-fast);
+}
+
+.root[data-variant='card'] > .mark {
+  grid-area: 1 / 1 / -1;
+  align-self: stretch;
+  margin-inline-end: var(--pad);
+  padding-inline-end: var(--pad);
+  border-inline-end: var(--umbra-border-width) solid
+    var(--umbra-radio-card-divider, color-mix(in oklab, currentColor 25%, transparent));
+}
+
+.root[data-variant='card'] .ring {
+  margin-block: 0;
+}
+
+.root[data-variant='card'] > .media {
+  display: grid;
+  place-items: center;
+  grid-area: 1 / 2 / -1;
+  margin-inline-end: var(--pad);
+  font-size: var(--umbra-radio-card-media-size, 1.5em);
+}
+
+.root[data-variant='card'] > .media > :is(svg, img) {
+  width: 1em;
+  height: 1em;
+}
+
+.root[data-variant='card'] > .label {
+  grid-area: 2 / 3;
+  margin-inline-start: 0;
+}
+
+.root[data-variant='card'] > .description {
+  grid-area: 3 / 3;
+  margin-inline-start: 0;
+}
+
+.root[data-variant='card'] > .label {
+  overflow: hidden;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.root[data-variant='card'] > .description {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: var(--umbra-radio-card-description-lines, 2);
+  line-clamp: var(--umbra-radio-card-description-lines, 2);
+  overflow: hidden;
+}
+
+/* Chosen: the violet border (doubled by the inset line), a violet tint, and the filled mark. */
+.root[data-variant='card'][data-selected] {
+  --bg: var(
+    --umbra-radio-card-selected-bg,
+    color-mix(in oklab, var(--fill) 38%, var(--umbra-color-base-surface1))
+  );
+
+  border-color: var(--umbra-radio-card-selected-border, var(--fill));
+  box-shadow: inset 0 0 0 var(--umbra-border-width) var(--umbra-radio-card-selected-border, var(--fill));
+}
+
+/* On the tint the filled ring needs an edge of its own. */
+.root[data-variant='card'][data-selected] .ring {
+  border-color: var(--umbra-radio-mark-color, var(--umbra-color-fixed-on-selected));
+}
+
+.root[data-variant='card'][data-hovered] {
+  background: color-mix(in oklab, var(--bg), #fff 8%);
+}
+
+.root[data-variant='card'][data-pressed] {
+  background: color-mix(in oklab, var(--bg), #000 18%);
+}
+
+.root[data-variant='card'][data-invalid]:not([data-selected]) {
+  border-color: var(--umbra-radio-invalid-border, var(--umbra-color-semantic-danger));
+}
+
+.root[data-variant='card'][data-focus-visible] {
+  outline: var(--umbra-state-focus-ring-width) solid
+    var(--umbra-focus-color, var(--umbra-color-fixed-focus-ring));
+  outline-offset: var(--umbra-focus-offset, 2px);
+}
+
+/* Step 1: a narrow card hides its media. */
+@container (max-width: 11em) {
+  .root[data-variant='card'] > .media {
+    display: none;
+  }
+}

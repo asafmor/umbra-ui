@@ -1,0 +1,88 @@
+.label {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.marker {
+  margin-inline-start: var(--umbra-space-2);
+  color: var(--umbra-field-marker-color, var(--umbra-color-base-text-secondary));
+  font: var(--umbra-font-label);
+  white-space: nowrap;
+}
+
+.description {
+  display: block;
+  min-width: 0;
+  color: var(--umbra-field-description-color, var(--umbra-color-base-text-secondary));
+  font: var(--umbra-font-label);
+  overflow-wrap: anywhere;
+}
+
+/* The icon is the cue that does not depend on colour. */
+.error {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--umbra-space-2);
+  min-width: 0;
+  color: var(--umbra-field-error-color, var(--umbra-color-semantic-danger));
+  font: var(--umbra-font-label);
+  overflow-wrap: anywhere;
+}
+
+.error > :last-child {
+  min-width: 0;
+}
+
+/* A group of checkboxes or radios: label, description, options, error. */
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--umbra-option-group-text-gap, var(--umbra-space-2));
+  min-width: 0;
+  font: var(--umbra-font-body);
+  color: var(--umbra-color-base-text-primary);
+}
+
+.groupLabel {
+  display: block;
+  font: var(--umbra-font-label);
+  font-weight: 700;
+}
+
+.options {
+  --gap: var(--umbra-option-group-gap, var(--umbra-space-3));
+
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--gap);
+  min-width: 0;
+  padding-block: var(--umbra-space-1);
+}
+
+.group[data-orientation='horizontal'] > .options {
+  flex-flow: row wrap;
+  column-gap: var(--umbra-option-group-inline-gap, var(--umbra-space-6));
+}
+
+/*
+ * A grid of at most `--columns` columns. A column is never narrower than the minimum option width, so
+ * columns drop one by one as the group narrows.
+ */
+.options[data-columns] {
+  display: grid;
+  align-items: stretch;
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(
+      min(
+        100%,
+        max(
+          var(--umbra-option-group-min-option-width, 12em),
+          (100% - (var(--columns) - 1) * var(--gap)) / var(--columns)
+        )
+      ),
+      1fr
+    )
+  );
+}

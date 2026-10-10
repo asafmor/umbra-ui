@@ -1,0 +1,116 @@
+.root {
+  --size: var(--umbra-checkbox-size, calc(var(--umbra-density-control-height) / 2));
+  --fill: var(--umbra-checkbox-selected-bg, var(--umbra-color-fixed-selected));
+
+  display: inline-grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  min-width: 0;
+  max-width: 100%;
+  color: var(--umbra-color-base-text-primary);
+  font: var(--umbra-font-body);
+  cursor: pointer;
+}
+
+.root[data-size='small'] {
+  --size: var(--umbra-checkbox-small-size, calc(var(--umbra-density-table-row) / 2 + 2px));
+  font: var(--umbra-font-table-cell);
+}
+
+.box {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: var(--size);
+  height: var(--size);
+  /* Centred on the first line of the label. */
+  margin-block: max(0px, (1lh - var(--size)) / 2);
+  border: var(--umbra-checkbox-border-width, calc(var(--umbra-border-width) * 2)) solid
+    var(--umbra-checkbox-border, var(--umbra-color-base-border-control));
+  border-radius: var(--umbra-checkbox-radius, var(--umbra-radius-control));
+  background: var(--umbra-checkbox-bg, transparent);
+  color: var(--umbra-checkbox-mark-color, var(--umbra-color-fixed-on-selected));
+  transition:
+    background-color var(--umbra-motion-duration-fast),
+    border-color var(--umbra-motion-duration-fast);
+}
+
+/* The pointer target is at least 24px, whatever the size of the box. */
+.box::after {
+  content: '';
+  position: absolute;
+  inset: min(0px, (var(--size) - 24px) / 2 - var(--umbra-border-width) * 2);
+}
+
+/* Checked is the filled box and the mark, so it does not depend on colour. */
+.root:is([data-selected], [data-indeterminate]) > .box {
+  border-color: var(--fill);
+  background: var(--fill);
+}
+
+/* What the box holds is its mark: shown while checked. The dash replaces it while indeterminate. */
+.box > * {
+  display: none;
+  width: 100%;
+  height: 100%;
+  stroke-width: 3.5;
+}
+
+.root[data-selected] > .box > :not(.dash),
+.root[data-indeterminate] > .box > .dash {
+  display: block;
+}
+
+.root[data-indeterminate] > .box > .check {
+  display: none;
+}
+
+.root[data-hovered] > .box {
+  border-color: var(--umbra-color-base-text-primary);
+}
+
+.root[data-hovered]:is([data-selected], [data-indeterminate]) > .box {
+  border-color: color-mix(in oklab, var(--fill), #000 12%);
+  background: color-mix(in oklab, var(--fill), #000 12%);
+}
+
+.root[data-pressed] > .box {
+  background: color-mix(in oklab, var(--umbra-color-base-text-primary) 12%, transparent);
+}
+
+.root[data-pressed]:is([data-selected], [data-indeterminate]) > .box {
+  border-color: color-mix(in oklab, var(--fill), #000 26%);
+  background: color-mix(in oklab, var(--fill), #000 26%);
+}
+
+.root[data-invalid] > .box {
+  border-color: var(--umbra-checkbox-invalid-border, var(--umbra-color-semantic-danger));
+}
+
+.root[data-focus-visible] > .box {
+  outline: var(--umbra-state-focus-ring-width) solid
+    var(--umbra-focus-color, var(--umbra-color-fixed-focus-ring));
+  outline-offset: var(--umbra-focus-offset, 2px);
+}
+
+.root[data-disabled] {
+  opacity: var(--umbra-state-disabled-opacity);
+  cursor: default;
+}
+
+.root[data-readonly] {
+  cursor: default;
+}
+
+/* Label, description and error sit in the second column, beside and under the box. */
+.text {
+  grid-column: 2;
+  margin-inline-start: var(--umbra-checkbox-gap, var(--umbra-space-3));
+}
+
+/* In a table cell the label stays on one line. */
+.root[data-size='small'] > .text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

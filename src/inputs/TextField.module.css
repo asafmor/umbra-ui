@@ -1,0 +1,124 @@
+.root {
+  --height: var(--umbra-text-field-height, var(--umbra-density-control-height));
+  --border: var(--umbra-text-field-border, var(--umbra-color-base-border-control));
+
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-space-3);
+  flex: 0 1 auto;
+  width: var(--umbra-text-field-width, 100%);
+  min-width: 0;
+  max-width: 100%;
+  height: var(--height);
+  padding: 0 var(--umbra-text-field-padding-x, var(--umbra-space-4));
+  border: var(--umbra-border-width) solid var(--border);
+  border-radius: var(--umbra-text-field-radius, var(--umbra-radius-control));
+  background: var(--umbra-text-field-bg, var(--umbra-color-base-surface1));
+  color: var(--umbra-text-field-fg, var(--umbra-color-base-text-primary));
+  font: var(--umbra-font-body);
+  overflow: hidden;
+  cursor: text;
+  transition: border-color var(--umbra-motion-duration-fast);
+}
+
+.root[data-size='small'] {
+  --height: calc(var(--umbra-density-table-row) - 2px);
+
+  gap: var(--umbra-space-2);
+  padding: 0 var(--umbra-space-3);
+  font: var(--umbra-font-table-cell);
+}
+
+.root[data-multiline] {
+  align-items: flex-start;
+  height: auto;
+  padding-block: calc((var(--height) - 1lh) / 2 - var(--umbra-border-width));
+}
+
+.input {
+  flex: 1 1 0;
+  align-self: stretch;
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-overflow: ellipsis;
+  /* The ring is drawn on the root, around the prefix and suffix too. */
+  outline: none;
+  resize: none;
+  appearance: textfield;
+}
+
+.input::-webkit-inner-spin-button,
+.input::-webkit-outer-spin-button {
+  appearance: none;
+}
+
+.input::placeholder {
+  color: var(--umbra-text-field-placeholder, var(--umbra-color-base-text-muted));
+  opacity: 1;
+}
+
+.root:has(.input[data-hovered]) {
+  border-color: var(--umbra-color-base-text-primary);
+}
+
+/* Inwards, so the ring survives inside a container that clips. */
+.root:has(.input[data-focus-visible]) {
+  outline: var(--umbra-state-focus-ring-width) solid
+    var(--umbra-focus-color, var(--umbra-color-fixed-focus-ring));
+  outline-offset: calc(-1 * var(--umbra-state-focus-ring-width));
+}
+
+.root[data-invalid] {
+  --border: var(--umbra-text-field-invalid-border, var(--umbra-color-semantic-danger));
+}
+
+/* Read-only: no fill and a dashed edge, so it does not look editable. */
+.root[data-readonly] {
+  border-style: dashed;
+  background: transparent;
+  cursor: default;
+}
+
+.root[data-disabled] {
+  opacity: var(--umbra-state-disabled-opacity);
+  cursor: default;
+}
+
+.affix {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 40%;
+  overflow: hidden;
+  color: var(--umbra-text-field-affix-color, var(--umbra-color-base-text-secondary));
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.affix > :is(svg, img) {
+  display: block;
+  width: var(--umbra-icon-size, 1.25em);
+  height: var(--umbra-icon-size, 1.25em);
+}
+
+.invalidIcon {
+  display: none;
+  flex: none;
+  color: var(--umbra-text-field-invalid-border, var(--umbra-color-semantic-danger));
+}
+
+.root[data-invalid] > .invalidIcon {
+  display: inline-flex;
+}
+
+.clear {
+  --umbra-icon-button-size: 24px;
+
+  display: inline-flex;
+  flex: none;
+  margin-inline-end: calc(-1 * var(--umbra-space-2));
+}

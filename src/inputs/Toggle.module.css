@@ -1,0 +1,139 @@
+.root {
+  --height: var(--umbra-toggle-height, calc(var(--umbra-density-control-height) / 2 + 4px));
+  --width: var(--umbra-toggle-width, calc(var(--height) * 1.8));
+  --inset: var(--umbra-toggle-thumb-inset, 2px);
+  --fill: var(--umbra-toggle-selected-bg, var(--umbra-color-fixed-selected));
+  --thumb: calc(var(--height) - 2 * var(--inset) - 2 * var(--umbra-border-width));
+
+  display: inline-grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  min-width: 0;
+  max-width: 100%;
+  color: var(--umbra-color-base-text-primary);
+  font: var(--umbra-font-body);
+  cursor: pointer;
+}
+
+.root[data-size='small'] {
+  --height: var(--umbra-toggle-small-height, calc(var(--umbra-density-table-row) / 2 + 5px));
+  font: var(--umbra-font-table-cell);
+}
+
+.track {
+  position: relative;
+  grid-area: 1 / 1;
+  width: var(--width);
+  height: var(--height);
+  margin-block: max(0px, (1lh - var(--height)) / 2);
+  border: var(--umbra-border-width) solid var(--umbra-toggle-border, var(--umbra-color-base-border-control));
+  border-radius: var(--umbra-toggle-radius, var(--umbra-radius-pill));
+  background: var(--umbra-toggle-bg, var(--umbra-color-base-surface1));
+  transition:
+    background-color var(--umbra-motion-duration-fast),
+    border-color var(--umbra-motion-duration-fast);
+}
+
+/* The pointer target is at least 24px tall. */
+.track::after {
+  content: '';
+  position: absolute;
+  inset: min(0px, (var(--height) - 24px) / 2 - var(--umbra-border-width)) 0;
+}
+
+/* On is the thumb at the end and the check mark on it, so it does not depend on colour. */
+.thumb {
+  position: absolute;
+  inset-block-start: var(--inset);
+  inset-inline-start: var(--inset);
+  display: grid;
+  place-items: center;
+  width: var(--thumb);
+  height: var(--thumb);
+  border-radius: 50%;
+  background: var(--umbra-toggle-thumb-bg, var(--umbra-color-base-text-secondary));
+  color: var(--umbra-toggle-mark-color, var(--fill));
+  transition:
+    inset-inline-start calc(var(--umbra-motion-duration-fast) * var(--umbra-motion-scale))
+      var(--umbra-motion-easing-enter),
+    background-color var(--umbra-motion-duration-fast);
+}
+
+.thumb > :is(svg, img) {
+  width: 80%;
+  height: 80%;
+  stroke-width: 4;
+  opacity: 0;
+}
+
+.root[data-selected] > .track {
+  border-color: var(--fill);
+  background: var(--fill);
+}
+
+.root[data-selected] .thumb {
+  inset-inline-start: calc(100% - var(--thumb) - var(--inset));
+  background: var(--umbra-toggle-selected-thumb-bg, var(--umbra-color-fixed-on-selected));
+}
+
+.root[data-selected] .thumb > :is(svg, img) {
+  opacity: 1;
+}
+
+.root[data-hovered] > .track {
+  border-color: var(--umbra-color-base-text-primary);
+}
+
+.root[data-hovered][data-selected] > .track {
+  border-color: color-mix(in oklab, var(--fill), #000 12%);
+  background: color-mix(in oklab, var(--fill), #000 12%);
+}
+
+.root[data-pressed] > .track {
+  background: color-mix(in oklab, var(--umbra-color-base-text-primary) 12%, transparent);
+}
+
+.root[data-pressed][data-selected] > .track {
+  border-color: color-mix(in oklab, var(--fill), #000 26%);
+  background: color-mix(in oklab, var(--fill), #000 26%);
+}
+
+.root[data-focus-visible] > .track {
+  outline: var(--umbra-state-focus-ring-width) solid
+    var(--umbra-focus-color, var(--umbra-color-fixed-focus-ring));
+  outline-offset: var(--umbra-focus-offset, 2px);
+}
+
+.root[data-disabled] {
+  opacity: var(--umbra-state-disabled-opacity);
+  cursor: default;
+}
+
+.root[data-readonly] {
+  cursor: default;
+}
+
+.text {
+  grid-column: 2;
+  margin-inline-start: var(--umbra-toggle-gap, var(--umbra-space-3));
+}
+
+/* Label at the start: the text takes the first column and the switch the second. */
+.root[data-label-position='start'] {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.root[data-label-position='start'] > .track {
+  grid-column: 2;
+}
+
+.root[data-label-position='start'] > .text {
+  grid-column: 1;
+  margin-inline: 0 var(--umbra-toggle-gap, var(--umbra-space-3));
+}
+
+.root[data-size='small'] > .text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
