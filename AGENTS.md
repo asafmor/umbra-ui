@@ -49,7 +49,8 @@ The owner approved the plan and delegated the open questions (`plan/reviews/mile
 | 1e. Meters (`src/meters/`) and charts (`src/charts/`) | done |
 | 1f. Shell extras: PageHeader, Accordion, ShortcutBar, HistoryButtons, PrimaryAction | done |
 | Integration pass: icon map, more menus, tooltips, card collapse animation, naming rules (`plan/decisions/07-customisation.md`) | done |
-| Full-page stories, guides, `dashboard` and `advanced` examples | — |
+| Full-page stories (`src/stories/pages/`), guides, `dashboard` and `advanced` examples | done |
+| Fix pass on what the pages and docs work found, then the final review | in progress |
 
 **Next step**: finish 1b, then 1c, 1d and 1f in the order of `plan/roadmap.md`. A batch is built from `plan/prompts/component-brief.md`.
 
