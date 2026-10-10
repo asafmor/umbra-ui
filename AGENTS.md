@@ -10,7 +10,7 @@ The design is **inspired by** 40 screenshots of a game UI in `screenshots/`. It 
 
 ## Current state
 
-**Phase: planning complete, implementation not started. No library code exists yet.** Update this section whenever the phase or the next step changes.
+**Phase: Milestone 0 (foundation) in progress.** Update this section whenever the phase or the next step changes.
 
 | Step | Status | Artifact |
 |---|---|---|
@@ -24,7 +24,36 @@ The design is **inspired by** 40 screenshots of a game UI in `screenshots/`. It 
 | 8. Tier 0 specs | approved (14 files) | `plan/specs/` |
 | 9. Reference screen | done | `plan/reference/` |
 
-**Next step**: Milestone 0 (foundation) in `plan/roadmap.md`. It starts implementation and needs the owner's go-ahead. The three "Before any code" tasks are done and all 14 tier 0 specs are approved.
+### Milestone 0 progress
+
+| Step | Status |
+|---|---|
+| 1. Repo setup: package, tokens, Storybook, visual tests, lint, changelog, CI | done |
+| 2. UmbraProvider and UmbraScope | next |
+| 3. Layout: AppShell, Page, Columns, Stack, Slot, Card, CardHeader, SectionTitle, ScrollArea | not started |
+| 4. Shell: TopBar, PrimaryNav, SubNav | not started |
+| 5. Basics: Button, IconButton, Skeleton | not started |
+| 6. Docs: README, guides, `basic` example, customisation table generator | not started |
+
+**Next step**: step 2, `UmbraProvider` and `UmbraScope` (`plan/specs/UmbraProvider.md`).
+
+## Commands
+
+| Command | Does |
+|---|---|
+| `npm install` | Installs, and generates the token CSS |
+| `npm run tokens` | Regenerates `src/styles/tokens.css` and `tokens.generated.ts` from `plan/tokens.json`. Both are git-ignored; never edit them. |
+| `npm run build` | Builds `dist/` (JS, types, one `styles.css`) |
+| `npm run typecheck` / `npm run lint` / `npm run format` | TypeScript, ESLint + Prettier check, Prettier write |
+| `npm test` | Unit tests (Vitest), for pure logic only |
+| `npm run storybook` | Storybook on port 6006 |
+| `npm run test:visual` | Builds Storybook, then captures every story at 1920x1080, 1280x720 and 1024x600 at all three densities, and fails on any document overflow. Stories tagged `narrow` are also captured at 900x560. |
+| `npm run test:visual:update` | Same, and rewrites the baselines in `tests/visual/__screenshots__/`. Look at the changed images before committing. |
+| `npm run changeset` | Adds a changelog entry; needed for any change users will notice |
+
+- Run lint, typecheck, unit and visual tests before every commit; all must pass.
+- Do not run `npm run release` or publish to npm without the owner's go-ahead.
+- Stories get the whole window (`layout: 'fullscreen'`). For a small component, set `parameters: { frame: 'padded' }`.
 
 ## Repo map
 
@@ -42,6 +71,10 @@ The design is **inspired by** 40 screenshots of a game UI in `screenshots/`. It 
 | `plan/roadmap.md` | Pre-code tasks, milestones, build order, and the per-component definition of done. |
 | `plan/reference/` | `index.html`: the static reference screen, the visual ground truth for the look (open it in a browser; `?density=compact&context=teal` switches settings). `shot-*.png`: renders at three sizes. |
 | `plan/prompts/` | Ready-made prompts for starting a coding session (`milestone-0.md`). |
+| `src/` | Library source. `src/styles/` holds the base CSS and the generated tokens; `src/charts/` is the `umbra-ui/charts` entry. |
+| `scripts/` | Build scripts (`build-tokens.mjs`). |
+| `.storybook/` | Storybook config; the toolbar switches density and context. |
+| `tests/visual/` | Playwright visual tests and their baseline images. |
 
 ## Decisions that bind every task
 
