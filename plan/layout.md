@@ -51,7 +51,7 @@ Applied in this order, innermost first:
 | 4. Columns | Below the minimum window size, `Columns` shows one child at a time, with tabs to switch. |
 
 - **`priority`** is a prop on any child of `Stack` or `Columns`, and on table columns. Higher stays longer. The default follows source order (first = highest).
-- **Minimum window**: designed for about 1024 × 600 and up. Below that, rule 4 applies. Phones are not a design target.
+- **Minimum window**: designed for about 1024 × 600 and up. Below that (narrower than 1024 or shorter than 600), rule 4 applies. Phones are not a design target.
 
 ## End-user control
 
@@ -66,7 +66,7 @@ Applied in this order, innermost first:
 
 ## Open details
 
-- Minimum height and width per component, per density level.
+- Minimum height and width per component, per density level. Decided for `Card`: 72 / 88 / 104px high.
 - Default column priorities for `DataTable`.
 - Tab labels for rule 4: taken from a `label` prop on each `Columns` child.
 - The page presets to ship (candidates from the screenshots: list + detail; list + main + aside; main + aside).

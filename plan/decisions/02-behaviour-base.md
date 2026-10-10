@@ -7,3 +7,5 @@
 - React Aria types and components are not re-exported as public API, so the base can be replaced later without breaking users.
 
 **Rejected**: Base UI (lighter, less depth for grids and complex keyboard cases). From scratch (slow, easy to get accessibility wrong).
+
+**Confirmed 2026-10-10**: Milestone 0 needs a popover, a menu and a tooltip before their public components exist (tier 1). They are built as minimal internal pieces on React Aria and are not exported.

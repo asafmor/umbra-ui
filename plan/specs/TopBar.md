@@ -45,7 +45,7 @@ No variants. Text colour on the bar is computed from the brand colour (light or 
 | `context` | node | — | |
 | `primaryAction` | node | — | |
 | `history` | boolean \| node | `false` | Shows back and forward buttons |
-| `onSearch` | function | — | Shows the search trigger; opens the `CommandPalette` |
+| `onSearch` | function | — | Shows the search trigger and is called when it is used. From Milestone 1 it opens the `CommandPalette`. |
 | `brand` | colour | provider | Overrides the brand for this bar only |
 
 ### 3. Parts
@@ -72,4 +72,6 @@ No variants. Text colour on the bar is computed from the brand colour (light or 
 
 ## Open questions
 
-- The contrast rule for mid-tone brand colours where neither white nor near-black reaches 4.5:1 (adjust the bar colour, or warn).
+None.
+
+Resolved 2026-10-10: for a brand colour where neither white nor near-black text reaches 4.5:1, the bar uses the better of the two and warns in development. The bar colour is never changed.

@@ -65,4 +65,9 @@ Every full screenshot: bars on top, content filling the rest, themed background 
 
 ## Open questions
 
-- Whether the background pattern is part of the default identity or opt-in.
+None.
+
+Resolved 2026-10-10:
+
+- The background pattern is opt-in: `--umbra-shell-pattern-opacity` defaults to `0` (the reference screen has no pattern).
+- `data-narrow` is set when the window is narrower than 1024px **or** shorter than 600px. Exactly 1024 x 600 is not narrow.

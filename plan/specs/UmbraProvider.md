@@ -57,5 +57,9 @@ None of its own.
 
 ## Open questions
 
-- The built-in icon map: the final list of names (about 25).
-- Which keys the library reserves.
+None.
+
+Resolved 2026-10-10:
+
+- Reserved keys: `Mod+K` (command palette) and `?` (shortcuts sheet).
+- The icon map starts with the names Milestone 0 uses and grows per milestone. The default set is `lucide-react`.

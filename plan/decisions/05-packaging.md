@@ -15,3 +15,5 @@
 **Rejected**: several scoped packages (version juggling, release overhead). Copy-in CLI (users stop receiving updates; the layout system is hard to keep consistent).
 
 **Confirmed 2026-10-10**: TypeScript, ESM only, React 19 and later as the supported range.
+
+**Confirmed 2026-10-10**: npm with workspaces; MIT licence; `lucide-react` as the default icon set; fonts (Barlow Condensed, Figtree) are loaded by the app, not shipped by the library.

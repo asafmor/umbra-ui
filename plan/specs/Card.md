@@ -87,4 +87,6 @@ States: `collapsed`, `loading`, `empty`, `error`, `focus-within`.
 
 ## Open questions
 
-- Default `minHeight` per density level.
+None.
+
+Resolved 2026-10-10: default `minHeight` is 72 / 88 / 104px for compact / default / spacious.

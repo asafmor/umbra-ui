@@ -57,6 +57,7 @@ States: hover, pressed, focus, disabled, loading. Height follows the density lev
 | `href` | string | — | Renders a link that looks like a button |
 | `shortcut` | shortcut id | — | Shows the key hint in its tooltip and binds the key |
 | `fullWidth` | boolean | `false` | |
+| `collapseTo` | `icon` | — | Hides the label when space is short (see below) |
 | `onPress` | function | — | |
 
 ### 3. Parts

@@ -29,7 +29,7 @@ Scrollbars are the browser's own, styled thin with a transparent track.
 | Variant | Values | Notes |
 |---|---|---|
 | `axis` | `vertical`, `horizontal`, `both` | |
-| `scrollbar` | `auto`, `hover`, `hidden` | `hover` shows the thumb only while the pointer is over the area |
+| `scrollbar` | `auto`, `hover` | `hover` shows the thumb only while the pointer is over the area |
 | `fade` | `true`, `false` | |
 
 ## Customisation
@@ -66,4 +66,6 @@ Takes the size of its slot; scrolling starts when content exceeds it. Nothing el
 
 ## Open questions
 
-- `hidden` scrollbars are risky for discoverability; keep or drop the option.
+None.
+
+Resolved 2026-10-10: the `hidden` scrollbar option is dropped.

@@ -57,7 +57,7 @@ On every child (all umbra-ui layout-aware components accept these; wrap anything
 
 ### 4. Blocks
 
-`Slot`: gives `size`, `priority`, `minWidth`, `minHeight` and `label` to any element that is not an umbra-ui component.
+`Slot` (exported as a component): gives `size`, `priority`, `minWidth`, `minHeight` and `label` to any element that is not an umbra-ui component.
 
 ## Behaviour as space shrinks
 
@@ -74,4 +74,6 @@ On every child (all umbra-ui layout-aware components accept these; wrap anything
 
 ## Open questions
 
-- Whether `Columns` should also collapse low-priority columns before reaching tab mode (for example hide an aside at medium widths).
+None.
+
+Resolved 2026-10-10: `Columns` does not collapse low-priority columns before tab mode in Milestone 0.
