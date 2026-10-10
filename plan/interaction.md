@@ -25,6 +25,7 @@ Character: **crisp and minimal**. Short fades and small slides only; no sweeps, 
 - **Easing**: ease-out on enter, ease-in on exit.
 - **Reduced motion**: when the system setting `prefers-reduced-motion` is on, all movement is removed and only fades stay.
 - **Layout changes** from the rules in `layout.md` (column drop, collapse to header) are instant while the window is being resized, and animated (180ms) when caused by a user click.
+- **Card collapse with the caret**: the card's height animates over 180ms, ease-in to collapse and ease-out to expand, and the cards beside it follow frame by frame. The body stays in the page until the collapse has ended. A collapse by the layout, a change of the `collapsed` prop without a press, and everything under reduced motion are instant. Technique and pitfalls: `plan/specs/Card.md`, "The size animation"; for content-sized panels, `plan/specs/Accordion.md`.
 
 ## Loading, empty, error
 
@@ -53,5 +54,4 @@ Target: WCAG 2.2 AA. Every story is checked automatically (axe) on every context
 
 - Default key bindings the library itself reserves (palette open, shortcuts sheet, history back / forward).
 - Exact skeleton shapes per component.
-- Size animation for a card collapsed with its caret. Today the caret rotates and the layout changes at once.
 - The focus ring colour value, once the final palette is set.

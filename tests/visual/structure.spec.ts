@@ -320,6 +320,103 @@ test.describe('Accordion', () => {
   });
 });
 
+// The size animation of a card collapsed with its caret (plan/specs/Card.md). It lives here because it
+// shares the frame recorder with the accordion.
+test.describe('Card collapse animation', () => {
+  const card = (page: Page) => page.locator('[data-umbra="card"]', { hasText: 'Collapsible' }).first();
+  /** Presses the caret, then records the card and its stack on every frame until nothing moves. */
+  const record = (root: Locator) =>
+    root.evaluate(async (el) => {
+      const stack = el.parentElement!;
+      const sibling = [...stack.children].find((child) => child !== el)!;
+      el.querySelector<HTMLElement>('[data-part="header"] button[aria-expanded]')!.click();
+      const frames: { height: number; sibling: number; inside: boolean; body: boolean; moving: boolean }[] =
+        [];
+      await window.umbraFrames(el, () => {
+        const outer = stack.getBoundingClientRect();
+        const last = stack.lastElementChild!.getBoundingClientRect();
+        frames.push({
+          height: el.getBoundingClientRect().height,
+          sibling: sibling.getBoundingClientRect().height,
+          // Nothing leaves the stack: the last card ends inside it.
+          inside: last.bottom <= outer.bottom + 0.5,
+          body: !!el.querySelector(':scope > [data-part="body"]'),
+          moving: el.hasAttribute('data-resizing'),
+        });
+      });
+      return frames;
+    });
+
+  test('the caret animates the height both ways; the body stays while it closes', async ({ page }) => {
+    await open(page, 'layout-card--states');
+    const root = card(page);
+    const full = (await box(root)).height;
+    const header = (await box(root.locator('[data-part="header"]'))).height;
+    expect(full).toBeGreaterThan(header + 60);
+
+    const closing = await record(root);
+    const closed = closing.at(-1)!.height;
+    expect(closed).toBeLessThan(header + 24);
+    // A real state in between, then only smaller, down to the header.
+    expect(closing[0]!.height).toBeGreaterThan(closed + 2);
+    expect(closing[0]!.height).toBeLessThan(full - 2);
+    expect(closing[0]!.moving).toBe(true);
+    expect(closing.every((f, i) => i === 0 || f.height <= closing[i - 1]!.height + 0.5)).toBe(true);
+    // The other card of the stack takes the room as it comes, and nothing leaves the stack.
+    expect(closing.every((f, i) => i === 0 || f.sibling >= closing[i - 1]!.sibling - 0.5)).toBe(true);
+    expect(closing.every((f) => f.inside)).toBe(true);
+    // The body is there while the card moves, and gone when it has closed.
+    expect(closing.filter((f) => f.moving).every((f) => f.body)).toBe(true);
+    expect(closing.at(-1)).toMatchObject({ body: false, moving: false });
+    await expect(root).toHaveAttribute('data-collapsed', 'user');
+
+    const opening = await record(root);
+    expect(opening[0]!.height).toBeGreaterThan(closed + 2);
+    expect(opening[0]!.height).toBeLessThan(full - 2);
+    expect(opening.every((f, i) => i === 0 || f.height >= opening[i - 1]!.height - 0.5)).toBe(true);
+    expect(opening.every((f) => f.inside && f.body)).toBe(true);
+    // It ends exactly where its share of the stack puts it: no jump when the animation lets go.
+    expect(Math.abs(opening.at(-1)!.height - full)).toBeLessThan(1);
+    expect(Math.abs(opening.at(-2)!.height - full)).toBeLessThan(1);
+    expect(opening.at(-1)!.moving).toBe(false);
+    await expect(root).not.toHaveAttribute('data-collapsed');
+  });
+
+  test('with reduced motion the card collapses and expands at once', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await open(page, 'layout-card--states');
+    const root = card(page);
+    const full = (await box(root)).height;
+    const closing = await record(root);
+    expect(new Set(closing.map((f) => Math.round(f.height))).size).toBe(1);
+    expect(closing[0]!.height).toBeLessThan(full - 60);
+    expect(closing.every((f) => !f.body && !f.moving && f.inside)).toBe(true);
+    const opening = await record(root);
+    expect(opening.every((f) => Math.abs(f.height - full) < 1 && !f.moving)).toBe(true);
+  });
+
+  test('a collapse by the layout, or by the app without the caret, does not animate', async ({ page }) => {
+    await open(page, 'layout-page-layouts--three-columns', 1280, 900);
+    const moving = () =>
+      page.evaluate(
+        () =>
+          document.querySelectorAll('[data-resizing]').length +
+          [...document.querySelectorAll('[data-umbra="card"]')].flatMap((el) => el.getAnimations()).length,
+      );
+    await page.setViewportSize({ width: 1280, height: 560 });
+    expect(await moving()).toBe(0);
+    await expect(page.locator('[data-umbra="card"][data-collapsed="layout"]')).not.toHaveCount(0);
+    expect(await moving()).toBe(0);
+
+    await open(page, 'layout-card--controlled-collapse');
+    const controlled = page.getByRole('region', { name: 'Controlled' });
+    await page.getByRole('button', { name: 'Toggle from outside' }).click();
+    expect(await moving()).toBe(0);
+    await expect(controlled).toHaveAttribute('data-collapsed', 'user');
+    await expect(controlled.locator('[data-part="body"]')).toHaveCount(0);
+  });
+});
+
 test.describe('PageHeader', () => {
   const headerOf = (page: Page, title: string) =>
     page.locator('[data-umbra="page-header"]', { hasText: title });

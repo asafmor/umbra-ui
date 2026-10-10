@@ -32,6 +32,8 @@ interface CardContextValue {
   padding: 'default' | 'none';
   /** `user`: collapsed with the caret. `layout`: collapsed by the parent Stack to make room. */
   collapsedBy: 'user' | 'layout' | null;
+  /** True while a card collapsed with its caret is still closing: its body stays until the animation ends. */
+  closing: boolean;
   collapsible: boolean;
   toggle: () => void;
   /**
@@ -57,6 +59,28 @@ interface BlockProps {
   className?: string;
   style?: CSSProperties;
   children?: ReactNode;
+}
+
+/** How long a collapse by the caret takes: the motion token, and nothing under reduced motion. */
+function resizeDuration(element: HTMLElement) {
+  const css = getComputedStyle(element);
+  const scale = parseFloat(css.getPropertyValue('--umbra-motion-scale'));
+  // A build may rewrite the token from "180ms" to ".18s".
+  const time = css.getPropertyValue('--umbra-motion-duration-base').trim();
+  const base = parseFloat(time) * (time.endsWith('ms') ? 1 : 1000);
+  return (Number.isNaN(base) ? 180 : base) * (Number.isNaN(scale) ? 1 : scale);
+}
+
+/** The height the card will have once its body blocks are gone: measured with them taken out of the layout. */
+function heightWithoutBody(element: HTMLElement) {
+  const blocks = [...element.children].filter((child): child is HTMLElement =>
+    ['toolbar', 'body', 'footer'].includes((child as HTMLElement).dataset.part ?? ''),
+  );
+  const shown = blocks.map((block) => block.style.display);
+  for (const block of blocks) block.style.display = 'none';
+  const { height } = element.getBoundingClientRect();
+  blocks.forEach((block, i) => (block.style.display = shown[i]!));
+  return height;
 }
 
 export interface CardRootProps extends BlockProps, SlotProps {
@@ -131,6 +155,53 @@ function Root({
   });
   useLayoutEffect(() => changed?.(), [changed, userCollapsed]);
 
+  // A collapse or expand by the caret animates the card's height (plan/specs/Card.md, "The size
+  // animation"). `from` is the height when the caret was pressed; without it (the layout collapsed the
+  // card, or the app changed `collapsed` by itself) nothing animates.
+  const [from, setFrom] = useState<number | null>(null);
+  const [closing, setClosing] = useState(false);
+  const [shown, setShown] = useState(userCollapsed);
+  if (shown !== userCollapsed) {
+    setShown(userCollapsed);
+    // The body stays for the length of the close animation. Set while rendering, so it is never unmounted first.
+    setClosing(userCollapsed && from !== null);
+  }
+  useLayoutEffect(() => {
+    const element = ref.current;
+    const start = from;
+    if (!element || start === null) return;
+    let animation: Animation | undefined;
+    let stopped = false;
+    const done = () => {
+      delete element.dataset.resizing;
+      if (stopped) return;
+      setClosing(false);
+      setFrom(null);
+    };
+    // After the parent Stack has applied its rules again for the new state, and before the browser paints.
+    queueMicrotask(() => {
+      if (stopped) return;
+      const duration = resizeDuration(element);
+      const end = userCollapsed ? heightWithoutBody(element) : element.getBoundingClientRect().height;
+      if (!duration || Math.abs(end - start) < 1) return done();
+      const css = getComputedStyle(element);
+      // While it moves, the card's height is the animated one, not its share of the stack.
+      element.dataset.resizing = '';
+      animation = element.animate([{ height: `${start}px` }, { height: `${end}px` }], {
+        duration,
+        easing:
+          css.getPropertyValue(`--umbra-motion-easing-${userCollapsed ? 'exit' : 'enter'}`).trim() || 'ease',
+      });
+      animation.onfinish = done;
+    });
+    return () => {
+      stopped = true;
+      animation?.cancel();
+      delete element.dataset.resizing;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- runs when the collapse state changes; `from` is read once
+  }, [userCollapsed]);
+
   const collapsedBy = userCollapsed ? 'user' : layoutCollapsed ? 'layout' : null;
   // The popover belongs to the layout-collapsed state: it closes when the card opens again or is hidden
   // behind a tab (entering or leaving tab mode), so it cannot come back by itself or stay without its anchor.
@@ -146,8 +217,11 @@ function Root({
       headerStyle,
       padding,
       collapsedBy,
+      closing: closing && collapsedBy === 'user',
       collapsible,
       toggle: () => {
+        // The height now, mid-animation too, is where the next animation starts.
+        setFrom(ref.current?.getBoundingClientRect().height ?? null);
         setUncontrolled(!userCollapsed);
         onCollapsedChange?.(!userCollapsed);
       },
@@ -163,9 +237,11 @@ function Root({
       headerStyle,
       padding,
       collapsedBy,
+      closing,
       collapsible,
       userCollapsed,
       onCollapsedChange,
+      ref,
       popoverOpen,
       popover,
       collapseLabel,
@@ -400,7 +476,11 @@ function Header({
 function useBodyPlace() {
   const card = useCard();
   return (block: ReactNode) =>
-    card.collapsedBy === null ? block : card.popover ? createPortal(block, card.popover) : null;
+    card.collapsedBy === null || card.closing
+      ? block
+      : card.popover
+        ? createPortal(block, card.popover)
+        : null;
 }
 
 function Toolbar({ className, style, children }: BlockProps) {

@@ -113,7 +113,7 @@ Pitfalls (the behaviour is tested in `tests/visual/structure.spec.ts`):
 
 Alternative considered: `interpolate-size: allow-keywords` with `height: 0` to `auto`. It is simpler, but only Chromium has it; the grid row works in every current browser.
 
-To apply this to `Card`: the body is already a `ScrollArea`; wrap its content in the grid and clip boxes, keep the body mounted while it closes (pitfall 7), and move the card's `flexGrow: 0` and collapsed sizing behind the same delay (pitfall 5). A collapse by the parent `Stack` stays instant.
+`Card` could not use this as it is: its height is a flex share of its `Stack`, not its content's. It keeps the body mounted while it closes (pitfall 7) and stops the scrollbar (pitfall 4), but animates the root's height from the script; see `plan/specs/Card.md`, "The size animation".
 
 ## Open questions
 
