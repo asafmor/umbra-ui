@@ -33,7 +33,7 @@
     "tokens": "node scripts/build-tokens.mjs",
     "build": "npm run tokens && vite build && tsc -p tsconfig.build.json",
     "typecheck": "npm run tokens && tsc --noEmit",
-    "lint": "eslint . && prettier --check . && node scripts/build-customisation.mjs --check",
+    "lint": "eslint . && prettier --check . && node scripts/build-customisation.mjs --check && npm run docs:check",
     "format": "prettier --write .",
     "test": "vitest run",
     "storybook": "npm run tokens && storybook dev -p 6006",
@@ -44,7 +44,9 @@
     "version": "changeset version",
     "release": "npm run lint && npm run typecheck && npm test && npm run build && changeset publish",
     "prepare": "npm run build",
-    "docs:tables": "npm run tokens && node scripts/build-customisation.mjs"
+    "docs:tables": "npm run tokens && node scripts/build-customisation.mjs",
+    "docs:check": "npm run tokens && node scripts/check-docs.mjs",
+    "test:examples": "npm run build && npm run build --workspaces --if-present && playwright test -c playwright.examples.config.ts"
   },
   "peerDependencies": {
     "react": ">=19",

@@ -72,7 +72,9 @@ The owner approved the plan and delegated the open questions (`plan/reviews/mile
 | `npm run test:visual` | Builds Storybook, then runs every Playwright test: captures of every story at 1920x1080, 1280x720 and 1024x600 at all three densities and once on each other context tint (failing on any document overflow; stories tagged `narrow` are also captured at 900x560), the automated accessibility check of every story on every tint, and the interaction tests. CI runs it on every push. `UMBRA_TEST_PORT` changes the port (default 6007), so two checkouts can run at once. |
 | `npm run test:visual:update` | Same, and rewrites the baselines in `tests/visual/__screenshots__/`. Look at the changed images before committing. |
 | `npm run docs:tables` | Regenerates `docs/customisation-tables.md` from the source. `npm run lint` fails when it is out of date, so run it after changing props, parts, blocks or CSS variables. |
-| `npm run build -w examples/basic` | Builds the example app against the built package (run `npm run build` first) |
+| `npm run docs:check` | Typechecks every `tsx` sample in `README.md` and `docs/*.md` against the source (`scripts/check-docs.mjs`). `npm run lint` runs it. A sample may be a fragment: names it does not define come from the library or from `scripts/check-docs-prelude.ts`. |
+| `npm run build -w examples/basic` | Builds one example app against the built package (run `npm run build` first). The others: `examples/dashboard`, `examples/advanced`. |
+| `npm run test:examples` | Builds the package and the three examples, serves each with `vite preview` and drives them with Playwright (`playwright.examples.config.ts`, ports from `UMBRA_EXAMPLES_PORT`, default 6017). |
 | `npm run changeset` | Adds a changelog entry; needed for any change users will notice |
 
 - Run lint, typecheck, unit and visual tests before every commit; all must pass.
@@ -100,9 +102,10 @@ The owner approved the plan and delegated the open questions (`plan/reviews/mile
 | `src/` | Library source. `src/styles/`: base CSS and the generated tokens. `src/provider/`: provider, scope, icon map, shortcut registry. `src/layout/`: Page, Columns, Stack, Slot, Card, SectionTitle, ScrollArea (`useSlot.tsx` and `collapse.ts` hold the layout rules). `src/shell/`: AppShell, TopBar, PrimaryNav, SubNav (`nav.tsx` is shared). `src/basics/`: Button, IconButton, Skeleton. `src/data/`: the data basics (Tag, Badge, List, KeyValue, Banner, Legend, EmptyState and the rest of batch 1a). `src/inputs/`: form controls, SegmentedFilter, Tabs. `src/overlays/`: Popover, Tooltip, Menu, ActionBar. `src/meters/`: ProgressBar, LevelMeter. `src/internal/`: not exported; shared contexts, the loading/empty/error helper (`dataState.tsx`), series markers and `useShrinkLevel`, the hook behind every "show less as it narrows" rule. `src/utils/`: shared helpers (`parts.ts` implements the parts layer). `src/charts/`: the `umbra-ui/charts` entry (Donut, Radar, Line and Bar charts; `d3-scale` and `d3-shape` only). |
 | `scripts/` | Build scripts: `build-tokens.mjs`, and `build-customisation.mjs` for the customisation tables. |
 | `.storybook/` | Storybook config; the toolbar switches density and context. |
-| `docs/` | Guides in Markdown (`getting-started.md`, `layout.md`) and the generated `customisation-tables.md`. `docs/storybook/*.mdx` show them in Storybook. |
-| `examples/basic/` | A small app that imports the built package; an npm workspace. |
+| `docs/` | Guides in Markdown (`getting-started.md`, `layout.md`, `theming.md`, `customisation.md`, `recipes.md`) and the generated `customisation-tables.md`. `docs/storybook/*.mdx` show them in Storybook. Every `tsx` sample must compile (`npm run docs:check`). |
+| `examples/` | Three apps that import the built package, each an npm workspace: `basic`, `dashboard` (many cards, charts, switchers, command palette) and `advanced` (hash router, list + detail, table with bulk actions and a modal form, settings, a component built from blocks and parts). |
 | `tests/visual/` | Playwright tests against the built Storybook: `stories.spec.ts` (captures and the no-page-scroll check), `a11y.spec.ts` (axe, WCAG 2.2 AA, every story on every tint) and `interactions.spec.ts` (popovers, tab mode, overflow menus, keys), with the baseline images. The comparison is strict on purpose; a changed baseline is a change to look at. |
+| `tests/examples/` | Playwright tests against the built example apps: `examples.spec.ts` (every app: clean load, no page scroll across sizes and densities, tab mode, a keyboard walk) and one file per app for its own interactions. |
 
 ## Decisions that bind every task
 
