@@ -16,7 +16,7 @@ export type { Part } from './utils/parts';
 export { AppShell } from './shell/AppShell';
 export type { AppShellProps, AppShellRootProps } from './shell/AppShell';
 export { TopBar } from './shell/TopBar';
-export type { TopBarActionsProps, TopBarProps, TopBarRootProps } from './shell/TopBar';
+export type { TopBarActionsProps, TopBarProps, TopBarRootProps, TopBarSearchProps } from './shell/TopBar';
 export { PrimaryNav } from './shell/PrimaryNav';
 export type { PrimaryNavProps, PrimaryNavRootProps } from './shell/PrimaryNav';
 export { SubNav } from './shell/SubNav';
@@ -303,3 +303,17 @@ export type {
   ModalSize,
   ModalVariant,
 } from './overlays/Modal';
+export { PrimaryAction } from './shell/PrimaryAction';
+export type { PrimaryActionProps } from './shell/PrimaryAction';
+export { HistoryButtons } from './shell/HistoryButtons';
+export type { HistoryButtonsProps, HistoryEntry } from './shell/HistoryButtons';
+export { ShortcutBar } from './shell/ShortcutBar';
+export type {
+  ShortcutBarItem,
+  ShortcutBarItemPartProps,
+  ShortcutBarItemProps,
+  ShortcutBarProps,
+  ShortcutLinkProps,
+} from './shell/ShortcutBar';
+export { CommandPalette } from './overlays/CommandPalette';
+export type { Command, CommandItemPartProps, CommandPaletteProps } from './overlays/CommandPalette';

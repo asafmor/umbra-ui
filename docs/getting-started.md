@@ -50,7 +50,7 @@ Two colours are fixed and do not follow the theme: violet means **selected** and
 ## 4. Build the frame
 
 ```tsx
-import { AppShell, Button, Page, PrimaryNav, SubNav, TopBar } from 'umbra-ui';
+import { AppShell, Page, PrimaryAction, PrimaryNav, SubNav, TopBar } from 'umbra-ui';
 
 <AppShell
   topBar={
@@ -58,7 +58,7 @@ import { AppShell, Button, Page, PrimaryNav, SubNav, TopBar } from 'umbra-ui';
       logo="U"
       nav={<PrimaryNav items={sections} value={section} onChange={setSection} />}
       onSearch={openSearch}
-      primaryAction={<Button variant="primary">Continue</Button>}
+      primaryAction={<PrimaryAction label="Continue" />}
     />
   }
   subNav={<SubNav label="Overview" items={pages} value={page} onChange={setPage} />}

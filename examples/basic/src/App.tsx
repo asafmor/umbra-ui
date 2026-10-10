@@ -7,6 +7,7 @@ import {
   Columns,
   IconButton,
   Page,
+  PrimaryAction,
   PrimaryNav,
   SectionTitle,
   Stack,
@@ -59,11 +60,7 @@ export function App() {
           <TopBar
             logo="U"
             nav={<PrimaryNav items={sections} value={section} onChange={setSection} />}
-            primaryAction={
-              <Button variant="primary" iconEnd={<ArrowRight />} collapseTo="icon">
-                Continue
-              </Button>
-            }
+            primaryAction={<PrimaryAction label="Continue" icon={<ArrowRight />} />}
           />
         }
         subNav={

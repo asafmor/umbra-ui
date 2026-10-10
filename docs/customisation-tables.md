@@ -214,6 +214,7 @@ Compares values across categories: grouped, stacked or diverging around zero, up
 | `thresholds` | `BarThreshold[]` | Colours bars by value. Each threshold also has a fill, so the steps differ without colour. |
 | `formatValue` | `((value: number) => string)` | Formats a value for labels, the tooltip and screen readers. Defaults to the provider's locale. |
 | `description` | `string` | What a screen reader hears after the name. Defaults to a generated summary of the data. |
+| `labels` | `boolean` | Draws labels on the chart itself, so it can be read without the legend or the tooltip. |
 | `categories` (required) | `string[]` |  |
 | `series` (required) | `BarSeries[]` |  |
 | `colorBy` | `"series" \| "sign"` | `sign` colours bars by the sign of their value; negative bars are also striped. |
@@ -223,7 +224,6 @@ Compares values across categories: grouped, stacked or diverging around zero, up
 | `yTitle` | `string` | Title of the vertical axis. |
 | `aria-labelledby` | `string` | Id of the element that names the chart, for example a card title. |
 | `legend` | `string \| number \| bigint \| boolean \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| import("react").ReactPortal \| Promise<string \| number \| bigint \| boolean \| import("react").ReactPortal \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| null \| undefined> \| null` | The legend: `true` or a placement shows the built-in one, `false` hides it, and a node replaces it. By default it is shown below the chart when there is more than one series. |
-| `labels` | `boolean` | Draws labels on the chart itself, so it can be read without the legend or the tooltip. |
 | `onPointPress` | `((point: import(".").ChartPoint) => void)` | Called when a point is clicked, or activated with Enter or Space. |
 | `empty` | `ReactNode` | Shown when there is no data. |
 | `onRetry` | `(() => void)` | Adds a retry button to the error state. |
@@ -399,6 +399,49 @@ Shares its width among its children. Below the minimum window it shows one child
 
 **Blocks**: none.
 
+## CommandPalette
+
+A search over everything the app can do or open, in a dialog near the top of the window. Opened by the `TopBar` search and by `Mod+K`. Focus stays in the input; the arrow keys move through the results.
+
+**Tokens**: `--umbra-command-palette-active-bg`, `--umbra-command-palette-active-fg`, `--umbra-command-palette-bg`, `--umbra-command-palette-border`, `--umbra-command-palette-item-height`, `--umbra-command-palette-max-height`, `--umbra-command-palette-offset`, `--umbra-command-palette-radius`, `--umbra-command-palette-scrim`, `--umbra-command-palette-width`, `--umbra-command-palette-z-index`, `--umbra-focus-color`, `--umbra-scroll-thumb`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `commands` | `Command[]` | A fixed list. The palette filters and ranks it as the user types. |
+| `onQuery` | `((text: string, page: Command \| undefined) => Command[] \| Promise<Command[]>)` | Called with the text (after `debounce`) and the open page, for results the app looks up. They are listed after the matches from `commands`, as given. An answer that arrives late is dropped. |
+| `debounce` | `number` | Milliseconds to wait after the last key before `onQuery` is called. |
+| `loading` | `boolean` | Shows the loading rows, in addition to the time `onQuery` takes. |
+| `error` | `ReactNode` | Shows the error state: text, a node, or `true` for the default text. A failed `onQuery` shows it too. |
+| `recent` | `string[]` | Ids of recently used commands, newest first. Listed first while the input is empty. |
+| `includeShortcuts` | `boolean` | Lists every shortcut of the provider's registry that has a label, with its keys. |
+| `open` | `boolean` | Controlled state. |
+| `defaultOpen` | `boolean` |  |
+| `onOpenChange` | `((open: boolean) => void)` |  |
+| `onRun` | `((command: Command) => void)` | Called with every command the user runs, after its own `onRun`. |
+| `navigate` | `((href: string) => void)` | Called with the `href` of a command that has one. Defaults to a full page navigation. |
+| `shortcut` | `string \| null` | Id of the shortcut that opens and closes the palette. `null` binds none. |
+| `label` | `string` | Accessible name of the dialog and of the input. |
+| `placeholder` | `string` |  |
+| `emptyLabel` | `string` |  |
+| `errorLabel` | `string` |  |
+| `retryLabel` | `string` |  |
+| `loadingLabel` | `string` |  |
+| `recentLabel` | `string` |  |
+| `shortcutsLabel` | `string` |  |
+| `resultsLabel` | `string` | Accessible name of the list of results. |
+| `backLabel` | `string` | Accessible name of the breadcrumb button that leaves the open page. |
+| `moveHint` | `string` | The key hints in the footer. |
+| `runHint` | `string` |  |
+| `backHint` | `string` |  |
+| `closeHint` | `string` |  |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `className` | `string` | On the palette's panel. |
+| `style` | `CSSProperties` |  |
+
+**Parts**: `searchIcon`, `item`, `sectionHeader`, `empty`, `footer`.
+
+**Blocks**: none.
+
 ## ConfirmDialog
 
 The confirm step before an action that cannot be undone. An alert dialog: it opens with the focus on Cancel, and cannot be dismissed by a press outside it.
@@ -526,9 +569,9 @@ A ring that shows one value against a total, or how a total splits into segments
 | `thresholds` | `{ from: number; tone: DonutTone; }[]` | Picks the tone from the value: the last entry whose `from` the value reaches. |
 | `formatValue` | `((value: number) => string)` | Formats a value for labels, the tooltip and screen readers. Defaults to the provider's locale. |
 | `description` | `string` | What a screen reader hears after the name. Defaults to a generated summary of the data. |
+| `labels` | `boolean` | Draws labels on the chart itself, so it can be read without the legend or the tooltip. |
 | `aria-labelledby` | `string` | Id of the element that names the chart, for example a card title. |
 | `legend` | `string \| number \| bigint \| boolean \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| import("react").ReactPortal \| Promise<string \| number \| bigint \| boolean \| import("react").ReactPortal \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| null \| undefined> \| null` | The legend: `true` or a placement shows the built-in one, `false` hides it, and a node replaces it. By default it is shown below the chart when there is more than one series. |
-| `labels` | `boolean` | Draws labels on the chart itself, so it can be read without the legend or the tooltip. |
 | `onPointPress` | `((point: import(".").ChartPoint) => void)` | Called when a point is clicked, or activated with Enter or Space. |
 | `empty` | `ReactNode` | Shown when there is no data. |
 | `onRetry` | `(() => void)` | Adds a retry button to the error state. |
@@ -653,6 +696,34 @@ A header row for one group of rows inside a list or table.
 **Parts**: `toggle`, `icon`, `title`, `count`, `meta`, `actions`.
 
 **Blocks**: `GroupHeader.Root`, `GroupHeader.Toggle`, `GroupHeader.Title`, `GroupHeader.Count`, `GroupHeader.Meta`, `GroupHeader.Actions`.
+
+## HistoryButtons
+
+Back and forward. On their own they drive the browser history; with `onBack` and `onForward` they drive the app's router.
+
+**Tokens**: `--umbra-history-buttons-bg`, `--umbra-history-buttons-gap`, `--umbra-history-buttons-size`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `canGoBack` | `boolean` | Router mode: whether there is somewhere to go. Leave both out to use the browser history. |
+| `canGoForward` | `boolean` |  |
+| `onBack` | `(() => void)` | Router mode: called in place of `history.back()` and `history.forward()`. |
+| `onForward` | `(() => void)` |  |
+| `entries` | `HistoryEntry[]` | Recent places, newest first. They open from a caret, a long press or a right click on the buttons. |
+| `onNavigate` | `((id: string) => void)` | Called with the id of the entry the user chose. |
+| `backShortcut` | `string \| null` | Ids of the shortcuts the buttons bind. `null` binds none. |
+| `forwardShortcut` | `string \| null` |  |
+| `backLabel` | `string` | Accessible names and tooltip texts. |
+| `forwardLabel` | `string` |  |
+| `entriesLabel` | `string` | Accessible name of the caret and of the menu of `entries`. |
+| `aria-label` | `string` | Accessible name of the group. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+
+**Parts**: `backIcon`, `forwardIcon`, `entriesIcon`.
+
+**Blocks**: none.
 
 ## IconButton
 
@@ -826,6 +897,7 @@ One or more series over categories, numbers or time, with a numeric or an ordina
 | `label` | `string` | Accessible name of the chart. Required unless `aria-labelledby` is set. |
 | `formatValue` | `((value: number) => string)` | Formats a value for labels, the tooltip and screen readers. Defaults to the provider's locale. |
 | `description` | `string` | What a screen reader hears after the name. Defaults to a generated summary of the data. |
+| `labels` | `boolean` | Draws labels on the chart itself, so it can be read without the legend or the tooltip. |
 | `categories` | `string[]` | The order of a category x axis. Defaults to the order the names first appear in. |
 | `series` (required) | `LineSeries[]` |  |
 | `annotations` | `ChartAnnotation[]` | Reference lines and bands on either axis. |
@@ -833,7 +905,6 @@ One or more series over categories, numbers or time, with a numeric or an ordina
 | `yTitle` | `string` |  |
 | `aria-labelledby` | `string` | Id of the element that names the chart, for example a card title. |
 | `legend` | `string \| number \| bigint \| boolean \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| import("react").ReactPortal \| Promise<string \| number \| bigint \| boolean \| import("react").ReactPortal \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| null \| undefined> \| null` | The legend: `true` or a placement shows the built-in one, `false` hides it, and a node replaces it. By default it is shown below the chart when there is more than one series. |
-| `labels` | `boolean` | Draws labels on the chart itself, so it can be read without the legend or the tooltip. |
 | `onPointPress` | `((point: import(".").ChartPoint) => void)` | Called when a point is clicked, or activated with Enter or Space. |
 | `empty` | `ReactNode` | Shown when there is no data. |
 | `onRetry` | `(() => void)` | Adds a retry button to the error state. |
@@ -1122,6 +1193,39 @@ An anchored panel without a backdrop: the page behind it stays usable. It keeps 
 
 **Blocks**: `Popover.Root`, `Popover.Trigger`, `Popover.Content`, `Popover.Header`, `Popover.Toolbar`, `Popover.Body`, `Popover.Footer`.
 
+## PrimaryAction
+
+The one primary action of the app, at the end of the `TopBar`. Its label follows the state of the app. It fills the height of the bar and shows its icon only when the bar runs out of room.
+
+**Tokens**: `--umbra-focus-color`, `--umbra-primary-action-bg`, `--umbra-primary-action-bg-end`, `--umbra-primary-action-caret-width`, `--umbra-primary-action-fg`, `--umbra-primary-action-min-height`, `--umbra-primary-action-min-width`, `--umbra-primary-action-padding-x`, `--umbra-primary-action-radius`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `label` (required) | `string` | What the action does now. It changes with the state of the app ("Continue", "Review 3 items"). |
+| `description` | `ReactNode` | A second, smaller line under the label. |
+| `icon` | `ReactNode` | Shown at the end of the button, and alone when the button collapses. |
+| `iconPosition` | `"start" \| "end"` | Puts the icon before the label. |
+| `onPress` | `(() => void)` |  |
+| `href` | `string` | Renders a link. |
+| `loading` | `boolean` | Shows the spinner and blocks presses. The button stays focusable. |
+| `loadingLabel` | `string` | What a screen reader hears while `loading`. |
+| `disabled` | `boolean` |  |
+| `shortcut` | `string` | Id of a shortcut in the provider's list: binds the key and shows the hint in the tooltip. |
+| `badge` | `number` | A count beside the label, for example the items that wait for the user. |
+| `attention` | `boolean` | Marks that the app needs the user before it can go on: a still marker, never a pulse. |
+| `attentionLabel` | `string` | What a screen reader hears for the `attention` marker. |
+| `menu` | `MenuEntry[]` | Alternative actions. They open from a caret at the end of the button. |
+| `onMenuAction` | `((id: string) => void)` | Called with the id of the chosen alternative. |
+| `menuLabel` | `string` | Accessible name of the caret that opens `menu`. |
+| `collapsed` | `boolean` | Shows the icon only. Set by the `TopBar` when it runs out of room; the button also does it by itself. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+
+**Parts**: `icon`, `label`, `description`, `badge`, `attention`, `spinner`, `menuTrigger`.
+
+**Blocks**: none.
+
 ## PrimaryNav
 
 The top-level sections of the app, inside the `TopBar`.
@@ -1205,10 +1309,10 @@ Compares one or more series across several axes that share a centre.
 | `max` | `number` | The value at the outer ring. Defaults to a round number above the largest value. |
 | `formatValue` | `((value: number) => string)` | Formats a value for labels, the tooltip and screen readers. Defaults to the provider's locale. |
 | `description` | `string` | What a screen reader hears after the name. Defaults to a generated summary of the data. |
+| `labels` | `boolean` | Draws labels on the chart itself, so it can be read without the legend or the tooltip. |
 | `series` (required) | `RadarSeries[]` |  |
 | `aria-labelledby` | `string` | Id of the element that names the chart, for example a card title. |
 | `legend` | `string \| number \| bigint \| boolean \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| import("react").ReactPortal \| Promise<string \| number \| bigint \| boolean \| import("react").ReactPortal \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| null \| undefined> \| null` | The legend: `true` or a placement shows the built-in one, `false` hides it, and a node replaces it. By default it is shown below the chart when there is more than one series. |
-| `labels` | `boolean` | Draws labels on the chart itself, so it can be read without the legend or the tooltip. |
 | `onPointPress` | `((point: import(".").ChartPoint) => void)` | Called when a point is clicked, or activated with Enter or Space. |
 | `empty` | `ReactNode` | Shown when there is no data. |
 | `onRetry` | `(() => void)` | Adds a retry button to the error state. |
@@ -1355,6 +1459,31 @@ A row of joined segments that filters the content below it. One or several can b
 **Parts**: `icon`, `count`, `check`, `item`.
 
 **Blocks**: `SegmentedFilter.Root`, `SegmentedFilter.Item`.
+
+## ShortcutBar
+
+The user's pinned shortcuts, at the end of the `SubNav`. One tab stop; arrow keys move between the chips. Chips that do not fit move into a "+N" menu.
+
+**Tokens**: `--umbra-focus-color`, `--umbra-shortcut-bar-font`, `--umbra-shortcut-bar-gap`, `--umbra-shortcut-bar-item-bg`, `--umbra-shortcut-bar-item-border`, `--umbra-shortcut-bar-item-fg`, `--umbra-shortcut-bar-item-height`, `--umbra-shortcut-bar-item-radius`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `items` | `ShortcutBarItem[]` | The shortcuts, as data. |
+| `children` | `ReactNode` | The shortcuts, as `ShortcutBar.Item` blocks. |
+| `renderLink` | `((props: ShortcutLinkProps) => ReactNode)` | Plugs in the app's router link for items with `href`. Defaults to a plain `<a>`. |
+| `mode` | `"auto" \| "labels" \| "icons"` | `labels`: icon and label. `icons`: icons only, the label is the tooltip. `auto`: labels while they fit, then icons, when every item has one. |
+| `moreLabel` | `((count: number) => string)` | The text of the overflow chip, from the number of items in its menu. |
+| `moreName` | `((count: number) => string)` | Accessible name of the overflow chip and its menu, from the same number. |
+| `onEdit` | `(() => void)` | Shows a button at the end for changing the shortcuts. |
+| `editLabel` | `string` |  |
+| `aria-label` | `string` | Accessible name of the toolbar. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+
+**Parts**: `item`, `more`, `editIcon`.
+
+**Blocks**: `ShortcutBar.Item`.
 
 ## Skeleton
 
