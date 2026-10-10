@@ -68,4 +68,7 @@ Items that do not fit move into the "More" menu, last item first. The active ite
 
 None.
 
-Resolved 2026-10-10: an item with a dropdown does both, as in the source. Its label navigates and a separate caret button opens the menu. An item without `href` opens the menu from anywhere on the item.
+Resolved 2026-10-10:
+
+- An item with a dropdown does both, as in the source. Its label navigates and a separate caret button opens the menu. An item without `href` opens the menu from anywhere on the item.
+- Approved after Milestone 0: `renderLink` receives anchor props to spread on the app's router link.

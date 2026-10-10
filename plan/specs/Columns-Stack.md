@@ -79,4 +79,7 @@ On every child (all umbra-ui layout-aware components accept these; wrap anything
 
 None.
 
-Resolved 2026-10-10: `Columns` does not collapse low-priority columns before tab mode in Milestone 0.
+Resolved 2026-10-10:
+
+- `Columns` does not collapse low-priority columns before tab mode in Milestone 0.
+- Approved after Milestone 0: in narrow mode every `Columns` becomes tabs, nested ones too; `narrow="keep"` opts one out.

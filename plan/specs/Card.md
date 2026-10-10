@@ -94,4 +94,7 @@ States: `collapsed`, `loading`, `empty`, `error`, `focus-within`.
 
 None.
 
-Resolved 2026-10-10: default `minHeight` is 72 / 88 / 104px for compact / default / spacious.
+Resolved 2026-10-10:
+
+- Default `minHeight` is 72 / 88 / 104px for compact / default / spacious.
+- Approved after Milestone 0: `href` renders a plain `<a>`, not a router link; `toolbar` and `footer` are set through `parts` only, with `Card.Toolbar` and `Card.Footer`.

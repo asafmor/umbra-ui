@@ -63,3 +63,4 @@ Resolved 2026-10-10:
 
 - Reserved keys: `Mod+K` (command palette) and `?` (shortcuts sheet).
 - The icon map starts with the names Milestone 0 uses and grows per milestone. The default set is `lucide-react`.
+- Approved after Milestone 0: the shortcut shape `{ id, keys, label, action? }`; token override keys without the `--umbra-` prefix; `brand` reads hex and `rgb()` only for the contrast calculation.

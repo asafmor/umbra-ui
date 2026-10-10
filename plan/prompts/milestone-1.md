@@ -5,8 +5,8 @@ controls. Your job in this session is Milestone 1 (core, tier 1) from
 plan/roadmap.md: plan it, then build it.
 
 Read these first, in this order, before writing anything:
-1. AGENTS.md: overview, repo map, binding decisions, commands, conventions,
-   known issues, and the questions still waiting on the owner.
+1. AGENTS.md: overview, repo map, binding decisions, commands, conventions
+   and known issues.
 2. plan/roadmap.md: Milestone 1 batches and order, its "done when" test, and
    the per-component definition of done.
 3. plan/components.md: the catalog row of every tier 1 component (what it
@@ -36,9 +36,7 @@ Read these first, in this order, before writing anything:
 Before any Milestone 1 code:
 1. If I give you findings from the Milestone 0 verification, fix those first,
    each in its own commit, with the checks passing.
-2. Ask me the questions listed in AGENTS.md under "Waiting on the owner" that
-   are still open, and apply my answers (code, spec and docs in one change).
-3. Tell me your plan for Milestone 1: the batches, what each needs from the
+2. Tell me your plan for Milestone 1: the batches, what each needs from the
    others, the new dependencies if any, and your questions. Wait for my
    go-ahead.
 

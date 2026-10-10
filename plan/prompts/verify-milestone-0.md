@@ -102,6 +102,5 @@ Rules:
 - Do not publish to npm.
 - If a check cannot run (a missing browser, a port in use), fix the
   environment or say so. Do not skip it silently.
-- AGENTS.md lists decisions the building session made that still wait for the
-  owner ("Waiting on the owner"). Do not treat those as defects; give your
-  view on each in section 4.
+- Each spec ends with decisions the owner has approved ("Resolved"). Do not
+  report those as defects; if you think one is a mistake, say so in section 4.

@@ -71,3 +71,5 @@ None; it is small enough to rebuild from text and a `Link`.
 ## Open questions
 
 None.
+
+Resolved 2026-10-10: `href` renders a plain `<a>`, not a router link (approved after Milestone 0).

@@ -37,20 +37,6 @@ The design is **inspired by** 40 screenshots of a game UI in `screenshots/`. It 
 
 **Next step**: an independent review of Milestone 0 (`plan/prompts/verify-milestone-0.md`). Then Milestone 1 (`plan/prompts/milestone-1.md`), starting with batch 1a (data basics) in `plan/roadmap.md`; each component's spec is written first, from `plan/specs/Card.md`.
 
-### Waiting on the owner
-
-Choices made while building Milestone 0 that change how developers use the library. Each is built as described; the owner has not confirmed them yet. Remove a row once it is answered and recorded in the spec.
-
-| # | Question | Built as |
-|---|---|---|
-| 1 | In narrow mode, should a `Columns` nested inside another also become tabs? | Yes, every `Columns` does; `narrow="keep"` opts out |
-| 2 | Shortcut shape | `{ id, keys: 'Mod+K', label, action? }` |
-| 3 | Token override keys | Without the prefix: `tokens={{ 'radius-card': '12px' }}` |
-| 4 | `renderLink` for routers | Receives anchor props to spread |
-| 5 | Should `href` on `Card` and `SectionTitle` also go through a router link? | No, plain `<a>` |
-| 6 | `toolbar` and `footer` on `Card` | Through `parts` only, using `Card.Toolbar` and `Card.Footer`; no props |
-| 7 | `brand` accepts only hex and `rgb()` for computing text contrast | Other syntaxes get white text and a warning |
-
 ### Known issues
 
 - Commit `973f274` breaks "tests pass at every commit": it adds two navigation tests whose story arrives in the next commit. It was already pushed, so it stays.
