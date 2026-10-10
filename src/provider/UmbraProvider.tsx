@@ -15,12 +15,12 @@ import { cx } from '../utils/parts';
 import { focusColourOn, mutedTextOn, textColourOn } from './contrast';
 import { defaultIcons, type IconMap } from './icons';
 import {
-  conflictMessage,
   formatKeys,
   isTypingTarget,
   ownedShortcut,
   resolveShortcuts,
   shortcutForEvent,
+  unreportedConflicts,
   type Shortcut,
   type ShortcutRegistry,
 } from './shortcuts';
@@ -174,14 +174,10 @@ export function UmbraProvider({
   );
 
   // Once per conflict, and never during render.
-  const [warned] = useState(() => new Set<string>());
+  const [reported] = useState(() => new Set<string>());
   useEffect(() => {
-    for (const conflict of registry.conflicts) {
-      const message = conflictMessage(conflict);
-      if (!warned.has(message)) warn(message);
-      warned.add(message);
-    }
-  }, [registry, warned]);
+    unreportedConflicts(registry, reported).forEach(warn);
+  }, [registry, reported]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -263,6 +259,8 @@ export interface ListedShortcut {
   label: string;
   /** The key hint, for example "Ctrl+K". */
   keys: string;
+  /** Whether anything would run now: the shortcut has an `action`, or a mounted component bound it. */
+  canRun: () => boolean;
   /** Runs what the keys would run. */
   run: () => void;
 }
@@ -279,7 +277,8 @@ export function useShortcutList(): ListedShortcut[] {
           id: s.id,
           label: s.label,
           keys: formatKeys(s.keys),
-          // Looked up when it runs: components bind and unbind as they mount.
+          // Looked up when asked: components bind and unbind as they mount.
+          canRun: () => !!(bound.get(s.id) ?? s.action),
           run: () => (bound.get(s.id) ?? s.action)?.(),
         })),
     [registry, bound],

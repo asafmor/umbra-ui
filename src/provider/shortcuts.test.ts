@@ -6,6 +6,7 @@ import {
   ownedShortcut,
   resolveShortcuts,
   shortcutForEvent,
+  unreportedConflicts,
 } from './shortcuts';
 
 const event = (
@@ -77,6 +78,22 @@ test('an app shortcut with a reserved id rebinds it without a conflict, and free
   expect(registry.conflicts).toEqual([]);
   expect(shortcutForEvent(event('p', { ctrlKey: true }), registry, false)?.id).toBe('lib.palette');
   expect(shortcutForEvent(event('k', { ctrlKey: true }), registry, false)?.id).toBe('app.kill');
+});
+
+test('each conflict is reported once, however often the same list is registered', () => {
+  const app = () => [
+    { id: 'app.find', keys: 'Mod+K', label: 'Find' },
+    { id: 'a', keys: 'G', label: 'A' },
+    { id: 'b', keys: 'g', label: 'B' },
+  ];
+  const reported = new Set<string>();
+  expect(unreportedConflicts(resolveShortcuts(app(), reserved, false), reported)).toHaveLength(2);
+  expect(unreportedConflicts(resolveShortcuts(app(), reserved, false), reported)).toEqual([]);
+  // A new conflict is still reported.
+  const more = [...app(), { id: 'c', keys: 'G', label: 'C' }];
+  expect(unreportedConflicts(resolveShortcuts(more, reserved, false), reported)).toEqual([
+    expect.stringContaining('"b" and "c"'),
+  ]);
 });
 
 test('a held key and an event that is already handled belong to no shortcut', () => {

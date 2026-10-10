@@ -117,6 +117,13 @@ export const conflictMessage = (c: ShortcutConflict) =>
     ? `shortcut "${c.winner}" takes ${c.keys} from the library default "${c.loser}", which now has no keys.`
     : `shortcuts "${c.loser}" and "${c.winner}" both use ${c.keys}; "${c.winner}" was registered last and wins.`;
 
+/** The warnings not given yet. `reported` remembers them, so each conflict is reported once. */
+export function unreportedConflicts(registry: ShortcutRegistry, reported: Set<string>) {
+  const messages = registry.conflicts.map(conflictMessage).filter((message) => !reported.has(message));
+  for (const message of messages) reported.add(message);
+  return messages;
+}
+
 /**
  * The shortcut a key press belongs to. A repeated key (held down) and an event something else already
  * handled belong to none.
