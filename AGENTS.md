@@ -35,7 +35,28 @@ The design is **inspired by** 40 screenshots of a game UI in `screenshots/`. It 
 | 5. Basics: Button, IconButton, Skeleton | done (built before the cards, which use them) |
 | 6. Docs: README, guides, `basic` example, customisation table generator | done |
 
-**Next step**: the owner reviews Milestone 0. Then Milestone 1, batch 1a (data basics) in `plan/roadmap.md`: write each component's spec first, from `plan/specs/Card.md`.
+**Next step**: an independent review of Milestone 0 (`plan/prompts/verify-milestone-0.md`). Then Milestone 1 (`plan/prompts/milestone-1.md`), starting with batch 1a (data basics) in `plan/roadmap.md`; each component's spec is written first, from `plan/specs/Card.md`.
+
+### Waiting on the owner
+
+Choices made while building Milestone 0 that change how developers use the library. Each is built as described; the owner has not confirmed them yet. Remove a row once it is answered and recorded in the spec.
+
+| # | Question | Built as |
+|---|---|---|
+| 1 | In narrow mode, should a `Columns` nested inside another also become tabs? | Yes, every `Columns` does; `narrow="keep"` opts out |
+| 2 | Shortcut shape | `{ id, keys: 'Mod+K', label, action? }` |
+| 3 | Token override keys | Without the prefix: `tokens={{ 'radius-card': '12px' }}` |
+| 4 | `renderLink` for routers | Receives anchor props to spread |
+| 5 | Should `href` on `Card` and `SectionTitle` also go through a router link? | No, plain `<a>` |
+| 6 | `toolbar` and `footer` on `Card` | Through `parts` only, using `Card.Toolbar` and `Card.Footer`; no props |
+| 7 | `brand` accepts only hex and `rgb()` for computing text contrast | Other syntaxes get white text and a warning |
+
+### Known issues
+
+- Commit `973f274` breaks "tests pass at every commit": it adds two navigation tests whose story arrives in the next commit. It was already pushed, so it stays.
+- A card collapsed with its caret is not size-animated; only the caret rotates (open detail in `plan/interaction.md`).
+- Dropdowns and overflow menus are popovers holding links and buttons, not ARIA menus, until the public `Menu` in Milestone 1.
+- The visual tests capture stories on the default context tint only.
 
 ## Commands
 
@@ -73,7 +94,7 @@ The design is **inspired by** 40 screenshots of a game UI in `screenshots/`. It 
 | `plan/decisions/` | One short record per tech decision: styling, behaviour base, charts, table engine, packaging, docs and testing, customisation. |
 | `plan/roadmap.md` | Pre-code tasks, milestones, build order, and the per-component definition of done. |
 | `plan/reference/` | `index.html`: the static reference screen, the visual ground truth for the look (open it in a browser; `?density=compact&context=teal` switches settings). `shot-*.png`: renders at three sizes. |
-| `plan/prompts/` | Ready-made prompts for starting a coding session (`milestone-0.md`). |
+| `plan/prompts/` | Ready-made prompts for starting a fresh agent session: `milestone-0.md` (used), `verify-milestone-0.md` (independent review of Milestone 0), `milestone-1.md` (plan and build Milestone 1). |
 | `src/` | Library source. `src/styles/`: base CSS and the generated tokens. `src/provider/`: provider, scope, icon map, shortcut registry. `src/layout/`: Page, Columns, Stack, Slot, Card, SectionTitle, ScrollArea (`useSlot.tsx` and `collapse.ts` hold the layout rules). `src/shell/`: AppShell, TopBar, PrimaryNav, SubNav (`nav.tsx` is shared). `src/basics/`: Button, IconButton, Skeleton. `src/internal/`: not exported; overlays on React Aria and `useShrinkLevel`, the hook behind every "show less as it narrows" rule. `src/utils/`: shared helpers (`parts.ts` implements the parts layer). `src/charts/`: the `umbra-ui/charts` entry. |
 | `scripts/` | Build scripts (`build-tokens.mjs`). |
 | `.storybook/` | Storybook config; the toolbar switches density and context. |
