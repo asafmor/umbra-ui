@@ -3,6 +3,8 @@ import { Bookmark, Download, Filter, RefreshCw } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '../basics/Button';
 import { IconButton } from '../basics/IconButton';
+import { ActionBar } from '../overlays/ActionBar';
+import { PageHeader } from '../shell/PageHeader';
 import { Skeleton } from '../basics/Skeleton';
 import { Log, Rows } from '../stories/placeholders';
 import { Card } from './Card';
@@ -278,6 +280,44 @@ function CollapsedActionsStack() {
     </Stack>
   );
 }
+
+/**
+ * A `PageHeader` as the `header` part and an `ActionBar` as the `footer` part need no styling of their
+ * own: the card gives them its padding, a gap above the body and a rule above the footer.
+ */
+export const PageHeaderAndActionBar: Story = {
+  render: () => (
+    <Columns style={{ height: '100%' }}>
+      <Card
+        aria-label="Plain header"
+        parts={{
+          header: <PageHeader size="compact" headingLevel={2} overline="Client" title="Client A" />,
+          footer: <ActionBar aria-label="Actions" status="2 changes" primary={{ label: 'Save' }} />,
+        }}
+      >
+        <Rows />
+      </Card>
+      <Card
+        aria-label="Tinted header"
+        parts={{
+          header: (
+            <PageHeader size="compact" tone="tinted" headingLevel={2} overline="Client" title="Client B" />
+          ),
+          footer: (
+            <ActionBar
+              aria-label="Decision"
+              emphasis="strong"
+              status={{ tone: 'danger', text: 'Must respond' }}
+              primary={{ label: 'Approve' }}
+            />
+          ),
+        }}
+      >
+        <Rows />
+      </Card>
+    </Columns>
+  ),
+};
 
 /**
  * `size="content"`: the card is as tall as its header plus its content, with or without a title, and

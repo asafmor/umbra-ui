@@ -133,5 +133,6 @@ Resolved 2026-10-10:
 
 - Default `minHeight` is 72 / 88 / 104px for compact / default / spacious.
 - Approved after Milestone 0: `href` renders a plain `<a>`, not a router link; `toolbar` and `footer` are set through `parts` only, with `Card.Toolbar` and `Card.Footer`.
+- 2026-10-11: a `PageHeader` given as the `header` part and an `ActionBar` given as the `footer` part are spaced by the card: a plain header gets the card padding (above and at the sides), the body after any header that is not the card's own gets the padding above, a tinted or band header runs edge to edge with one rule below, and the bar gets the footer's padding and rule (a `strong` bar keeps its own). `--umbra-page-header-padding` and `--umbra-action-bar-padding-x/-y` still override.
 - 2026-10-11: `size="content"` sizes the card by its header plus its body. Before, the body had no height of its own and the card showed only its header.
 - 2026-10-10 (review item 6): the popover moves the content, it does not repeat it. The overflow of `actions` is a `Menu`.

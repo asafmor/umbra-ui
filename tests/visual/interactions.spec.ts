@@ -526,6 +526,48 @@ test('card: Enter and Space toggle the caret', async ({ page }) => {
   await expect(caret).toBeFocused();
 });
 
+test('card: a PageHeader as header and an ActionBar as footer take the card padding', async ({ page }) => {
+  await open(page, 'layout-card--page-header-and-action-bar');
+  const pad = 16;
+  const measure = (name: string) =>
+    page.getByRole('region', { name }).evaluate((el) => {
+      const box = (node: Element) => node.getBoundingClientRect();
+      const card = box(el);
+      const title = box(el.querySelector('[data-umbra="page-header"] [data-part="title"]')!);
+      const header = box(el.querySelector('[data-umbra="page-header"]')!);
+      const row = box(el.querySelector('[data-part="body"] [data-part="viewport"] > div > div')!);
+      const bar = el.querySelector('[data-umbra="action-bar"]')!;
+      const button = box(bar.querySelector('button')!);
+      return {
+        // The border is 1px on each side.
+        headerInset: Math.round(header.left - card.left),
+        headerTop: Math.round(header.top - card.top),
+        gapAboveBody: Math.round(row.top - header.bottom),
+        bodyInset: Math.round(row.left - card.left),
+        barBottom: Math.round(card.bottom - box(bar).bottom),
+        buttonInset: Math.round(card.right - button.right),
+        buttonFromBottom: Math.round(card.bottom - button.bottom),
+        titleTop: Math.round(title.top - card.top),
+        titleInset: Math.round(title.left - card.left),
+      };
+    });
+  const plain = await measure('Plain header');
+  expect(plain).toMatchObject({ headerInset: 1, headerTop: 1, gapAboveBody: pad, bodyInset: pad + 1 });
+  expect(plain.titleTop).toBeGreaterThanOrEqual(pad);
+  expect(plain.titleInset).toBe(pad + 1);
+  expect(plain).toMatchObject({ barBottom: 1, buttonInset: pad + 1 });
+  expect(plain.buttonFromBottom).toBeGreaterThanOrEqual(8);
+
+  // A tinted header keeps its own padding and runs edge to edge; a strong bar keeps its own, too.
+  const tinted = await measure('Tinted header');
+  expect(tinted).toMatchObject({ headerInset: 1, headerTop: 1, gapAboveBody: pad, bodyInset: pad + 1 });
+  expect(tinted).toMatchObject({ barBottom: 1, buttonInset: pad + 1 });
+  const header = page.getByRole('region', { name: 'Tinted header' }).locator('[data-umbra="page-header"]');
+  await expect(header).toHaveCSS('border-top-width', '0px');
+  await expect(header).toHaveCSS('border-bottom-width', '1px');
+  await expect(header).toHaveCSS('border-top-left-radius', '0px');
+});
+
 test('card: size="content" is as tall as its header and content, and scrolls inside a short stack', async ({
   page,
 }) => {

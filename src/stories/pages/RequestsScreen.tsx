@@ -32,8 +32,6 @@ import type { InboxProps } from './OverviewScreen';
 type Decision = 'approved' | 'declined';
 
 const flow: CSSProperties = { display: 'grid', gap: 'var(--umbra-space-5)', minWidth: 0 };
-// A card's body has no top padding of its own: the built-in header leaves the gap, a `PageHeader` does not.
-const afterHeader: CSSProperties = { paddingTop: 'var(--umbra-density-card-padding)' };
 const text: CSSProperties = { margin: 0, font: 'var(--umbra-font-body)' };
 
 function RequestList({ messageId, read, onSelect }: InboxProps) {
@@ -288,7 +286,6 @@ function Detail({ m }: { m: Message }) {
           footer: (
             <ActionBar
               aria-label="Decision"
-              style={{ flex: 'none', padding: 'var(--umbra-space-3) var(--umbra-density-card-padding)' }}
               emphasis={waiting ? 'strong' : 'default'}
               status={
                 waiting
@@ -324,10 +321,10 @@ function Detail({ m }: { m: Message }) {
           ),
         }}
       >
-        <Tabs.Panel id="summary" style={afterHeader}>
+        <Tabs.Panel id="summary">
           <Summary m={m} />
         </Tabs.Panel>
-        <Tabs.Panel id="activity" style={afterHeader}>
+        <Tabs.Panel id="activity">
           <List aria-label="Activity" dividers>
             {['Request received', 'Assigned for review', 'Budget checked', 'Reminder sent'].map((step, i) => (
               <List.Item
@@ -341,7 +338,7 @@ function Detail({ m }: { m: Message }) {
             ))}
           </List>
         </Tabs.Panel>
-        <Tabs.Panel id="terms" style={afterHeader}>
+        <Tabs.Panel id="terms">
           <p style={text}>
             Standard terms apply to {m.team} in {m.region}. Changes need a second approval.
           </p>

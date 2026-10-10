@@ -223,12 +223,17 @@
   padding-top: var(--pad);
 }
 
+/*
+ * The card's own header and toolbar leave the gap above the body. After anything else (no header, or a
+ * `PageHeader` given as the header part) the body has its own padding above.
+ */
 .body > [data-part='viewport'] {
-  padding: 0 var(--pad) var(--pad);
+  padding: var(--pad);
 }
 
-.body:first-child > [data-part='viewport'] {
-  padding-top: var(--pad);
+:is(.header, .toolbar) + .body > [data-part='viewport'],
+.popoverContent > .body:not(:first-child) > [data-part='viewport'] {
+  padding-top: 0;
 }
 
 .body[data-padding='none'] > [data-part='viewport'] {
@@ -241,6 +246,35 @@
   align-items: center;
   gap: var(--umbra-space-3);
   padding: var(--umbra-space-3) var(--pad);
+  border-top: var(--umbra-border-width) solid var(--border);
+}
+
+/*
+ * A `PageHeader` as the header part and an `ActionBar` as the footer part: the card owns their spacing,
+ * as it does for its own header and footer. A tinted or band header runs edge to edge with one rule below.
+ */
+.root[data-umbra='card'] > [data-umbra='page-header'] {
+  flex: none;
+  border-width: 0 0 var(--umbra-border-width);
+  border-radius: 0;
+}
+
+/* The header has a `--pad` of its own, so the card's padding is read from its tokens here. */
+.root[data-umbra='card'] > [data-umbra='page-header']:not([data-tone='tinted'], [data-tone='band']) {
+  --card-pad: var(--umbra-card-padding, var(--umbra-density-card-padding));
+
+  padding: var(--umbra-page-header-padding, var(--card-pad) var(--card-pad) 0);
+}
+
+.root[data-umbra='card'] > [data-umbra='action-bar'] {
+  flex: none;
+  margin: 0;
+}
+
+.root[data-umbra='card']
+  > [data-umbra='action-bar']:not([data-emphasis='strong'], [data-variant='floating']) {
+  padding: var(--umbra-action-bar-padding-y, var(--umbra-space-3))
+    var(--umbra-action-bar-padding-x, var(--pad));
   border-top: var(--umbra-border-width) solid var(--border);
 }
 
