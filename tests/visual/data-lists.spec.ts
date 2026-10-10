@@ -118,7 +118,9 @@ test.describe('GroupHeader', () => {
     expect(Math.abs(top - headerTop)).toBeLessThan(1);
   });
 
-  test('the meta text hides when the header is narrow, then the title truncates', async ({ page }) => {
+  test('as the header narrows the meta text hides, the actions move into a menu, then the title truncates', async ({
+    page,
+  }) => {
     await open(page, 'data-groupheader--shrink');
     const wide = box(page, 'wide');
     const medium = box(page, 'medium');
@@ -126,8 +128,13 @@ test.describe('GroupHeader', () => {
     await expect(part(wide, 'meta')).toBeVisible();
     await expect(part(medium, 'meta')).toHaveCount(0);
     expect(await truncated(part(medium, 'title'))).toBe(false);
-    await expect(part(medium, 'actions')).toBeVisible();
+    await expect(medium.getByRole('button', { name: 'Add' })).toBeVisible();
+    // The action is a row of the overflow menu before the title gives way.
     expect(await truncated(part(narrow, 'title'))).toBe(true);
+    await expect(narrow.getByRole('button', { name: 'Add' })).toHaveCount(0);
+    await narrow.getByRole('button', { name: 'More actions' }).click();
+    await expect(page.getByRole('menu', { name: 'More actions' }).getByRole('menuitem')).toHaveText(['Add']);
+    await page.keyboard.press('Escape');
 
     await narrow.evaluate((el) => (el.style.width = '420px'));
     await expect(part(narrow, 'meta')).toBeVisible();

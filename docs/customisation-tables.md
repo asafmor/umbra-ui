@@ -535,7 +535,8 @@ A header row for one group of rows inside a list or table.
 | `icon` | `ReactNode` | Leading icon. |
 | `count` | `number` | Number of rows in the group, shown after the title. |
 | `meta` | `ReactNode` | Trailing text, for example a total. Hides when the header is too narrow. |
-| `actions` | `ReactNode` | Trailing controls. |
+| `actions` | `ReactNode` | Trailing controls. They move into an overflow menu when they do not fit. |
+| `moreLabel` | `string` | Accessible name of the overflow menu button. |
 | `level` | `4 \| 3 \| 2 \| 5 \| 6` | Heading level of the title. |
 | `collapsible` | `boolean` | Adds a caret button that collapses the group. The app (or `List`) hides the rows. |
 | `collapsed` | `boolean` | Controlled collapse state. |
@@ -924,7 +925,8 @@ The header of a page or of a detail pane: what it shows, facts about it, and its
 | `media` | `ReactNode` | Leading avatar, entity icon or image. |
 | `meta` | `ReactNode \| PageHeaderFact[]` | A row of facts: `{ label, value }` items, or any node. |
 | `tags` | `ReactNode` | Tags or badges after the title. |
-| `actions` | `ReactNode` | Trailing controls. |
+| `actions` | `ReactNode` | Trailing controls. They move into an overflow menu when they do not fit. |
+| `moreLabel` | `string` | Accessible name of the overflow menu button. |
 | `onBack` | `(() => void)` | Shows a back button before the title. |
 | `backLabel` | `string` | Accessible name of the back button. |
 | `breadcrumbs` | `PageHeaderCrumb[]` | The path to this page; the last item is the current page. |

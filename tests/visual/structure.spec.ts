@@ -352,7 +352,7 @@ test.describe('PageHeader', () => {
     await expect(root.locator('dl dt')).toHaveText(['Based in', 'Owner', 'Status']);
   });
 
-  test('as it narrows: meta hides, actions wrap, subtitle hides, media shrinks, title truncates', async ({
+  test('as it narrows: meta hides, actions move into a menu, subtitle hides, media shrinks, title truncates', async ({
     page,
   }) => {
     await open(page, 'shell-pageheader--shrink');
@@ -369,28 +369,40 @@ test.describe('PageHeader', () => {
       const [titles, actions] = [await box(at(width).part('titles')), await box(at(width).part('actions'))];
       return actions.y < titles.y + titles.height;
     };
+    const more = (width: number) => at(width).root.getByRole('button', { name: 'More actions' });
 
     await expect(at(860).part('meta')).toBeVisible();
     expect(await beside(860)).toBe(true);
-    // Step 1: the meta row is gone.
+    // Step 1: the meta row is gone, and the actions are still buttons.
     await expect(at(680).part('meta')).toHaveCount(0);
-    expect(await beside(680)).toBe(true);
-    // Step 2: the actions are on a line of their own, under the titles.
-    expect(await beside(480)).toBe(false);
+    await expect(at(680).root.getByRole('button', { name: 'Edit' })).toBeVisible();
+    await expect(more(680)).toHaveCount(0);
+    // Step 2: the actions are in an overflow menu, still beside the titles.
+    await expect(more(480)).toBeVisible();
+    await expect(at(480).root.getByRole('button', { name: 'Edit' })).toHaveCount(0);
+    expect(await beside(480)).toBe(true);
     await expect(at(480).part('subtitle')).toBeVisible();
+    await more(480).click();
+    const menu = page.getByRole('menu', { name: 'More actions' });
+    await expect(menu.getByRole('menuitem')).toHaveText(['Export', 'Edit']);
+    await page.keyboard.press('Escape');
+    await expect(menu).toBeHidden();
     // Step 3: the subtitle is gone.
-    await expect(at(380).part('subtitle')).toHaveCount(0);
-    expect((await box(at(380).part('media').locator('> *'))).width).toBe(56);
+    await expect(at(420).part('subtitle')).toHaveCount(0);
+    expect((await box(at(420).part('media').locator('> *'))).width).toBe(56);
     // Step 4: the media is smaller, and the title is still whole.
-    expect((await box(at(330).part('media').locator('> *'))).width).toBe(32);
-    expect(await truncated(at(330).part('title'))).toBe(false);
+    expect((await box(at(380).part('media').locator('> *'))).width).toBe(32);
+    expect(await truncated(at(380).part('title'))).toBe(false);
     // Last: the title truncates.
     expect(await truncated(at(240).part('title'))).toBe(true);
     await expect(at(240).part('title')).toHaveCSS('text-overflow', 'ellipsis');
 
-    // Nothing leaves the header at any width, and the actions are always there.
-    for (const width of [860, 680, 480, 380, 330, 240]) {
-      await expect(at(width).root.getByRole('button', { name: 'Edit' })).toBeVisible();
+    // Nothing leaves the header at any width, and the actions are always one press away, on one line.
+    for (const width of [860, 680, 480, 420, 380, 240]) {
+      await expect(
+        at(width).root.getByRole('button', { name: width > 480 ? 'Edit' : 'More actions' }),
+      ).toBeVisible();
+      expect(await beside(width)).toBe(true);
       for (const name of ['titles', 'actions']) {
         expect(await contains(at(width).root, at(width).part(name)), `${name} at ${width}`).toBe(true);
       }
