@@ -60,8 +60,11 @@ Object.assign(options, {
 
 function check(extra) {
   const virtual = new Map(samples.map((s) => [s.name, `${s.text}${extra.get(s.name) ?? ''}export {};\n`]));
+  // A sample of an entry file imports the app from './App'.
+  virtual.set(abs('.docs-check/App.tsx'), `export { App } from '${prelude.replace(/\.ts$/, '')}';\n`);
   const host = ts.createCompilerHost(options);
-  const { fileExists, readFile, getSourceFile } = host;
+  const { fileExists, readFile, getSourceFile, directoryExists } = host;
+  host.directoryExists = (name) => name === abs('.docs-check') || directoryExists(name);
   host.fileExists = (name) => virtual.has(name) || fileExists(name);
   host.readFile = (name) => virtual.get(name) ?? readFile(name);
   host.getSourceFile = (name, ...rest) =>

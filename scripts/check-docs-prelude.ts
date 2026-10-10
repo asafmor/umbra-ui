@@ -20,3 +20,5 @@ export declare const pages: NavItem[];
 export declare const page: string;
 export declare const setPage: (id: string) => void;
 export declare const openSearch: () => void;
+/** A router's current location. */
+export declare function useLocation(): { pathname: string };
