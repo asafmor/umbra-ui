@@ -1,0 +1,80 @@
+{
+  "name": "umbra-ui",
+  "version": "0.0.0",
+  "description": "React components for full-window, data-dense applications.",
+  "license": "MIT",
+  "author": "Asaf Mor",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/asafmor/umbra-ui.git"
+  },
+  "type": "module",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./charts": {
+      "types": "./dist/charts/index.d.ts",
+      "default": "./dist/charts.js"
+    },
+    "./styles.css": "./dist/styles.css"
+  },
+  "workspaces": [
+    "examples/*"
+  ],
+  "scripts": {
+    "tokens": "node scripts/build-tokens.mjs",
+    "build": "npm run tokens && vite build && tsc -p tsconfig.build.json",
+    "typecheck": "npm run tokens && tsc --noEmit",
+    "lint": "eslint . && prettier --check .",
+    "format": "prettier --write .",
+    "test": "vitest run",
+    "storybook": "npm run tokens && storybook dev -p 6006",
+    "build-storybook": "npm run tokens && storybook build",
+    "test:visual": "npm run build-storybook -- --quiet && playwright test",
+    "test:visual:update": "npm run build-storybook -- --quiet && playwright test --update-snapshots",
+    "changeset": "changeset",
+    "version": "changeset version",
+    "release": "npm run lint && npm run typecheck && npm test && npm run build && changeset publish",
+    "prepare": "npm run tokens"
+  },
+  "peerDependencies": {
+    "react": ">=19",
+    "react-dom": ">=19"
+  },
+  "dependencies": {
+    "lucide-react": "^1.55.0",
+    "react-aria-components": "^1.22.1"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^3.0.3",
+    "@eslint/js": "^10.0.1",
+    "@fontsource/barlow-condensed": "^5.3.0",
+    "@fontsource/figtree": "^5.3.0",
+    "@playwright/test": "^1.64.0",
+    "@storybook/addon-a11y": "^10.6.1",
+    "@storybook/addon-docs": "^10.6.1",
+    "@storybook/react-vite": "^10.6.1",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "eslint": "^10.12.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-storybook": "^10.6.1",
+    "prettier": "^3.9.10",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "storybook": "^10.6.1",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.71.1",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.3"
+  }
+}

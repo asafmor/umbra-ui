@@ -1,0 +1,17 @@
+@import './tokens.css';
+
+/* Base rules for everything inside a provider or scope. Low specificity, so component and app CSS win. */
+:where([data-umbra-scope]) {
+  font: var(--umbra-font-body);
+  color: var(--umbra-color-base-text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+:where([data-umbra-scope], [data-umbra-scope] *, [data-umbra-scope] *::before, [data-umbra-scope] *::after) {
+  box-sizing: border-box;
+}
+
+:where([data-umbra-scope] :focus-visible) {
+  outline: var(--umbra-state-focus-ring-width) solid var(--umbra-color-fixed-focus-ring);
+  outline-offset: 2px;
+}

@@ -9,3 +9,7 @@ coverage/
 .env*
 .DS_Store
 *.log
+
+# generated from plan/tokens.json (npm run tokens)
+src/styles/tokens.css
+src/styles/tokens.generated.ts
