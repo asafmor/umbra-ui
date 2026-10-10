@@ -1,0 +1,92 @@
+.root {
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  color: var(--umbra-empty-state-color, var(--umbra-color-base-text-secondary));
+  /* The root clips, so the ring of a control inside it is drawn inwards. */
+  --umbra-focus-offset: calc(-1 * var(--umbra-state-focus-ring-width));
+}
+
+/* Block: centred in its slot. Without a definite height around it, it is as tall as its content. */
+.root[data-variant='block'] {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: safe center;
+  gap: var(--umbra-empty-state-gap, var(--umbra-space-3));
+  padding: var(--umbra-empty-state-padding, var(--umbra-space-4));
+  text-align: center;
+}
+
+.root[data-variant='block'] > * {
+  flex: none;
+  max-width: 100%;
+}
+
+.root[data-variant='inline'] {
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-space-3);
+  white-space: nowrap;
+}
+
+.root[data-variant='inline'] > * {
+  flex: none;
+}
+
+.icon {
+  display: inline-flex;
+  color: var(--umbra-empty-state-icon-color, var(--umbra-color-base-text-muted));
+  --umbra-icon-size: var(--umbra-empty-state-icon-size, 2em);
+}
+
+.root[data-variant='inline'] > .icon {
+  --umbra-icon-size: 1.25em;
+}
+
+.title {
+  font: var(--umbra-empty-state-title-font, var(--umbra-font-body));
+  font-weight: 700;
+  color: var(--umbra-empty-state-title-color, var(--umbra-color-base-text-primary));
+}
+
+.description {
+  font: var(--umbra-font-label);
+}
+
+.root[data-variant='block'] > .description {
+  max-width: min(100%, var(--umbra-empty-state-max-width, 44ch));
+}
+
+.root[data-variant='block'] > .action {
+  margin-top: var(--umbra-space-2);
+}
+
+.action {
+  display: flex;
+  gap: var(--umbra-space-3);
+  color: var(--umbra-color-base-text-primary);
+}
+
+.root[data-variant='inline'] > .action {
+  margin-inline-start: auto;
+}
+
+/* An error is marked by its colour and, for assistive technology, by `role="alert"` on the root. */
+.root[data-tone='error'] > :is(.icon, .title) {
+  color: var(--umbra-empty-state-error-color, var(--umbra-color-semantic-danger));
+}
+
+/* Show less as space shrinks: the icon hides, then the description; the title of an inline one truncates last. */
+.root:is([data-shrink='1'], [data-shrink='2']) > .icon,
+.root[data-shrink='2'] > .description {
+  display: none;
+}
+
+.root[data-variant='inline'][data-shrink='2'] > .title {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
