@@ -1,0 +1,160 @@
+/*
+ * Magenta, with a gradient to `primaryEnd` (plan/reference). White text keeps 4.5:1 on both ends of
+ * the gradient, and hover and press darken it, so the contrast only rises (plan/interaction.md).
+ */
+.root {
+  --start: var(--umbra-primary-action-bg, var(--umbra-color-fixed-primary));
+  --end: var(--umbra-primary-action-bg-end, var(--umbra-color-fixed-primary-end));
+  --fg: var(--umbra-primary-action-fg, var(--umbra-color-fixed-on-primary));
+
+  /* Fills the height of the bar it sits in; on its own it is as tall as a control. */
+  align-self: stretch;
+  flex: 0 1 auto;
+  display: flex;
+  min-width: 0;
+  max-width: 100%;
+  min-height: var(--umbra-primary-action-min-height, var(--umbra-density-control-height));
+  /* It clips, so it can tell when its label no longer fits; rings are drawn inwards. */
+  overflow: hidden;
+  border-radius: var(--umbra-primary-action-radius, 0);
+  color: var(--fg);
+  font: var(--umbra-font-body);
+  white-space: nowrap;
+}
+
+.button,
+.caret {
+  --dark: 0%;
+
+  flex: none;
+  display: flex;
+  align-items: center;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklab, var(--start), #000 var(--dark)),
+    color-mix(in oklab, var(--end), #000 var(--dark))
+  );
+}
+
+.button {
+  flex: 1 0 auto;
+  gap: var(--umbra-space-4);
+  justify-content: space-between;
+  min-width: var(--umbra-primary-action-min-width, 180px);
+  padding: 0 var(--umbra-primary-action-padding-x, var(--umbra-space-6));
+  text-align: start;
+}
+
+/* The caret continues the gradient where the button ends, behind a hairline. */
+.caret {
+  justify-content: center;
+  width: var(--umbra-primary-action-caret-width, var(--umbra-density-control-height));
+  background: color-mix(in oklab, var(--end), #000 var(--dark));
+  box-shadow: inset var(--umbra-border-width) 0 0 color-mix(in oklab, var(--fg) 35%, transparent);
+}
+
+.caret[aria-expanded='true'] {
+  --dark: 26%;
+}
+
+:is(.button, .caret)[data-hovered] {
+  --dark: 12%;
+}
+
+:is(.button, .caret)[data-pressed] {
+  --dark: 26%;
+}
+
+:is(.button, .caret)[data-focus-visible] {
+  outline: var(--umbra-state-focus-ring-width) solid
+    var(--umbra-focus-color, var(--umbra-color-fixed-focus-ring));
+  outline-offset: calc(-1 * var(--umbra-state-focus-ring-width) - 1px);
+}
+
+:is(.button, .caret)[data-disabled] {
+  cursor: default;
+}
+
+.root[data-disabled] {
+  opacity: var(--umbra-state-disabled-opacity);
+}
+
+.button[data-pending] {
+  cursor: progress;
+}
+
+.text {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  margin-inline-end: auto;
+}
+
+.label,
+.description {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.description {
+  font: var(--umbra-font-label);
+}
+
+/* Nothing left to hide: the button takes the width there is and its label ends in an ellipsis. */
+.root[data-truncate] > .button {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.root[data-truncate] .text {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+/* A count, drawn in the button's own colours the other way round. */
+.badge {
+  flex: none;
+  min-width: 1.5em;
+  padding: 0 var(--umbra-space-2);
+  border-radius: var(--umbra-radius-pill);
+  background: var(--fg);
+  color: var(--start);
+  font: var(--umbra-font-label);
+  font-weight: 700;
+  text-align: center;
+}
+
+/* Attention: a still ring-and-dot marker. A shape, so it does not depend on colour. */
+.attention {
+  flex: none;
+  width: var(--umbra-space-3);
+  height: var(--umbra-space-3);
+  border-radius: 50%;
+  background: var(--fg);
+  box-shadow:
+    0 0 0 2px var(--start),
+    0 0 0 3px var(--fg);
+}
+
+/* Icon only: as wide as the bar is tall. */
+.root[data-collapsed] > .button {
+  flex: none;
+  justify-content: center;
+  min-width: var(--umbra-primary-action-min-height, var(--umbra-density-control-height));
+  aspect-ratio: 1;
+  padding: 0;
+  /* The marker moves to the corner of the icon. */
+  position: relative;
+}
+
+.root[data-collapsed] :is(.badge, .attention) {
+  position: absolute;
+  top: var(--umbra-space-2);
+  inset-inline-end: var(--umbra-space-2);
+}

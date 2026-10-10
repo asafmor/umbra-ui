@@ -590,8 +590,10 @@ test('top bar: Mod+K runs the search, and its tooltip shows on focus with the ke
   await page.keyboard.press('Control+k');
   await expect(page.getByText('Last action: Search')).toBeVisible();
 
-  // Back, Forward, the nav (one stop), then the search trigger.
-  for (let i = 0; i < 4; i++) await page.keyboard.press('Tab');
+  // Reached with the keyboard, the search trigger shows its tooltip.
+  await page.getByRole('button', { name: 'Search' }).focus();
+  await page.keyboard.press('Tab');
+  await page.keyboard.press('Shift+Tab');
   await expect(page.getByRole('button', { name: 'Search' })).toBeFocused();
   const tooltip = page.getByRole('tooltip');
   await expect(tooltip).toContainText('Search');
@@ -716,25 +718,27 @@ test('sub nav: pages move into "More", then the label hides', async ({ page }) =
   await open(page, 'shell-subnav--shrink');
   const bars = page.locator('[data-umbra="sub-nav"]');
   await expect(bars.nth(0).locator('> [data-part="label"]')).toBeVisible();
-  await expect(bars.nth(0).getByRole('button', { name: 'More' })).toHaveCount(0);
-  // "More" comes before the label goes.
-  await expect(bars.nth(2).getByRole('button', { name: 'More' })).toBeVisible();
-  await expect(bars.nth(2).locator('> [data-part="label"]')).toBeVisible();
-  await expect(bars.nth(3).locator('> [data-part="label"]')).toHaveCount(0);
-  await expect(bars.nth(3).getByRole('link', { name: 'Inbox' })).toHaveAttribute('aria-current', 'page');
+  const more = (bar: number) => bars.nth(bar).getByRole('button', { name: 'More', exact: true });
+  await expect(more(0)).toHaveCount(0);
+  // The shortcuts at the end give way first (shell-extras.spec.ts); then "More" comes before the label goes.
+  await expect(more(1)).toHaveCount(0);
+  await expect(more(3)).toBeVisible();
+  await expect(bars.nth(3).locator('> [data-part="label"]')).toBeVisible();
+  await expect(bars.nth(4).locator('> [data-part="label"]')).toHaveCount(0);
+  await expect(bars.nth(4).getByRole('link', { name: 'Inbox' })).toHaveAttribute('aria-current', 'page');
 
-  await bars.nth(3).getByRole('button', { name: 'More' }).click();
+  await more(4).click();
   const menu = page.getByRole('menu', { name: 'More' });
   await menu.getByRole('menuitem', { name: 'Reports' }).click();
   await expect(menu).toHaveCount(0);
   await expect(page.getByText('Current page: reports')).toHaveCount(1);
-  await expect(bars.nth(3).getByRole('link', { name: 'Reports' })).toHaveAttribute('aria-current', 'page');
+  await expect(bars.nth(4).getByRole('link', { name: 'Reports' })).toHaveAttribute('aria-current', 'page');
 });
 
 test('sub nav: icons, a dropdown, parts and blocks', async ({ page }) => {
   await open(page, 'shell-subnav--slots');
   const nav = page.getByRole('navigation', { name: 'Section' });
-  await expect(nav.getByRole('link', { name: 'Inbox' }).locator('svg')).toBeVisible();
+  await expect(nav.getByRole('link', { name: 'Inbox', exact: true }).locator('svg')).toBeVisible();
   await nav.getByRole('button', { name: 'Reports, submenu' }).click();
   await page.getByRole('menu', { name: 'Reports' }).getByRole('menuitem', { name: 'Yearly' }).click();
   await expect(page.getByText('Current page: yearly')).toBeVisible();

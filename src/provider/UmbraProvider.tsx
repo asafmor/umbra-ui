@@ -15,12 +15,14 @@ import { cx } from '../utils/parts';
 import { focusColourOn, mutedTextOn, textColourOn } from './contrast';
 import { defaultIcons, type IconMap } from './icons';
 import {
-  findConflicts,
   formatKeys,
   isTypingTarget,
-  matchesKeys,
-  reservedShortcuts,
+  ownedShortcut,
+  resolveShortcuts,
+  shortcutForEvent,
+  unreportedConflicts,
   type Shortcut,
+  type ShortcutRegistry,
 } from './shortcuts';
 import styles from './UmbraProvider.module.css';
 
@@ -69,7 +71,8 @@ type ScopeAttributes = {
 
 interface UmbraContextValue {
   icons: IconMap;
-  shortcuts: Map<string, Shortcut>;
+  /** Who owns which keys (plan/specs/UmbraProvider.md, "Shortcut conflicts"). */
+  registry: ShortcutRegistry;
   /** Handlers bound by mounted components; they take precedence over a shortcut's own `action`. */
   bound: Map<string, () => void>;
 }
@@ -164,32 +167,33 @@ export function UmbraProvider({
   const attributes = useScope({ density: 'default', context: 'violet', ...scope }, motion);
 
   const [bound] = useState(() => new Map<string, () => void>());
-  const value = useMemo<UmbraContextValue>(() => {
-    const all = [...reservedShortcuts, ...(shortcuts ?? [])];
-    for (const ids of findConflicts(all)) warn(`shortcuts ${ids.join(', ')} use the same keys.`);
-    return {
-      icons: { ...defaultIcons, ...icons },
-      shortcuts: new Map(all.map((s) => [s.id, s])),
-      bound,
-    };
-  }, [icons, shortcuts, bound]);
+  const registry = useMemo(() => resolveShortcuts(shortcuts), [shortcuts]);
+  const value = useMemo<UmbraContextValue>(
+    () => ({ icons: { ...defaultIcons, ...icons }, registry, bound }),
+    [icons, registry, bound],
+  );
+
+  // Once per conflict, and never during render.
+  const [reported] = useState(() => new Set<string>());
+  useEffect(() => {
+    unreportedConflicts(registry, reported).forEach(warn);
+  }, [registry, reported]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      for (const shortcut of value.shortcuts.values()) {
-        if (!matchesKeys(event, shortcut.keys)) continue;
-        const bare = !event.ctrlKey && !event.metaKey && !event.altKey;
-        if (bare && isTypingTarget(event.target)) return;
-        const run = bound.get(shortcut.id) ?? shortcut.action;
-        if (!run) return;
-        event.preventDefault();
-        run();
-        return;
-      }
+      const shortcut = shortcutForEvent(event, registry);
+      if (!shortcut) return;
+      const typing = shortcut.whenTyping ?? (event.ctrlKey || event.metaKey || event.altKey);
+      if (!typing && isTypingTarget(event.target)) return;
+      // With nothing to run (a reserved key whose component is not mounted) the key is left alone.
+      const run = bound.get(shortcut.id) ?? shortcut.action;
+      if (!run) return;
+      event.preventDefault();
+      run();
     };
     document.addEventListener('keydown', onKeyDown);
     return () => document.removeEventListener('keydown', onKeyDown);
-  }, [value, bound]);
+  }, [registry, bound]);
 
   const direction = locale ? textDirection(locale) : undefined;
   const tree = (
@@ -225,24 +229,58 @@ function textDirection(locale: string) {
 
 /**
  * Internal: binds a shortcut id to a handler while the component is mounted, and returns the key hint
- * to display (for example "Ctrl+K"), or undefined when the id is not registered.
+ * to display (for example "Ctrl+K"), or undefined when the id is not registered or lost its keys to
+ * another shortcut.
  */
 export function useShortcut(id: string | undefined, handler: (() => void) | undefined) {
-  const { shortcuts, bound } = useUmbra();
+  const { registry, bound } = useUmbra();
   const latest = useRef(handler);
   useEffect(() => {
     latest.current = handler;
   });
-  const shortcut = id ? shortcuts.get(id) : undefined;
+  const known = !!id && registry.shortcuts.has(id);
   const enabled = !!handler;
   useEffect(() => {
     if (!id || !enabled) return;
-    if (!shortcut) return warn(`shortcut "${id}" is not in the provider's shortcut list.`);
+    if (!known) return warn(`shortcut "${id}" is not in the provider's shortcut list.`);
     const run = () => latest.current?.();
     bound.set(id, run);
     return () => {
       if (bound.get(id) === run) bound.delete(id);
     };
-  }, [id, enabled, shortcut, bound]);
+  }, [id, enabled, known, bound]);
+  const shortcut = ownedShortcut(registry, id);
   return shortcut ? formatKeys(shortcut.keys) : undefined;
+}
+
+/** One registered shortcut as the command palette lists it. */
+export interface ListedShortcut {
+  id: string;
+  label: string;
+  /** The key hint, for example "Ctrl+K". */
+  keys: string;
+  /** Whether anything would run now: the shortcut has an `action`, or a mounted component bound it. */
+  canRun: () => boolean;
+  /** Runs what the keys would run. */
+  run: () => void;
+}
+
+/** Internal: the shortcuts that own their keys and have a label, for the command palette. */
+export function useShortcutList(): ListedShortcut[] {
+  const { registry, bound } = useUmbra();
+  return useMemo(
+    () =>
+      [...registry.owners.values()]
+        .map((id) => registry.shortcuts.get(id)!)
+        .filter((s) => s.label)
+        .map((s) => ({
+          id: s.id,
+          label: s.label,
+          keys: formatKeys(s.keys),
+          // Looked up when asked: components bind and unbind as they mount.
+          canRun: () => !!(bound.get(s.id) ?? s.action),
+          run: () => (bound.get(s.id) ?? s.action)?.(),
+        })),
+    [registry, bound],
+  );
 }

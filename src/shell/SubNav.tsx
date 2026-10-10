@@ -45,7 +45,8 @@ interface FrameProps extends SubNavRootProps {
 }
 
 function Frame({ 'aria-label': ariaLabel = 'Section', label, end, className, style, ...list }: FrameProps) {
-  // Shrink order: the end slot first (it shrinks in CSS), then items into "More", then the label hides.
+  // Shrink order: the end slot first (its ShortcutBar sheds labels, then chips), then items into "More",
+  // then the label hides.
   const [labelHidden, setLabelHidden] = useState(false);
   return (
     <nav
@@ -76,7 +77,7 @@ export interface SubNavProps extends Omit<SubNavRootProps, 'children' | 'parts'>
   label?: ReactNode;
   /** The pages of the section. Same shape as `PrimaryNav`. */
   items?: NavItem[];
-  /** Free slot at the end, normally a `ShortcutBar`. */
+  /** Free slot at the end, normally a `ShortcutBar`. Its content is never clipped. */
   end?: ReactNode;
   /** Replace or hide named pieces. */
   parts?: SubNavRootProps['parts'] & {

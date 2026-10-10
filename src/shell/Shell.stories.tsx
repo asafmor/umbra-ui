@@ -1,15 +1,17 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { ArrowRight, Bell, Bookmark, Settings } from 'lucide-react';
+import { Bell, Bookmark, Settings } from 'lucide-react';
 import { useState } from 'react';
-import { Button } from '../basics/Button';
 import { IconButton } from '../basics/IconButton';
 import { Card } from '../layout/Card';
 import { Columns } from '../layout/Columns';
 import { Page } from '../layout/Page';
 import { Stack } from '../layout/Stack';
+import { CommandPalette } from '../overlays/CommandPalette';
 import { pages, Rows, sections, Value } from '../stories/placeholders';
 import { AppShell } from './AppShell';
 import { PrimaryNav } from './PrimaryNav';
+import { commands, pinned, SamplePrimaryAction } from './samples';
+import { ShortcutBar } from './ShortcutBar';
 import { SubNav } from './SubNav';
 import { TopBar } from './TopBar';
 
@@ -27,7 +29,7 @@ function Bars({ brand, nav = true }: { brand?: string; nav?: boolean }) {
         logo="U"
         history
         nav={nav && <PrimaryNav items={sections} value={section} onChange={setSection} />}
-        onSearch={() => {}}
+        commandPalette={<CommandPalette commands={commands} />}
         actions={
           <>
             <IconButton icon={<Bookmark />} label="Bookmarks" />
@@ -42,24 +44,14 @@ function Bars({ brand, nav = true }: { brand?: string; nav?: boolean }) {
             Quarter close in 6 days
           </>
         }
-        primaryAction={
-          <Button variant="primary" iconEnd={<ArrowRight />} collapseTo="icon">
-            Continue
-          </Button>
-        }
+        primaryAction={<SamplePrimaryAction />}
       />
       <SubNav
         label="Overview"
         items={pages}
         value={page}
         onChange={setPage}
-        end={
-          <>
-            <Button size="small">Inbox</Button>
-            <Button size="small">Team</Button>
-            <Button size="small">Directory</Button>
-          </>
-        }
+        end={<ShortcutBar items={pinned} onEdit={() => {}} />}
       />
     </>
   );
@@ -120,7 +112,8 @@ export const Brands: Story = {
 
 /**
  * As the bars narrow: the context block hides, the actions collapse into one menu, nav items move into
- * "More" (the active item stays), and the primary action shows its icon only.
+ * "More" (the active item stays), and the primary action shows its icon only. In the sub nav the
+ * shortcuts lose their labels, then move into their "+N" menu, before any page moves into "More".
  */
 export const BarsShrink: Story = {
   parameters: { frame: 'padded' },

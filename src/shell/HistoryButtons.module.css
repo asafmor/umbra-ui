@@ -1,0 +1,27 @@
+.root {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-history-buttons-gap, var(--umbra-space-3));
+}
+
+/*
+ * A faint fill in the colour of the text around them, so the pair reads as controls on any brand bar.
+ * Hover and press come from the button itself.
+ */
+.root .button:not([data-hovered], [data-pressed]) {
+  background: var(--umbra-history-buttons-bg, color-mix(in oklab, currentColor 8%, transparent));
+}
+
+.root .button[data-icon-only] {
+  width: var(--umbra-history-buttons-size, var(--umbra-density-control-height));
+  height: var(--umbra-history-buttons-size, var(--umbra-density-control-height));
+}
+
+/* The caret that opens the recent entries is half as wide. */
+.root .caret[data-icon-only] {
+  width: calc(
+    var(--umbra-history-buttons-size, var(--umbra-density-control-height)) / 2 + var(--umbra-space-2)
+  );
+  --umbra-icon-size: 0.875em;
+}

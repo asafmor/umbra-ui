@@ -1,6 +1,6 @@
 # UmbraProvider
 
-**Tier** 0 · **Group** Foundation · **Status** spec approved 2026-10-10
+**Tier** 0 · **Group** Foundation · **Status** spec approved 2026-10-10; revised 2026-10-10 for Milestone 1 (shortcut conflicts, review item 17)
 
 ## Purpose
 
@@ -33,7 +33,7 @@ Sets all `--umbra-*` variables from `tokens.json`. Any variable can be overridde
 | `context` | preset name \| colour | `violet` | Context tint for the page background and tinted cards |
 | `density` | `compact` \| `default` \| `spacious` | `default` | Spacing, row heights, text sizes |
 | `icons` | partial icon map | default set | Overrides the built-in icons by name (see `decisions/05-packaging.md`) |
-| `shortcuts` | list of `{ id, keys, label, action? }` | — | App key bindings; feeds `ShortcutsSheet` and key hints. `keys` is written like `Mod+K` (`Mod` is Command on macOS, Ctrl elsewhere). A mounted button with `shortcut={id}` takes the key; otherwise `action` runs. A bare key is ignored while the user types in a field. |
+| `shortcuts` | list of `{ id, keys, label, action?, whenTyping? }` | — | App key bindings; feeds `ShortcutsSheet`, the `CommandPalette` (`includeShortcuts`) and key hints. `keys` is written like `Mod+K` (`Mod` is Command on macOS, Ctrl elsewhere). A mounted button with `shortcut={id}` takes the key; otherwise `action` runs. While the user types in a field a bare key is ignored and a combination with Ctrl, Command or Alt works; `whenTyping` overrides that for one shortcut. |
 | `tokens` | partial token map | — | Overrides individual tokens. Keys are variable names without the `--umbra-` prefix: `{ 'radius-card': '12px' }`. |
 | `reducedMotion` | `system` \| `always` \| `never` | `system` | |
 | `locale` | string | browser | Number and date formatting, text direction |
@@ -52,8 +52,22 @@ None of its own.
 
 ## Interaction and accessibility
 
-- Registers the library's reserved shortcuts (open command palette, open shortcuts sheet).
-- Reports shortcut conflicts in development.
+- Registers the library's reserved shortcuts: `umbra.commandPalette` (`Mod+K`), `umbra.shortcutsSheet` (`?`), `umbra.history.back` (`Alt+ArrowLeft`) and `umbra.history.forward` (`Alt+ArrowRight`; the two history keys never fire while typing).
+
+### Shortcut conflicts
+
+Each key combination has one owner. The same combination written two ways (`Mod+K`, `ctrl+k`) is one combination.
+
+| Case | Result |
+|---|---|
+| An app shortcut on the keys of a reserved one | The app's shortcut owns the keys. The library default keeps its id and label but has no keys: no hint, and it never runs from the keyboard. Development warning naming both |
+| Two app shortcuts on the same keys | The one registered last (later in the list) owns the keys. Development warning naming both |
+| An app shortcut with the id of a reserved one | It replaces the default: this is how an app rebinds a reserved shortcut. No warning; the old keys are free |
+| The owner has nothing to run (no `action`, no mounted component bound to it) | The key press is left alone: it is not cancelled, so the browser and the app's own listeners get it |
+| A held key (`event.repeat`) | Ignored |
+| An event something else already handled (`defaultPrevented`) | Ignored. A focused button that handles `Enter` therefore wins over a shortcut on `Mod+Enter` |
+
+Warnings are given from an effect, never during render, and once per conflict for the life of the provider, also when the app passes a new list of the same shortcuts on every render. Text direction plays no part: keys are matched as the event reports them.
 
 ## Open questions
 
@@ -61,6 +75,8 @@ None.
 
 Resolved 2026-10-10:
 
-- Reserved keys: `Mod+K` (command palette) and `?` (shortcuts sheet).
+- Reserved keys: `Mod+K` (command palette), `?` (shortcuts sheet), and from Milestone 1 `Alt+ArrowLeft` / `Alt+ArrowRight` (history back and forward).
 - The icon map starts with the names Milestone 0 uses and grows per milestone. The default set is `lucide-react`.
+- Milestone 1, review item 17: before, the first match in the list won silently, and a reserved key with nothing mounted stopped the search for an app shortcut on the same keys. The rules above replace that.
+- Key hints write the arrow keys as arrows (`Alt+←`).
 - Approved after Milestone 0: the shortcut shape `{ id, keys, label, action? }`; token override keys without the `--umbra-` prefix; `brand` reads hex and `rgb()` only for the contrast calculation.

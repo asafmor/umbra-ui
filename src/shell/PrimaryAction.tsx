@@ -1,0 +1,194 @@
+import { useContext, useRef, type CSSProperties, type ReactNode } from 'react';
+import { Button as AriaButton, Link as AriaLink } from 'react-aria-components';
+import { Spinner } from '../basics/Button';
+import { ForceCollapseContext } from '../internal/contexts';
+import { useShrinkLevel } from '../internal/useShrinkLevel';
+import { Menu, type MenuEntry } from '../overlays/Menu';
+import { Tooltip } from '../overlays/Tooltip';
+import { Icon, IconSlot } from '../provider/icons';
+import sharedStyles from '../data/shared.module.css';
+import { useShortcut } from '../provider/UmbraProvider';
+import { cx, renderPart, type Part } from '../utils/parts';
+import styles from './PrimaryAction.module.css';
+
+export interface PrimaryActionProps {
+  /** What the action does now. It changes with the state of the app ("Continue", "Review 3 items"). */
+  label: string;
+  /** A second, smaller line under the label. */
+  description?: ReactNode;
+  /** Shown at the end of the button, and alone when the button collapses. */
+  icon?: ReactNode;
+  /** Puts the icon before the label. */
+  iconPosition?: 'start' | 'end';
+  onPress?: () => void;
+  /** Renders a link. */
+  href?: string;
+  /** Shows the spinner and blocks presses. The button stays focusable. */
+  loading?: boolean;
+  /** What a screen reader hears while `loading`. */
+  loadingLabel?: string;
+  disabled?: boolean;
+  /** Id of a shortcut in the provider's list: binds the key and shows the hint in the tooltip. */
+  shortcut?: string;
+  /** A count beside the label, for example the items that wait for the user. */
+  badge?: number;
+  /** Marks that the app needs the user before it can go on: a still marker, never a pulse. */
+  attention?: boolean;
+  /** What a screen reader hears for the `attention` marker. */
+  attentionLabel?: string;
+  /** Alternative actions. They open from a caret at the end of the button. */
+  menu?: MenuEntry[];
+  /** Called with the id of the chosen alternative. */
+  onMenuAction?: (id: string) => void;
+  /** Accessible name of the caret that opens `menu`. */
+  menuLabel?: string;
+  /** Shows the icon only. Set by the `TopBar` when it runs out of room; the button also does it by itself. */
+  collapsed?: boolean;
+  /** Replace or hide named pieces. */
+  parts?: {
+    icon?: Part<{ children: ReactNode }>;
+    label?: Part<{ children: ReactNode }>;
+    description?: Part<{ children: ReactNode }>;
+    badge?: Part<{ children: number }>;
+    attention?: Part;
+    spinner?: Part;
+    menuTrigger?: Part;
+  };
+  className?: string;
+  style?: CSSProperties;
+}
+
+/**
+ * The one primary action of the app, at the end of the `TopBar`. Its label follows the state of the
+ * app. It fills the height of the bar and shows its icon only when the bar runs out of room.
+ */
+export function PrimaryAction({
+  label,
+  description,
+  icon,
+  iconPosition = 'end',
+  onPress,
+  href,
+  loading = false,
+  loadingLabel = 'Loading',
+  disabled = false,
+  shortcut,
+  badge,
+  attention = false,
+  attentionLabel = 'Needs attention',
+  menu,
+  onMenuAction,
+  menuLabel = 'More actions',
+  collapsed: collapsedProp,
+  parts,
+  className,
+  style,
+}: PrimaryActionProps) {
+  const root = useRef<HTMLDivElement>(null);
+  const forced = useContext(ForceCollapseContext);
+  // Shrink steps of its own: 1 the description hides, 2 the label hides (only with an icon to keep).
+  const hasDescription = description !== undefined && description !== null && description !== false;
+  const max = (hasDescription ? 1 : 0) + (icon ? 1 : 0);
+  const level = useShrinkLevel(root, max);
+  const collapsed = !!icon && (collapsedProp ?? (forced || level === max));
+  const showDescription = hasDescription && !collapsed && level === 0;
+  useShortcut(shortcut, disabled || loading ? undefined : onPress);
+
+  const hasBadge = badge !== undefined && badge > 0;
+  // The count and the marker's text are part of the content, so they are part of the name.
+  const name = [label, hasBadge && badge, attention && attentionLabel].filter(Boolean).join(' ');
+  const iconNode = loading
+    ? renderPart(parts?.spinner, {}, () => <Spinner label={loadingLabel} />)
+    : renderPart(
+        parts?.icon,
+        { children: icon },
+        (p) => p.children && <IconSlot part="icon">{p.children}</IconSlot>,
+      );
+  const content = (
+    <>
+      {iconPosition === 'start' && iconNode}
+      {!collapsed && (
+        <span className={styles.text}>
+          {renderPart(parts?.label, { children: label }, (p) => (
+            <span data-part="label" className={styles.label}>
+              {p.children}
+            </span>
+          ))}
+          {showDescription &&
+            renderPart(parts?.description, { children: description }, (p) => (
+              <span data-part="description" className={styles.description}>
+                {p.children}
+              </span>
+            ))}
+        </span>
+      )}
+      {hasBadge &&
+        renderPart(parts?.badge, { children: badge }, (p) => (
+          <span data-part="badge" className={styles.badge}>
+            {p.children}
+          </span>
+        ))}
+      {attention &&
+        !hasBadge &&
+        renderPart(parts?.attention, {}, () => (
+          <span data-part="attention" className={styles.attention}>
+            <span className={sharedStyles.srOnly}>{attentionLabel}</span>
+          </span>
+        ))}
+      {iconPosition === 'end' && iconNode}
+    </>
+  );
+  const shared = {
+    'data-part': 'button',
+    // With the label hidden, the name is spelled out.
+    'aria-label': collapsed ? name : undefined,
+    className: styles.button,
+    isDisabled: disabled,
+    onPress,
+  };
+  return (
+    <div
+      ref={root}
+      data-umbra="primary-action"
+      data-collapsed={collapsed || undefined}
+      // With nothing left to hide, the label truncates.
+      data-truncate={(level === max && !collapsed) || undefined}
+      data-attention={attention || undefined}
+      data-loading={loading || undefined}
+      data-disabled={disabled || undefined}
+      className={cx(styles.root, className)}
+      style={style}
+    >
+      <Tooltip content={collapsed ? label : null} shortcut={shortcut} placement="bottom">
+        {href && !disabled ? (
+          <AriaLink {...shared} href={href}>
+            {content}
+          </AriaLink>
+        ) : (
+          <AriaButton {...shared} isPending={loading}>
+            {content}
+          </AriaButton>
+        )}
+      </Tooltip>
+      {menu && menu.length > 0 && (
+        <Menu
+          items={menu}
+          onAction={onMenuAction}
+          placement="bottom end"
+          trigger={
+            <AriaButton
+              data-part="menuTrigger"
+              aria-label={menuLabel}
+              isDisabled={disabled}
+              className={styles.caret}
+            >
+              {renderPart(parts?.menuTrigger, {}, () => (
+                <Icon name="chevronDown" />
+              ))}
+            </AriaButton>
+          }
+        />
+      )}
+    </div>
+  );
+}

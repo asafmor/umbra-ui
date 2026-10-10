@@ -2,9 +2,9 @@
   flex: none;
   display: flex;
   align-items: center;
-  gap: var(--umbra-space-6);
+  gap: var(--umbra-topbar-gap, var(--umbra-space-6));
   height: var(--umbra-topbar-height, var(--umbra-size-top-bar-height));
-  padding-inline-start: var(--umbra-space-4);
+  padding-inline-start: var(--umbra-topbar-padding-x, var(--umbra-space-4));
   overflow: hidden;
   background: var(--umbra-topbar-bg, var(--umbra-color-brand));
   color: var(--umbra-topbar-fg, var(--umbra-color-on-brand, #fff));
@@ -26,7 +26,13 @@
 }
 
 .actions {
-  gap: var(--umbra-space-2);
+  gap: var(--umbra-topbar-action-gap, var(--umbra-space-2));
+}
+
+/* The bar's own size for its actions, so an app can set it from any ancestor. */
+.actions [data-umbra='icon-button'][data-icon-only] {
+  width: var(--umbra-topbar-action-size, var(--umbra-density-control-height));
+  height: var(--umbra-topbar-action-size, var(--umbra-density-control-height));
 }
 
 .end {
@@ -39,8 +45,8 @@
   flex: none;
   display: grid;
   place-items: center;
-  width: 40px;
-  height: 40px;
+  width: var(--umbra-topbar-logo-size, 40px);
+  height: var(--umbra-topbar-logo-size, 40px);
   border-radius: 50%;
   overflow: hidden;
   background: var(--umbra-topbar-fg, var(--umbra-color-on-brand, #fff));
@@ -70,22 +76,21 @@
   text-align: end;
 }
 
-/* The primary action fills the height of the bar at its end. */
+/*
+ * The slot at the end. A PrimaryAction stretches to the bar's height and touches the window edge;
+ * any other node is centred and kept off the edge.
+ */
 .primaryAction {
   align-self: stretch;
   display: flex;
-  --umbra-button-height: 100%;
-  /* The button touches the edges of the window. */
-  --umbra-focus-offset: calc(-1 * var(--umbra-state-focus-ring-width));
-  --umbra-button-radius: 0;
-  --umbra-button-padding-x: var(--umbra-space-6);
+  align-items: center;
 }
 
-.primaryAction > [data-umbra='button']:not([data-icon-only]) {
-  min-width: 180px;
-  justify-content: space-between;
+.primaryAction:not(:has(> [data-umbra='primary-action'])) {
+  padding-inline-end: var(--umbra-topbar-padding-x, var(--umbra-space-4));
 }
 
-.primaryAction > [data-icon-only] {
-  --umbra-icon-button-size: var(--umbra-topbar-height, var(--umbra-size-top-bar-height));
+/* Icon only, the primary action is as wide as the bar is tall. */
+.primaryAction > [data-umbra='primary-action'] {
+  --umbra-primary-action-min-height: 0px;
 }

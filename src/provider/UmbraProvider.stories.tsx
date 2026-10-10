@@ -160,6 +160,44 @@ function ShortcutsApp(globals: Globals) {
 /** `shortcuts` registers the app's keys. A button with `shortcut` binds one and shows the key hint. */
 export const Shortcuts: Story = { render: (_, { globals }) => <ShortcutsApp {...(globals as Globals)} /> };
 
+function ConflictsApp(globals: Globals) {
+  const [last, setLast] = useState('none');
+  const [count, setCount] = useState(0);
+  // A new list on every render: the warnings must still be given once per conflict.
+  const shortcuts: Shortcut[] = [
+    { id: 'app.find', keys: 'Mod+K', label: 'Find', action: () => setLast('Find') },
+    { id: 'app.first', keys: 'G', label: 'First', action: () => setLast('First') },
+    { id: 'app.second', keys: 'g', label: 'Second', action: () => setCount((n) => n + 1) },
+    { id: 'app.unbound', keys: 'Mod+J', label: 'Nothing mounted' },
+  ];
+  return (
+    <UmbraProvider {...globals} shortcuts={shortcuts}>
+      <div style={column}>
+        <TopBar logo="U" onSearch={() => setLast('Search')} />
+        <div>
+          <Button onPress={() => setLast('Render')}>Render again</Button>
+        </div>
+        <Log>
+          Last shortcut: {last}. Second ran {count} times
+        </Log>
+        <p style={{ margin: 0 }}>
+          Ctrl+K belongs to the app&apos;s &quot;Find&quot;, not to the search of the top bar, whose tooltip
+          shows no keys. G belongs to &quot;Second&quot;, registered after &quot;First&quot;. A held key runs
+          once. The console names both conflicts, once each.
+        </p>
+      </div>
+    </UmbraProvider>
+  );
+}
+
+/**
+ * Conflicts: an app shortcut takes the keys of a library default, and of two app shortcuts on the same
+ * keys the last one wins. Both are reported in the console in development.
+ */
+export const ShortcutConflicts: Story = {
+  render: (_, { globals }) => <ConflictsApp {...(globals as Globals)} />,
+};
+
 /** `reducedMotion="always"` stops movement whatever the system setting: the skeleton and spinner stand still. */
 export const ReducedMotion: Story = {
   render: (_, { globals }) => (

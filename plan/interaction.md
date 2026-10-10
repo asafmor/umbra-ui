@@ -42,8 +42,9 @@ Character: **crisp and minimal**. Short fades and small slides only; no sweeps, 
 ## Keyboard
 
 1. **Full navigation.** Every control is reachable and operable by keyboard. Composite components (DataTable, List, Menu, Tabs, SegmentedFilter, Planner) use one tab stop and arrow keys inside.
-2. **Command palette.** The TopBar search opens a `CommandPalette`. The app supplies its entries (pages, entities, actions).
-3. **Shortcut registry.** Apps bind keys to actions through one registry on the provider. The library renders a `ShortcutsSheet` (help overlay) from the registry, shows key hints in menus and tooltips, and detects conflicts.
+2. **Command palette.** The TopBar search and `Mod+K` open a `CommandPalette`. The app supplies its entries (pages, entities, actions). Focus stays in its input while the arrow keys move through the results (`plan/specs/CommandPalette.md`).
+3. **Shortcut registry.** Apps bind keys to actions through one registry on the provider. The library renders a `ShortcutsSheet` (help overlay) from the registry, shows key hints in menus and tooltips, and resolves conflicts: an app shortcut takes the keys of a library default, and of two app shortcuts on the same keys the last registered wins, each with a development warning (`plan/specs/UmbraProvider.md`, "Shortcut conflicts").
+4. **Reserved keys** (decided 2026-10-10). `Mod+K` opens the command palette, `?` the shortcuts sheet, `Alt+ArrowLeft` and `Alt+ArrowRight` go back and forward in the history. A reserved key does nothing, and is left to the browser, while no component that handles it is mounted. The history keys never fire while the user types in a field. An app rebinds a reserved shortcut by registering one with the same id.
 
 ## Accessibility
 
@@ -51,7 +52,6 @@ Target: WCAG 2.2 AA. Every story is checked automatically (axe) on every context
 
 ## Open details
 
-- Default key bindings the library itself reserves (palette open, shortcuts sheet, history back / forward).
 - Exact skeleton shapes per component.
 - Size animation for a card collapsed with its caret. Today the caret rotates and the layout changes at once.
 - The focus ring colour value, once the final palette is set.

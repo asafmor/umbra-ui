@@ -13,7 +13,7 @@ import {
   type ReactElement,
   type ReactNode,
 } from 'react';
-import { isOverflowing, useShrinkLevel } from '../internal/useShrinkLevel';
+import { useShrinkLevel } from '../internal/useShrinkLevel';
 import { Menu as UmbraMenu, type MenuEntry } from '../overlays/Menu';
 import { Icon, IconSlot } from '../provider/icons';
 import { warn } from '../utils/dev';
@@ -75,7 +75,10 @@ interface NavContextValue {
 }
 const NavContext = createContext<NavContextValue | null>(null);
 
-/** Set by the TopBar: holds the nav's own overflow back until the bar has used its earlier steps. */
+/**
+ * Set by the TopBar: holds the nav's own overflow back until the bar has used its earlier steps. The nav
+ * reports when it has moved every item it can.
+ */
 export const NavHoldContext = createContext<{ hold: boolean; report: (exhausted: boolean) => void } | null>(
   null,
 );
@@ -288,7 +291,9 @@ export function NavList({
   const report = held?.report;
   useLayoutEffect(() => {
     onExtraSteps?.(extra);
-    report?.(!held?.hold && level === max && !!list.current && isOverflowing(list.current));
+    // Whether it still overflows is for the bar to measure, each time its own width changes: this list
+    // does not render again once it has nothing left to move.
+    report?.(!held?.hold && level === max);
   });
 
   // One tab stop: the active item, or the first one.

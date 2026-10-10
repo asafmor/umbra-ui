@@ -1,10 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { ArrowRight, Bell, Bookmark, CircleHelp, Settings } from 'lucide-react';
+import { Bell, Bookmark, CircleHelp, Settings } from 'lucide-react';
 import { useState } from 'react';
-import { Button } from '../basics/Button';
 import { IconButton } from '../basics/IconButton';
+import { CommandPalette } from '../overlays/CommandPalette';
 import { Log, sections } from '../stories/placeholders';
+import { HistoryButtons } from './HistoryButtons';
 import { PrimaryNav } from './PrimaryNav';
+import { commands, SamplePrimaryAction } from './samples';
 import { TopBar, type TopBarProps } from './TopBar';
 
 const meta = {
@@ -21,11 +23,6 @@ const context = (
     <br />
     Quarter close in 6 days
   </>
-);
-const primaryAction = (
-  <Button variant="primary" iconEnd={<ArrowRight />} collapseTo="icon">
-    Continue
-  </Button>
 );
 
 /** A bar with every slot filled. The line below it shows what its callbacks did. */
@@ -47,7 +44,7 @@ function Bar(props: TopBarProps) {
           </>
         }
         context={context}
-        primaryAction={primaryAction}
+        primaryAction={<SamplePrimaryAction onPress={() => setLast('Continue')} />}
         {...props}
       />
       <Log>Last action: {last}</Log>
@@ -61,7 +58,17 @@ function Bar(props: TopBarProps) {
  */
 export const Slots: Story = { render: () => <Bar /> };
 
-/** Parts changed by a function (logo, actions, primary action), and hidden with `null` (context, start). */
+/**
+ * With `commandPalette`, the search trigger and `Mod+K` open the palette. `onSearch` is for an app
+ * with its own search; here it is left out.
+ */
+export const WithCommandPalette: Story = {
+  render: () => (
+    <Bar onSearch={undefined} commandPalette={<CommandPalette commands={commands} recent={['orders']} />} />
+  ),
+};
+
+/** Parts changed by a function (logo, actions, search, primary action), and hidden with `null` (context, start). */
 export const Parts: Story = {
   render: () => (
     <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 16 }}>
@@ -83,13 +90,9 @@ export const Parts: Story = {
               }
             />
           ),
+          search: (p) => <TopBar.Search {...p} label="Find" />,
           primaryAction: (p) => (
-            <div
-              data-part="primaryAction"
-              style={{ display: 'flex', alignItems: 'center', paddingInline: 12 }}
-            >
-              {p.children}
-            </div>
+            <TopBar.PrimaryAction style={{ paddingInline: 12 }}>{p.children}</TopBar.PrimaryAction>
           ),
         }}
       />
@@ -98,23 +101,58 @@ export const Parts: Story = {
   ),
 };
 
-/** The bar built from its blocks. `pinned` actions stay when the others collapse into the menu. */
+/**
+ * The bar built from its blocks only: everything the all-in-one bar renders is public. It shrinks the
+ * same way: the context block hides, the actions collapse (`pinned` ones stay), the nav moves items
+ * into "More", and the primary action shows its icon.
+ */
 export const Blocks: Story = {
   render: () => (
     <TopBar.Root brand="#2b2f36" moreLabel="More tools">
       <TopBar.Start>
-        <b style={{ font: 'var(--umbra-font-title)' }}>Console</b>
+        <HistoryButtons canGoBack canGoForward={false} onBack={() => {}} onForward={() => {}} />
+        <TopBar.Logo>C</TopBar.Logo>
       </TopBar.Start>
       <TopBar.Nav>
         <PrimaryNav items={sections} value="orders" />
       </TopBar.Nav>
       <TopBar.End>
-        <TopBar.Actions pinned={<IconButton icon={<CircleHelp />} label="Help" />}>
+        <TopBar.Actions
+          pinned={
+            <>
+              <TopBar.Search commandPalette={<CommandPalette commands={commands} />} />
+              <IconButton icon={<CircleHelp />} label="Help" />
+            </>
+          }
+        >
           <IconButton icon={<Bell />} label="Notifications" badge />
           <IconButton icon={<Settings />} label="Settings" />
         </TopBar.Actions>
-        <Button variant="accent">Sign out</Button>
+        <TopBar.Context>{context}</TopBar.Context>
+        <TopBar.PrimaryAction>
+          <SamplePrimaryAction label="Sign off" />
+        </TopBar.PrimaryAction>
       </TopBar.End>
     </TopBar.Root>
+  ),
+};
+
+/**
+ * Edge cases of shrinking. Without a nav the bar itself is measured and the nav's step is skipped.
+ * After the last step nothing more gives way: the bar clips at its end, here below about 320px.
+ * A custom primary action is shown as it is, centred and off the edge.
+ */
+export const EdgeCases: Story = {
+  render: () => (
+    <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 16 }}>
+      {[520, 340, 220].map((width) => (
+        <div key={width} style={{ width }}>
+          <Bar nav={undefined} />
+        </div>
+      ))}
+      <div style={{ width: 520 }}>
+        <Bar nav={undefined} context={undefined} primaryAction={<b>Custom node</b>} />
+      </div>
+    </div>
   ),
 };
