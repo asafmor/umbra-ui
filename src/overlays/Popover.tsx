@@ -221,6 +221,8 @@ function Content({
           id={fromTrigger?.id}
           role="dialog"
           tabIndex={-1}
+          // A `label` names the dialog; the trigger's id, which React Aria adds by itself, would win over it.
+          aria-labelledby={label ? undefined : (props as { 'aria-labelledby'?: string })['aria-labelledby']}
         />
       )}
       aria-label={label}
