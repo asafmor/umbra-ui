@@ -1,9 +1,9 @@
 import { useContext, type CSSProperties, type ReactNode } from 'react';
-import { OverflowMenuContext } from '../internal/overlays';
+import { OverflowMenuContext } from '../internal/contexts';
 import { IconSlot } from '../provider/icons';
 import { useShortcut } from '../provider/UmbraProvider';
 import { renderPart, type Part } from '../utils/parts';
-import { ButtonBase, Spinner, tipWithHint, type ButtonVariant } from './Button';
+import { ButtonBase, Spinner, type ButtonVariant } from './Button';
 import styles from './Button.module.css';
 
 export interface IconButtonProps {
@@ -30,13 +30,14 @@ export interface IconButtonProps {
   parts?: {
     icon?: Part<{ children: ReactNode }>;
     badge?: Part<{ children: ReactNode }>;
+    /** The tooltip's text. The key hint of `shortcut` is added after it. */
     tooltip?: Part<{ children: ReactNode }>;
   };
   className?: string;
   style?: CSSProperties;
 }
 
-/** A button that shows only an icon. Inside an overflow menu it becomes a row with its icon and label. */
+/** A button that shows only an icon. Inside an overflow menu it becomes a menu item with its icon and label. */
 export function IconButton({
   icon,
   label,
@@ -52,12 +53,12 @@ export function IconButton({
   parts,
   ...rest
 }: IconButtonProps) {
-  const inMenu = !!useContext(OverflowMenuContext);
+  const inMenu = useContext(OverflowMenuContext);
   const press = () => {
     onPress?.();
     if (pressed !== undefined) onPressedChange?.(!pressed);
   };
-  const hint = useShortcut(shortcut, rest.disabled || rest.loading ? undefined : press);
+  useShortcut(shortcut, rest.disabled || rest.loading ? undefined : press);
   const tipText = tooltip === true ? label : tooltip;
   return (
     <ButtonBase
@@ -68,11 +69,11 @@ export function IconButton({
       iconOnly
       pressed={pressed}
       label={typeof badge === 'number' ? `${label} (${badge})` : label}
+      text={label}
       tooltip={
-        tipText === false
-          ? null
-          : renderPart(parts?.tooltip, { children: tipWithHint(tipText, hint) }, (p) => p.children)
+        tipText === false ? null : renderPart(parts?.tooltip, { children: tipText }, (p) => p.children)
       }
+      shortcut={tipText === false ? undefined : shortcut}
       onPress={press}
     >
       {rest.loading ? (

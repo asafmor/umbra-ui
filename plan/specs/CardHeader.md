@@ -53,12 +53,13 @@ Set through `Card` (`title`, `subtitle`, `icon`, `actions`, `headerStyle`). As a
 
 ## Behaviour as space shrinks
 
-`subtitle` hides, then `actions` move into one overflow menu, then `title` truncates with an ellipsis. The `toggle` never hides.
+`subtitle` hides, then `actions` move into one overflow `Menu`, then `title` truncates with an ellipsis. The `toggle` never hides.
 
 ## Interaction and accessibility
 
 - `title` is a heading; its level is set by the card (`headingLevel`, default 2).
-- When the card is layout-collapsed, the header is one button with `aria-haspopup="dialog"`.
+- When the card is layout-collapsed, the header is one button with `aria-haspopup="dialog"` that opens and closes the card's `Popover`.
+- The overflow of `actions` is a real menu (`plan/specs/Menu.md`): the app still passes buttons, and each `Button` or `IconButton` shows as a `menuitem` with its icon and label (a toggle as a `menuitemcheckbox`, a link button as a link, a `Menu` as a submenu), with arrow keys and type-ahead. Other content among the actions is not shown in the menu.
 
 ## Open questions
 

@@ -13,9 +13,10 @@ import {
   type ReactElement,
   type ReactNode,
 } from 'react';
-import { Popover, useEscapeToClose } from '../internal/overlays';
 import { isOverflowing, useShrinkLevel } from '../internal/useShrinkLevel';
+import { Menu as UmbraMenu, type MenuEntry } from '../overlays/Menu';
 import { Icon, IconSlot } from '../provider/icons';
+import { warn } from '../utils/dev';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './nav.module.css';
 
@@ -23,6 +24,8 @@ import styles from './nav.module.css';
 export interface NavItem {
   id: string;
   label: ReactNode;
+  /** The label as text. Required when `label` is not a string: it names the item's dropdown and its rows. */
+  textValue?: string;
   icon?: ReactNode;
   href?: string;
   items?: NavItem[];
@@ -34,6 +37,8 @@ export type NavLinkProps = AnchorHTMLAttributes<HTMLAnchorElement> & { href: str
 
 export interface NavItemProps {
   id: string;
+  /** The label as text. Required when the label is not a string: it names the item's dropdown and its rows. */
+  textValue?: string;
   href?: string;
   icon?: ReactNode;
   disabled?: boolean;
@@ -52,6 +57,8 @@ export interface NavRootProps {
   renderLink?: (props: NavLinkProps) => ReactNode;
   /** Label of the overflow item. */
   moreLabel?: string;
+  /** Accessible name of the caret that opens an item's dropdown, from the item's label. */
+  submenuLabel?: (label: string) => string;
   /** Accessible name of the navigation landmark. */
   'aria-label'?: string;
   className?: string;
@@ -64,8 +71,7 @@ interface NavContextValue {
   onChange: ((id: string) => void) | undefined;
   renderLink: (props: NavLinkProps) => ReactNode;
   indicator: Part | undefined;
-  /** Set inside a dropdown or the "More" menu, where items render as rows. */
-  menu: { close: () => void } | null;
+  submenuLabel: (label: string) => string;
 }
 const NavContext = createContext<NavContextValue | null>(null);
 
@@ -77,39 +83,50 @@ export const NavHoldContext = createContext<{ hold: boolean; report: (exhausted:
 const plainLink = (props: NavLinkProps) => <a {...props} />;
 const focusTargets = (list: HTMLElement) => [...list.querySelectorAll<HTMLElement>('[data-nav-focus]')];
 
-function MenuPanel({
-  nav,
-  close,
-  children,
-}: {
-  nav: NavContextValue;
-  close: () => void;
-  children: ReactNode;
-}) {
-  return (
-    <NavContext value={{ ...nav, menu: { close } }}>
-      <div className={styles.menu}>{children}</div>
-    </NavContext>
-  );
+/** The name of an item as text: its label when that is a string, or its `textValue`. */
+function textOf({ id, textValue, children }: NavItemProps) {
+  if (textValue !== undefined) return textValue;
+  if (typeof children === 'string') return children;
+  warn(`nav item "${id}" has a label that is not text; give it a \`textValue\`.`);
+  return id;
+}
+
+/** The sub-pages given in an item's `menu`, as elements. */
+const subItems = (menu: ReactNode) =>
+  Children.toArray(
+    isValidElement<{ children?: ReactNode }>(menu) && menu.type === Menu ? menu.props.children : menu,
+  ).filter(isValidElement) as ReactElement<NavItemProps>[];
+
+/**
+ * Items as the rows of a menu. An item with sub-pages is a submenu; when it is also a link, its own
+ * page is the first row of that submenu.
+ */
+function toRows(items: ReactElement<NavItemProps>[], value: string | undefined): MenuEntry[] {
+  return items.map(({ props }) => {
+    const row = {
+      id: props.id,
+      label: props.children,
+      textValue: textOf(props),
+      icon: props.icon,
+      disabled: props.disabled,
+    };
+    const own = { ...row, href: props.href, current: props.id === value };
+    if (!props.menu) return own;
+    const rows = toRows(subItems(props.menu), value);
+    return { ...row, items: props.href ? [own, { type: 'separator' }, ...rows] : rows };
+  });
 }
 
 /** One navigation item: a link, or a button when it only opens a dropdown. */
-export function Item({ id, href, icon, disabled = false, menu, children }: NavItemProps) {
+export function Item(props: NavItemProps) {
+  const { id, href, icon, disabled = false, menu, children } = props;
   const nav = useContext(NavContext);
   if (!nav) throw new Error('A nav Item must be rendered inside PrimaryNav or SubNav.');
   const [open, setOpen] = useState(false);
   const anchor = useRef<HTMLDivElement>(null);
-  useEscapeToClose(
-    open,
-    () => setOpen(false),
-    () => anchor.current?.querySelector<HTMLElement>('[aria-haspopup]'),
-  );
   const active = nav.value === id;
-  const inMenu = nav.menu;
   const choose = () => {
-    if (disabled) return;
-    nav.onChange?.(id);
-    inMenu?.close();
+    if (!disabled) nav.onChange?.(id);
   };
   const content = (
     <>
@@ -121,32 +138,16 @@ export function Item({ id, href, icon, disabled = false, menu, children }: NavIt
     className: styles.link,
     'aria-current': active ? ('page' as const) : undefined,
     'aria-disabled': disabled || undefined,
-    'data-nav-focus': inMenu ? undefined : '',
-    tabIndex: inMenu ? undefined : -1,
+    'data-nav-focus': '',
+    tabIndex: -1,
   };
 
-  if (inMenu) {
-    // A row in a dropdown or in "More". Sub-pages follow, indented.
-    return (
-      <>
-        {href && !disabled ? (
-          nav.renderLink({ ...common, href, onClick: choose, children: content })
-        ) : (
-          <button type="button" {...common} onClick={menu ? undefined : choose}>
-            {content}
-          </button>
-        )}
-        {menu && <div className={styles.nested}>{menu}</div>}
-      </>
-    );
-  }
-
   const toggle = () => !disabled && setOpen((o) => !o);
-  const popupProps = { 'aria-haspopup': 'dialog' as const, 'aria-expanded': open };
+  const popupProps = { 'aria-haspopup': 'menu' as const, 'aria-expanded': open };
   // Source behaviour: the label navigates and a separate caret opens the dropdown. An item without
   // `href` opens the dropdown from anywhere on it.
   const onKeyDown = (event: KeyboardEvent) => {
-    if (menu && !disabled && event.key === 'ArrowDown') {
+    if (menu && !disabled && !open && event.key === 'ArrowDown') {
       event.preventDefault();
       setOpen(true);
     }
@@ -177,10 +178,11 @@ export function Item({ id, href, icon, disabled = false, menu, children }: NavIt
         </button>
       )}
       {menu && href && (
+        // Its own name, so it is not confused with the link beside it.
         <button
           type="button"
           className={styles.caret}
-          aria-label={typeof children === 'string' ? children : undefined}
+          aria-label={nav.submenuLabel(textOf(props))}
           {...popupProps}
           data-nav-focus=""
           tabIndex={-1}
@@ -193,16 +195,15 @@ export function Item({ id, href, icon, disabled = false, menu, children }: NavIt
       {active &&
         renderPart(nav.indicator, {}, () => <span data-part="indicator" className={styles.indicator} />)}
       {menu && (
-        <Popover
-          label={typeof children === 'string' ? children : 'Menu'}
-          triggerRef={anchor}
+        <UmbraMenu
+          items={toRows(subItems(menu), nav.value)}
+          label={textOf(props)}
+          anchorRef={anchor}
           open={open}
           onOpenChange={setOpen}
-        >
-          <MenuPanel nav={nav} close={() => setOpen(false)}>
-            {menu}
-          </MenuPanel>
-        </Popover>
+          onAction={nav.onChange}
+          renderLink={nav.renderLink}
+        />
       )}
     </div>
   );
@@ -216,30 +217,34 @@ export function Menu({ children }: { children?: ReactNode }) {
 function More({ label, nav, children }: { label: string; nav: NavContextValue; children: ReactNode }) {
   const [open, setOpen] = useState(false);
   const anchor = useRef<HTMLDivElement>(null);
-  useEscapeToClose(
-    open,
-    () => setOpen(false),
-    () => anchor.current?.querySelector('button'),
-  );
   return (
     <div ref={anchor} data-part="more" data-open={open || undefined} className={styles.item}>
       <button
         type="button"
         className={styles.link}
-        aria-haspopup="dialog"
+        aria-haspopup="menu"
         aria-expanded={open}
         data-nav-focus=""
         tabIndex={-1}
         onClick={() => setOpen((o) => !o)}
+        onKeyDown={(event) => {
+          if (open || event.key !== 'ArrowDown') return;
+          event.preventDefault();
+          setOpen(true);
+        }}
       >
         <span className={styles.label}>{label}</span>
         <Icon name="chevronDown" />
       </button>
-      <Popover label={label} triggerRef={anchor} open={open} onOpenChange={setOpen}>
-        <MenuPanel nav={nav} close={() => setOpen(false)}>
-          {children}
-        </MenuPanel>
-      </Popover>
+      <UmbraMenu
+        items={toRows(subItems(children), nav.value)}
+        label={label}
+        anchorRef={anchor}
+        open={open}
+        onOpenChange={setOpen}
+        onAction={nav.onChange}
+        renderLink={nav.renderLink}
+      />
     </div>
   );
 }
@@ -261,6 +266,7 @@ export function NavList({
   onChange,
   renderLink = plainLink,
   moreLabel = 'More',
+  submenuLabel = (label) => `${label}, submenu`,
   parts,
   extraSteps = 0,
   onExtraSteps,
@@ -306,7 +312,7 @@ export function NavList({
     target.focus();
   };
 
-  const nav: NavContextValue = { value, onChange, renderLink, indicator: parts?.indicator, menu: null };
+  const nav: NavContextValue = { value, onChange, renderLink, indicator: parts?.indicator, submenuLabel };
   const overflow = items.filter((_, i) => moved.has(i));
   return (
     <NavContext value={nav}>
@@ -328,6 +334,7 @@ export function itemsToElements(items: NavItem[] | undefined, part?: Part<NavIte
   return items?.map((item) => {
     const props: NavItemProps = {
       id: item.id,
+      textValue: item.textValue,
       href: item.href,
       icon: item.icon,
       disabled: item.disabled,

@@ -61,12 +61,13 @@ None; it is small enough to rebuild from text and a `Link`.
 
 ## Behaviour as space shrinks
 
-`actions` move into an overflow menu, then the title truncates.
+`actions` move into an overflow `Menu`, then the title truncates.
 
 ## Interaction and accessibility
 
 - Renders a real heading element at `level`.
 - The link variant keeps its underline, so it is not identified by colour alone.
+- The overflow of `actions` is a real menu, as in `CardHeader`: each button is a `menuitem`.
 
 ## Open questions
 

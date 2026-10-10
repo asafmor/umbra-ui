@@ -43,6 +43,7 @@ Item states are the same as `PrimaryNav`.
 | `renderLink` | function | plain `<a>` | |
 | `end` | node | — | |
 | `moreLabel` / `aria-label` | string | "More" / "Section" | |
+| `submenuLabel` | function (label) | `"<label>, submenu"` | Accessible name of the caret that opens an item's dropdown |
 
 ### 3. Parts
 
@@ -62,7 +63,7 @@ Item states are the same as `PrimaryNav`.
 
 ## Interaction and accessibility
 
-Same as `PrimaryNav`; the landmark is named differently ("Section") so the two can be told apart.
+Same as `PrimaryNav`, including the dropdowns and "More" as a `Menu`, the named caret and its 24 × 24px pointer target; the landmark is named differently ("Section") so the two can be told apart.
 
 ## Open questions
 
