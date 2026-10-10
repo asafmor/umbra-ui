@@ -1,0 +1,14 @@
+dist
+storybook-static
+plan
+screenshots
+AGENTS.md
+CLAUDE.md
+package-lock.json
+src/styles/tokens.css
+src/styles/tokens.generated.ts
+tests/visual/__screenshots__
+test-results
+playwright-report
+.changeset/*.md
+CHANGELOG.md
