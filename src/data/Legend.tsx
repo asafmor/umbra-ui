@@ -1,0 +1,361 @@
+import {
+  createContext,
+  Fragment,
+  useContext,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from 'react';
+import { ToggleButton, Toolbar } from 'react-aria-components';
+import { ButtonBase } from '../basics/Button';
+import { Skeleton } from '../basics/Skeleton';
+import { Popover, PopoverTrigger } from '../internal/overlays';
+import {
+  SeriesMarker,
+  seriesColour,
+  seriesMarker,
+  type SeriesMarkerKind,
+  type SeriesMarkerProps,
+} from '../internal/SeriesMarker';
+import { useShrinkLevel } from '../internal/useShrinkLevel';
+import { cx, renderPart, type Part } from '../utils/parts';
+import styles from './Legend.module.css';
+
+export type LegendMarker = SeriesMarkerKind;
+export type LegendMarkerProps = SeriesMarkerProps;
+
+export interface LegendItem {
+  id: string;
+  label: ReactNode;
+  /** Any CSS colour. Without it the item takes the series palette, by its position in `items`. */
+  color?: string;
+  /** Shown after the label; a right-aligned column in the vertical orientation. */
+  value?: ReactNode;
+  /** Overrides the legend's `marker` for this item. */
+  marker?: LegendMarker;
+  /** Dimmed, and not toggled or highlighted. */
+  disabled?: boolean;
+}
+
+interface LegendContextValue {
+  interactive: boolean;
+  hidden: readonly string[];
+  toggle: (id: string) => void;
+  onHighlight?: (id: string | null) => void;
+}
+const LegendContext = createContext<LegendContextValue | null>(null);
+function useLegend() {
+  const legend = useContext(LegendContext);
+  if (!legend) throw new Error('Legend blocks must be rendered inside <Legend.Root>.');
+  return legend;
+}
+
+interface HiddenProps {
+  /** Ids of the items that are switched off (controlled). */
+  hiddenIds?: readonly string[];
+  defaultHiddenIds?: readonly string[];
+  onHiddenChange?: (hiddenIds: string[]) => void;
+}
+
+function useHidden({ hiddenIds, defaultHiddenIds = [], onHiddenChange }: HiddenProps) {
+  const [uncontrolled, setUncontrolled] = useState(defaultHiddenIds);
+  const hidden = hiddenIds ?? uncontrolled;
+  const change = (next: string[]) => {
+    setUncontrolled(next);
+    onHiddenChange?.(next);
+  };
+  return { hidden, change };
+}
+
+export interface LegendRootProps extends HiddenProps {
+  orientation?: 'horizontal' | 'vertical';
+  /** Where the items sit along the legend. A vertical legend with values always fills its width. */
+  align?: 'start' | 'center' | 'end';
+  /** Makes each item a toggle button that switches its series on and off. */
+  interactive?: boolean;
+  /** Called with an item's id while it is hovered or focused, and with `null` when it no longer is. */
+  onHighlight?: (id: string | null) => void;
+  /** The most rows a horizontal legend wraps to. */
+  maxRows?: number;
+  /** Marks the legend busy for assistive technology. */
+  loading?: boolean;
+  /** Accessible name of the legend. */
+  'aria-label'?: string;
+  /** The element, for measuring. */
+  ref?: React.Ref<HTMLElement>;
+  className?: string;
+  style?: CSSProperties;
+  children?: ReactNode;
+}
+
+function Root({
+  orientation = 'horizontal',
+  align = 'start',
+  interactive = false,
+  onHighlight,
+  maxRows = 2,
+  loading = false,
+  'aria-label': label = 'Legend',
+  ref,
+  className,
+  style,
+  children,
+  ...hiddenProps
+}: LegendRootProps) {
+  const { hidden, change } = useHidden(hiddenProps);
+  const toggle = (id: string) =>
+    change(hidden.includes(id) ? hidden.filter((h) => h !== id) : [...hidden, id]);
+  const shared = {
+    'data-umbra': 'legend',
+    'data-orientation': orientation,
+    'data-align': align,
+    'data-interactive': interactive || undefined,
+    'aria-label': label,
+    'aria-busy': loading || undefined,
+    className: cx(styles.root, className),
+    style: { ['--rows' as string]: maxRows, ...style },
+  };
+  const content = (
+    <LegendContext value={{ interactive, hidden, toggle, onHighlight }}>{children}</LegendContext>
+  );
+  // Toggle buttons form a toolbar: one tab stop, arrow keys between the items.
+  return interactive ? (
+    <Toolbar {...shared} ref={ref as React.Ref<HTMLDivElement>} orientation={orientation}>
+      {content}
+    </Toolbar>
+  ) : (
+    <ul {...shared} role="list" ref={ref as React.Ref<HTMLUListElement>}>
+      {content}
+    </ul>
+  );
+}
+
+export interface LegendItemProps {
+  id: string;
+  /** The label. */
+  children?: ReactNode;
+  /** Any CSS colour. */
+  color?: string;
+  marker?: LegendMarker;
+  value?: ReactNode;
+  disabled?: boolean;
+  /** Replace or hide named pieces of the item. */
+  parts?: {
+    marker?: Part<LegendMarkerProps>;
+    label?: Part<{ children: ReactNode }>;
+    value?: Part<{ children: ReactNode }>;
+  };
+  className?: string;
+  style?: CSSProperties;
+}
+
+function Item({
+  id,
+  children,
+  color,
+  marker = 'dot',
+  value,
+  disabled = false,
+  parts,
+  className,
+  style,
+}: LegendItemProps) {
+  const legend = useLegend();
+  const off = legend.hidden.includes(id);
+  const highlight = (on: boolean) => !disabled && legend.onHighlight?.(on ? id : null);
+  const content = (
+    <>
+      {renderPart(parts?.marker, { kind: marker, color }, (p) => (
+        <SeriesMarker {...p} />
+      ))}
+      {renderPart(parts?.label, { children }, (p) => (
+        <span
+          data-part="label"
+          className={styles.label}
+          title={typeof p.children === 'string' ? p.children : undefined}
+        >
+          {p.children}
+        </span>
+      ))}
+      {value != null &&
+        renderPart(parts?.value, { children: value }, (p) => (
+          <span data-part="value" className={styles.value}>
+            {p.children}
+          </span>
+        ))}
+    </>
+  );
+  const shared = {
+    'data-part': 'item',
+    'data-off': off || undefined,
+    className: cx(styles.item, className),
+    style,
+  };
+  if (!legend.interactive) {
+    return (
+      <li
+        {...shared}
+        data-disabled={disabled || undefined}
+        onPointerEnter={() => highlight(true)}
+        onPointerLeave={() => highlight(false)}
+      >
+        {content}
+      </li>
+    );
+  }
+  // Pressed means the series is shown.
+  return (
+    <ToggleButton
+      {...shared}
+      isSelected={!off}
+      isDisabled={disabled}
+      onChange={() => legend.toggle(id)}
+      onHoverChange={highlight}
+      onFocusChange={highlight}
+    >
+      {content}
+    </ToggleButton>
+  );
+}
+
+export interface LegendMoreProps {
+  /** The button's text, for example "+3 more". */
+  children?: ReactNode;
+  /** Accessible name of the popover. */
+  label?: string;
+  /** The popover's content: the full list. */
+  content?: ReactNode;
+}
+
+/** The button that stands for the items that did not fit, and opens the full list. */
+function More({ children, label = 'All items', content }: LegendMoreProps) {
+  const { interactive } = useLegend();
+  const trigger = (
+    <PopoverTrigger>
+      <ButtonBase umbra="button" variant="ghost" size="small" className={styles.more}>
+        {children}
+      </ButtonBase>
+      <Popover label={label} className={styles.all}>
+        {content}
+      </Popover>
+    </PopoverTrigger>
+  );
+  return interactive ? trigger : <li className={styles.moreItem}>{trigger}</li>;
+}
+
+export interface LegendProps extends Omit<LegendRootProps, 'children' | 'ref'> {
+  items: LegendItem[];
+  /** The marker of every item that does not set its own. Patterns (`stripes`, `dots`) do not depend on colour. */
+  marker?: LegendMarker;
+  /** Shows placeholder items while the data loads. */
+  loading?: boolean;
+  /** Number of placeholder items while `loading`. */
+  loadingCount?: number;
+  /** Text of the button that stands for the items that did not fit. */
+  moreLabel?: (count: number) => string;
+  /** Accessible name of the popover with the full list. */
+  allLabel?: string;
+  /** Replace or hide named pieces. */
+  parts?: {
+    item?: Part<LegendItemProps>;
+    marker?: Part<LegendMarkerProps>;
+    label?: Part<{ children: ReactNode }>;
+    value?: Part<{ children: ReactNode }>;
+    more?: Part<LegendMoreProps>;
+    skeleton?: Part;
+  };
+}
+
+/** The key for a chart or any colour-coded data: one marker and label per series. */
+export function Legend({
+  items,
+  marker,
+  loadingCount = 3,
+  moreLabel = (count) => `+${count} more`,
+  allLabel = 'All items',
+  parts,
+  hiddenIds,
+  defaultHiddenIds,
+  onHiddenChange,
+  ...root
+}: LegendProps) {
+  const ref = useRef<HTMLElement>(null);
+  // The state lives here, so the list in the popover shows and changes the same one.
+  const { hidden, change } = useHidden({ hiddenIds, defaultHiddenIds, onHiddenChange });
+  const state = { hiddenIds: hidden, onHiddenChange: change };
+  // A horizontal legend hides one more item from the end for each level, while it is taller than its rows.
+  const horizontal = (root.orientation ?? 'horizontal') === 'horizontal';
+  const level = useShrinkLevel(
+    ref,
+    horizontal && !root.loading ? items.length : 0,
+    `${items.length}:${root.maxRows}`,
+    { overflowing: (element) => element.scrollHeight > element.clientHeight + 1 },
+  );
+
+  if (root.loading) {
+    return (
+      <Root {...root} interactive={false}>
+        {renderPart(parts?.skeleton, {}, () =>
+          Array.from({ length: loadingCount }, (_, i) => (
+            <li key={i} className={styles.item}>
+              <Skeleton shape="circle" className={styles.skeletonMarker} />
+              <Skeleton width={56 + (i % 3) * 16} />
+            </li>
+          )),
+        )}
+      </Root>
+    );
+  }
+  if (!items.length) return null;
+
+  const render = (item: LegendItem, index: number) => (
+    <Fragment key={item.id}>
+      {renderPart(
+        parts?.item,
+        {
+          id: item.id,
+          children: item.label,
+          color: item.color ?? seriesColour(index),
+          marker: item.marker ?? seriesMarker(index, marker),
+          value: item.value,
+          disabled: item.disabled,
+          parts: { marker: parts?.marker, label: parts?.label, value: parts?.value },
+        },
+        (p) => (
+          <Item {...p} />
+        ),
+      )}
+    </Fragment>
+  );
+  return (
+    <Root {...root} {...state} ref={ref}>
+      {items.slice(0, items.length - level).map(render)}
+      {level > 0 &&
+        renderPart(
+          parts?.more,
+          {
+            children: moreLabel(level),
+            label: allLabel,
+            content: (
+              <Root
+                {...state}
+                interactive={root.interactive}
+                onHighlight={root.onHighlight}
+                orientation="vertical"
+                aria-label={allLabel}
+              >
+                {items.map(render)}
+              </Root>
+            ),
+          },
+          (p) => <More {...p} />,
+        )}
+    </Root>
+  );
+}
+
+Legend.Root = Root;
+Legend.Item = Item;
+Legend.Marker = SeriesMarker;
+Legend.More = More;

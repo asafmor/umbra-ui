@@ -1,0 +1,147 @@
+.root {
+  --row: var(--umbra-legend-row-height, var(--umbra-density-table-row));
+  --row-gap: var(--umbra-legend-row-gap, var(--umbra-space-1));
+  /* The root clips, so focus rings inside it are drawn inwards. */
+  --umbra-focus-offset: -2px;
+
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--row-gap) var(--umbra-legend-gap, var(--umbra-space-4));
+  min-width: 0;
+  max-width: 100%;
+  /* At most `maxRows` rows; the component hides the items that would start another one. */
+  max-height: calc(var(--rows) * var(--row) + (var(--rows) - 1) * var(--row-gap));
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  list-style: none;
+  color: var(--umbra-legend-fg, var(--umbra-color-base-text-secondary));
+  font: var(--umbra-legend-font, var(--umbra-font-label));
+}
+
+.root[data-align='center'] {
+  justify-content: center;
+}
+
+.root[data-align='end'] {
+  justify-content: flex-end;
+}
+
+/* Vertical: one item per row, as tall as it needs; a parent that is too short scrolls it. */
+.root[data-orientation='vertical'] {
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: flex-start;
+  max-height: none;
+  overflow: visible;
+}
+
+.root[data-orientation='vertical'][data-align='center'] {
+  align-items: center;
+}
+
+.root[data-orientation='vertical'][data-align='end'] {
+  align-items: flex-end;
+}
+
+.root[data-orientation='vertical']:has(.value) {
+  align-items: stretch;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-space-2);
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  height: var(--row);
+  padding: 0 var(--umbra-space-2);
+  border: 0;
+  border-radius: var(--umbra-legend-item-radius, var(--umbra-radius-control));
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+}
+
+.label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.value {
+  flex: none;
+  margin-inline-start: auto;
+  padding-inline-start: var(--umbra-space-3);
+  color: var(--umbra-legend-value-fg, var(--umbra-color-base-text-primary));
+  font-variant-numeric: tabular-nums;
+}
+
+/* Interactive items are toggle buttons. */
+button.item {
+  cursor: pointer;
+  transition: background-color var(--umbra-motion-duration-fast);
+}
+
+button.item[data-hovered] {
+  background: color-mix(in oklab, currentColor 12%, transparent);
+}
+
+button.item[data-pressed] {
+  background: color-mix(in oklab, currentColor 6%, transparent);
+}
+
+button.item[data-focus-visible] {
+  outline: var(--umbra-state-focus-ring-width) solid
+    var(--umbra-focus-color, var(--umbra-color-fixed-focus-ring));
+  outline-offset: var(--umbra-focus-offset, 2px);
+}
+
+/* Switched off: struck through, with a faded marker, so the state does not depend on colour. */
+.item[data-off] {
+  color: var(--umbra-color-base-text-muted);
+}
+
+.item[data-off] .label {
+  text-decoration: line-through;
+}
+
+.item:is([data-off], [data-disabled]) .value {
+  color: inherit;
+}
+
+.item:is([data-off], [data-disabled]) svg {
+  opacity: var(--umbra-state-disabled-opacity);
+}
+
+/* A disabled item keeps readable text (it still names its series); its marker fades. */
+.item[data-disabled] {
+  color: var(--umbra-color-base-text-muted);
+  cursor: default;
+}
+
+.moreItem {
+  display: flex;
+  flex: none;
+}
+
+.more {
+  flex: none;
+  height: var(--row);
+}
+
+/* The full list, in the popover. */
+.all {
+  padding: var(--umbra-space-3);
+  min-width: 160px;
+  max-width: 320px;
+  overflow-y: auto;
+}
+
+.skeletonMarker {
+  flex: none;
+  width: var(--umbra-series-marker-size, 0.875rem);
+}

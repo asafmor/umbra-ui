@@ -1,0 +1,5 @@
+.marker {
+  flex: none;
+  width: var(--umbra-series-marker-size, 0.875rem);
+  height: var(--umbra-series-marker-size, 0.875rem);
+}
