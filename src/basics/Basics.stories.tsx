@@ -221,9 +221,12 @@ export const IconButtonOptions: Story = {
           parts={{
             icon: (p) => <span data-part="icon">{p.children}</span>,
             badge: () => (
-              <span aria-hidden="true" data-part="badge" style={{ font: 'var(--umbra-font-label)' }}>
-                120
-              </span>
+              // A custom badge without text of its own: the count is already in the button's name.
+              <span
+                aria-hidden="true"
+                data-part="badge"
+                style={{ width: 8, height: 8, borderRadius: '50%', background: 'currentColor' }}
+              />
             ),
             tooltip: (p) => <>{p.children} (from a part)</>,
           }}

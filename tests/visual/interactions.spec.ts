@@ -851,7 +851,7 @@ test('icon button: the tooltip shows on focus, can be turned off or replaced, an
   const alerts = page.getByRole('button', { name: 'Alerts (120)' });
   await expect(alerts).toBeFocused();
   await expect(tooltip).toHaveText('Alerts (from a part)');
-  await expect(alerts.locator('[data-part="badge"]')).toHaveText('120');
+  await expect(alerts.locator('[data-part="badge"]')).toHaveText('');
   await expect(
     page.getByRole('button', { name: 'Muted alerts (3)' }).locator('[data-part="badge"]'),
   ).toHaveCount(0);
