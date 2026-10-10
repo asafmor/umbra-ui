@@ -1,0 +1,241 @@
+/* The root is a size container, so the pieces can hide by the row's own width. */
+.root {
+  container: umbra-list-item / inline-size;
+  position: relative;
+  min-width: 0;
+  background: var(--umbra-list-item-bg, transparent);
+  color: var(--umbra-list-item-color, var(--umbra-color-base-text-primary));
+  /* Two edge stripes, drawn inside: selection first, then the category accent. */
+  --selected-stripe: 0px;
+  --accent-stripe: 0px;
+  box-shadow:
+    inset var(--selected-stripe) 0 var(--umbra-list-item-selected-stripe, var(--umbra-color-fixed-selected)),
+    inset calc(var(--selected-stripe) + var(--accent-stripe)) 0 var(--accent, transparent);
+  transition: background-color var(--umbra-motion-duration-fast);
+}
+
+.root[data-accent] {
+  --accent-stripe: var(--umbra-list-item-stripe-width, 3px);
+}
+
+/* Hover lightens one step, press darkens one step (plan/interaction.md). */
+.root[data-interactive]:hover {
+  background: var(--umbra-list-item-hover-bg, color-mix(in oklab, currentColor 7%, transparent));
+}
+
+.root[data-interactive]:active {
+  background: color-mix(in oklab, #000 18%, transparent);
+}
+
+/* Selected: violet, plus the edge stripe as the cue that is not colour. */
+.root[data-selected] {
+  --selected-stripe: var(--umbra-list-item-stripe-width, 3px);
+  --selected-bg: var(
+    --umbra-list-item-selected-bg,
+    color-mix(in oklab, var(--umbra-color-fixed-selected) 28%, transparent)
+  );
+  background: var(--selected-bg);
+}
+
+.root[data-selected][data-interactive]:hover {
+  background: color-mix(in oklab, #fff 6%, var(--selected-bg));
+}
+
+.root[data-disabled] {
+  opacity: var(--umbra-state-disabled-opacity);
+}
+
+.layout {
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-list-item-gap, var(--umbra-space-4));
+  min-height: var(--umbra-list-item-min-height, var(--umbra-density-list-row));
+  padding: var(--umbra-list-item-padding-y, var(--umbra-space-3))
+    var(--umbra-list-item-padding-x, var(--umbra-density-card-padding));
+}
+
+.root[data-size='compact'] > .layout {
+  min-height: var(
+    --umbra-list-item-min-height,
+    calc(var(--umbra-density-control-height) + var(--umbra-space-2))
+  );
+  padding-block: var(--umbra-list-item-padding-y, var(--umbra-space-2));
+}
+
+.leading {
+  flex: none;
+  display: flex;
+  align-items: center;
+}
+
+.content {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--umbra-space-1);
+}
+
+.title,
+.overline,
+.description {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.title {
+  font: var(--umbra-list-item-title-font, var(--umbra-font-body));
+}
+
+.overline,
+.description,
+.meta {
+  font: var(--umbra-font-label);
+  color: var(--umbra-list-item-secondary-color, var(--umbra-color-base-text-secondary));
+}
+
+/* Unread is bold with a dot; read is dimmed. A selected row keeps full contrast on its violet fill. */
+.root[data-unread='true'] .title {
+  font-weight: 700;
+}
+
+.root[data-unread='false']:not([data-selected]) .title {
+  color: var(--umbra-list-item-read-color, var(--umbra-color-base-text-muted));
+}
+
+.end {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-space-3);
+  max-width: 60%;
+}
+
+.metaRow {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--umbra-space-2);
+}
+
+.meta {
+  white-space: nowrap;
+}
+
+.unread {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--umbra-list-item-unread-color, var(--umbra-color-base-text-primary));
+}
+
+.trailing {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  max-width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-space-2);
+  overflow: hidden;
+  white-space: nowrap;
+  /* It clips, so the rings of its controls are drawn inside them. */
+  --umbra-focus-offset: calc(-1 * var(--umbra-state-focus-ring-width));
+}
+
+/*
+ * Message: sender and tag on the first line, title and time on the second. One grid row, centred in
+ * the row's height, so the two columns are equally tall and their lines meet.
+ */
+.root[data-variant='message'] > .layout {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-content: center;
+  gap: 0;
+}
+
+.root[data-variant='message'] .leading {
+  grid-column: 1;
+  margin-inline-end: var(--umbra-list-item-gap, var(--umbra-space-4));
+}
+
+.root[data-variant='message'] .content {
+  grid-column: 2;
+}
+
+.root[data-variant='message'] .end {
+  grid-column: 3;
+  max-width: none;
+  margin-inline-start: var(--umbra-list-item-gap, var(--umbra-space-4));
+  flex-direction: column-reverse;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--umbra-space-1);
+}
+
+.root[data-variant='message'] .title {
+  font-size: calc(var(--umbra-density-body-size) + 1px);
+}
+
+/* The whole row is the hit area of its link or button; trailing controls stay above it. */
+.link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+.link:disabled {
+  cursor: default;
+}
+
+/* The focus ring goes around the row, inwards, because lists clip. */
+.link:focus-visible {
+  outline: none;
+}
+
+.link:focus-visible::after {
+  outline: var(--umbra-state-focus-ring-width) solid
+    var(--umbra-focus-color, var(--umbra-color-fixed-focus-ring));
+  outline-offset: calc(-1 * var(--umbra-state-focus-ring-width));
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Show less as the row narrows: trailing hides, then the description, then the meta text. The title truncates. */
+@container umbra-list-item (max-width: 260px) {
+  .root [data-part='trailing'] {
+    display: none;
+  }
+}
+
+@container umbra-list-item (max-width: 200px) {
+  .root [data-part='description'] {
+    display: none;
+  }
+}
+
+@container umbra-list-item (max-width: 140px) {
+  .root [data-part='meta'] {
+    display: none;
+  }
+}

@@ -1,0 +1,90 @@
+.root {
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-space-3);
+  min-width: 0;
+  min-height: var(--umbra-group-header-height, calc(var(--umbra-density-table-row) + var(--umbra-space-2)));
+  padding: 0 var(--umbra-group-header-padding-x, var(--umbra-density-card-padding));
+  overflow: hidden;
+  white-space: nowrap;
+  background: var(--umbra-group-header-bg, var(--umbra-color-base-surface2));
+  color: var(--umbra-group-header-color, var(--umbra-color-base-text-secondary));
+  font: var(--umbra-group-header-font, var(--umbra-font-label));
+  /* The row clips its content, so the rings of its controls are drawn inside them. */
+  --umbra-focus-offset: calc(-1 * var(--umbra-state-focus-ring-width));
+}
+
+/* `plain` has no band: the surface behind it shows, which a sticky header still has to cover. */
+.root[data-variant='plain'] {
+  background: var(--umbra-group-header-bg, transparent);
+  color: var(--umbra-group-header-color, var(--umbra-color-base-text-primary));
+  font-weight: 700;
+}
+
+.root[data-variant='plain'][data-sticky] {
+  background: var(--umbra-group-header-bg, var(--umbra-context-card-tint));
+}
+
+.root[data-sticky] {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+/* The title keeps its width until the meta text has hidden, then it truncates. */
+.title {
+  flex: none;
+  margin: 0;
+  font: inherit;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.root[data-truncate] > .title {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.count {
+  flex: none;
+  color: var(--umbra-color-base-text-muted);
+}
+
+.count::before {
+  content: '(';
+}
+
+.count::after {
+  content: ')';
+}
+
+.meta {
+  flex: none;
+  margin-inline-start: auto;
+}
+
+.actions {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-space-2);
+  margin-inline-start: auto;
+  color: var(--umbra-color-base-text-primary);
+}
+
+.meta + .actions {
+  margin-inline-start: 0;
+}
+
+.toggle {
+  margin-inline-start: calc(-1 * var(--umbra-space-2));
+}
+
+.toggle > * {
+  transition: rotate calc(var(--umbra-motion-duration-base) * var(--umbra-motion-scale))
+    var(--umbra-motion-easing-enter);
+}
+
+.toggle[aria-expanded='false'] > * {
+  rotate: -90deg;
+}
