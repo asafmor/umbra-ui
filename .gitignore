@@ -13,3 +13,8 @@ coverage/
 # generated from plan/tokens.json (npm run tokens)
 src/styles/tokens.css
 src/styles/tokens.generated.ts
+
+# local, per-developer files
+*.local
+.claude/settings.local.json
+blob-report/
