@@ -1,0 +1,31 @@
+/* Only the arrow is coloured; the value keeps the text colour around it, so its contrast never drops. */
+.root {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--umbra-trend-arrow-gap, var(--umbra-space-1));
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.root > [data-part='icon'] {
+  color: var(--umbra-trend-arrow-neutral, var(--umbra-color-base-text-muted));
+}
+
+.root[data-tone='good'] > [data-part='icon'] {
+  color: var(--umbra-trend-arrow-good, var(--umbra-color-semantic-success));
+}
+
+.root[data-tone='bad'] > [data-part='icon'] {
+  color: var(--umbra-trend-arrow-bad, var(--umbra-color-semantic-danger));
+}
+
+.value {
+  min-width: 0;
+  overflow: hidden;
+  font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
+}

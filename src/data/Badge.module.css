@@ -1,0 +1,39 @@
+.root {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  max-width: 100%;
+  vertical-align: middle;
+}
+
+.indicator {
+  --size: var(--umbra-badge-size, var(--umbra-space-5));
+
+  display: inline-block;
+  flex: none;
+  min-width: var(--size);
+  height: var(--size);
+  padding: 0 var(--umbra-space-2);
+  border-radius: var(--umbra-badge-radius, var(--umbra-radius-pill));
+  background: var(--umbra-badge-bg, var(--tone));
+  color: var(--umbra-badge-fg, var(--on-tone));
+  font: var(--umbra-badge-font, 700 11px / var(--size) var(--umbra-font-family-body));
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.indicator[data-dot] {
+  --size: var(--umbra-badge-dot-size, var(--umbra-space-3));
+
+  width: var(--size);
+  padding: 0;
+}
+
+/* On the corner of its anchor, overhanging it a little. Clicks go through to the anchor. */
+.root[data-anchored] > .indicator {
+  position: absolute;
+  top: calc(-1 * var(--umbra-badge-offset, var(--umbra-space-2)));
+  inset-inline-end: calc(-1 * var(--umbra-badge-offset, var(--umbra-space-2)));
+  pointer-events: none;
+}

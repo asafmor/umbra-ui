@@ -1,0 +1,54 @@
+/*
+ * A tone gives two private values: --tone (the colour) and --on-tone (text on a fill of that colour,
+ * at 4.5:1 or more). A custom colour sets both inline (tone.ts).
+ */
+.tone {
+  --tone: var(--umbra-color-base-text-muted);
+  --on-tone: var(--umbra-color-base-surface1);
+}
+
+.tone[data-tone='info'] {
+  --tone: var(--umbra-color-semantic-info);
+}
+
+.tone[data-tone='success'] {
+  --tone: var(--umbra-color-semantic-success);
+}
+
+.tone[data-tone='warning'] {
+  --tone: var(--umbra-color-semantic-warning);
+}
+
+.tone[data-tone='danger'] {
+  --tone: var(--umbra-color-semantic-danger);
+}
+
+.tone[data-tone='accent'] {
+  --tone: var(--umbra-color-fixed-selected);
+  --on-tone: var(--umbra-color-fixed-on-selected);
+}
+
+/* A custom colour the library cannot read (not hex or rgb) gets light text. */
+.tone[data-tone='custom'] {
+  --on-tone: var(--umbra-color-base-text-primary);
+}
+
+/* Text for screen readers only. */
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Holds a Skeleton in the size of the component it stands in for. */
+.skeleton {
+  display: inline-block;
+  flex: none;
+  width: 4.5em;
+  height: 1.5em;
+  font: var(--umbra-font-label);
+  vertical-align: middle;
+}
