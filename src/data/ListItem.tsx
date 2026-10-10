@@ -1,4 +1,5 @@
-import type { CSSProperties, ReactNode } from 'react';
+import { useRef, type CSSProperties, type ReactNode } from 'react';
+import { useTruncatedTip } from '../internal/TruncatedText';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './ListItem.module.css';
 
@@ -82,6 +83,8 @@ export interface ListItemTitleProps extends BlockProps {
 
 /** The title. With `href` or `onPress` it is a link or button whose hit area covers the whole row. */
 function Title({ href, onPress, disabled, className, style, children }: ListItemTitleProps) {
+  const ref = useRef<HTMLDivElement>(null);
+  const tip = useTruncatedTip(ref, children);
   const content =
     href && !disabled ? (
       <a href={href} className={styles.link}>
@@ -95,9 +98,12 @@ function Title({ href, onPress, disabled, className, style, children }: ListItem
       children
     );
   return (
-    <div data-part="title" className={cx(styles.title, className)} style={style}>
-      {content}
-    </div>
+    <>
+      <div ref={ref} data-part="title" className={cx(styles.title, className)} style={style}>
+        {content}
+      </div>
+      {tip}
+    </>
   );
 }
 

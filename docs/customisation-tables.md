@@ -693,6 +693,7 @@ A strip of ticks with a marker that shows where a value sits on a scale.
 | `min` | `number` |  |
 | `max` | `number` |  |
 | `formatValue` | `((value: number) => string)` | Text of a position on a numeric scale. A named scale uses the labels of its levels. |
+| `tooltip` | `boolean` | `false` turns off the tooltip that shows the exact value on hover. |
 | `steps` | `number` | Number of ticks on a numeric scale. |
 | `levels` | `LevelMeterLevel[]` | A named scale: one tick per level, and the marker sits on a level. Replaces `min`, `max` and `steps`. |
 | `range` | `[LevelMeterValue, LevelMeterValue]` | Draws a band from the first position to the second, for an estimate or an allowed span. |
@@ -1035,6 +1036,7 @@ A bar that fills with a value: progress of a task, or a measured level. Fills th
 | `target` | `number` | Draws a tick at a goal value. |
 | `targetLabel` | `string` | Names the target for assistive technology. |
 | `formatValue` | `((value: number, scale: ProgressBarScale) => string)` | Text of a value. The default is a rounded percentage. |
+| `tooltip` | `boolean` | `false` turns off the tooltip that shows the exact value on hover. |
 
 **Parts**: `label`, `value`, `track`, `fill`, `target`, `skeleton`.
 

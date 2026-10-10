@@ -518,6 +518,15 @@ test.describe('ActionBar', () => {
       await expect(at(400).getByRole('button', { name })).toHaveAttribute('data-icon-only');
       await expect(labelled(400, name)).toHaveCount(0);
     }
+    // The label of an icon-only action is its tooltip; an action that kept its label has none.
+    await at(400).getByRole('button', { name: 'Undo' }).focus();
+    await page.keyboard.press('Shift+Tab');
+    await page.keyboard.press('Tab');
+    await expect(page.getByRole('tooltip')).toHaveText('Undo');
+    await page.evaluate(() => (document.activeElement as HTMLElement).blur());
+    await at(760).getByRole('button', { name: 'Undo' }).hover();
+    await page.waitForTimeout(700);
+    await expect(page.getByRole('tooltip')).toHaveCount(0);
     // One without an icon keeps its label, and so does the primary action, at every width.
     await expect(labelled(400, 'Discard')).toBeVisible();
     // Step 2: the actions are on a line under the status.
@@ -708,10 +717,13 @@ test.describe('VerticalNav', () => {
     await expect(toggle).toHaveAttribute('aria-expanded', 'false');
     await expect(toggle).toBeFocused();
 
-    // Labels are not on screen, but they are still the names; a text label is also the hover hint.
+    // Labels are not on screen, but they are still the names, and the tooltip of each row.
     const general = root.getByRole('button', { name: 'General', exact: true });
+    const tooltip = page.getByRole('tooltip');
     await expect(general).toBeVisible();
-    await expect(general).toHaveAttribute('title', 'General');
+    await expect(general).not.toHaveAttribute('title');
+    await general.hover();
+    await expect(tooltip).toHaveText('General');
     expect((await box(general.locator('[data-part="label"]'))).width).toBeLessThanOrEqual(1);
     await expect(root.locator('[aria-current="page"]')).toHaveAccessibleName('Display');
     expect(await root.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
@@ -719,11 +731,16 @@ test.describe('VerticalNav', () => {
     await general.focus();
     await page.keyboard.press('ArrowDown');
     await expect(root.getByRole('button', { name: 'Display', exact: true })).toBeFocused();
+    // Keyboard focus shows the tooltip of the focused row at once.
+    await expect(tooltip).toHaveText('Display');
 
     await toggle.click();
     await expect(root).not.toHaveAttribute('data-collapsed');
     expect((await box(root)).width).toBe(wide);
-    await expect(general).not.toHaveAttribute('title');
+    // With the labels on screen there is no tooltip.
+    await general.hover();
+    await page.waitForTimeout(700);
+    await expect(tooltip).toHaveCount(0);
 
     // Controlled by the prop.
     await open(page, 'shell-verticalnav--rail');

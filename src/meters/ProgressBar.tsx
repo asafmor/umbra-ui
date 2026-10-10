@@ -5,6 +5,7 @@ import {
   ProgressBar as AriaProgressBar,
 } from 'react-aria-components';
 import { Skeleton } from '../basics/Skeleton';
+import { useHoverTip } from '../internal/TruncatedText';
 import { useShrinkLevel } from '../internal/useShrinkLevel';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './ProgressBar.module.css';
@@ -97,6 +98,8 @@ export interface ProgressBarRootProps extends BlockProps {
   formatValue?: (value: number, scale: ProgressBarScale) => string;
   /** Shows skeletons in place of the bar and the value. */
   loading?: boolean;
+  /** `false` turns off the tooltip that shows the exact value on hover. */
+  tooltip?: boolean;
   /** Names a bar that has no visible label. */
   'aria-label'?: string;
 }
@@ -134,6 +137,7 @@ function Root({
   targetLabel = 'Target',
   formatValue,
   loading = false,
+  tooltip = true,
   className,
   style,
   ...rest
@@ -213,6 +217,8 @@ function Root({
     loading,
   };
   const content = <Context.Provider value={context}>{children}</Context.Provider>;
+  // The exact value, for a bar that is too small to show it or shows none.
+  const tip = useHoverTip(ref, tooltip && !loading && !indeterminate ? spoken : null);
 
   if (loading) {
     return (
@@ -228,20 +234,25 @@ function Root({
     );
   }
   const scale = { minValue: min, maxValue: range ? max : min + 1, 'aria-label': rest['aria-label'] };
-  return kind === 'meter' ? (
-    <AriaMeter {...shared} {...scale} value={value} valueLabel={spoken}>
-      {content}
-    </AriaMeter>
-  ) : (
-    <AriaProgressBar
-      {...shared}
-      {...scale}
-      value={value}
-      valueLabel={indeterminate ? undefined : spoken}
-      isIndeterminate={indeterminate}
-    >
-      {content}
-    </AriaProgressBar>
+  return (
+    <>
+      {kind === 'meter' ? (
+        <AriaMeter {...shared} {...scale} value={value} valueLabel={spoken}>
+          {content}
+        </AriaMeter>
+      ) : (
+        <AriaProgressBar
+          {...shared}
+          {...scale}
+          value={value}
+          valueLabel={indeterminate ? undefined : spoken}
+          isIndeterminate={indeterminate}
+        >
+          {content}
+        </AriaProgressBar>
+      )}
+      {tip}
+    </>
   );
 }
 

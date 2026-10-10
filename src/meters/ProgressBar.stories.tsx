@@ -65,6 +65,7 @@ export const Variants: Story = {
         <ProgressBar label="Budget used" kind="meter" value={64} target={80} showValue />
         <ProgressBar
           label="Past the goal"
+          tooltip={false}
           kind="meter"
           value={92}
           target={75}

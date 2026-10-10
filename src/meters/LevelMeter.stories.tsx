@@ -33,7 +33,15 @@ export const Variants: Story = {
       <Panel title="Numeric scale">
         <LevelMeter aria-label="Skill level" value={70} />
         <LevelMeter label="Skill level" value={7} max={10} steps={11} showValue />
-        <LevelMeter label="Capacity" value={35} steps={21} minLabel="0" maxLabel="100" showValue />
+        <LevelMeter
+          label="Capacity"
+          value={35}
+          steps={21}
+          minLabel="0"
+          maxLabel="100"
+          showValue
+          tooltip={false}
+        />
       </Panel>
       <Panel title="Named levels">
         <LevelMeter label="Skill level" levels={levels} value="basic" showValue />

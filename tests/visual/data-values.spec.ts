@@ -130,6 +130,14 @@ test.describe('KeyValue', () => {
     expect(await clipped(truncated.locator('dd').nth(1))).toBe(true);
     expect(await clipped(truncated.locator('dt span').first())).toBe(true);
     expect(await fits(truncated)).toBe(true);
+    // The whole value is the tooltip of a truncated one. A value that fits or wraps has none.
+    const tooltip = page.getByRole('tooltip');
+    const long = truncated.locator('dd').nth(1);
+    await long.hover();
+    await expect(tooltip).toHaveText((await long.textContent())!);
+    await page.locator('dl[aria-label="Wrapped"] dd').first().hover();
+    await page.waitForTimeout(700);
+    await expect(tooltip).toHaveCount(0);
 
     const wrapped = page.locator('dl[aria-label="Wrapped"]');
     for (const value of await wrapped.locator('dd').all()) {
@@ -299,6 +307,14 @@ test.describe('SummaryTile', () => {
       expect(await fits(tile.locator('[data-part="surface"]'))).toBe(true);
     }
     expect(await clipped(tiles.nth(4).locator('[data-part="title"]'))).toBe(true);
+    // A truncated title is whole in a tooltip; a title that fits has none.
+    const tooltip = page.getByRole('tooltip');
+    const title = tiles.nth(4).locator('[data-part="title"]');
+    await title.hover();
+    await expect(tooltip).toHaveText((await title.textContent())!);
+    await tiles.nth(0).locator('[data-part="title"]').hover();
+    await page.waitForTimeout(700);
+    await expect(tooltip).toHaveCount(0);
   });
 
   test('tiles are layout children: they share a row equally and fill a stack by weight', async ({ page }) => {

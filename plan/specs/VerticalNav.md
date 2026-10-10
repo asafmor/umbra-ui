@@ -85,7 +85,7 @@ Without an icon on every item there is no rail to switch to, and step 0 is all t
 - The list is one tab stop: the focused item, else the current one, else the first. `Up` and `Down` move (no wrap), `Home` and `End` jump. On a group, `Right` opens it and then moves into it, `Left` closes it; on an item of a group, `Left` goes back to the group. `Enter` and `Space` choose.
 - A group is a button with `aria-expanded`. It does not navigate.
 - A disabled item has `aria-disabled`, keeps its place in the arrow-key order and does nothing.
-- In the rail each label stays in the page, hidden from sight only, as the name of its item. A text label is also set as `title`, the hover hint.
+- In the rail each label stays in the page, hidden from sight only, as the name of its item. The label is also the row's `Tooltip`, opening at the end side on hover and on keyboard focus.
 - The toggle is an icon button with `aria-expanded`; header, footer and toggle are tab stops of their own.
 - The focus ring is drawn inside the row, because the list scrolls and clips.
 
@@ -98,7 +98,7 @@ Resolved 2026-10-10:
 - The radio glyph of the source (21) is not copied: the current item is the library's selected look (violet, stripe, weight).
 - One level of nesting. A group only opens and closes; give the overview page its own item inside it.
 - In the rail the items of an open group stay, as icons under it; there is no fly-out menu.
-- The hover hint in the rail is the native `title`, because the internal overlays are being replaced. Follow-up: the public `Tooltip`.
+- The hover hint in the rail is the public `Tooltip` (integration pass), not the native `title`: it also shows on keyboard focus and takes any label node. A row drawn by the app's own link (`renderLink`) gets it when that link passes its props and ref on to its element.
 - The automatic rail keeps the width of its slot instead of shrinking to the rail width, so it can tell when the slot is wide again.
 - The rail threshold is a token read by the component, in px.
 - Opening a group is not size-animated; the technique of `Accordion` can be applied later.

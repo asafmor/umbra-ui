@@ -76,7 +76,7 @@ Container queries on the tile's own width.
 
 | Step | Tile width at most | Result |
 |---|---|---|
-| 1 | any | The title, value and caption truncate with an ellipsis |
+| 1 | any | The title, value and caption truncate with an ellipsis. A truncated title shows its full text in a tooltip, on hover and on keyboard focus of the tile. |
 | 2 | 220px | The caption hides |
 | 3 | 180px | The trend hides |
 | 4 | 140px | The icon hides and the padding goes down one step |

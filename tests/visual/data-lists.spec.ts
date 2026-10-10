@@ -147,6 +147,16 @@ test.describe('ListItem', () => {
     expect(await visible(2)).toEqual([false, false, true]);
     expect(await visible(3)).toEqual([false, false, false]);
     expect(await truncated(part(boxes.nth(3), 'title'))).toBe(true);
+    // A truncated title is whole in a tooltip; a title that fits has none.
+    const tooltip = page.getByRole('tooltip');
+    await part(boxes.nth(3), 'title').hover();
+    await expect(tooltip).toHaveText((await part(boxes.nth(3), 'title').textContent())!);
+    await page.mouse.move(0, 0);
+    await expect(tooltip).toHaveCount(0);
+    await boxes.nth(0).evaluate((el) => (el.style.width = '600px'));
+    await part(boxes.nth(0), 'title').hover();
+    await page.waitForTimeout(700);
+    await expect(tooltip).toHaveCount(0);
     // The unread dot stays when the meta text has gone: it is not the time that says "unread".
     await expect(part(boxes.nth(3), 'unread')).toBeVisible();
 

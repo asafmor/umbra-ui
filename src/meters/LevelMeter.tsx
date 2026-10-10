@@ -10,6 +10,7 @@ import {
 import { flushSync } from 'react-dom';
 import { Label as AriaLabel, Meter as AriaMeter } from 'react-aria-components';
 import { Skeleton } from '../basics/Skeleton';
+import { useHoverTip } from '../internal/TruncatedText';
 import { useShrinkLevel } from '../internal/useShrinkLevel';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './LevelMeter.module.css';
@@ -92,6 +93,8 @@ export interface LevelMeterRootProps extends BlockProps {
   formatValue?: (value: number) => string;
   /** Shows skeletons in place of the ticks and the value. */
   loading?: boolean;
+  /** `false` turns off the tooltip that shows the exact value on hover. */
+  tooltip?: boolean;
   /** Names a meter that has no visible label. */
   'aria-label'?: string;
 }
@@ -117,6 +120,7 @@ function Root({
   boxed = true,
   formatValue,
   loading = false,
+  tooltip = true,
   className,
   style,
   ...rest
@@ -203,6 +207,8 @@ function Root({
     loading,
   };
   const content = <Context.Provider value={context}>{children}</Context.Provider>;
+  // The exact value, range and comparison, which the ticks only approximate.
+  const tip = useHoverTip(ref, tooltip && !loading ? spoken : null);
 
   if (loading) {
     return (
@@ -218,17 +224,20 @@ function Root({
     );
   }
   return (
-    <AriaMeter
-      {...shared}
-      // A meter that shows only a range still needs a value: the middle of the range.
-      value={value ?? (low !== undefined && high !== undefined ? (low + high) / 2 : min)}
-      minValue={min}
-      maxValue={max > min ? max : min + 1}
-      valueLabel={spoken}
-      aria-label={rest['aria-label']}
-    >
-      {content}
-    </AriaMeter>
+    <>
+      <AriaMeter
+        {...shared}
+        // A meter that shows only a range still needs a value: the middle of the range.
+        value={value ?? (low !== undefined && high !== undefined ? (low + high) / 2 : min)}
+        minValue={min}
+        maxValue={max > min ? max : min + 1}
+        valueLabel={spoken}
+        aria-label={rest['aria-label']}
+      >
+        {content}
+      </AriaMeter>
+      {tip}
+    </>
   );
 }
 
