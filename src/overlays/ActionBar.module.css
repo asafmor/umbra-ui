@@ -1,0 +1,171 @@
+.root {
+  --tone: var(--umbra-action-bar-neutral-color, var(--umbra-color-base-text-secondary));
+  /* Room for the focus rings of the buttons, which the clipping would cut. */
+  --ring: var(--umbra-space-2);
+
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-action-bar-gap, var(--umbra-space-3));
+  min-width: 0;
+  overflow: hidden;
+  padding: var(--ring);
+  margin: calc(-1 * var(--ring));
+  font: var(--umbra-font-body);
+}
+
+.root[data-tone='info'] {
+  --tone: var(--umbra-action-bar-info-color, var(--umbra-color-semantic-info));
+}
+
+.root[data-tone='success'] {
+  --tone: var(--umbra-action-bar-success-color, var(--umbra-color-semantic-success));
+}
+
+.root[data-tone='warning'] {
+  --tone: var(--umbra-action-bar-warning-color, var(--umbra-color-semantic-warning));
+}
+
+.root[data-tone='danger'] {
+  --tone: var(--umbra-action-bar-danger-color, var(--umbra-color-semantic-danger));
+}
+
+/* Strong: a dark fill of the tone under an edge in the tone. The text keeps the primary text colour. */
+.root[data-emphasis='strong'] {
+  margin: 0;
+  padding: var(--umbra-action-bar-padding-y, var(--umbra-space-3))
+    var(--umbra-action-bar-padding-x, var(--umbra-density-card-padding));
+  border-top: 2px solid var(--tone);
+  background: var(
+    --umbra-action-bar-bg,
+    color-mix(in oklab, var(--tone) 24%, var(--umbra-color-base-surface1))
+  );
+  color: var(--umbra-color-base-text-primary);
+}
+
+/*
+ * The status gives way first: its text truncates down to the icon. Only then is the bar wider than its
+ * space, which is what the bar measures to take the next step.
+ */
+.status {
+  flex: 0 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-space-3);
+  overflow: hidden;
+}
+
+/* The icon stays when the text is gone. */
+.status:has(.statusIcon) {
+  min-width: var(--umbra-icon-size, 1.25em);
+}
+
+.statusIcon {
+  flex: none;
+  display: flex;
+  color: var(--tone);
+}
+
+.root[data-emphasis='strong'] .statusIcon {
+  color: inherit;
+}
+
+.root[data-emphasis='strong'] .statusText {
+  font-weight: 700;
+}
+
+.statusText {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.clear {
+  flex: none;
+  display: flex;
+}
+
+.actions,
+.group {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-action-bar-gap, var(--umbra-space-3));
+}
+
+.root[data-align='end'] > .actions {
+  margin-inline-start: auto;
+}
+
+.root[data-align='center'] > .actions {
+  margin-inline: auto;
+}
+
+/* Until the last step the buttons keep their width, so the bar can tell when they do not fit. */
+.actions > :not(.group),
+.group > * {
+  flex: none;
+}
+
+/*
+ * Last step: the actions take a line of their own under the status, and wrap further if they must, so
+ * no action is ever cut off. A button truncates its label only when it alone is wider than the bar.
+ */
+.root[data-wrap],
+.root[data-wrap] :is(.actions, .group) {
+  flex-wrap: wrap;
+}
+
+.root[data-wrap] :is(.actions, .group) {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  justify-content: flex-end;
+}
+
+.root[data-wrap] .group > :not([data-icon-only]) {
+  flex: 0 1 auto;
+}
+
+/*
+ * Floating: over the bottom of its container, as wide as its content. It stays in the page while
+ * closed, hidden, so both directions can be transitioned in CSS: a fade, and a short slide that
+ * reduced motion removes.
+ */
+.root[data-variant='floating'] {
+  position: absolute;
+  z-index: 1;
+  inset-inline: 0;
+  bottom: var(--umbra-action-bar-offset, var(--umbra-space-5));
+  width: fit-content;
+  max-width: calc(100% - 2 * var(--umbra-action-bar-offset, var(--umbra-space-5)));
+  margin: 0 auto;
+  padding: var(--umbra-action-bar-padding-y, var(--umbra-space-3))
+    var(--umbra-action-bar-padding-x, var(--umbra-space-4));
+  border: var(--umbra-border-width) solid
+    var(--umbra-action-bar-border, var(--umbra-color-base-border-strong));
+  border-radius: var(--umbra-action-bar-radius, var(--umbra-radius-card));
+  background: var(--umbra-action-bar-bg, var(--umbra-color-base-surface2));
+  box-shadow: var(--umbra-elevation-overlay);
+  opacity: 0;
+  visibility: hidden;
+  translate: 0 calc(var(--umbra-space-3) * var(--umbra-motion-scale));
+  transition:
+    opacity var(--umbra-motion-duration-base) var(--umbra-motion-easing-exit),
+    translate var(--umbra-motion-duration-base) var(--umbra-motion-easing-exit),
+    visibility 0s linear var(--umbra-motion-duration-base);
+}
+
+.root[data-variant='floating'][data-open] {
+  opacity: 1;
+  visibility: visible;
+  translate: 0 0;
+  transition:
+    opacity var(--umbra-motion-duration-base) var(--umbra-motion-easing-enter),
+    translate var(--umbra-motion-duration-base) var(--umbra-motion-easing-enter);
+}
+
+.root[data-variant='floating'] > .actions {
+  margin-inline-start: var(--umbra-space-5);
+}

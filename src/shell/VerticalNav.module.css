@@ -1,0 +1,227 @@
+.root {
+  --pad: var(--umbra-vertical-nav-padding, var(--umbra-space-3));
+  --row: var(--umbra-vertical-nav-row-height, var(--umbra-density-control-height));
+  /* Read by the component: narrower than this, a nav whose items all have icons becomes a rail. In px. */
+  --rail-below: var(--umbra-vertical-nav-rail-below, 160px);
+
+  flex: 0 1 auto;
+  width: var(--umbra-vertical-nav-width, 240px);
+  max-width: 100%;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--umbra-vertical-nav-bg, transparent);
+  font: var(--umbra-font-body);
+}
+
+/* With a weight, the slot decides the width. */
+.root:not([data-size='content']) {
+  flex: 1 1 0;
+  width: auto;
+}
+
+.root[hidden] {
+  display: none;
+}
+
+.root[data-collapsed='user'] {
+  flex: 0 0 auto;
+  width: var(--umbra-vertical-nav-rail-width, calc(var(--row) + 2 * var(--pad)));
+}
+
+.header,
+.footer,
+.toggle {
+  flex: none;
+  min-width: 0;
+  padding: var(--pad);
+  overflow: hidden;
+}
+
+.toggle {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.root[data-collapsed] > .toggle {
+  justify-content: center;
+}
+
+/* As tall as the list, and no taller than the space left: then the list scrolls. */
+.root > .scroll {
+  flex: 0 1 auto;
+}
+
+.list,
+.nested,
+.sectionList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--umbra-vertical-nav-gap, var(--umbra-space-1));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.list {
+  padding: var(--pad);
+}
+
+.item,
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--umbra-vertical-nav-gap, var(--umbra-space-1));
+  min-width: 0;
+}
+
+.link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-space-3);
+  width: 100%;
+  min-width: 0;
+  min-height: var(--row);
+  padding: 0 var(--umbra-space-4);
+  border: 0;
+  border-radius: var(--umbra-vertical-nav-radius, var(--umbra-radius-control));
+  background: none;
+  color: var(--umbra-vertical-nav-fg, var(--umbra-color-base-text-secondary));
+  font: inherit;
+  text-align: start;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color var(--umbra-motion-duration-fast),
+    color var(--umbra-motion-duration-fast);
+}
+
+.link:not([aria-disabled]):hover {
+  background: color-mix(in oklab, currentColor 10%, transparent);
+  color: var(--umbra-color-base-text-primary);
+}
+
+.link:not([aria-disabled]):active {
+  background: color-mix(in oklab, #000 18%, transparent);
+}
+
+/* The current item: the fixed violet, with an edge stripe and weight so it does not depend on colour alone. */
+.link[aria-current] {
+  background: var(--umbra-vertical-nav-current-bg, var(--umbra-color-fixed-selected));
+  color: var(--umbra-vertical-nav-current-fg, var(--umbra-color-fixed-on-selected));
+  box-shadow: inset var(--umbra-vertical-nav-stripe-width, 3px) 0 0 currentColor;
+  font-weight: 700;
+}
+
+.link[aria-current]:not([aria-disabled]):hover {
+  background: color-mix(
+    in oklab,
+    var(--umbra-vertical-nav-current-bg, var(--umbra-color-fixed-selected)),
+    #000 12%
+  );
+  color: var(--umbra-vertical-nav-current-fg, var(--umbra-color-fixed-on-selected));
+}
+
+/* A closed group that holds the current item carries the stripe, so the place is not lost. */
+.item:not([data-open]) > .link[data-holds-current] {
+  box-shadow: inset var(--umbra-vertical-nav-stripe-width, 3px) 0 0 currentColor;
+}
+
+.link[aria-disabled] {
+  opacity: var(--umbra-state-disabled-opacity);
+  cursor: default;
+}
+
+/* The list scrolls, which clips a ring drawn outside the row. */
+.link:focus-visible {
+  outline-offset: calc(-1 * var(--umbra-state-focus-ring-width));
+}
+
+.label {
+  flex: 1 1 0;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.badge {
+  flex: none;
+  display: flex;
+}
+
+.caret {
+  flex: none;
+  display: flex;
+  --umbra-icon-size: 1em;
+  transition: rotate calc(var(--umbra-motion-duration-base) * var(--umbra-motion-scale))
+    var(--umbra-motion-easing-enter);
+}
+
+.item:not([data-open]) > .link > .caret {
+  rotate: -90deg;
+}
+
+/* Items of a group line up with the label of the group. */
+.nested > .item > .link {
+  padding-inline-start: calc(var(--umbra-space-4) + var(--umbra-icon-size, 1.25em) + var(--umbra-space-3));
+}
+
+.section + .section,
+.item + .section {
+  margin-block-start: var(--umbra-space-3);
+}
+
+.sectionLabel {
+  display: flex;
+  align-items: center;
+  min-height: calc(var(--row) * 0.75);
+  padding: 0 var(--umbra-space-4);
+  font: var(--umbra-font-label);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--umbra-color-base-text-secondary);
+}
+
+/*
+ * The rail: icons only. Labels are hidden from sight but stay in the page, as the names of the items.
+ */
+.root[data-collapsed] .link {
+  justify-content: center;
+  padding: 0;
+}
+
+.root[data-collapsed] .label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+.root[data-collapsed] .caret {
+  display: none;
+}
+
+/* A badge moves to the corner of the icon. */
+.root[data-collapsed] .badge {
+  position: absolute;
+  top: 0;
+  inset-inline-end: 0;
+  scale: 0.75;
+  transform-origin: top right;
+}
+
+.root[data-collapsed] .sectionLabel {
+  min-height: 0;
+  margin: var(--umbra-space-2) var(--umbra-space-3);
+  padding: 0;
+  border-top: var(--umbra-border-width) solid var(--umbra-color-base-border-strong);
+}
+
+/* The first section needs no rule above it. */
+.root[data-collapsed] .section:first-child > .sectionLabel {
+  display: none;
+}

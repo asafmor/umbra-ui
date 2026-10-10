@@ -1,0 +1,276 @@
+.root {
+  --pad: var(--umbra-page-header-padding, 0px);
+  --media: var(--umbra-page-header-media-size, 56px);
+  --muted: var(--umbra-color-base-text-secondary);
+  --rule: var(--umbra-page-header-border, var(--umbra-color-base-border-strong));
+
+  flex: none;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--umbra-space-3);
+  padding: var(--pad);
+  border-radius: var(--umbra-page-header-radius, var(--umbra-radius-card));
+  background: var(--umbra-page-header-bg, transparent);
+  color: var(--umbra-page-header-fg, inherit);
+}
+
+.root[data-size='compact'] {
+  --media: var(--umbra-page-header-media-size, var(--umbra-density-control-height));
+}
+
+.root[data-tone='tinted'] {
+  --pad: var(--umbra-page-header-padding, var(--umbra-density-card-padding));
+  border: var(--umbra-border-width) solid
+    var(
+      --umbra-page-header-border,
+      color-mix(in oklab, var(--umbra-context) 30%, var(--umbra-color-base-border-subtle))
+    );
+  background: var(--umbra-page-header-bg, var(--umbra-context-card-tint-strong));
+}
+
+/*
+ * Band: filled with the brand colour or `bandColor`. Dimmed text would not keep its contrast on every
+ * band colour, so the second-level text is at full strength, and focus rings take the text colour.
+ */
+.root[data-tone='band'] {
+  --pad: var(--umbra-page-header-padding, var(--umbra-density-card-padding));
+  --muted: currentColor;
+  --rule: color-mix(in oklab, currentColor 40%, transparent);
+  --umbra-focus-color: var(--umbra-color-on-brand-focus, #fff);
+  background: var(--umbra-page-header-bg, var(--umbra-color-brand));
+  color: var(--umbra-page-header-fg, var(--umbra-color-on-brand, #fff));
+}
+
+.breadcrumbs {
+  min-width: 0;
+  font: var(--umbra-font-label);
+  color: var(--muted);
+}
+
+.breadcrumbs > ol {
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow: hidden;
+  --umbra-icon-size: 1em;
+}
+
+.breadcrumbs li {
+  flex: 0 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-space-2);
+}
+
+/* The current page keeps its text longest. */
+.breadcrumbs li:last-child {
+  flex-shrink: 0.2;
+}
+
+.crumb {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: inherit;
+}
+
+a.crumb {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+a.crumb:hover,
+.crumb[aria-current] {
+  color: var(--umbra-page-header-fg, var(--umbra-color-base-text-primary));
+}
+
+.root[data-tone='band'] .crumb {
+  color: inherit;
+}
+
+.crumb[aria-current] {
+  font-weight: 700;
+}
+
+/* The list clips, so the ring of a link is drawn inside it. */
+a.crumb:focus-visible {
+  outline-offset: calc(-1 * var(--umbra-state-focus-ring-width));
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-space-3) var(--umbra-space-5);
+  min-width: 0;
+}
+
+.bar[data-wrap] {
+  flex-wrap: wrap;
+}
+
+/*
+ * The row clips, and its content keeps its width until every step is used up, so the header can tell
+ * when it no longer fits. The padding is room for the focus ring of the back button.
+ */
+.row {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-space-4);
+  overflow: hidden;
+  padding: var(--umbra-space-2);
+  margin: calc(-1 * var(--umbra-space-2));
+}
+
+.bar[data-wrap] > .row {
+  flex-basis: 100%;
+}
+
+.back {
+  flex: none;
+  display: flex;
+}
+
+.media {
+  flex: none;
+  display: flex;
+  align-items: center;
+  /* The avatar or entity icon inside takes the header's size, whatever its own `size` prop. */
+  --umbra-avatar-size: var(--media);
+  --umbra-entity-icon-size: var(--media);
+}
+
+.media[data-small] {
+  --media: var(--umbra-page-header-media-size-small, 32px);
+}
+
+.media > :is(img, svg) {
+  width: var(--media);
+  height: var(--media);
+  object-fit: cover;
+  border-radius: var(--umbra-radius-control);
+}
+
+.titles {
+  flex: none;
+  min-width: 0;
+  display: grid;
+  gap: var(--umbra-space-1);
+}
+
+.root[data-truncate] .titles {
+  flex: 0 1 auto;
+}
+
+.overline {
+  font: var(--umbra-font-label);
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-space-3);
+  min-width: 0;
+}
+
+.title {
+  min-width: 0;
+  margin: 0;
+  font: var(--umbra-page-header-title-font, var(--umbra-font-display));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.root[data-size='compact'] .title {
+  font: var(--umbra-page-header-title-font, var(--umbra-font-title));
+}
+
+.tags {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-space-2);
+}
+
+.subtitle {
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.root[data-size='compact'] .subtitle {
+  font: var(--umbra-font-label);
+}
+
+.meta {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-space-5);
+  margin: 0;
+  margin-inline-start: auto;
+  white-space: nowrap;
+}
+
+.fact {
+  display: grid;
+  gap: var(--umbra-space-1);
+}
+
+.fact + .fact {
+  padding-inline-start: var(--umbra-space-5);
+  border-inline-start: var(--umbra-border-width) solid var(--rule);
+}
+
+.fact > dt {
+  font: var(--umbra-font-label);
+  color: var(--muted);
+}
+
+.fact > dd {
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-space-2);
+  margin: 0;
+  font-weight: 500;
+}
+
+.root[data-size='compact'] .fact > dd {
+  font: var(--umbra-font-label);
+}
+
+.actions {
+  flex: none;
+  max-width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-space-3);
+}
+
+/* Step 2: the actions take a line of their own, and wrap there if they must. */
+.bar[data-wrap] > .actions {
+  flex: 1 1 100%;
+  flex-wrap: wrap;
+}
+
+/* The tab list sits on the bottom edge of the header. */
+.tabs {
+  display: flex;
+  min-width: 0;
+  margin-block-end: calc(-1 * var(--pad));
+}
