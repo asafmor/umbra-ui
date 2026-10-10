@@ -23,6 +23,8 @@ export { Stack } from './layout/Stack';
 export type { SpaceToken, StackProps } from './layout/Stack';
 export { Slot } from './layout/Slot';
 export type { SlotProps } from './layout/Slot';
+export { ScrollArea } from './layout/ScrollArea';
+export type { ScrollAreaProps } from './layout/ScrollArea';
 export { Button } from './basics/Button';
 export type { ButtonProps, ButtonVariant } from './basics/Button';
 export { IconButton } from './basics/IconButton';

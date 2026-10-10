@@ -1,0 +1,100 @@
+.root {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+}
+
+.viewport {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  --thumb: var(--umbra-scroll-thumb, var(--umbra-color-base-border-strong));
+}
+
+.root[data-axis='vertical'] > .viewport,
+.root[data-axis='both'] > .viewport {
+  overflow-y: auto;
+}
+
+.root[data-axis='horizontal'] > .viewport,
+.root[data-axis='both'] > .viewport {
+  overflow-x: auto;
+}
+
+.root[data-scrollbar='hover']:not(:hover, :focus-within) > .viewport {
+  --thumb: transparent;
+}
+
+/* Thin thumb, no track. Browsers without ::-webkit-scrollbar use the standard properties. */
+.viewport::-webkit-scrollbar {
+  width: calc(var(--umbra-scroll-thumb-size, var(--umbra-size-scroll-thumb)) + 4px);
+  height: calc(var(--umbra-scroll-thumb-size, var(--umbra-size-scroll-thumb)) + 4px);
+}
+
+.viewport::-webkit-scrollbar-thumb {
+  background: var(--thumb);
+  background-clip: content-box;
+  border: 2px solid transparent;
+  border-radius: var(--umbra-radius-pill);
+}
+
+.viewport::-webkit-scrollbar-thumb:hover {
+  background-color: var(--umbra-scroll-thumb-hover, var(--umbra-color-base-border-control));
+}
+
+.viewport::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+@supports not selector(::-webkit-scrollbar) {
+  .viewport {
+    scrollbar-width: thin;
+    scrollbar-color: var(--thumb) transparent;
+  }
+}
+
+.fade {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--umbra-motion-duration-fast);
+  --fade: var(--umbra-scroll-fade-color, var(--umbra-context-card-tint));
+}
+
+.root:not([data-axis='horizontal']) > .fade {
+  inset-inline: 0;
+  height: var(--umbra-space-5);
+}
+
+.root:not([data-axis='horizontal']) > .fade[data-edge='start'] {
+  top: 0;
+  background: linear-gradient(var(--fade), transparent);
+}
+
+.root:not([data-axis='horizontal']) > .fade[data-edge='end'] {
+  bottom: 0;
+  background: linear-gradient(transparent, var(--fade));
+}
+
+.root[data-axis='horizontal'] > .fade {
+  inset-block: 0;
+  width: var(--umbra-space-5);
+}
+
+.root[data-axis='horizontal'] > .fade[data-edge='start'] {
+  inset-inline-start: 0;
+  background: linear-gradient(to right, var(--fade), transparent);
+}
+
+.root[data-axis='horizontal'] > .fade[data-edge='end'] {
+  inset-inline-end: 0;
+  background: linear-gradient(to left, var(--fade), transparent);
+}
+
+.root[data-fade-start] > .fade[data-edge='start'],
+.root[data-fade-end] > .fade[data-edge='end'] {
+  opacity: 1;
+}

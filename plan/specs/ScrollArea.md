@@ -36,7 +36,7 @@ Scrollbars are the browser's own, styled thin with a transparent track.
 
 ### 1. Tokens
 
-`--umbra-scroll-thumb`, `--umbra-scroll-thumb-hover`, `--umbra-scroll-thumb-size`.
+`--umbra-scroll-thumb`, `--umbra-scroll-thumb-hover`, `--umbra-scroll-thumb-size`, `--umbra-scroll-fade-color` (the colour the fade blends into; a `Card` sets it to its own background).
 
 ### 2. Props
 
@@ -46,10 +46,11 @@ Scrollbars are the browser's own, styled thin with a transparent track.
 | `scrollbar` | see above | `auto` | |
 | `fade` | boolean | `true` | |
 | `onReachEnd` | function | — | For loading more |
+| `label` | string | "Scrollable content" | Accessible name when the viewport itself is focusable |
 
 ### 3. Parts
 
-`viewport`, `fade`.
+`fade` (a function receives `{ edge }`, `start` or `end`). The `viewport` is the scrolling element itself and is styled through `data-part="viewport"`, not replaced.
 
 ### 4. Blocks
 
