@@ -49,3 +49,23 @@ jobs:
           name: test-results-${{ matrix.shard }}
           path: test-results
           retention-days: 7
+
+  # The three example apps, built against the built package and driven in a browser: they load
+  # cleanly, never scroll the page at any size or density, switch to tabs, and their interactions work.
+  examples:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:examples
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: test-results-examples
+          path: test-results
+          retention-days: 7
