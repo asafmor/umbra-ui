@@ -1,0 +1,257 @@
+.root {
+  --h: var(--umbra-level-meter-height, 20px);
+  --tick: var(--umbra-level-meter-tick-width, 2px);
+  --mark: var(--umbra-level-meter-marker-width, 3px);
+  --pad: var(--umbra-space-2);
+
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-space-3);
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  font: var(--umbra-font-label);
+  color: var(--umbra-color-base-text-secondary);
+}
+
+.root[data-size='small'] {
+  --h: var(--umbra-level-meter-height, 14px);
+  --pad: var(--umbra-space-1);
+}
+
+.root[data-size='large'] {
+  --h: var(--umbra-level-meter-height, 28px);
+  --mark: var(--umbra-level-meter-marker-width, 4px);
+}
+
+/*
+ * The label and the value keep their width, so the meter can tell when it no longer fits and show less
+ * (see LevelMeter.tsx). Once the ticks have thinned as far as they go, the label truncates.
+ */
+.label,
+.value,
+.endLabel {
+  flex: none;
+  white-space: nowrap;
+}
+
+.root[data-shrink='3'] > .label {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.value {
+  color: var(--umbra-color-base-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.endLabel {
+  color: var(--umbra-color-base-text-muted);
+}
+
+/* The strip takes the room that is left, and is never shorter than its ticks need. */
+.strip {
+  position: relative;
+  flex: 1 1 0;
+  box-sizing: border-box;
+  block-size: var(--h);
+  min-inline-size: calc(var(--n) * var(--umbra-level-meter-pitch, 5px) + 2 * var(--pad));
+  max-inline-size: var(--umbra-level-meter-length, none);
+  border: var(--umbra-border-width) solid transparent;
+  border-radius: var(--umbra-level-meter-radius, var(--umbra-radius-control));
+}
+
+.root[data-boxed] .strip:not(.skeleton) {
+  border-color: var(--umbra-level-meter-border, var(--umbra-color-base-border-strong));
+  background: var(--umbra-level-meter-track, var(--umbra-color-base-surface1));
+}
+
+/* While loading, a skeleton of the strip's size stands in for it. */
+.root .strip.skeleton[data-umbra] {
+  inline-size: auto;
+  block-size: var(--h);
+  min-height: 0;
+  border: 0;
+}
+
+.root[data-orientation='vertical'] > .strip.skeleton[data-umbra] {
+  inline-size: var(--h);
+  block-size: auto;
+}
+
+/* Everything on the strip is placed by `--at`, its position along the scale from 0 to 1. */
+.plot {
+  position: absolute;
+  inset: var(--pad);
+}
+
+.plot > i {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: calc(var(--at) * 100%);
+  inline-size: var(--tick);
+  margin-inline-start: calc(var(--tick) / -2);
+  border-radius: 1px;
+}
+
+.plot > [data-part='tick'] {
+  inset-block: 20%;
+  background: var(--umbra-level-meter-tick, var(--umbra-color-base-border-strong));
+}
+
+.plot > [data-part='tick'][data-lit] {
+  background: var(--umbra-level-meter-tick-lit, var(--umbra-color-base-text-muted));
+}
+
+/* A zone edge: thinner and taller than a tick. */
+.plot > [data-part='boundary'] {
+  --tick: var(--umbra-border-width);
+
+  background: var(--umbra-level-meter-tick-lit, var(--umbra-color-base-text-muted));
+}
+
+.plot > [data-part='band'] {
+  inline-size: calc(var(--span) * 100%);
+  margin-inline-start: 0;
+  border-inline: var(--umbra-border-width) solid
+    var(--umbra-level-meter-band, var(--umbra-color-base-text-primary));
+  background: color-mix(
+    in oklab,
+    var(--umbra-level-meter-band, var(--umbra-color-base-text-primary)) 32%,
+    transparent
+  );
+}
+
+/* The marker stands taller and wider than the ticks, so it does not depend on its colour. */
+.plot > [data-part='marker'] {
+  --tick: var(--mark);
+  --paint: var(--umbra-level-meter-marker, var(--umbra-color-fixed-accent-text));
+
+  inset-block: calc(var(--pad) / -2);
+  background: var(--paint);
+  box-shadow: 0 0 0 var(--umbra-border-width) var(--umbra-color-base-surface1);
+}
+
+.plot > [data-part='marker'][data-tone='neutral'] {
+  --paint: var(--umbra-color-base-text-primary);
+}
+
+.plot > [data-part='marker'][data-tone='success'] {
+  --paint: var(--umbra-color-semantic-success);
+}
+
+.plot > [data-part='marker'][data-tone='warning'] {
+  --paint: var(--umbra-color-semantic-warning);
+}
+
+.plot > [data-part='marker'][data-tone='danger'] {
+  --paint: var(--umbra-color-semantic-danger);
+}
+
+.plot > [data-part='marker'][data-tone='info'] {
+  --paint: var(--umbra-color-semantic-info);
+}
+
+.plot > [data-part='marker'][data-tone='ramp-1'] {
+  --paint: var(--umbra-color-value-ramp-1);
+}
+
+.plot > [data-part='marker'][data-tone='ramp-2'] {
+  --paint: var(--umbra-color-value-ramp-2);
+}
+
+.plot > [data-part='marker'][data-tone='ramp-3'] {
+  --paint: var(--umbra-color-value-ramp-3);
+}
+
+.plot > [data-part='marker'][data-tone='ramp-4'] {
+  --paint: var(--umbra-color-value-ramp-4);
+}
+
+.plot > [data-part='marker'][data-tone='ramp-5'] {
+  --paint: var(--umbra-color-value-ramp-5);
+}
+
+/* The comparison: a hairline with a pointer at its head, a different shape from the marker. */
+.plot > [data-part='compare'] {
+  --tick: var(--umbra-border-width);
+
+  background: var(--umbra-level-meter-compare, var(--umbra-color-base-text-primary));
+}
+
+.plot > [data-part='compare']::before {
+  content: '';
+  position: absolute;
+  inset-block-start: calc(var(--pad) / -2);
+  inset-inline-start: -3px;
+  inline-size: 7px;
+  block-size: 5px;
+  background: inherit;
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+}
+
+/* Vertical: the scale runs from the bottom to the top. */
+.root[data-orientation='vertical'] {
+  flex-direction: column;
+  width: auto;
+  height: 100%;
+  min-height: 0;
+}
+
+.root[data-orientation='vertical'] > [data-part='maxLabel'] {
+  order: 1;
+}
+
+.root[data-orientation='vertical'] > .strip {
+  order: 2;
+  block-size: auto;
+  inline-size: var(--h);
+  min-inline-size: 0;
+  max-inline-size: none;
+  min-block-size: calc(var(--n) * var(--umbra-level-meter-pitch, 5px) + 2 * var(--pad));
+  max-block-size: var(--umbra-level-meter-length, none);
+}
+
+.root[data-orientation='vertical'] > [data-part='minLabel'] {
+  order: 3;
+}
+
+.root[data-orientation='vertical'] > .value {
+  order: 4;
+}
+
+.root[data-orientation='vertical'] .plot > i {
+  inset-block: auto;
+  inset-block-end: calc(var(--at) * 100%);
+  inset-inline: 0;
+  inline-size: auto;
+  block-size: var(--tick);
+  margin-inline-start: 0;
+  margin-block-end: calc(var(--tick) / -2);
+}
+
+.root[data-orientation='vertical'] .plot > [data-part='tick'] {
+  inset-inline: 20%;
+}
+
+.root[data-orientation='vertical'] .plot > [data-part='band'] {
+  block-size: calc(var(--span) * 100%);
+  margin-block-end: 0;
+  border-inline: 0;
+  border-block: var(--umbra-border-width) solid
+    var(--umbra-level-meter-band, var(--umbra-color-base-text-primary));
+}
+
+.root[data-orientation='vertical'] .plot > [data-part='marker'] {
+  inset-inline: calc(var(--pad) / -2);
+}
+
+.root[data-orientation='vertical'] .plot > [data-part='compare']::before {
+  inset-block-start: -3px;
+  inset-inline-start: calc(var(--pad) / -2);
+  inline-size: 5px;
+  block-size: 7px;
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+}
