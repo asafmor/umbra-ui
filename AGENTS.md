@@ -43,11 +43,12 @@ The owner approved the plan and delegated the open questions (`plan/reviews/mile
 |---|---|
 | Review items due before 1a | done |
 | 1a. Data basics (19 components, in `src/data/`) | done |
-| 1b. Inputs (`src/inputs/`): Popover, Tooltip, Menu, Checkbox, Radio, Toggle, FormField, TextField, SegmentedFilter, Tabs | done; Select and SearchField in progress |
-| 1c. Overlays (`src/overlays/`): ActionBar, VerticalNav done; every Milestone 0 overlay moved to the public ones | Modal and CommandPalette in progress |
-| 1d. Table (`src/table/`) | in progress |
+| 1b. Inputs (`src/inputs/`) | done except Select and SearchField (in progress) |
+| 1c. Overlays (`src/overlays/`): Popover, Tooltip, Menu, Modal, ActionBar, CommandPalette; `VerticalNav` in `src/shell/` | done |
+| 1d. Table (`src/table/`) | done |
 | 1e. Meters (`src/meters/`) and charts (`src/charts/`) | done |
-| 1f. Shell extras: PageHeader, Accordion done | ShortcutBar, HistoryButtons, PrimaryAction in progress |
+| 1f. Shell extras: PageHeader, Accordion, ShortcutBar, HistoryButtons, PrimaryAction | done |
+| Integration pass: icon map, more menus, tooltips, card collapse animation, naming rules (`plan/decisions/07-customisation.md`) | done |
 | Full-page stories, guides, `dashboard` and `advanced` examples | — |
 
 **Next step**: finish 1b, then 1c, 1d and 1f in the order of `plan/roadmap.md`. A batch is built from `plan/prompts/component-brief.md`.
@@ -57,7 +58,6 @@ The owner approved the plan and delegated the open questions (`plan/reviews/mile
 - Open findings of the Milestone 0 review, with the batch that takes each: `plan/reviews/milestone-0.md`.
 - Commit `88f6b37` fails lint: the `lint` script arrived one commit before its config.
 - Commit `973f274` breaks "tests pass at every commit": it adds two navigation tests whose story arrives in the next commit. It was already pushed, so it stays.
-- A card collapsed with its caret is not size-animated; only the caret rotates (open detail in `plan/interaction.md`).
 
 ## Commands
 
