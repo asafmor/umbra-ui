@@ -214,6 +214,7 @@ export type {
 } from './layout/Accordion';
 export { PageHeader } from './shell/PageHeader';
 export type {
+  PageHeaderActionsProps,
   PageHeaderBackProps,
   PageHeaderBreadcrumbsProps,
   PageHeaderCrumb,

@@ -1,6 +1,5 @@
-import { ExternalLink } from 'lucide-react';
 import type { CSSProperties, ReactNode } from 'react';
-import { Icon, IconSlot } from '../provider/icons';
+import { Icon, IconSlot, RawIcon } from '../provider/icons';
 import type { NavLinkProps } from '../shell/nav';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './Link.module.css';
@@ -114,7 +113,7 @@ export function Link({
         renderPart(parts?.externalIcon, { label: externalLabel }, (p) => (
           <>
             <LinkIcon part="externalIcon">
-              <ExternalLink />
+              <RawIcon name="externalLink" />
             </LinkIcon>
             <span className={shared.srOnly}>({p.label})</span>
           </>

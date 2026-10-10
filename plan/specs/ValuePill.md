@@ -21,7 +21,7 @@ Rating pills in table cells, green for high, grey for middling, a grey dash for 
 
 | Part | Content | Default |
 |---|---|---|
-| `value` | the formatted value, or `emptyText` | shown |
+| `value` | the formatted value, or `emptyLabel` | shown |
 | `level` | five small bars, as many filled as the ramp step | hidden; shown by `showLevel` |
 | `skeleton` | placeholder while `loading` | hidden |
 
@@ -34,7 +34,7 @@ Rating pills in table cells, green for high, grey for middling, a grey dash for 
 | `shape` | `pill`, `square`, `circle` | `square` for dense rows, `circle` for one or two characters |
 | `size` | `small`, `default`, `large` | `small` fits a compact table row |
 
-States: no value (`null`, `undefined` or not a number: neutral surface, `emptyText`), `loading`.
+States: no value (`null`, `undefined` or not a number: neutral surface, `emptyLabel`), `loading`.
 
 How the level is found:
 
@@ -55,12 +55,12 @@ How the level is found:
 | `min` / `max` | number | `0` / `100` | The scale |
 | `thresholds` | number[] | — | Explicit boundaries; replace `min` and `max` |
 | `ramp` | see above | `higher-is-better` | |
-| `format` | function of the value, returns a node | the number | What is shown |
+| `formatValue` | function of the value, returns a node | the number | What is shown |
 | `shape` | see above | `pill` | |
 | `size` | see above | `default` | |
 | `showLevel` | boolean | `false` | Adds the level marker |
 | `levelLabel` | function of (level, steps) | "Level 4 of 5" | What a screen reader hears for the marker |
-| `emptyText` | node | "–" | Shown when there is no value |
+| `emptyLabel` | node | "–" | Shown when there is no value |
 | `loading` | boolean | `false` | Shows a placeholder of the pill's size |
 
 ### 3. Parts
@@ -95,5 +95,5 @@ Resolved 2026-10-10:
 - A value at a threshold belongs to the band above it.
 - The level marker is five bars of rising height, not a number or a letter.
 - Three shapes, so the source's rating pill, value chip and round grade are one component.
-- No value is a neutral pill with `emptyText`, not nothing, so table columns stay aligned.
+- No value is a neutral pill with `emptyLabel`, not nothing, so table columns stay aligned.
 - Level text for screen readers is only added with `showLevel`; without it the value alone is read.

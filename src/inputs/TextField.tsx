@@ -1,4 +1,3 @@
-import { CircleAlert } from 'lucide-react';
 import { createContext, useContext, useRef, useState, type ReactNode, type RefObject } from 'react';
 import {
   Input as AriaInput,
@@ -6,7 +5,7 @@ import {
   TextField as AriaTextField,
 } from 'react-aria-components';
 import { ButtonBase } from '../basics/Button';
-import { Icon, IconSlot } from '../provider/icons';
+import { Icon, IconSlot, RawIcon } from '../provider/icons';
 import { cx, renderPart, type Part } from '../utils/parts';
 import type { BlockProps } from './fieldParts';
 import styles from './TextField.module.css';
@@ -164,7 +163,7 @@ function Suffix({ className, style, children }: BlockProps) {
 function InvalidIcon({ className, style, children }: BlockProps) {
   return (
     <span data-part="invalidIcon" className={cx(styles.invalidIcon, className)} style={style}>
-      <IconSlot>{children ?? <CircleAlert />}</IconSlot>
+      <IconSlot>{children ?? <RawIcon name="invalid" />}</IconSlot>
     </span>
   );
 }

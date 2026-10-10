@@ -99,6 +99,8 @@ States (list): `loading`, `empty`, `error`. Row height and text size follow the 
 
 `columns` layout: the items share the width equally and truncate (steps 1 and 2); they do not wrap onto a second line.
 
+A truncated value shows its full text in a tooltip on hover. It is measured at that moment, so a value that fits or wraps has none.
+
 ## Interaction and accessibility
 
 - Not interactive. Interactive nodes inside a value keep their own behaviour.

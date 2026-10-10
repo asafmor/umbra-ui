@@ -93,4 +93,5 @@ Resolved 2026-10-10:
 - A custom `color` keeps the shape of `status`; with `variant="icon"` the app usually passes its own `icon` too.
 - The pulse is on the `dot` variant only.
 - No `size` prop: the mark follows the font size around it, and `--umbra-status-indicator-size` sets the dot.
-- The status icons are not in the provider's icon map yet (it belongs to another group in this batch); the `icon` prop and the `indicator` part replace them. Adding them to the map is a follow-up.
+- The status icons come from the provider's icon map (`success`, `warning`, `danger`, `info`, `neutral`); the `icon` prop and the `indicator` part replace them for one indicator.
+- The prop is `status`, not `tone` as on `Tag` or `Banner`: a status is a smaller set (no `accent`) and each has its own shape, which a tone does not.

@@ -1,5 +1,6 @@
-import type { CSSProperties, ReactNode } from 'react';
+import { useRef, type CSSProperties, type ReactNode } from 'react';
 import { Skeleton } from '../basics/Skeleton';
+import { useTruncatedTip } from '../internal/TruncatedText';
 import { Icon, IconSlot } from '../provider/icons';
 import { cx, renderPart, type Part } from '../utils/parts';
 import shared from './shared.module.css';
@@ -60,10 +61,15 @@ function TagIcon({ children }: { children?: ReactNode }) {
 }
 
 function Label({ className, style, children }: BlockProps) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const tip = useTruncatedTip(ref, children);
   return (
-    <span data-part="label" className={cx(styles.label, className)} style={style}>
-      {children}
-    </span>
+    <>
+      <span ref={ref} data-part="label" className={cx(styles.label, className)} style={style}>
+        {children}
+      </span>
+      {tip}
+    </>
   );
 }
 

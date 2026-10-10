@@ -92,4 +92,4 @@ Resolved 2026-10-10:
 - `stripe` and `color` take any CSS colour; `stripe` also takes a tone name.
 - A tag is not interactive (no `onPress`, no selected state): selectable chips belong to `SegmentedFilter`.
 - The built-in remove icon is the provider's `close` icon.
-- No automatic tooltip with the full text of a truncated label; the app can wrap the tag in a `Tooltip` when that exists.
+- A truncated label shows its full text in a tooltip, on hover and on keyboard focus of the tag when it is a control. It is measured at that moment, so a label that fits has none (integration pass, `src/internal/TruncatedText.tsx`).

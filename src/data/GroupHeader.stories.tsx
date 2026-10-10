@@ -45,7 +45,7 @@ export const Variants: Story = {
         <Rows count={2} />
         <GroupHeader title="Incoming" icon={<ArrowDownLeft />} count={11} meta="€102M" actions={action} />
         <Rows count={2} />
-        <GroupHeader title="Level 4 heading" level={4} meta="Total 40" />
+        <GroupHeader title="Level 4 heading" headingLevel={4} meta="Total 40" />
         <Rows count={2} />
       </Card>
       <Card title="Plain">
@@ -124,7 +124,7 @@ export const PartsAndBlocks: Story = {
       </Card>
       <Card title="Blocks" padding="none">
         <GroupHeader.Root>
-          <GroupHeader.Title level={4}>Composed by hand</GroupHeader.Title>
+          <GroupHeader.Title headingLevel={4}>Composed by hand</GroupHeader.Title>
           <GroupHeader.Count>7</GroupHeader.Count>
           <GroupHeader.Meta>Total 31</GroupHeader.Meta>
           <GroupHeader.Actions>{action}</GroupHeader.Actions>

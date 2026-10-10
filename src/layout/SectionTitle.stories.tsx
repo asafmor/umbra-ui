@@ -91,12 +91,12 @@ export const LevelsAndParts: StoryObj<typeof meta> = {
   render: () => (
     <Columns style={{ height: '100%' }}>
       <Card title="Levels">
-        <SectionTitle level={2}>Level 2</SectionTitle>
+        <SectionTitle headingLevel={2}>Level 2</SectionTitle>
         <SectionTitle>Level 3, the default</SectionTitle>
-        <SectionTitle level={4} count={7}>
+        <SectionTitle headingLevel={4} count={7}>
           Level 4 with a count
         </SectionTitle>
-        <SectionTitle level={6} variant="rule">
+        <SectionTitle headingLevel={6} variant="rule">
           Level 6, rule
         </SectionTitle>
       </Card>

@@ -26,6 +26,7 @@ A row of joined segments that filters the content below it. One segment is selec
 | `icon` | icon before the label | shown when the item has an `icon` |
 | `label` | the text | shown; truncates |
 | `count` | a number in parentheses | shown when the item has a `count` |
+| `more` | button of the menu that holds the segments that do not fit | shown at the last shrink step only |
 
 ## Variants and states
 
@@ -63,6 +64,7 @@ There is no loading, empty or error state: the control is an input, and its segm
 | `size` | `default` \| `small` | `default` | |
 | `fullWidth` | boolean | `false` | |
 | `disabled` | boolean | `false` | Disables every segment |
+| `moreLabel` | string | "More" | Name of the button that opens the menu of segments that do not fit |
 | `aria-label` / `aria-labelledby` | string | — | Names the group |
 
 ### 3. Parts
@@ -79,7 +81,7 @@ There is no loading, empty or error state: the control is an input, and its segm
 |---|---|---|
 | 1 | The segments are wider than the control | The counts hide. They are still read with the label. |
 | 2 | Still wider | The segments share the width equally and their labels truncate with an ellipsis |
-| 3 | The segments reach their minimum width (4.5em) | The control scrolls sideways inside itself, without a scrollbar; an edge that hides segments fades out. Focus scrolls a segment into view. |
+| 3 | The segments reach their minimum width (4.5em) | The segments that do not fit move into a "more" menu, opened by a last, square segment (`moreLabel`). In `single` mode the selected segment always stays in the control: it takes the last place that fits, and the menu still lists it, with a check. In `multiple` mode the menu rows are checkboxes, and the button carries a bar while a segment inside it is selected. |
 
 The control never grows past its container. When it gets room again it starts from step 0.
 
@@ -92,11 +94,12 @@ The control never grows past its container. When it gets room again it starts fr
 - With `all`: choosing "All" clears the others, choosing another segment leaves "All", and switching the last one off selects "All" again.
 - A segment with a count and a text label is named "Unread, 4". With a label that is not text, the name is the label followed by the count in parentheses.
 - The focus ring is drawn inwards, because the control clips.
+- The "more" button is named by `moreLabel` ("More") and opens a menu of `menuitemradio` or `menuitemcheckbox` rows. Choosing a row selects (or toggles) that segment.
 - Built on React Aria's `ToggleButtonGroup`.
 
 ## Open questions
 
-- Step 3 scrolls instead of moving trailing segments into a "more" menu, because the public `Menu` did not exist when this was built. Switch when it does.
+None.
 
 Resolved 2026-10-10:
 
@@ -105,6 +108,7 @@ Resolved 2026-10-10:
 - "All" is a prop (`all`, `allLabel`, `allCount`) and not an item: the control then knows that it means "no filter", so `value` is `null` and `values` is empty.
 - `onChange` is one prop whose argument follows `selectionMode`; the props of the other mode are typed as `never`.
 - Selecting changes the label's weight, so the segments beside it move by a pixel or two. Accepted; `fullWidth` segments do not move.
-- The check of `multiple` mode is the icon library's check mark, replaceable through the `check` part. It is not in the provider's icon map.
+- The check of `multiple` mode is the provider's `check` icon, replaceable for one control through the `check` part.
+- Step 3 is a "more" menu (the public `Menu`), not scrolling. The button is inside the group, so the arrow keys reach it as the last stop. A row shows the label and the count as "Archived (9)". The menu lists only the segments that are not drawn, plus the selected one when it was brought back into the control.
 - The selected segment has a lighter violet edge instead of an edge in the fill colour, so two selected neighbours stay apart.
 - No loading, empty or error state.

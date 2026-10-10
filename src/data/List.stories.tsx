@@ -52,7 +52,7 @@ function InboxCard() {
         aria-label="Inbox"
         itemVariant="message"
         selectionMode="single"
-        selectedKeys={selected}
+        selectedIds={selected}
         onSelectionChange={setSelected}
         onAction={(key) => setOpened(String(key))}
         groups={days}
@@ -102,7 +102,7 @@ function MultipleCard() {
         aria-label="Regions"
         itemSize="compact"
         selectionMode="multiple"
-        selectedKeys={selected}
+        selectedIds={selected}
         onSelectionChange={setSelected}
       >
         {ranking.slice(0, 6).map((r) => (
@@ -262,7 +262,7 @@ export const PartsAndBlocks: Story = {
           aria-label="Composed by hand"
           itemSize="compact"
           selectionMode="single"
-          defaultSelectedKeys={['b']}
+          defaultSelectedIds={['b']}
         >
           <List.Group title="First group" count={2}>
             <List.Item id="a" title="Item 1" />

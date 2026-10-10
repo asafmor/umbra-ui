@@ -48,6 +48,16 @@ test('a tag with little room truncates its label and keeps its icon and remove b
   await expectTruncated(tag, 'label');
   await expect(tag.locator('[data-part="icon"]')).toBeVisible();
   await expect(tag.getByRole('button')).toBeVisible();
+
+  // The whole label is the tooltip of a truncated one. A label that fits has no tooltip.
+  const tooltip = page.getByRole('tooltip');
+  await tag.locator('[data-part="label"]').hover();
+  await expect(tooltip).toHaveText('A long label that does not fit');
+  await page.mouse.move(0, 0);
+  await expect(tooltip).toHaveCount(0);
+  await page.locator('[data-umbra="tag"]').first().hover();
+  await page.waitForTimeout(700);
+  await expect(tooltip).toHaveCount(0);
 });
 
 test('tag parts are replaced by a function or a node and hidden by null', async ({ page }) => {

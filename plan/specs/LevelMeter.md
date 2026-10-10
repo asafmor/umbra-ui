@@ -73,6 +73,7 @@ States: `loading`, out of range (`data-out-of-range`), shrink level (`data-shrin
 | `size` | see above | `default` | |
 | `boxed` | boolean | `true` | |
 | `loading` | boolean | `false` | |
+| `tooltip` | boolean | `true` | The exact value in a tooltip on hover |
 
 ### 3. Parts
 
@@ -104,7 +105,7 @@ The marker, the band and the comparison marker always stay, at the same place on
 - Colour is never the only cue: the marker is taller and wider than a tick, the comparison has its own shape, zone edges are taller ticks, and the zone's label is in the text.
 - A value outside the scale clamps the marker; the text keeps the real value.
 - While loading, the root is not a meter; it sets `aria-busy`.
-- The exact value on hover (a tooltip) waits for the public `Tooltip`.
+- Hovering the meter shows the same text as `aria-valuetext` (value, zone, range, comparison) in a tooltip (500ms delay, Escape closes it). `tooltip={false}` turns it off. The meter is still not a tab stop; if the app makes it or a control around it focusable, keyboard focus shows the tooltip too.
 
 ## Open questions
 

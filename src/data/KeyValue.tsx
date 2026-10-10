@@ -1,5 +1,14 @@
-import { Children, createContext, Fragment, useContext, type CSSProperties, type ReactNode } from 'react';
+import {
+  Children,
+  createContext,
+  Fragment,
+  useContext,
+  useRef,
+  type CSSProperties,
+  type ReactNode,
+} from 'react';
 import { Skeleton } from '../basics/Skeleton';
+import { useTruncatedTip } from '../internal/TruncatedText';
 import { IconSlot } from '../provider/icons';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './KeyValue.module.css';
@@ -59,10 +68,15 @@ function Label({ icon, className, style, children }: KeyValueLabelProps) {
 }
 
 function Value({ className, style, children }: BlockProps) {
+  const ref = useRef<HTMLElement>(null);
+  const tip = useTruncatedTip(ref, children);
   return (
-    <dd data-part="value" className={cx(styles.value, className)} style={style}>
-      {children}
-    </dd>
+    <>
+      <dd ref={ref} data-part="value" className={cx(styles.value, className)} style={style}>
+        {children}
+      </dd>
+      {tip}
+    </>
   );
 }
 

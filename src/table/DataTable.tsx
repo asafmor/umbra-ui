@@ -13,7 +13,6 @@ import {
   useTable,
   type RowData,
 } from '@tanstack/react-table';
-import { ArrowDown, ArrowUp, ChevronsUpDown } from 'lucide-react';
 import {
   Fragment,
   useEffect,
@@ -38,6 +37,7 @@ import { ScrollArea } from '../layout/ScrollArea';
 import { Menu, type MenuEntry } from '../overlays/Menu';
 import tipStyles from '../overlays/Tooltip.module.css';
 import { Icon } from '../provider/icons';
+import { useUmbra } from '../provider/UmbraProvider';
 import { useScopeAttributes } from '../provider/UmbraProvider';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './DataTable.module.css';
@@ -377,7 +377,9 @@ export interface DataTableSortIndicatorProps {
 
 /** The arrow in a sortable header. The direction is its shape, not its colour. */
 function SortIndicator({ direction, index }: DataTableSortIndicatorProps) {
-  const Arrow = direction === 'asc' ? ArrowUp : direction === 'desc' ? ArrowDown : ChevronsUpDown;
+  const { icons } = useUmbra();
+  const arrow =
+    direction === 'asc' ? icons.sortAscending : direction === 'desc' ? icons.sortDescending : icons.sortNone;
   return (
     <span
       data-part="sort-indicator"
@@ -385,7 +387,7 @@ function SortIndicator({ direction, index }: DataTableSortIndicatorProps) {
       aria-hidden="true"
       className={styles.sortIndicator}
     >
-      <Arrow />
+      {arrow}
       {index !== undefined && <span className={styles.sortIndex}>{index}</span>}
     </span>
   );

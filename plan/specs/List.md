@@ -54,7 +54,7 @@ States: `loading`, empty, error, `loadingMore`; per row: hover, pressed, selecte
 | `groups` | array of `{ key, items, …GroupHeader props }` | — | Grouped rows as data |
 | `children` | `List.Item`, `List.Group` | — | Rows as elements |
 | `selectionMode` | see above | `none` | |
-| `selectedKeys` / `defaultSelectedKeys` / `onSelectionChange` | key array / key array / function | — | Controlled or uncontrolled selection, as plain arrays of keys |
+| `selectedIds` / `defaultSelectedIds` / `onSelectionChange` | id array / id array / function | — | Controlled or uncontrolled selection, as plain arrays of keys |
 | `selectionBehavior` | see above | see above | |
 | `disallowEmptySelection` | boolean | on with `replace` | The user cannot deselect the last selected row |
 | `onAction` | function (key) | — | A row was activated |
@@ -108,6 +108,6 @@ Resolved 2026-10-10:
 - `renderItem` returns a `List.Item` element (not `ListItem` props), so a row can be anything.
 - `itemVariant` and `itemSize` were added so the skeleton rows match the rows, and rows need not repeat them.
 - `List` is not a layout child (no `size` or `priority`): it goes in a `Card` with `padding="none"`, or any element with a height.
-- No selection checkboxes in `multiple`: `Checkbox` is built in another batch. Fill and stripe show the selection; a checkbox can be added in `leading` later.
+- In `multiple` every row shows a `Checkbox` (`size="small"`) at the start of its `leading`, before an avatar or icon, so the selection is not carried by the fill alone; the fill and the stripe stay. It is the row's selection control in React Aria's grid list: named after the row, not a tab stop of its own, toggled by a click or by `Space` on the row. A row drawn by hand (function `children`) receives it as `selectionControl`. `single` rows keep the fill and stripe only.
 - No virtualisation: every row is rendered. To add (React Aria's `Virtualizer`) when lists pass a few thousand rows.
 - No drag and drop.

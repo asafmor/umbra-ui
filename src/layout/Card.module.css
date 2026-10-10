@@ -35,6 +35,19 @@
   display: none;
 }
 
+/*
+ * While a collapse or expand by the caret runs, the height is animated from the script. The card must
+ * then be as tall as that height says, not as its share of the stack; the other cards take the rest.
+ */
+.root[data-resizing] {
+  flex: 0 0 auto !important;
+}
+
+/* The body is shorter than its content while it moves: no scrollbar may flash. */
+.root[data-resizing] > .body > [data-part='viewport'] {
+  overflow: hidden;
+}
+
 .root[data-tone='tinted'] {
   --bg: var(--umbra-card-bg, var(--umbra-context-card-tint-strong));
   --border: var(

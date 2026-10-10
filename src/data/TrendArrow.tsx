@@ -1,6 +1,5 @@
-import { ArrowDown, ArrowUp, Minus } from 'lucide-react';
 import type { CSSProperties, ReactNode } from 'react';
-import { IconSlot } from '../provider/icons';
+import { IconSlot, RawIcon } from '../provider/icons';
 import { cx, renderPart, type Part } from '../utils/parts';
 import shared from './shared.module.css';
 import styles from './TrendArrow.module.css';
@@ -8,7 +7,11 @@ import styles from './TrendArrow.module.css';
 export type TrendDirection = 'up' | 'down' | 'flat';
 export type TrendTone = 'good' | 'bad' | 'neutral';
 
-const arrows: Record<TrendDirection, ReactNode> = { up: <ArrowUp />, down: <ArrowDown />, flat: <Minus /> };
+const arrows: Record<TrendDirection, ReactNode> = {
+  up: <RawIcon name="trendUp" />,
+  down: <RawIcon name="trendDown" />,
+  flat: <RawIcon name="trendFlat" />,
+};
 
 interface BlockProps {
   className?: string;

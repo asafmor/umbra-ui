@@ -118,7 +118,9 @@ test.describe('GroupHeader', () => {
     expect(Math.abs(top - headerTop)).toBeLessThan(1);
   });
 
-  test('the meta text hides when the header is narrow, then the title truncates', async ({ page }) => {
+  test('as the header narrows the meta text hides, the actions move into a menu, then the title truncates', async ({
+    page,
+  }) => {
     await open(page, 'data-groupheader--shrink');
     const wide = box(page, 'wide');
     const medium = box(page, 'medium');
@@ -126,8 +128,13 @@ test.describe('GroupHeader', () => {
     await expect(part(wide, 'meta')).toBeVisible();
     await expect(part(medium, 'meta')).toHaveCount(0);
     expect(await truncated(part(medium, 'title'))).toBe(false);
-    await expect(part(medium, 'actions')).toBeVisible();
+    await expect(medium.getByRole('button', { name: 'Add' })).toBeVisible();
+    // The action is a row of the overflow menu before the title gives way.
     expect(await truncated(part(narrow, 'title'))).toBe(true);
+    await expect(narrow.getByRole('button', { name: 'Add' })).toHaveCount(0);
+    await narrow.getByRole('button', { name: 'More actions' }).click();
+    await expect(page.getByRole('menu', { name: 'More actions' }).getByRole('menuitem')).toHaveText(['Add']);
+    await page.keyboard.press('Escape');
 
     await narrow.evaluate((el) => (el.style.width = '420px'));
     await expect(part(narrow, 'meta')).toBeVisible();
@@ -147,6 +154,16 @@ test.describe('ListItem', () => {
     expect(await visible(2)).toEqual([false, false, true]);
     expect(await visible(3)).toEqual([false, false, false]);
     expect(await truncated(part(boxes.nth(3), 'title'))).toBe(true);
+    // A truncated title is whole in a tooltip; a title that fits has none.
+    const tooltip = page.getByRole('tooltip');
+    await part(boxes.nth(3), 'title').hover();
+    await expect(tooltip).toHaveText((await part(boxes.nth(3), 'title').textContent())!);
+    await page.mouse.move(0, 0);
+    await expect(tooltip).toHaveCount(0);
+    await boxes.nth(0).evaluate((el) => (el.style.width = '600px'));
+    await part(boxes.nth(0), 'title').hover();
+    await page.waitForTimeout(700);
+    await expect(tooltip).toHaveCount(0);
     // The unread dot stays when the meta text has gone: it is not the time that says "unread".
     await expect(part(boxes.nth(3), 'unread')).toBeVisible();
 
@@ -216,6 +233,25 @@ test.describe('List', () => {
     const rows = group.getByRole('row');
     await expect(rows.nth(1)).toHaveAttribute('aria-selected', 'true');
     await expect(rows.nth(1).locator('[data-umbra="list-item"]')).toHaveAttribute('data-selected', 'true');
+    // Every row has a checkbox that shows its selection, so it is not carried by the fill alone.
+    const boxes = group.getByRole('checkbox');
+    await expect(boxes).toHaveCount(await rows.count());
+    await expect(boxes.nth(1)).toBeChecked();
+    await expect(boxes.nth(0)).not.toBeChecked();
+    await expect(boxes.nth(0)).toHaveAccessibleName(/Select/);
+    // It is not a tab stop of its own: Tab leaves the list. A click on it toggles its row only.
+    await rows.nth(0).focus();
+    await page.keyboard.press('Tab');
+    expect(
+      await group.evaluate((el) => el.querySelector('[role="grid"]')!.contains(document.activeElement)),
+    ).toBe(false);
+    await rows.nth(0).locator('[data-umbra="checkbox"]').click();
+    await expect(rows.nth(0)).toHaveAttribute('aria-selected', 'true');
+    await expect(boxes.nth(0)).toBeChecked();
+    await rows.nth(0).locator('[data-umbra="checkbox"]').click();
+    await expect(rows.nth(0)).toHaveAttribute('aria-selected', 'false');
+    // A single selection has no checkboxes.
+    await expect(card(page, 'Inbox').getByRole('checkbox')).toHaveCount(0);
 
     await rows.nth(0).focus();
     await page.keyboard.press('Space');

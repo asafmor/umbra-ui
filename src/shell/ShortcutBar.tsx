@@ -1,4 +1,3 @@
-import { Pencil } from 'lucide-react';
 import {
   Children,
   Fragment,
@@ -18,6 +17,7 @@ import { useShrinkLevel } from '../internal/useShrinkLevel';
 import { Menu } from '../overlays/Menu';
 import { Tooltip } from '../overlays/Tooltip';
 import { IconSlot } from '../provider/icons';
+import { useUmbra } from '../provider/UmbraProvider';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './ShortcutBar.module.css';
 
@@ -118,6 +118,7 @@ export function ShortcutBar({
   className,
   style,
 }: ShortcutBarProps) {
+  const { icons } = useUmbra();
   const list = useRef<HTMLDivElement>(null);
   const all = items ?? toItems(children);
   // The bar is as wide as what it shows, so it never grows by itself: when the room around it grows
@@ -252,11 +253,7 @@ export function ShortcutBar({
             className={styles.chip}
             onPress={onEdit}
           >
-            <IconSlot>
-              {renderPart(parts?.editIcon, {}, () => (
-                <Pencil />
-              ))}
-            </IconSlot>
+            <IconSlot>{renderPart(parts?.editIcon, {}, () => icons.edit)}</IconSlot>
           </AriaButton>
         </Tooltip>
       )}

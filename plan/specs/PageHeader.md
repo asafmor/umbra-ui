@@ -58,7 +58,8 @@ On a band the text is white or near-black, whichever has more contrast with the 
 | `media` | node | — | An `Avatar` or `EntityIcon` inside takes the header's media size |
 | `meta` | `{ label, value }[]` \| node | — | Labelled facts become a description list with rules between; a node is shown as it is |
 | `tags` | node | — | After the title |
-| `actions` | node | — | |
+| `actions` | node | — | Trailing controls. They move into an overflow menu when they do not fit. |
+| `moreLabel` | string | "More actions" | Name of the overflow menu button |
 | `onBack` / `backLabel` | function / string | — / "Back" | Shows the back button |
 | `breadcrumbs` | `{ label, href? }[]` | — | The last item is the current page |
 | `breadcrumbsLabel` | string | "Breadcrumb" | Name of the landmark |
@@ -84,7 +85,7 @@ The header measures its main row and takes one step each time the row does not f
 | Step | Result |
 |---|---|
 | 1 | `meta` hides |
-| 2 | `actions` move to a line of their own under the titles, and wrap there if they must |
+| 2 | `actions` move into an overflow menu behind a "more" button (`moreLabel`), as in a card header |
 | 3 | `subtitle` hides |
 | 4 | `media` shrinks to the small size |
 | then | the title truncates with an ellipsis |
@@ -106,7 +107,7 @@ None.
 Resolved 2026-10-10:
 
 - One component for the page header, the entity band and the message header; the differences are `tone`, `size` and which pieces are set.
-- Actions wrap under the titles as step 2, after the meta row hides and before the subtitle does, so an action is never lost. Moving them into an overflow menu is a later change, once the public `Menu` exists.
+- Actions no longer wrap under the titles (integration pass). The wrap cost a whole line of height in a layout where the page cannot scroll, and still failed when the actions were wider than the header. Instead they move into an overflow menu at the same step (2), after the meta row hides and before the subtitle does. Taking that step later was tried and rejected: the subtitle and the media then gave way first without making room for the actions, so a narrow header lost all three. The header is always one line of titles high.
 - `meta` hides as a whole; it does not drop facts one by one.
 - `bandColor` takes hex and `rgb()` only, like the card's band.
 - The media size belongs to the header: it sets the size of an `Avatar` or `EntityIcon` inside, whatever their own `size`.

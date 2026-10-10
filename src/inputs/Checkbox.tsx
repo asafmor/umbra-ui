@@ -1,6 +1,6 @@
-import { Check, Minus } from 'lucide-react';
-import { useContext, type ReactNode } from 'react';
+import { createContext, useContext, type ReactNode } from 'react';
 import { Checkbox as AriaCheckbox, CheckboxGroup as AriaCheckboxGroup } from 'react-aria-components';
+import { RawIcon } from '../provider/icons';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './Checkbox.module.css';
 import {
@@ -43,6 +43,12 @@ export interface CheckboxRootProps extends BlockProps {
   'aria-label'?: string;
 }
 
+/**
+ * Internal: makes the checkboxes below take their state from a React Aria collection row. `List` sets it
+ * to `selection`, so the checkbox of a row is the row's selection control.
+ */
+export const CheckboxSlotContext = createContext<string | undefined>(undefined);
+
 function Root({
   checked,
   defaultChecked,
@@ -63,6 +69,7 @@ function Root({
   children,
 }: CheckboxRootProps) {
   const slots = useTextSlots();
+  const slot = useContext(CheckboxSlotContext);
   const control = useFieldControl({
     id,
     disabled,
@@ -73,6 +80,7 @@ function Root({
   });
   return (
     <AriaCheckbox
+      slot={slot}
       data-umbra="checkbox"
       data-size={size}
       className={cx(styles.root, className)}
@@ -107,8 +115,12 @@ function Box({ className, style, children }: BlockProps) {
     <span data-part="box" aria-hidden="true" className={cx(styles.box, className)} style={style}>
       {children ?? (
         <>
-          <Check className={styles.check} />
-          <Minus className={styles.dash} />
+          <span className={styles.check}>
+            <RawIcon name="check" />
+          </span>
+          <span className={styles.dash}>
+            <RawIcon name="indeterminate" />
+          </span>
         </>
       )}
     </span>

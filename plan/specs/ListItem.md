@@ -87,7 +87,7 @@ By the row's own width (a container query), in both variants:
 
 | Step | Trigger | Result |
 |---|---|---|
-| 1 | Any width | `title`, `overline` and `description` truncate with an ellipsis |
+| 1 | Any width | `title`, `overline` and `description` truncate with an ellipsis. A truncated title shows its full text in a tooltip, on hover and on keyboard focus of the row or its link. |
 | 2 | Row narrower than 260px | `trailing` hides |
 | 3 | Narrower than 200px | `description` hides |
 | 4 | Narrower than 140px | `meta` hides; the unread dot stays |

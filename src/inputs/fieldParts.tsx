@@ -1,6 +1,5 @@
-import { CircleAlert } from 'lucide-react';
 import { createContext, useContext, useId, useState, type CSSProperties, type ReactNode } from 'react';
-import { IconSlot } from '../provider/icons';
+import { IconSlot, RawIcon } from '../provider/icons';
 import { cx } from '../utils/parts';
 import styles from './fieldParts.module.css';
 import { useMounted } from './useField';
@@ -132,7 +131,7 @@ export function SlotError({ className, style, children }: BlockProps) {
   return (
     <span id={slots.errorId} data-part="error" className={cx(styles.error, className)} style={style}>
       <IconSlot>
-        <CircleAlert />
+        <RawIcon name="invalid" />
       </IconSlot>
       <span>{children}</span>
     </span>

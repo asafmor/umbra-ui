@@ -141,7 +141,7 @@ A row of overlapping avatars. Those that do not fit are counted in a "+N" at the
 
 A count or a dot, alone or on the corner of another element.
 
-**Tokens**: `--umbra-badge-bg`, `--umbra-badge-dot-size`, `--umbra-badge-fg`, `--umbra-badge-font`, `--umbra-badge-offset`, `--umbra-badge-radius`, `--umbra-badge-size`.
+**Tokens**: `--umbra-badge-bg`, `--umbra-badge-dot-size`, `--umbra-badge-fg`, `--umbra-badge-font`, `--umbra-badge-offset`, `--umbra-badge-padding-x`, `--umbra-badge-radius`, `--umbra-badge-size`.
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -150,6 +150,7 @@ A count or a dot, alone or on the corner of another element.
 | `max` | `number` | Counts above this show as "99+". |
 | `showZero` | `boolean` | Shows the badge when `count` is 0. |
 | `label` | `string \| ((count: number) => string)` | What a screen reader hears: a string, or a function of the count (`(n) => n + ' unread'`). By default the full count is read, also above `max`. A dot is silent without it. |
+| `decorative` | `boolean` | Draws the count without making it text of the page, and hides the badge from assistive technology. For a badge inside a control whose own name already holds the count, as `IconButton` does. |
 | `children` | `ReactNode` | The element the badge sits on the corner of. Without it the badge stands alone. |
 | `parts` | `see Parts` | Replace or hide named pieces. |
 | `className` | `string` |  |
@@ -203,13 +204,14 @@ Compares values across categories: grouped, stacked or diverging around zero, up
 | `parts` | `see Parts` | Replace or hide named pieces. |
 | `className` | `string` |  |
 | `style` | `import("react").CSSProperties` |  |
+| `empty` | `ReactNode` | Shown when there is no data. |
+| `error` | `ReactNode` | When set, shown in place of the chart. |
 | `variant` | `"stacked" \| "grouped" \| "diverging"` | `grouped`: the series side by side. `stacked`: on top of each other. `diverging`: every second series is drawn on the other side of zero, with all values shown as positive. |
 | `orientation` | `"vertical" \| "horizontal"` | `horizontal` puts the categories on the left and draws the bars sideways. |
 | `loading` | `boolean` | Shows a placeholder in the chart's shape. |
 | `hiddenIds` | `readonly string[]` | Ids of the series that are switched off (controlled). |
 | `defaultHiddenIds` | `readonly string[]` |  |
 | `onHiddenChange` | `((hiddenIds: string[]) => void)` |  |
-| `error` | `ReactNode` | When set, shown in place of the chart. |
 | `label` | `string` | Accessible name of the chart. Required unless `aria-labelledby` is set. |
 | `thresholds` | `BarThreshold[]` | Colours bars by value. Each threshold also has a fill, so the steps differ without colour. |
 | `formatValue` | `((value: number) => string)` | Formats a value for labels, the tooltip and screen readers. Defaults to the provider's locale. |
@@ -225,7 +227,6 @@ Compares values across categories: grouped, stacked or diverging around zero, up
 | `aria-labelledby` | `string` | Id of the element that names the chart, for example a card title. |
 | `legend` | `string \| number \| bigint \| boolean \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| import("react").ReactPortal \| Promise<string \| number \| bigint \| boolean \| import("react").ReactPortal \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| null \| undefined> \| null` | The legend: `true` or a placement shows the built-in one, `false` hides it, and a node replaces it. By default it is shown below the chart when there is more than one series. |
 | `onPointPress` | `((point: import(".").ChartPoint) => void)` | Called when a point is clicked, or activated with Enter or Space. |
-| `empty` | `ReactNode` | Shown when there is no data. |
 | `onRetry` | `(() => void)` | Adds a retry button to the error state. |
 | `retryLabel` | `string` |  |
 | `pointsLabel` | `string` | Accessible name of the list of data points. |
@@ -239,7 +240,7 @@ Compares values across categories: grouped, stacked or diverging around zero, up
 
 Triggers an action. Text, with an optional icon.
 
-**Tokens**: `--umbra-button-accent-bg`, `--umbra-button-accent-border`, `--umbra-button-accent-fg`, `--umbra-button-danger-bg`, `--umbra-button-danger-border`, `--umbra-button-danger-fg`, `--umbra-button-ghost-bg`, `--umbra-button-ghost-border`, `--umbra-button-ghost-fg`, `--umbra-button-height`, `--umbra-button-neutral-bg`, `--umbra-button-neutral-border`, `--umbra-button-neutral-fg`, `--umbra-button-padding-x`, `--umbra-button-primary-bg`, `--umbra-button-primary-border`, `--umbra-button-primary-fg`, `--umbra-button-radius`, `--umbra-focus-color`, `--umbra-focus-offset`, `--umbra-icon-button-size`.
+**Tokens**: `--umbra-button-accent-bg`, `--umbra-button-accent-border`, `--umbra-button-accent-fg`, `--umbra-button-danger-bg`, `--umbra-button-danger-border`, `--umbra-button-danger-fg`, `--umbra-button-ghost-bg`, `--umbra-button-ghost-border`, `--umbra-button-ghost-fg`, `--umbra-button-height`, `--umbra-button-neutral-bg`, `--umbra-button-neutral-border`, `--umbra-button-neutral-fg`, `--umbra-button-padding-x`, `--umbra-button-primary-bg`, `--umbra-button-primary-border`, `--umbra-button-primary-fg`, `--umbra-button-radius`, `--umbra-focus-color`, `--umbra-focus-offset`, `--umbra-icon-button-badge-dot-size`, `--umbra-icon-button-badge-font`, `--umbra-icon-button-badge-padding-x`, `--umbra-icon-button-badge-size`, `--umbra-icon-button-size`.
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -275,10 +276,12 @@ The container for one unit of content on a page. Fills the slot its parent gives
 |---|---|---|
 | `title` | `ReactNode` | Header title. The header is shown when it is set. |
 | `loading` | `boolean` | Shows the body skeleton. |
-| `empty` | `ReactNode` | Shown in place of the body when set (and not loading or in error). |
-| `error` | `ReactNode` | Shown in place of the body when set. Put a retry action inside it. |
+| `empty` | `ReactNode \| import("../internal/dataState").DataStateContent` | Shown in place of the body when set (and not loading or in error): text or a node, or `{ title, description, icon, action }` for the same empty state as the other data components. |
+| `error` | `ReactNode \| import("../internal/dataState").DataStateContent` | Shown in place of the body when set: text or a node, `{ title, description, icon, action }`, or `true` for a default text. |
+| `onRetry` | `(() => void)` | Adds a retry button to the error state. |
+| `retryLabel` | `string` | Label of the retry button. |
 | `parts` | `see Parts` | Replace or hide named pieces. `toolbar` and `footer` are empty unless given, as `Card.Toolbar` and `Card.Footer`. |
-| `tone` | `"default" \| "tinted" \| "neutral"` | `tinted` takes more of the context tint; `neutral` ignores it. |
+| `tone` | `"neutral" \| "default" \| "tinted"` | `tinted` takes more of the context tint; `neutral` ignores it. |
 | `headerStyle` | `"plain" \| "band"` | `band` fills the header with the brand colour, or the header's `bandColor`. |
 | `padding` | `"default" \| "none"` | `none` for edge-to-edge tables and media. |
 | `collapsible` | `boolean` | Lets the end user collapse the card to its header. |
@@ -320,6 +323,8 @@ A box that is checked or not: one yes-or-no choice, or one of several in a `Chec
 | `description` | `ReactNode` | A second line under the label. |
 | `error` | `ReactNode` | An error message under the checkbox, shown with an icon. Setting it makes the checkbox invalid. |
 | `parts` | `see Parts` | Replace or hide named pieces. |
+| `indeterminate` | `boolean` | Shows the "some, not all" mark, whatever `checked` is. |
+| `invalid` | `boolean` |  |
 | `value` | `string` | The form value when checked; inside a `CheckboxGroup`, the entry in the group's `value`. |
 | `onChange` | `((checked: boolean) => void)` |  |
 | `aria-label` | `string` | Accessible name of a checkbox that has no visible label. |
@@ -327,11 +332,9 @@ A box that is checked or not: one yes-or-no choice, or one of several in a `Chec
 | `style` | `import("react").CSSProperties` |  |
 | `size` | `"default" \| "small"` | `small` is for use inside table cells. Otherwise the size follows the density level. |
 | `disabled` | `boolean` |  |
-| `indeterminate` | `boolean` | Shows the "some, not all" mark, whatever `checked` is. |
 | `checked` | `boolean` | Controlled state. |
 | `defaultChecked` | `boolean` |  |
 | `readOnly` | `boolean` | Focusable, but cannot be changed. |
-| `invalid` | `boolean` |  |
 | `required` | `boolean` |  |
 | `requiredLabel` | `string` | The text of the required marker after the label. |
 | `name` | `string` | Form field name. |
@@ -355,6 +358,7 @@ Several checkboxes that answer one question, with a shared label, description an
 | `error` | `ReactNode` | An error message under the checkboxes, shown with an icon. Setting it makes the group invalid. |
 | `columns` | `number` | Lays the checkboxes in a grid of at most this many columns; columns drop as the group narrows. |
 | `parts` | `see Parts` | Replace or hide named pieces. |
+| `invalid` | `boolean` |  |
 | `value` | `string[]` | Controlled: the `value` of every checked checkbox. |
 | `onChange` | `((value: string[]) => void)` |  |
 | `aria-label` | `string` | Accessible name of a group that has no visible label. |
@@ -363,7 +367,6 @@ Several checkboxes that answer one question, with a shared label, description an
 | `orientation` | `"vertical" \| "horizontal"` | `horizontal` puts the checkboxes on one line, wrapping when they do not fit. |
 | `disabled` | `boolean` |  |
 | `readOnly` | `boolean` |  |
-| `invalid` | `boolean` |  |
 | `required` | `boolean` | At least one checkbox must be checked. |
 | `requiredLabel` | `string` | The text of the required marker after the group label. |
 | `name` | `string` | Form field name of every checkbox in the group. |
@@ -454,7 +457,7 @@ The confirm step before an action that cannot be undone. An alert dialog: it ope
 | `description` | `ReactNode` | What will happen, in a sentence. |
 | `confirmLabel` | `string` |  |
 | `cancelLabel` | `string` |  |
-| `tone` | `"default" \| "danger"` | `danger` makes the confirm button a danger button. |
+| `tone` | `"danger" \| "default"` | `danger` makes the confirm button a danger button. |
 | `onConfirm` | `(() => void \| Promise<unknown>)` | Called on confirm. When it returns a promise, the confirm button shows `loading` until it settles: the dialog closes when it resolves and stays open when it rejects. |
 | `onCancel` | `(() => void)` |  |
 | `loadingLabel` | `string` | What a screen reader hears while the confirm action runs. |
@@ -557,12 +560,13 @@ A ring that shows one value against a total, or how a total splits into segments
 | `value` | `number` | The single-value form: one value against `max`. |
 | `className` | `string` |  |
 | `style` | `import("react").CSSProperties` |  |
+| `empty` | `ReactNode` | Shown when there is no data. |
+| `error` | `ReactNode` | When set, shown in place of the chart. |
 | `tone` | `DonutTone` | Colour of the single value. The number in the centre is the cue that does not depend on colour. |
 | `loading` | `boolean` | Shows a placeholder in the chart's shape. |
 | `hiddenIds` | `readonly string[]` | Ids of the series that are switched off (controlled). |
 | `defaultHiddenIds` | `readonly string[]` |  |
 | `onHiddenChange` | `((hiddenIds: string[]) => void)` |  |
-| `error` | `ReactNode` | When set, shown in place of the chart. |
 | `label` | `string` | Accessible name of the chart. Required unless `aria-labelledby` is set. |
 | `color` | `string` | Any CSS colour for the single value; wins over `tone`. |
 | `max` | `number` | What a full ring stands for, in the single-value form. |
@@ -573,7 +577,6 @@ A ring that shows one value against a total, or how a total splits into segments
 | `aria-labelledby` | `string` | Id of the element that names the chart, for example a card title. |
 | `legend` | `string \| number \| bigint \| boolean \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| import("react").ReactPortal \| Promise<string \| number \| bigint \| boolean \| import("react").ReactPortal \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| null \| undefined> \| null` | The legend: `true` or a placement shows the built-in one, `false` hides it, and a node replaces it. By default it is shown below the chart when there is more than one series. |
 | `onPointPress` | `((point: import(".").ChartPoint) => void)` | Called when a point is clicked, or activated with Enter or Space. |
-| `empty` | `ReactNode` | Shown when there is no data. |
 | `onRetry` | `(() => void)` | Adds a retry button to the error state. |
 | `retryLabel` | `string` |  |
 | `pointsLabel` | `string` | Accessible name of the list of data points. |
@@ -650,12 +653,12 @@ Pairs a label, a description and an error message with one control: a row of a f
 | `description` | `ReactNode` | A line that explains the setting. |
 | `error` | `ReactNode` | An error message, shown with an icon. Setting it makes the control invalid. |
 | `parts` | `see Parts` | Replace or hide named pieces. |
+| `invalid` | `boolean` | Marks the control invalid. Set by itself when the field has an error. |
 | `className` | `string` |  |
 | `style` | `import("react").CSSProperties` |  |
 | `disabled` | `boolean` | Disables the control. |
 | `layout` | `"inline" \| "stacked" \| "row"` | `row`: label and description at the start, control at the end, as in a settings list. `stacked`: label above the control. `inline`: label and control on one line, the description and error under the control. `row` and `inline` stack when the field is narrow. |
 | `labelWidth` | `string \| number` | The width of the label column of a `row` or `inline` field: a number of pixels, or any CSS width. |
-| `invalid` | `boolean` | Marks the control invalid. Set by itself when the field has an error. |
 | `required` | `boolean` | Marks the control required and shows the required marker. |
 | `requiredLabel` | `string` | The text of the required marker. |
 | `id` | `string` | The id of the control. Generated when not set. |
@@ -679,8 +682,9 @@ A header row for one group of rows inside a list or table.
 | `icon` | `ReactNode` | Leading icon. |
 | `count` | `number` | Number of rows in the group, shown after the title. |
 | `meta` | `ReactNode` | Trailing text, for example a total. Hides when the header is too narrow. |
-| `actions` | `ReactNode` | Trailing controls. |
-| `level` | `4 \| 3 \| 2 \| 5 \| 6` | Heading level of the title. |
+| `actions` | `ReactNode` | Trailing controls. They move into an overflow menu when they do not fit. |
+| `moreLabel` | `string` | Accessible name of the overflow menu button. |
+| `headingLevel` | `4 \| 3 \| 2 \| 5 \| 6` | Heading level of the title. |
 | `collapsible` | `boolean` | Adds a caret button that collapses the group. The app (or `List`) hides the rows. |
 | `collapsed` | `boolean` | Controlled collapse state. |
 | `defaultCollapsed` | `boolean` |  |
@@ -729,7 +733,7 @@ Back and forward. On their own they drive the browser history; with `onBack` and
 
 A button that shows only an icon. Inside an overflow menu it becomes a menu item with its icon and label.
 
-**Tokens**: `--umbra-button-accent-bg`, `--umbra-button-accent-border`, `--umbra-button-accent-fg`, `--umbra-button-danger-bg`, `--umbra-button-danger-border`, `--umbra-button-danger-fg`, `--umbra-button-ghost-bg`, `--umbra-button-ghost-border`, `--umbra-button-ghost-fg`, `--umbra-button-height`, `--umbra-button-neutral-bg`, `--umbra-button-neutral-border`, `--umbra-button-neutral-fg`, `--umbra-button-padding-x`, `--umbra-button-primary-bg`, `--umbra-button-primary-border`, `--umbra-button-primary-fg`, `--umbra-button-radius`, `--umbra-focus-color`, `--umbra-focus-offset`, `--umbra-icon-button-size`.
+**Tokens**: `--umbra-button-accent-bg`, `--umbra-button-accent-border`, `--umbra-button-accent-fg`, `--umbra-button-danger-bg`, `--umbra-button-danger-border`, `--umbra-button-danger-fg`, `--umbra-button-ghost-bg`, `--umbra-button-ghost-border`, `--umbra-button-ghost-fg`, `--umbra-button-height`, `--umbra-button-neutral-bg`, `--umbra-button-neutral-border`, `--umbra-button-neutral-fg`, `--umbra-button-padding-x`, `--umbra-button-primary-bg`, `--umbra-button-primary-border`, `--umbra-button-primary-fg`, `--umbra-button-radius`, `--umbra-focus-color`, `--umbra-focus-offset`, `--umbra-icon-button-badge-dot-size`, `--umbra-icon-button-badge-font`, `--umbra-icon-button-badge-padding-x`, `--umbra-icon-button-badge-size`, `--umbra-icon-button-size`.
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -865,6 +869,7 @@ A strip of ticks with a marker that shows where a value sits on a scale.
 | `min` | `number` |  |
 | `max` | `number` |  |
 | `formatValue` | `((value: number) => string)` | Text of a position on a numeric scale. A named scale uses the labels of its levels. |
+| `tooltip` | `boolean` | `false` turns off the tooltip that shows the exact value on hover. |
 | `steps` | `number` | Number of ticks on a numeric scale. |
 | `levels` | `LevelMeterLevel[]` | A named scale: one tick per level, and the marker sits on a level. Replaces `min`, `max` and `steps`. |
 | `range` | `[LevelMeterValue, LevelMeterValue]` | Draws a band from the first position to the second, for an estimate or an allowed span. |
@@ -889,11 +894,12 @@ One or more series over categories, numbers or time, with a numeric or an ordina
 | `parts` | `see Parts` | Replace or hide named pieces. |
 | `className` | `string` |  |
 | `style` | `import("react").CSSProperties` |  |
+| `empty` | `ReactNode` | Shown when there is no data. |
+| `error` | `ReactNode` | When set, shown in place of the chart. |
 | `loading` | `boolean` | Shows a placeholder in the chart's shape. |
 | `hiddenIds` | `readonly string[]` | Ids of the series that are switched off (controlled). |
 | `defaultHiddenIds` | `readonly string[]` |  |
 | `onHiddenChange` | `((hiddenIds: string[]) => void)` |  |
-| `error` | `ReactNode` | When set, shown in place of the chart. |
 | `label` | `string` | Accessible name of the chart. Required unless `aria-labelledby` is set. |
 | `formatValue` | `((value: number) => string)` | Formats a value for labels, the tooltip and screen readers. Defaults to the provider's locale. |
 | `description` | `string` | What a screen reader hears after the name. Defaults to a generated summary of the data. |
@@ -906,7 +912,6 @@ One or more series over categories, numbers or time, with a numeric or an ordina
 | `aria-labelledby` | `string` | Id of the element that names the chart, for example a card title. |
 | `legend` | `string \| number \| bigint \| boolean \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| import("react").ReactPortal \| Promise<string \| number \| bigint \| boolean \| import("react").ReactPortal \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| null \| undefined> \| null` | The legend: `true` or a placement shows the built-in one, `false` hides it, and a node replaces it. By default it is shown below the chart when there is more than one series. |
 | `onPointPress` | `((point: import(".").ChartPoint) => void)` | Called when a point is clicked, or activated with Enter or Space. |
-| `empty` | `ReactNode` | Shown when there is no data. |
 | `onRetry` | `(() => void)` | Adds a retry button to the error state. |
 | `retryLabel` | `string` |  |
 | `pointsLabel` | `string` | Accessible name of the list of data points. |
@@ -961,8 +966,8 @@ A vertical list of rows that scrolls inside its slot, with optional groups, sele
 | `renderItem` | `((item: T, index: number) => ReactNode)` | Returns the `List.Item` of one row. |
 | `children` | `ReactNode` | `List.Item` and `List.Group` elements. |
 | `selectionMode` | `"none" \| "single" \| "multiple"` | `single` and `multiple` let the user select rows. |
-| `selectedKeys` | `ListKey[]` | Controlled selection: the keys of the selected rows. |
-| `defaultSelectedKeys` | `ListKey[]` |  |
+| `selectedIds` | `ListKey[]` | Controlled selection: the keys of the selected rows. |
+| `defaultSelectedIds` | `ListKey[]` |  |
 | `onSelectionChange` | `((keys: ListKey[]) => void)` |  |
 | `selectionBehavior` | `"toggle" \| "replace"` | `replace`: a click selects only that row, a double click or Enter activates it, and selection follows the arrow keys. `toggle`: a click or Space toggles the row. Default: `replace` when `onAction` is set, otherwise `toggle`. |
 | `disallowEmptySelection` | `boolean` | The user cannot deselect the last selected row. Default: on with `replace` (so a double click does not deselect), otherwise off. |
@@ -970,7 +975,7 @@ A vertical list of rows that scrolls inside its slot, with optional groups, sele
 | `dividers` | `boolean` | A line between rows. |
 | `striped` | `boolean` | A faint fill on every other row. |
 | `numbered` | `boolean` | Shows each row's position, for a ranking. |
-| `itemVariant` | `"default" \| "message"` | Default `variant` of every `List.Item`, and the layout of the skeleton rows. |
+| `itemVariant` | `"message" \| "default"` | Default `variant` of every `List.Item`, and the layout of the skeleton rows. |
 | `itemSize` | `"compact" \| "default"` | Default `size` of every `List.Item`, and of the skeleton rows. |
 | `stickyHeaders` | `boolean` | Group headers stick to the top while their group scrolls. |
 | `skeletonRows` | `number` | Number of skeleton rows shown while `loading`. |
@@ -1014,7 +1019,7 @@ The content of one row of a list: a title with optional lines, and leading and t
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
 | `accent` | `string` | A colour for an edge stripe that carries a category. Give `accentLabel` too, so it is not colour alone. |
-| `variant` | `"default" \| "message"` | `message`: sender and tag on the first line, title and time on the second. |
+| `variant` | `"message" \| "default"` | `message`: sender and tag on the first line, title and time on the second. |
 | `interactive` | `boolean` | Shows hover and press feedback. Set by `List`, and by `href` or `onPress`. |
 | `size` | `"compact" \| "default"` | `compact` is one control high, for leaderboards and short lists. Otherwise the height follows the density level. |
 | `selected` | `boolean` | Violet fill with an edge stripe. Inside a `List`, selection sets it. |
@@ -1136,7 +1141,8 @@ The header of a page or of a detail pane: what it shows, facts about it, and its
 | `media` | `ReactNode` | Leading avatar, entity icon or image. |
 | `meta` | `ReactNode \| PageHeaderFact[]` | A row of facts: `{ label, value }` items, or any node. |
 | `tags` | `ReactNode` | Tags or badges after the title. |
-| `actions` | `ReactNode` | Trailing controls. |
+| `actions` | `ReactNode` | Trailing controls. They move into an overflow menu when they do not fit. |
+| `moreLabel` | `string` | Accessible name of the overflow menu button. |
 | `onBack` | `(() => void)` | Shows a back button before the title. |
 | `backLabel` | `string` | Accessible name of the back button. |
 | `breadcrumbs` | `PageHeaderCrumb[]` | The path to this page; the last item is the current page. |
@@ -1262,6 +1268,7 @@ A bar that fills with a value: progress of a task, or a measured level. Fills th
 | `showValue` | `boolean` | Shows the value as text. |
 | `valuePlacement` | `"outside" \| "inside"` | `inside` draws the value on the bar; it needs `size="thick"`, and hides when the bar is too short for it. |
 | `parts` | `see Parts` | Replace or hide named pieces. |
+| `indeterminate` | `boolean` | Progress of unknown length. Moves, or shows a static striped fill when motion is reduced. |
 | `value` | `number` | The current value. A stacked bar defaults to the sum of its parts. |
 | `aria-label` | `string` | Names a bar that has no visible label. |
 | `className` | `string` |  |
@@ -1273,7 +1280,6 @@ A bar that fills with a value: progress of a task, or a measured level. Fills th
 | `min` | `number` |  |
 | `max` | `number` |  |
 | `kind` | `"progress" \| "meter"` | `progress` for a task that advances (`role="progressbar"`), `meter` for a measured level (`role="meter"`). |
-| `indeterminate` | `boolean` | Progress of unknown length. Moves, or shows a static striped fill when motion is reduced. |
 | `thresholds` | `boolean \| Threshold[]` | Colours the fill by its level. `true` is thirds of the scale: danger, warning, success. Each band also has a pattern. |
 | `invert` | `boolean` | Reverses the tones of the thresholds, for a scale where low is good. |
 | `segments` | `number \| number[]` | Splits the bar: a number of equal segments, or the values where a segment ends. |
@@ -1281,6 +1287,7 @@ A bar that fills with a value: progress of a task, or a measured level. Fills th
 | `target` | `number` | Draws a tick at a goal value. |
 | `targetLabel` | `string` | Names the target for assistive technology. |
 | `formatValue` | `((value: number, scale: ProgressBarScale) => string)` | Text of a value. The default is a rounded percentage. |
+| `tooltip` | `boolean` | `false` turns off the tooltip that shows the exact value on hover. |
 
 **Parts**: `label`, `value`, `track`, `fill`, `target`, `skeleton`.
 
@@ -1300,11 +1307,12 @@ Compares one or more series across several axes that share a centre.
 | `parts` | `see Parts` | Replace or hide named pieces. |
 | `className` | `string` |  |
 | `style` | `import("react").CSSProperties` |  |
+| `empty` | `ReactNode` | Shown when there is no data. |
+| `error` | `ReactNode` | When set, shown in place of the chart. |
 | `loading` | `boolean` | Shows a placeholder in the chart's shape. |
 | `hiddenIds` | `readonly string[]` | Ids of the series that are switched off (controlled). |
 | `defaultHiddenIds` | `readonly string[]` |  |
 | `onHiddenChange` | `((hiddenIds: string[]) => void)` |  |
-| `error` | `ReactNode` | When set, shown in place of the chart. |
 | `label` | `string` | Accessible name of the chart. Required unless `aria-labelledby` is set. |
 | `max` | `number` | The value at the outer ring. Defaults to a round number above the largest value. |
 | `formatValue` | `((value: number) => string)` | Formats a value for labels, the tooltip and screen readers. Defaults to the provider's locale. |
@@ -1314,7 +1322,6 @@ Compares one or more series across several axes that share a centre.
 | `aria-labelledby` | `string` | Id of the element that names the chart, for example a card title. |
 | `legend` | `string \| number \| bigint \| boolean \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| import("react").ReactPortal \| Promise<string \| number \| bigint \| boolean \| import("react").ReactPortal \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| null \| undefined> \| null` | The legend: `true` or a placement shows the built-in one, `false` hides it, and a node replaces it. By default it is shown below the chart when there is more than one series. |
 | `onPointPress` | `((point: import(".").ChartPoint) => void)` | Called when a point is clicked, or activated with Enter or Space. |
-| `empty` | `ReactNode` | Shown when there is no data. |
 | `onRetry` | `(() => void)` | Adds a retry button to the error state. |
 | `retryLabel` | `string` |  |
 | `pointsLabel` | `string` | Accessible name of the list of data points. |
@@ -1362,6 +1369,7 @@ A choice of exactly one option among a few, all visible at once.
 | `error` | `ReactNode` | An error message under the options, shown with an icon. Setting it makes the group invalid. |
 | `columns` | `number` | Lays the options in a grid of at most this many columns; columns drop as the group narrows. `card` options are always in a grid, of one column by default. |
 | `parts` | `see Parts` | Replace or hide named pieces. |
+| `invalid` | `boolean` |  |
 | `value` | `string \| null` | Controlled: the `value` of the chosen option. |
 | `onChange` | `((value: string) => void)` |  |
 | `aria-label` | `string` | Accessible name of a group that has no visible label. |
@@ -1371,7 +1379,6 @@ A choice of exactly one option among a few, all visible at once.
 | `orientation` | `"vertical" \| "horizontal"` | The direction of the options, and of the arrow keys that move between them. |
 | `disabled` | `boolean` |  |
 | `readOnly` | `boolean` |  |
-| `invalid` | `boolean` |  |
 | `required` | `boolean` |  |
 | `requiredLabel` | `string` | The text of the required marker after the group label. |
 | `name` | `string` | Form field name. |
@@ -1414,7 +1421,7 @@ A heading for one section of content inside a card or page, with optional contro
 |---|---|---|
 | `children` | `ReactNode` | The title. |
 | `variant` | `"heading" \| "link" \| "rule"` | `link` is chosen automatically when `href` or `onOpen` is set. |
-| `level` | `4 \| 3 \| 2 \| 5 \| 6` | Heading level. |
+| `headingLevel` | `4 \| 3 \| 2 \| 5 \| 6` | Heading level. |
 | `href` | `string` | Makes the title a link to a fuller view of the section. |
 | `onOpen` | `(() => void)` |  |
 | `count` | `number` | A number shown after the title. |
@@ -1442,6 +1449,7 @@ A row of joined segments that filters the content below it. One or several can b
 | `size` | `"default" \| "small"` | `small` is for table cells and dense toolbars. Otherwise the height follows the density level. |
 | `fullWidth` | `boolean` | Fills the width of its container with equal segments. |
 | `disabled` | `boolean` |  |
+| `moreLabel` | `string` | Accessible name of the button that opens the menu of segments that do not fit. |
 | `aria-label` | `string` | Accessible name of the group. |
 | `aria-labelledby` | `string` | Id of the element that names the group. |
 | `className` | `string` |  |
@@ -1668,6 +1676,7 @@ Switches between views of the same content area. The panel fills the rest of the
 | `items` | `TabsItem[]` | The tabs and their panels. Leave out to compose `Tabs.List`, `Tabs.Tab` and `Tabs.Panel` yourself. |
 | `aria-label` | `string` | Accessible name of the tab list. |
 | `end` | `ReactNode` | Shown after the tabs, for example an "add" button. |
+| `moreLabel` | `string` | Accessible name of the button that opens the menu of tabs that do not fit. |
 | `parts` | `see Parts` | Replace or hide named pieces. |
 | `value` | `string \| null` | The selected tab. |
 | `defaultValue` | `string \| null` |  |
@@ -1733,6 +1742,7 @@ A box for typing one line of text, or several with `multiline`.
 | `clearable` | `boolean` | Shows a button that empties the field while it holds text. |
 | `clearLabel` | `string` | Accessible name of the clear button. |
 | `parts` | `see Parts` | Replace or hide named pieces. |
+| `invalid` | `boolean` | Shows the danger border and an error icon. Put the message in the `error` of a `FormField`. |
 | `value` | `string` | Controlled text. |
 | `onChange` | `((value: string) => void)` |  |
 | `aria-label` | `string` | Accessible name of a field that has no `FormField` label. |
@@ -1742,7 +1752,6 @@ A box for typing one line of text, or several with `multiline`.
 | `disabled` | `boolean` |  |
 | `rows` | `number` | Visible lines of a `multiline` field. |
 | `readOnly` | `boolean` | Focusable and selectable, but cannot be changed. |
-| `invalid` | `boolean` | Shows the danger border and an error icon. Put the message in the `error` of a `FormField`. |
 | `required` | `boolean` |  |
 | `name` | `string` | Form field name. |
 | `id` | `string` |  |
@@ -1921,11 +1930,11 @@ A value coloured by where it falls on a five-step ramp.
 
 | Prop | Type | Purpose |
 |---|---|---|
-| `value` (required) | `number \| null` | The value. `null` or `undefined` shows `emptyText` in a neutral pill. |
-| `format` | `((value: number) => ReactNode)` | Turns the value into what is shown: `(v) => v.toFixed(2)`, or a grade letter. |
+| `value` (required) | `number \| null` | The value. `null` or `undefined` shows `emptyLabel` in a neutral pill. |
+| `formatValue` | `((value: number) => ReactNode)` | Turns the value into what is shown: `(v) => v.toFixed(2)`, or a grade letter. |
 | `showLevel` | `boolean` | Adds a small bar marker of the level, for readers who cannot tell the colours apart. |
 | `levelLabel` | `((level: number, steps: number) => string)` | What a screen reader hears for the marker. |
-| `emptyText` | `ReactNode` | Shown when there is no value. |
+| `emptyLabel` | `ReactNode` | Shown when there is no value. |
 | `loading` | `boolean` | Shows a placeholder of the pill's size. |
 | `parts` | `see Parts` | Replace or hide named pieces. |
 | `className` | `string` |  |

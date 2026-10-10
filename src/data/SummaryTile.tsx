@@ -1,6 +1,7 @@
-import type { CSSProperties, ReactNode } from 'react';
+import { useRef, type CSSProperties, type ReactNode } from 'react';
 import { Button as AriaButton, Link as AriaLink } from 'react-aria-components';
 import { Skeleton } from '../basics/Skeleton';
+import { useTruncatedTip } from '../internal/TruncatedText';
 import { useSlot, type SlotProps } from '../layout/useSlot';
 import { IconSlot } from '../provider/icons';
 import { cx, renderPart, type Part } from '../utils/parts';
@@ -94,10 +95,15 @@ function Content({ className, style, children }: BlockProps) {
 }
 
 function Title({ className, style, children }: BlockProps) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const tip = useTruncatedTip(ref, children);
   return (
-    <span data-part="title" className={cx(styles.title, className)} style={style}>
-      {children}
-    </span>
+    <>
+      <span ref={ref} data-part="title" className={cx(styles.title, className)} style={style}>
+        {children}
+      </span>
+      {tip}
+    </>
   );
 }
 

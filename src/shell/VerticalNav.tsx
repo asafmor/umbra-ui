@@ -1,7 +1,7 @@
-import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import {
   createContext,
   Fragment,
+  isValidElement,
   useContext,
   useId,
   useLayoutEffect,
@@ -11,10 +11,12 @@ import {
   type ReactNode,
 } from 'react';
 import { flushSync } from 'react-dom';
+import { Focusable } from 'react-aria-components';
 import { ButtonBase } from '../basics/Button';
 import { ScrollArea } from '../layout/ScrollArea';
+import { Tooltip } from '../overlays/Tooltip';
 import { useSlot, type SlotProps } from '../layout/useSlot';
-import { Icon, IconSlot } from '../provider/icons';
+import { Icon, IconSlot, RawIcon } from '../provider/icons';
 import { cx, renderPart, type Part } from '../utils/parts';
 import type { NavLinkProps } from './nav';
 import styles from './VerticalNav.module.css';
@@ -257,6 +259,19 @@ function rowContent({ icon, badge, children }: VerticalNavItemProps) {
   );
 }
 
+/**
+ * In the rail there is no room for the label, so it is the tooltip of its row. The row can be the app's
+ * own link element (`renderLink`); it gets the tooltip when it passes its props and ref on to the element.
+ */
+function railTip(rail: unknown, label: ReactNode, row: ReactNode) {
+  if (!rail || !isValidElement(row)) return row;
+  return (
+    <Tooltip content={label} placement="end">
+      <Focusable>{row as React.ReactElement<React.DOMAttributes<Element>, string>}</Focusable>
+    </Tooltip>
+  );
+}
+
 /** One item: a link, or a button when it has no `href`. */
 function Item(props: VerticalNavItemProps) {
   const { id, href, disabled = false, children } = props;
@@ -268,18 +283,20 @@ function Item(props: VerticalNavItemProps) {
     'aria-disabled': disabled || undefined,
     'data-nav-focus': '',
     tabIndex: -1,
-    // The rail has no room for the label; a text label is also the hover hint.
-    title: nav.rail && typeof children === 'string' ? children : undefined,
   };
   const choose = () => !disabled && nav.choose(id);
   return (
     <li data-part="item" className={styles.item}>
-      {href && !disabled ? (
-        nav.renderLink({ ...common, href, onClick: choose, children: rowContent(props) })
-      ) : (
-        <button type="button" {...common} onClick={choose}>
-          {rowContent(props)}
-        </button>
+      {railTip(
+        nav.rail,
+        children,
+        href && !disabled ? (
+          nav.renderLink({ ...common, href, onClick: choose, children: rowContent(props) })
+        ) : (
+          <button type="button" {...common} onClick={choose}>
+            {rowContent(props)}
+          </button>
+        ),
       )}
     </li>
   );
@@ -299,23 +316,26 @@ function Group({ label, holdsCurrent, children, ...row }: VerticalNavGroupProps)
   const open = nav.expanded.includes(row.id);
   return (
     <li data-part="group" data-open={open || undefined} className={styles.item}>
-      <button
-        type="button"
-        className={styles.link}
-        aria-expanded={open}
-        aria-disabled={row.disabled || undefined}
-        data-nav-focus=""
-        data-group-id={row.id}
-        data-holds-current={holdsCurrent || undefined}
-        tabIndex={-1}
-        title={nav.rail && typeof label === 'string' ? label : undefined}
-        onClick={() => !row.disabled && nav.expand(row.id, !open)}
-      >
-        {rowContent({ ...row, children: label })}
-        <span className={styles.caret}>
-          <Icon name="chevronDown" />
-        </span>
-      </button>
+      {railTip(
+        nav.rail,
+        label,
+        <button
+          type="button"
+          className={styles.link}
+          aria-expanded={open}
+          aria-disabled={row.disabled || undefined}
+          data-nav-focus=""
+          data-group-id={row.id}
+          data-holds-current={holdsCurrent || undefined}
+          tabIndex={-1}
+          onClick={() => !row.disabled && nav.expand(row.id, !open)}
+        >
+          {rowContent({ ...row, children: label })}
+          <span className={styles.caret}>
+            <Icon name="chevronDown" />
+          </span>
+        </button>,
+      )}
       {open && (
         <ul role="list" className={styles.nested}>
           {children}
@@ -373,7 +393,7 @@ function Toggle({
         expanded={!nav.rail}
         onPress={nav.toggleRail}
       >
-        <IconSlot>{nav.rail ? <PanelLeftOpen /> : <PanelLeftClose />}</IconSlot>
+        <IconSlot>{nav.rail ? <RawIcon name="panelOpen" /> : <RawIcon name="panelClose" />}</IconSlot>
       </ButtonBase>
     </div>
   );

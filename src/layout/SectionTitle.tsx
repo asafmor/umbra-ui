@@ -12,7 +12,7 @@ export interface SectionTitleProps {
   /** `link` is chosen automatically when `href` or `onOpen` is set. */
   variant?: 'heading' | 'link' | 'rule';
   /** Heading level. */
-  level?: 2 | 3 | 4 | 5 | 6;
+  headingLevel?: 2 | 3 | 4 | 5 | 6;
   /** Makes the title a link to a fuller view of the section. */
   href?: string;
   onOpen?: () => void;
@@ -45,7 +45,7 @@ export function MoreButton({ label }: { label: string }) {
 export function SectionTitle({
   children,
   variant,
-  level = 3,
+  headingLevel = 3,
   href,
   onOpen,
   count,
@@ -79,7 +79,7 @@ export function SectionTitle({
       style={style}
     >
       {renderPart(parts?.title, { children: text }, (p) =>
-        createElement(`h${level}`, { 'data-part': 'title', className: styles.title }, p.children),
+        createElement(`h${headingLevel}`, { 'data-part': 'title', className: styles.title }, p.children),
       )}
       {count !== undefined &&
         renderPart(parts?.count, { children: count }, (p) => (

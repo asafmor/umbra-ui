@@ -49,9 +49,10 @@ States: `collapsed`, `sticky`.
 | `icon` | node | — | Leading icon |
 | `count` | number | — | Shown after the title |
 | `meta` | node | — | Trailing text |
-| `actions` | node | — | Trailing controls |
+| `actions` | node | — | Trailing controls. They move into an overflow menu when they do not fit. |
+| `moreLabel` | string | "More actions" | Name of the overflow menu button |
 | `variant` | see above | `strip` | |
-| `level` | 2–6 | 3 | Heading level of the title |
+| `headingLevel` | 2–6 | 3 | Heading level of the title |
 | `sticky` | boolean | `false` | Sticks to the top of the scroll area while its group scrolls |
 | `collapsible` | boolean | `false` | Adds the caret button |
 | `collapsed` / `defaultCollapsed` / `onCollapsedChange` | boolean / boolean / function | — | Controlled or uncontrolled collapse |
@@ -70,11 +71,12 @@ States: `collapsed`, `sticky`.
 | Step | Trigger | Result |
 |---|---|---|
 | 1 | Header narrower than its content | `meta` hides |
-| 2 | Still too narrow | `title` truncates with an ellipsis; `count`, `actions` and the caret stay |
+| 2 | Still too narrow | `actions` move into an overflow menu behind a "more" button (`moreLabel`), as in a card header |
+| 3 | Still too narrow | `title` truncates with an ellipsis; `count`, the "more" button and the caret stay |
 
 ## Interaction and accessibility
 
-- The title is a heading (`level`).
+- The title is a heading (`headingLevel`).
 - The caret is a button with `aria-expanded`; `Enter` and `Space` toggle it. Its name includes a text title, so several carets in one list are told apart.
 - The header only reports the collapse; the owner of the rows hides them. `List.Group` does this by itself.
 - `sticky` needs the header and its rows to share a parent element, so the header leaves with its group.
@@ -89,5 +91,5 @@ Resolved 2026-10-10:
 
 - Added `icon` and the `plain` variant, both from the evidence (31, 29).
 - The count is shown in brackets, as in the source.
-- Actions do not move into an overflow menu: a group header holds one or two small controls, and the title gives way first.
+- Actions move into an overflow menu before the title truncates, the same way `Card` header and `SectionTitle` actions do (integration pass; this replaces the earlier decision to keep them in the row). Each `Button` and `IconButton` becomes a menu item.
 - The collapse is not size-animated, like `Card`.

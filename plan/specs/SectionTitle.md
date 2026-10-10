@@ -45,7 +45,7 @@ The source uses four styles: condensed uppercase (1, "MESSAGES"), pink underline
 |---|---|---|---|
 | `children` | node | — | The title |
 | `variant` | see above | `heading` | |
-| `level` | 2–6 | 3 | Heading level |
+| `headingLevel` | 2–6 | 3 | Heading level |
 | `href` / `onOpen` | string / function | — | Makes it a link |
 | `count` | number | — | |
 | `actions` | node | — | |
@@ -65,7 +65,7 @@ None; it is small enough to rebuild from text and a `Link`.
 
 ## Interaction and accessibility
 
-- Renders a real heading element at `level`.
+- Renders a real heading element at `headingLevel`.
 - The link variant keeps its underline, so it is not identified by colour alone.
 - The overflow of `actions` is a real menu, as in `CardHeader`: each button is a `menuitem`.
 

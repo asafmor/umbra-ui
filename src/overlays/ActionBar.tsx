@@ -1,4 +1,3 @@
-import { CircleCheck, Info, MessageSquare, OctagonAlert, TriangleAlert } from 'lucide-react';
 import {
   createContext,
   isValidElement,
@@ -10,7 +9,7 @@ import {
 } from 'react';
 import { Button, ButtonBase, type ButtonVariant } from '../basics/Button';
 import { useShrinkLevel } from '../internal/useShrinkLevel';
-import { Icon, IconSlot } from '../provider/icons';
+import { Icon, IconSlot, RawIcon } from '../provider/icons';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './ActionBar.module.css';
 
@@ -19,11 +18,11 @@ export type ActionBarGroupKind = 'primary' | 'secondary' | 'tertiary';
 
 // One shape per tone, so the tone can be read without colour.
 const toneIcons: Record<ActionBarTone, ReactNode> = {
-  neutral: <MessageSquare />,
-  info: <Info />,
-  success: <CircleCheck />,
-  warning: <TriangleAlert />,
-  danger: <OctagonAlert />,
+  neutral: <RawIcon name="message" />,
+  info: <RawIcon name="info" />,
+  success: <RawIcon name="success" />,
+  warning: <RawIcon name="warning" />,
+  danger: <RawIcon name="danger" />,
 };
 const groupVariants: Record<ActionBarGroupKind, ButtonVariant> = {
   primary: 'primary',

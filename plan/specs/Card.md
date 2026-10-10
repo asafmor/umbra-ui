@@ -58,8 +58,9 @@ States: `collapsed`, `loading`, `empty`, `error`, `focus-within`.
 | `collapsible` | boolean | `false` | Lets the end user collapse it |
 | `collapsed` / `defaultCollapsed` / `onCollapsedChange` | boolean / boolean / function | — | Controlled or uncontrolled collapse |
 | `loading` | boolean | `false` | Shows the body skeleton |
-| `empty` | node | — | Shown in place of the body when set |
-| `error` | node | — | Shown in place of the body when set |
+| `empty` | node \| `{ title, description, icon, action }` | — | Shown in place of the body when set. Text or a node is drawn as it is, centred; the pieces form draws the shared `EmptyState`. |
+| `error` | node \| `{ title, description, icon, action }` \| `true` | — | Shown in place of the body when set, as an alert. `true` shows a default text. |
+| `onRetry` / `retryLabel` | function / string | — / "Try again" | Adds a retry button to the error state |
 | `href` / `onOpen` | string / function | — | Makes the title a link (source: underlined pink titles) |
 | `headingLevel` | 2–6 | 2 | Heading level of the title |
 | `aria-label` | string | — | Names a card that has no title |
@@ -84,7 +85,7 @@ States: `collapsed`, `loading`, `empty`, `error`, `focus-within`.
 ## Interaction and accessibility
 
 - The root is a `region` named by its title.
-- The collapse caret is a button with `aria-expanded`; `Enter` and `Space` toggle it.
+- The collapse caret is a button with `aria-expanded`; `Enter` and `Space` toggle it. The card's height then animates (see "The size animation").
 - A card collapsed by the layout (step 3) opens its popover with `Enter`; `Escape` closes it and returns focus to the header. Pressing the header again closes it too. The popover is the public `Popover`: it has no backdrop and the page stays usable.
 - Loading sets `aria-busy`.
 - The popover closes by itself when the layout opens the card again, or when the window enters or leaves tab mode.
@@ -92,6 +93,36 @@ States: `collapsed`, `loading`, `empty`, `error`, `focus-within`.
 - The popover of a layout-collapsed card shows the card's `actions` above its content, because the collapsed header is a single button.
 - The card's content exists once. While the popover is open the `toolbar`, `body` and `footer` blocks are rendered into it (a portal) instead of the card; nothing is rendered twice, so ids are not repeated. The body is not mounted while the card is collapsed and the popover closed, as for a card collapsed with its caret.
 - Collapsing with the caret is not size-animated yet: the caret rotates (180ms) and the layout changes at once.
+
+### The size animation
+
+Pressing the caret animates the card's height over 180ms (`--umbra-motion-duration-base`; ease-in to collapse, ease-out to expand). The duration is multiplied by `--umbra-motion-scale`, so reduced motion makes it instant.
+
+What the user sees:
+
+- **Collapse**: the caret turns and the header takes its collapsed look at once. The card's bottom edge then moves up to the header. The body gets shorter from the bottom, its content staying in place under the header and being cut off by the edge; a footer rides up with the edge. The other cards of the stack grow into the room as it comes. When the edge reaches the header, the body leaves the page.
+- **Expand**: the body is back at once, cut off at the header. The bottom edge moves down to where the card's share of the stack ends, and the other cards give way as it goes. If the stack has to collapse another card to make room, that card collapses at once, at the start.
+
+How (this is the accordion's problem with one more difficulty: here the height is a flex share, not the content's):
+
+| When | What happens |
+|---|---|
+| Press | `Card` notes its height at that moment (also in the middle of a running animation, which is then replaced). |
+| After the render, before paint | The end height is measured in the final layout: the header alone for a collapse, the card's share of the stack for an expand. This is done in a microtask, after the parent `Stack` has applied its rules for the new state. |
+| While it moves | The root's `height` is animated between the two with the Web Animations API, and the root carries `data-resizing`, which gives it `flex: 0 0 auto`. So the flex share is switched off at the start, for both directions, and the animated height is the card's size; the cards beside it share what is left. The body's viewport cannot scroll, so no scrollbar flashes. |
+| At the end | The animation and `data-resizing` go. An expanded card is back on its flex share, which is the height the animation ended on, so nothing jumps. A collapsed card unmounts its `toolbar`, `body` and `footer`, which had stayed for the animation. |
+
+A pure-CSS version (the accordion's grid row) was not possible: an expanding card has to end on a height that only the stack's flex layout knows, and `flex-grow` cannot be transitioned to it without the other cards jumping.
+
+Not animated, on purpose:
+
+- A collapse or expand by the parent `Stack` (step 3), and anything during a window resize: there is no press, so there is no start height.
+- A change of the `collapsed` prop that did not come from the caret.
+- A card whose height does not change when it collapses (directly in `Columns`, where its height is the row's).
+
+Tested in `tests/visual/structure.spec.ts` ("Card collapse animation"): the height only moves one way, there is a real state in between, the stack is never overflowed, the end has no jump, the body stays while closing, and reduced motion is instant.
+
+`empty`, `error`, `onRetry` and `retryLabel` are the props every data component has (`src/internal/dataState.tsx`). `Card` differs in one point, kept from Milestone 0: plain text or a node, without `onRetry`, is drawn as given (centred, quiet), not as an `EmptyState` title, and `empty` has no default: a card is only empty when the app says so.
 
 ## Open questions
 

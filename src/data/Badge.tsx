@@ -34,14 +34,36 @@ export interface BadgeIndicatorProps {
   dot?: boolean;
   /** What a screen reader hears, when it differs from the visible text. */
   label?: string;
+  /**
+   * Draws the text without making it text of the page, and hides the badge from assistive technology.
+   * For a badge inside a control whose own name already holds the count.
+   */
+  decorative?: boolean;
   className?: string;
   style?: CSSProperties;
   /** The visible text. */
   children?: ReactNode;
 }
 
-function Indicator({ dot, label, className, style, children }: BadgeIndicatorProps) {
+function Indicator({ dot, label, decorative, className, style, children }: BadgeIndicatorProps) {
   const spoken = label !== undefined && label !== children;
+  if (decorative) {
+    // The text is drawn by CSS from the attribute. As text inside a button it would read as a visible
+    // label that the button's name does not start with.
+    const drawn = typeof children === 'string' || typeof children === 'number';
+    return (
+      <span
+        aria-hidden="true"
+        data-part="indicator"
+        data-dot={dot || undefined}
+        data-text={!dot && drawn ? children : undefined}
+        className={cx(styles.indicator, className)}
+        style={style}
+      >
+        {!dot && !drawn && children}
+      </span>
+    );
+  }
   return (
     <span
       data-part="indicator"
@@ -69,6 +91,11 @@ export interface BadgeProps extends Omit<BadgeRootProps, 'anchored'> {
    * By default the full count is read, also above `max`. A dot is silent without it.
    */
   label?: string | ((count: number) => string);
+  /**
+   * Draws the count without making it text of the page, and hides the badge from assistive technology.
+   * For a badge inside a control whose own name already holds the count, as `IconButton` does.
+   */
+  decorative?: boolean;
   /** The element the badge sits on the corner of. Without it the badge stands alone. */
   children?: ReactNode;
   /** Replace or hide named pieces. */
@@ -82,6 +109,7 @@ export function Badge({
   max = 99,
   showZero = false,
   label,
+  decorative,
   children,
   parts,
   ...root
@@ -93,9 +121,11 @@ export function Badge({
     <Root {...root} anchored={children !== undefined && children !== null}>
       {children}
       {visible &&
-        renderPart(parts?.indicator, { dot, label: spoken, children: dot ? undefined : text }, (p) => (
-          <Indicator {...p} />
-        ))}
+        renderPart(
+          parts?.indicator,
+          { dot, label: spoken, decorative, children: dot ? undefined : text },
+          (p) => <Indicator {...p} />,
+        )}
     </Root>
   );
 }

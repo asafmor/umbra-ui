@@ -160,7 +160,7 @@ const long: SegmentedFilterItem[] = [
   { id: 'd', label: 'Archived', count: 9 },
 ];
 
-/** With less room the counts hide, then the labels truncate equally, then the control scrolls inside itself. */
+/** With less room the counts hide, then the labels truncate equally, then the last segments move into a menu. */
 export const Narrowing: Story = {
   render: () => (
     <Columns style={{ height: '100%' }}>
@@ -175,6 +175,16 @@ export const Narrowing: Story = {
         <Narrow width={300}>
           <SegmentedFilter aria-label="Orders, full width" items={long} defaultValue="b" fullWidth />
         </Narrow>
+        <div style={{ marginTop: 12 }}>
+          <Narrow width={200}>
+            <SegmentedFilter
+              aria-label="Orders, several"
+              items={long}
+              selectionMode="multiple"
+              defaultValues={['a', 'd']}
+            />
+          </Narrow>
+        </div>
       </Card>
     </Columns>
   ),

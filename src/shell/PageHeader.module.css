@@ -110,10 +110,6 @@ a.crumb:focus-visible {
   min-width: 0;
 }
 
-.bar[data-wrap] {
-  flex-wrap: wrap;
-}
-
 /*
  * The row clips, and its content keeps its width until every step is used up, so the header can tell
  * when it no longer fits. The padding is room for the focus ring of the back button.
@@ -127,10 +123,6 @@ a.crumb:focus-visible {
   overflow: hidden;
   padding: var(--umbra-space-2);
   margin: calc(-1 * var(--umbra-space-2));
-}
-
-.bar[data-wrap] > .row {
-  flex-basis: 100%;
 }
 
 .back {
@@ -260,12 +252,6 @@ a.crumb:focus-visible {
   display: flex;
   align-items: center;
   gap: var(--umbra-space-3);
-}
-
-/* Step 2: the actions take a line of their own, and wrap there if they must. */
-.bar[data-wrap] > .actions {
-  flex: 1 1 100%;
-  flex-wrap: wrap;
 }
 
 /* The tab list sits on the bottom edge of the header. */

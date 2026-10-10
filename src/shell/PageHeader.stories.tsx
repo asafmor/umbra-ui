@@ -234,13 +234,13 @@ const Shrinking = ({ width, extra }: { width: number; extra?: ReactNode }) => (
 );
 
 /**
- * As it narrows: the meta row hides, the actions move under the titles, the subtitle hides, the media
- * gets smaller, and last the title truncates.
+ * As it narrows: the meta row hides, the actions move into an overflow menu, the subtitle hides, the
+ * media gets smaller, and last the title truncates.
  */
 export const Shrink: Story = {
   render: () => (
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'start' }}>
-      {[860, 680, 480, 380, 330, 240].map((width) => (
+      {[860, 680, 480, 420, 380, 240].map((width) => (
         <Shrinking key={width} width={width} />
       ))}
     </div>

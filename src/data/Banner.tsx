@@ -1,7 +1,6 @@
-import { CircleCheck, Info, Lightbulb, MessageSquare, OctagonAlert, TriangleAlert } from 'lucide-react';
 import { createContext, useContext, useState, type CSSProperties, type ReactNode } from 'react';
 import { ButtonBase } from '../basics/Button';
-import { Icon as BuiltInIcon, IconSlot } from '../provider/icons';
+import { Icon as BuiltInIcon, IconSlot, RawIcon } from '../provider/icons';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './Banner.module.css';
 
@@ -10,12 +9,12 @@ export type BannerVariant = 'subtle' | 'solid' | 'outline';
 
 // One shape per tone, so the tone can be read without colour.
 const toneIcons: Record<BannerTone, ReactNode> = {
-  info: <Info />,
-  success: <CircleCheck />,
-  warning: <TriangleAlert />,
-  danger: <OctagonAlert />,
-  neutral: <MessageSquare />,
-  accent: <Lightbulb />,
+  info: <RawIcon name="info" />,
+  success: <RawIcon name="success" />,
+  warning: <RawIcon name="warning" />,
+  danger: <RawIcon name="danger" />,
+  neutral: <RawIcon name="message" />,
+  accent: <RawIcon name="tip" />,
 };
 
 interface BannerContextValue {

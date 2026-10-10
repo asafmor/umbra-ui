@@ -9,6 +9,8 @@ import {
 } from 'react';
 import { ButtonBase } from '../basics/Button';
 import { useShrinkLevel } from '../internal/useShrinkLevel';
+import { MoreButton } from '../layout/SectionTitle';
+import { ActionsOverflow } from '../overlays/Menu';
 import { textColourOn } from '../provider/contrast';
 import { Icon } from '../provider/icons';
 import { cx, renderPart, type Part } from '../utils/parts';
@@ -146,12 +148,10 @@ function Breadcrumbs({
 
 /** The main line: holds `Content` and `Actions`. */
 function Bar({ className, style, children }: BlockProps) {
-  const header = useHeader();
   return (
     <div
       ref={useContext(RefsContext)?.bar}
       data-part="bar"
-      data-wrap={header.taken('actions') || undefined}
       className={cx(styles.bar, className)}
       style={style}
     >
@@ -282,11 +282,23 @@ function Meta({ items, className, style, children }: PageHeaderMetaProps) {
   );
 }
 
-/** Trailing controls. They move to a line of their own under the titles when they do not fit beside them. */
-function Actions({ className, style, children }: BlockProps) {
+export interface PageHeaderActionsProps extends BlockProps {
+  /** Accessible name of the overflow menu button. */
+  moreLabel?: string;
+}
+
+/** Trailing controls. They move into an overflow menu when they do not fit beside the titles. */
+function Actions({ moreLabel = 'More actions', className, style, children }: PageHeaderActionsProps) {
+  const header = useHeader();
   return (
     <div data-part="actions" className={cx(styles.actions, className)} style={style}>
-      {children}
+      {header.taken('actions') ? (
+        <ActionsOverflow label={moreLabel} trigger={<MoreButton label={moreLabel} />}>
+          {children}
+        </ActionsOverflow>
+      ) : (
+        children
+      )}
     </div>
   );
 }
@@ -312,8 +324,10 @@ export interface PageHeaderProps extends Omit<PageHeaderRootProps, 'children'> {
   meta?: ReactNode | PageHeaderFact[];
   /** Tags or badges after the title. */
   tags?: ReactNode;
-  /** Trailing controls. */
+  /** Trailing controls. They move into an overflow menu when they do not fit. */
   actions?: ReactNode;
+  /** Accessible name of the overflow menu button. */
+  moreLabel?: string;
   /** Shows a back button before the title. */
   onBack?: () => void;
   /** Accessible name of the back button. */
@@ -335,7 +349,7 @@ export interface PageHeaderProps extends Omit<PageHeaderRootProps, 'children'> {
     title?: Part<PageHeaderTitleProps>;
     subtitle?: Part<{ children: ReactNode }>;
     meta?: Part<PageHeaderMetaProps>;
-    actions?: Part<{ children: ReactNode }>;
+    actions?: Part<PageHeaderActionsProps>;
     tabs?: Part<{ children: ReactNode }>;
   };
 }
@@ -353,6 +367,7 @@ export function PageHeader({
   meta,
   tags,
   actions,
+  moreLabel,
   onBack,
   backLabel,
   breadcrumbs,
@@ -389,7 +404,7 @@ export function PageHeader({
             )}
         </Content>
         {actions != null &&
-          renderPart(parts?.actions, { children: actions }, (p) => <Actions>{p.children}</Actions>)}
+          renderPart(parts?.actions, { children: actions, moreLabel }, (p) => <Actions {...p} />)}
       </Bar>
       {tabs != null && renderPart(parts?.tabs, { children: tabs }, (p) => <Tabs>{p.children}</Tabs>)}
     </Root>

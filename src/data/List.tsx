@@ -11,6 +11,7 @@ import {
 } from 'react';
 import { GridList, GridListHeader, GridListItem, GridListSection } from 'react-aria-components';
 import { Skeleton } from '../basics/Skeleton';
+import { Checkbox, CheckboxSlotContext } from '../inputs/Checkbox';
 import { dataState, type DataStateProps } from '../internal/dataState';
 import { ScrollArea } from '../layout/ScrollArea';
 import { cx, renderPart, type Part } from '../utils/parts';
@@ -41,8 +42,8 @@ export interface ListRootProps extends DataStateProps {
   /** `single` and `multiple` let the user select rows. */
   selectionMode?: 'none' | 'single' | 'multiple';
   /** Controlled selection: the keys of the selected rows. */
-  selectedKeys?: ListKey[];
-  defaultSelectedKeys?: ListKey[];
+  selectedIds?: ListKey[];
+  defaultSelectedIds?: ListKey[];
   onSelectionChange?: (keys: ListKey[]) => void;
   /**
    * `replace`: a click selects only that row, a double click or Enter activates it, and selection follows
@@ -91,8 +92,8 @@ export interface ListRootProps extends DataStateProps {
 function Root({
   children,
   selectionMode = 'none',
-  selectedKeys,
-  defaultSelectedKeys,
+  selectedIds,
+  defaultSelectedIds,
   onSelectionChange,
   selectionBehavior: behavior,
   disallowEmptySelection,
@@ -161,8 +162,8 @@ function Root({
         selectionMode={selectionMode}
         selectionBehavior={selectionBehavior}
         disallowEmptySelection={disallowEmptySelection ?? selectionBehavior === 'replace'}
-        selectedKeys={selectedKeys}
-        defaultSelectedKeys={defaultSelectedKeys}
+        selectedKeys={selectedIds}
+        defaultSelectedKeys={defaultSelectedIds}
         onSelectionChange={(selection) =>
           onSelectionChange?.(selection === 'all' ? [...keys.current] : ([...selection] as ListKey[]))
         }
@@ -204,7 +205,14 @@ export interface ListEntryProps extends Omit<ListItemProps, 'selected' | 'intera
   textValue?: string;
   /** Replaces the row's content. A function receives the row's state, to pass on to `ListItem.Root`. */
   children?:
-    ReactNode | ((state: { selected: boolean; disabled: boolean; interactive: boolean }) => ReactNode);
+    | ReactNode
+    | ((state: {
+        selected: boolean;
+        disabled: boolean;
+        interactive: boolean;
+        /** The row's checkbox in `multiple` selection, to place in a row drawn by hand. */
+        selectionControl: ReactNode;
+      }) => ReactNode);
 }
 
 /** One row of a `List`. Takes the props of `ListItem`; `children` replace the row's content. */
@@ -227,8 +235,34 @@ function Item({ id, textValue, href, onPress, disabled, children, ...item }: Lis
           disabled: isDisabled,
           interactive: selectionMode !== 'none' || list.hasAction || !!href || !!onPress,
         };
-        if (typeof children === 'function') return children(state);
-        return children ?? <ListItem variant={list.itemVariant} size={list.itemSize} {...item} {...state} />;
+        // Several rows can be selected: each shows a checkbox, so the selection is not carried by the
+        // fill alone. React Aria makes it the row's selection control and names it after the row.
+        const selectionControl = selectionMode === 'multiple' && (
+          <CheckboxSlotContext value="selection">
+            <Checkbox size="small" disabled={isDisabled} />
+          </CheckboxSlotContext>
+        );
+        if (typeof children === 'function') return children({ ...state, selectionControl });
+        return (
+          children ?? (
+            <ListItem
+              variant={list.itemVariant}
+              size={list.itemSize}
+              {...item}
+              {...state}
+              leading={
+                selectionControl ? (
+                  <>
+                    {selectionControl}
+                    {item.leading}
+                  </>
+                ) : (
+                  item.leading
+                )
+              }
+            />
+          )
+        );
       }}
     </GridListItem>
   );

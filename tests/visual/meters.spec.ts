@@ -53,6 +53,21 @@ test.describe('ProgressBar', () => {
     );
   });
 
+  test('hovering a bar shows its exact value in a tooltip, unless `tooltip` is off', async ({ page }) => {
+    await open(page, 'meters-progressbar--variants');
+    const tooltip = page.getByRole('tooltip');
+    await page.getByRole('meter', { name: 'Storage' }).hover();
+    await expect(tooltip).toHaveText('320 GB');
+    // The tooltip says everything the bar only draws: the parts of a stack, the target.
+    await page.getByRole('meter', { name: 'Budget used' }).first().hover();
+    await expect(tooltip).toHaveText('75%, Team A 40%, Team B 25%, Team C 10%');
+    await page.keyboard.press('Escape');
+    await expect(tooltip).toHaveCount(0);
+    await page.getByRole('meter', { name: 'Past the goal' }).hover();
+    await page.waitForTimeout(700);
+    await expect(tooltip).toHaveCount(0);
+  });
+
   test('the fill, the segments and the target sit at their share of the track', async ({ page }) => {
     await open(page, 'meters-progressbar--variants');
     const bar = page.getByRole('meter', { name: 'Budget used' }).nth(1);
@@ -288,6 +303,20 @@ test.describe('LevelMeter', () => {
     await expect(zoned).toHaveAttribute('aria-valuetext', '22, Poor');
     await expect(zoned.locator('[data-part="value"]')).toHaveText('22 · Poor');
     await expect(zoned.locator('[data-part="marker"]')).toHaveAttribute('data-tone', 'danger');
+  });
+
+  test('hovering a meter shows its exact value in a tooltip, unless `tooltip` is off', async ({ page }) => {
+    await open(page, 'meters-levelmeter--variants');
+    const tooltip = page.getByRole('tooltip');
+    await page.getByRole('meter', { name: 'Skill level' }).nth(2).hover();
+    await expect(tooltip).toHaveText('Basic');
+    await page.getByRole('meter', { name: 'Skill level' }).nth(1).hover();
+    await expect(tooltip).toHaveText('7');
+    await page.mouse.move(0, 0);
+    await expect(tooltip).toHaveCount(0);
+    await page.getByRole('meter', { name: 'Capacity' }).first().hover();
+    await page.waitForTimeout(700);
+    await expect(tooltip).toHaveCount(0);
   });
 
   test('the marker, the band, the comparison and the zone edges sit at their place on the scale', async ({

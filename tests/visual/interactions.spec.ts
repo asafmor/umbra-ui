@@ -429,6 +429,32 @@ test('card: band colour, a title that opens, the heading level and a name withou
   await expect(untitled.locator('[data-part="header"]')).toHaveCount(0);
 });
 
+test('card: empty and error take the richer forms of the data components, and plain text stays as it was', async ({
+  page,
+}) => {
+  await open(page, 'layout-card--rich-states');
+  const card = (name: string) => page.getByRole('region', { name });
+  const empty = card('Empty, in pieces').locator('[data-umbra="empty-state"]');
+  await expect(empty.getByText('No orders yet')).toBeVisible();
+  await expect(empty.getByText('Orders appear here')).toBeVisible();
+  await expect(empty.getByRole('button', { name: 'New order' })).toBeVisible();
+
+  // An error is an alert; `onRetry` adds the button, and `retryLabel` names it.
+  const retrying = card('Error with retry');
+  await expect(retrying.getByRole('alert')).toContainText('Could not load the orders.');
+  await retrying.getByRole('button', { name: 'Try again' }).click();
+  await expect(retrying.getByRole('alert')).toBeVisible();
+  await expect(card('Error, default text').getByRole('alert')).toContainText('Something went wrong');
+  await expect(card('Error, in pieces').getByRole('button', { name: 'Load again' })).toBeVisible();
+
+  // Plain text and a plain node are drawn as before, without the shared empty state.
+  await open(page, 'layout-card--states');
+  await expect(card('Empty').locator('[data-state="empty"]')).toHaveText('Nothing to show yet.');
+  await expect(card('Empty').locator('[data-umbra="empty-state"]')).toHaveCount(0);
+  await expect(card('Error').getByRole('alert')).toHaveAttribute('data-state', 'error');
+  await expect(card('Error').getByRole('button', { name: 'Retry' })).toBeVisible();
+});
+
 test('card: controlled collapse follows the app state, and the caret reports to it', async ({ page }) => {
   await open(page, 'layout-card--controlled-collapse');
   const card = page.getByRole('region', { name: 'Controlled' });
@@ -859,6 +885,29 @@ test('icon button: the tooltip shows on focus, can be turned off or replaced, an
   await expect(
     page.getByRole('button', { name: 'Muted alerts (3)' }).locator('[data-part="badge"]'),
   ).toHaveCount(0);
+});
+
+test('icon button: the badge is the public Badge, drawn but not text, and its count is in the name', async ({
+  page,
+}) => {
+  await open(page, 'basics-buttons--icon-buttons');
+  const button = page.getByRole('button', { name: 'Notifications (3)' });
+  const badge = button.locator('[data-part="badge"]');
+  await expect(badge).toHaveAttribute('aria-hidden', 'true');
+  const indicator = badge.locator('[data-umbra="badge"] [data-part="indicator"]');
+  // The count is drawn from an attribute: the button has no text content, only its name.
+  await expect(indicator).toHaveAttribute('data-text', '3');
+  await expect(button).toHaveText('');
+  expect(await indicator.evaluate((el) => getComputedStyle(el, '::after').content)).toBe('"3"');
+  // One default colour for a count: the badge of a button is the colour of a badge that stands alone.
+  const colour = await indicator.evaluate((el) => getComputedStyle(el).backgroundColor);
+  await open(page, 'data-badge--variants');
+  const alone = page.locator('[data-umbra="badge"]:not([data-anchored]) [data-part="indicator"]').first();
+  expect(await alone.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(colour);
+  // A dot has no text and adds nothing to the name.
+  await open(page, 'basics-buttons--icon-buttons');
+  const dot = page.getByRole('button', { name: 'Notifications', exact: true }).locator('[data-part="badge"]');
+  await expect(dot.locator('[data-part="indicator"]')).toHaveAttribute('data-dot', 'true');
 });
 
 test('skeleton: shapes, lines, and animation="none"', async ({ page }) => {

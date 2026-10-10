@@ -70,6 +70,7 @@ States: `indeterminate`, `loading`, out of range (`data-out-of-range="under"` or
 | `target` / `targetLabel` | number / string | — / "Target" | A tick at a goal value, and its name for assistive technology |
 | `indeterminate` | boolean | `false` | Progress of unknown length |
 | `loading` | boolean | `false` | Skeletons in place of the bar and the value |
+| `tooltip` | boolean | `true` | The exact value in a tooltip on hover |
 
 ### 3. Parts
 
@@ -98,7 +99,7 @@ A value drawn inside a thick bar hides when the bar is shorter than 72px. Everyt
 - A value outside the scale clamps the bar and `aria-valuenow`; the text keeps the real value ("120%").
 - An indeterminate bar has no `aria-valuenow`. Its fill travels along the bar; with reduced motion it stands still, covers the bar and is striped.
 - While loading, the root is not a progress element; it sets `aria-busy`.
-- The exact value on hover (a tooltip) waits for the public `Tooltip`.
+- Hovering the bar shows the same text as `aria-valuetext` in a tooltip (500ms delay, Escape closes it). `tooltip={false}` turns it off. The bar is still not a tab stop; if the app makes it or a control around it focusable, keyboard focus shows the tooltip too.
 
 ## Open questions
 

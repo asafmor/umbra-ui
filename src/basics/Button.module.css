@@ -140,29 +140,24 @@
   overflow: visible;
 }
 
+/*
+ * The badge of an icon button is the public Badge, placed in the corner. It is smaller than a badge that
+ * stands alone, through Badge's own tokens; its colours are Badge's.
+ */
 .badge {
+  --umbra-badge-size: var(--umbra-icon-button-badge-size, 14px);
+  --umbra-badge-dot-size: var(--umbra-icon-button-badge-dot-size, 8px);
+  --umbra-badge-padding-x: var(--umbra-icon-button-badge-padding-x, 3px);
+  --umbra-badge-font: var(
+    --umbra-icon-button-badge-font,
+    700 10px / var(--umbra-badge-size) var(--umbra-font-family-body)
+  );
+
   position: absolute;
   top: 2px;
   inset-inline-end: 2px;
-  min-width: 14px;
-  height: 14px;
-  padding: 0 3px;
-  border-radius: var(--umbra-radius-pill);
-  background: var(--umbra-color-fixed-primary);
-  color: var(--umbra-color-fixed-on-primary);
-  font: 700 10px/14px var(--umbra-font-family-body);
-  text-align: center;
-}
-
-.badge[data-count]::after {
-  content: attr(data-count);
-}
-
-.badge[data-dot] {
-  min-width: 8px;
-  width: 8px;
-  height: 8px;
-  padding: 0;
+  display: flex;
+  pointer-events: none;
 }
 
 /* As a row of an overflow menu, the badge and the check of a toggle sit in the row, after the label. */

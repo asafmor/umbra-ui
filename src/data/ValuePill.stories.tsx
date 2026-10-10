@@ -33,12 +33,12 @@ export const Variants: Story = {
         </Row>
         <Row label="Thresholds">
           {[5.8, 6.4, 6.9, 7.5, 8.2].map((v) => (
-            <ValuePill key={v} value={v} thresholds={[6, 6.5, 7, 8]} format={(n) => n.toFixed(2)} />
+            <ValuePill key={v} value={v} thresholds={[6, 6.5, 7, 8]} formatValue={(n) => n.toFixed(2)} />
           ))}
         </Row>
         <Row label="One threshold">
           <ValuePill value={6.9} thresholds={[7]} />
-          <ValuePill value={7} thresholds={[7]} format={(n) => n.toFixed(1)} />
+          <ValuePill value={7} thresholds={[7]} formatValue={(n) => n.toFixed(1)} />
         </Row>
         <Row label="Level marker">
           {scores.map((v) => (
@@ -54,7 +54,7 @@ export const Variants: Story = {
         </Row>
         <Row label="Circle">
           {scores.map((v, i) => (
-            <ValuePill key={v} value={v} shape="circle" format={() => grades[i]} />
+            <ValuePill key={v} value={v} shape="circle" formatValue={() => grades[i]} />
           ))}
         </Row>
         <Row label="Sizes">
@@ -64,7 +64,7 @@ export const Variants: Story = {
         </Row>
         <Row label="No value">
           <ValuePill value={null} />
-          <ValuePill value={undefined} emptyText="n/a" />
+          <ValuePill value={undefined} emptyLabel="n/a" />
           <ValuePill value={null} shape="square" />
         </Row>
         <Row label="Loading">
@@ -82,7 +82,7 @@ export const BehaviourAndParts: Story = {
     <Columns style={{ height: '100%' }}>
       <Card title="Little room">
         <Narrow width={72}>
-          <ValuePill value={96} format={(v) => `${v} of 100 points`} showLevel />
+          <ValuePill value={96} formatValue={(v) => `${v} of 100 points`} showLevel />
         </Narrow>
       </Card>
       <Card title="Parts and blocks">
