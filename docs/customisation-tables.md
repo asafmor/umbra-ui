@@ -157,6 +157,59 @@ Shares its width among its children. Below the minimum window it shows one child
 
 **Blocks**: none.
 
+## EmptyState
+
+Says that a region has nothing to show, or failed to load, and what to do about it.
+
+**Tokens**: `--umbra-empty-state-color`, `--umbra-empty-state-error-color`, `--umbra-empty-state-gap`, `--umbra-empty-state-icon-color`, `--umbra-empty-state-icon-size`, `--umbra-empty-state-max-width`, `--umbra-empty-state-padding`, `--umbra-empty-state-title-color`, `--umbra-empty-state-title-font`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `title` | `ReactNode` | The short statement: "No orders". |
+| `description` | `ReactNode` | One or two sentences that explain the state or say what to do. |
+| `icon` | `ReactNode` | Decorative icon. Hides first when space is short. |
+| `action` | `ReactNode` | A control that resolves the state, for example a `Button`. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `tone` | `"neutral" \| "error"` | `error` marks a failure: danger-coloured icon and title. |
+| `variant` | `"block" \| "inline"` | `block` is centred in its slot; `inline` is one line of text. |
+| `role` | `"alert" \| "status"` | `alert` announces the content when it appears (for an error); `status` announces it politely. |
+
+**Parts**: `icon`, `title`, `description`, `action`.
+
+**Blocks**: `EmptyState.Root`, `EmptyState.Icon`, `EmptyState.Title`, `EmptyState.Description`, `EmptyState.Action`.
+
+## GroupHeader
+
+A header row for one group of rows inside a list or table.
+
+**Tokens**: `--umbra-group-header-bg`, `--umbra-group-header-color`, `--umbra-group-header-font`, `--umbra-group-header-height`, `--umbra-group-header-padding-x`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `title` | `ReactNode` | The group's name. |
+| `icon` | `ReactNode` | Leading icon. |
+| `count` | `number` | Number of rows in the group, shown after the title. |
+| `meta` | `ReactNode` | Trailing text, for example a total. Hides when the header is too narrow. |
+| `actions` | `ReactNode` | Trailing controls. |
+| `level` | `4 \| 3 \| 2 \| 5 \| 6` | Heading level of the title. |
+| `collapsible` | `boolean` | Adds a caret button that collapses the group. The app (or `List`) hides the rows. |
+| `collapsed` | `boolean` | Controlled collapse state. |
+| `defaultCollapsed` | `boolean` |  |
+| `onCollapsedChange` | `((collapsed: boolean) => void)` |  |
+| `collapseLabel` | `string` | Accessible names of the caret. With a text `title`, the title is added: "Collapse Today". |
+| `expandLabel` | `string` |  |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `variant` | `"plain" \| "strip"` | `strip` is a full-width band (a date above its messages); `plain` has no fill (a label above a few rows). |
+| `sticky` | `boolean` | Sticks to the top of the scroll area while its group scrolls. The header and its rows must share a parent element. |
+
+**Parts**: `toggle`, `icon`, `title`, `count`, `meta`, `actions`.
+
+**Blocks**: `GroupHeader.Root`, `GroupHeader.Toggle`, `GroupHeader.Title`, `GroupHeader.Count`, `GroupHeader.Meta`, `GroupHeader.Actions`.
+
 ## IconButton
 
 A button that shows only an icon. Inside an overflow menu it becomes a row with its icon and label.
@@ -216,6 +269,83 @@ The key for a chart or any colour-coded data: one marker and label per series.
 **Parts**: `item`, `marker`, `label`, `value`, `more`, `skeleton`.
 
 **Blocks**: `Legend.Root`, `Legend.Item`, `Legend.Marker`, `Legend.More`.
+
+## List
+
+A vertical list of rows that scrolls inside its slot, with optional groups, selection and row actions.
+
+**Tokens**: `--umbra-focus-color`, `--umbra-list-divider-color`, `--umbra-list-number-width`, `--umbra-list-stripe-bg`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `items` | `T[]` | The rows, as data. Use with `renderItem`; or pass `List.Item` children instead. |
+| `groups` | `ListGroupData<T>[]` | Grouped rows, as data: each group's header props and its `items`. |
+| `renderItem` | `((item: T, index: number) => ReactNode)` | Returns the `List.Item` of one row. |
+| `children` | `ReactNode` | `List.Item` and `List.Group` elements. |
+| `selectionMode` | `"none" \| "single" \| "multiple"` | `single` and `multiple` let the user select rows. |
+| `selectedKeys` | `ListKey[]` | Controlled selection: the keys of the selected rows. |
+| `defaultSelectedKeys` | `ListKey[]` |  |
+| `onSelectionChange` | `((keys: ListKey[]) => void)` |  |
+| `selectionBehavior` | `"toggle" \| "replace"` | `replace`: a click selects only that row, a double click or Enter activates it, and selection follows the arrow keys. `toggle`: a click or Space toggles the row. Default: `replace` when `onAction` is set, otherwise `toggle`. |
+| `disallowEmptySelection` | `boolean` | The user cannot deselect the last selected row. Default: on with `replace` (so a double click does not deselect), otherwise off. |
+| `onAction` | `((key: ListKey) => void)` | Called when a row is activated: Enter or a double click (a single click when nothing can be selected). |
+| `dividers` | `boolean` | A line between rows. |
+| `striped` | `boolean` | A faint fill on every other row. |
+| `numbered` | `boolean` | Shows each row's position, for a ranking. |
+| `itemVariant` | `"default" \| "message"` | Default `variant` of every `List.Item`, and the layout of the skeleton rows. |
+| `itemSize` | `"compact" \| "default"` | Default `size` of every `List.Item`, and of the skeleton rows. |
+| `stickyHeaders` | `boolean` | Group headers stick to the top while their group scrolls. |
+| `skeletonRows` | `number` | Number of skeleton rows shown while `loading`. |
+| `onReachEnd` | `(() => void)` | Called when the list is scrolled to its end, for loading more. |
+| `loadingMore` | `boolean` | Shows a skeleton row after the last row while more rows load. |
+| `loadingMoreLabel` | `string` | What assistive technology hears for the `loadingMore` row. |
+| `aria-label` | `string` | Accessible name of the list. Required unless `aria-labelledby` is set. |
+| `aria-labelledby` | `string` |  |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `loading` | `boolean` | Shows skeletons in the final layout and marks the component busy. |
+| `empty` | `ReactNode \| import("../internal/dataState").DataStateContent` | Shown when there is no data: text, a node, or `{ title, description, icon, action }`. Defaults to a short English text. |
+| `error` | `ReactNode \| import("../internal/dataState").DataStateContent` | Shown in place of the data when set: text, a node, `{ title, description, icon, action }`, or `true` for a default text. |
+| `onRetry` | `(() => void)` | Adds a retry button to the error state. |
+| `retryLabel` | `string` | Label of the retry button. |
+
+**Parts**: `skeleton`, `state`, `loadingMore`.
+
+**Blocks**: `List.Root`, `List.Item`, `List.Group`.
+
+## ListItem
+
+The content of one row of a list: a title with optional lines, and leading and trailing pieces.
+
+**Tokens**: `--umbra-focus-color`, `--umbra-list-item-bg`, `--umbra-list-item-color`, `--umbra-list-item-gap`, `--umbra-list-item-hover-bg`, `--umbra-list-item-min-height`, `--umbra-list-item-padding-x`, `--umbra-list-item-padding-y`, `--umbra-list-item-read-color`, `--umbra-list-item-secondary-color`, `--umbra-list-item-selected-bg`, `--umbra-list-item-selected-stripe`, `--umbra-list-item-stripe-width`, `--umbra-list-item-title-font`, `--umbra-list-item-unread-color`.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `title` | `ReactNode` | The main line. Truncates last. |
+| `description` | `ReactNode` | A second line under the title. |
+| `overline` | `ReactNode` | A small line above the title, for example a sender. |
+| `leading` | `ReactNode` | Leading node: an avatar or icon. |
+| `meta` | `ReactNode` | Trailing text, for example a time or a value. |
+| `trailing` | `ReactNode` | Trailing node: tags, a badge or actions. Hides first when the row is narrow. |
+| `unreadLabel` | `string` | What assistive technology hears for the unread dot. |
+| `accentLabel` | `string` | What assistive technology hears for the `accent` stripe, for example the category's name. |
+| `href` | `string` | Makes the whole row a link. Inside a `List`, the list handles it. |
+| `onPress` | `(() => void)` | Makes the whole row a button. Inside a `List`, the list handles it. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `accent` | `string` | A colour for an edge stripe that carries a category. Give `accentLabel` too, so it is not colour alone. |
+| `variant` | `"default" \| "message"` | `message`: sender and tag on the first line, title and time on the second. |
+| `interactive` | `boolean` | Shows hover and press feedback. Set by `List`, and by `href` or `onPress`. |
+| `size` | `"compact" \| "default"` | `compact` is one control high, for leaderboards and short lists. Otherwise the height follows the density level. |
+| `selected` | `boolean` | Violet fill with an edge stripe. Inside a `List`, selection sets it. |
+| `unread` | `boolean` | `true`: bold title and a dot. `false`: the title is dimmed as read. Leave unset where rows have no read state. |
+| `disabled` | `boolean` |  |
+
+**Parts**: `leading`, `overline`, `title`, `description`, `meta`, `unread`, `trailing`.
+
+**Blocks**: `ListItem.Root`, `ListItem.Leading`, `ListItem.Content`, `ListItem.Overline`, `ListItem.Title`, `ListItem.Description`, `ListItem.End`, `ListItem.Meta`, `ListItem.Unread`, `ListItem.Trailing`.
 
 ## Page
 
