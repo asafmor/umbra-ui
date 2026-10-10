@@ -81,6 +81,7 @@ Rule 3 in detail:
 Rule 4 in detail:
 
 - The window is "narrow" when it is under 1024 wide **or** under 600 high. `AppShell` sets `data-narrow`.
+  `Columns` and `Modal` read the window themselves, so they react without an `AppShell` too.
 - Every `Columns` then shows tabs. `narrow="keep"` on a `Columns` keeps its columns.
 
 ## A header and a footer for the page

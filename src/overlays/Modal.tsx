@@ -16,7 +16,8 @@ import { Dialog, DialogTrigger, Modal as AriaModal, ModalOverlay } from 'react-a
 import { Button, ButtonBase, type ButtonProps } from '../basics/Button';
 import { IconButton } from '../basics/IconButton';
 import { ScrollArea, type ScrollAreaProps } from '../layout/ScrollArea';
-import { LayoutProvider, NarrowContext } from '../layout/useSlot';
+import { useNarrow } from '../internal/useNarrow';
+import { LayoutProvider } from '../layout/useSlot';
 import { Icon, IconSlot } from '../provider/icons';
 import { useScopeAttributes } from '../provider/UmbraProvider';
 import { warn } from '../utils/dev';
@@ -158,7 +159,7 @@ function Overlay({ className, style, children }: BlockProps) {
   const modal = useModal();
   // The portal is outside the scope's element, so the backdrop repeats its density, context and tokens.
   const scope = useScopeAttributes();
-  const narrow = useContext(NarrowContext);
+  const narrow = useNarrow();
   return (
     <ModalOverlay
       {...scope}
@@ -185,7 +186,7 @@ const focusable =
 /** The panel and its dialog element. Traps focus, and gives it back when the modal closes. */
 function Content({ className, style, children }: BlockProps) {
   const modal = useModal();
-  const narrow = useContext(NarrowContext);
+  const narrow = useNarrow();
   const dialog = useRef<HTMLElement>(null);
   // The title and description can be left out or replaced; the dialog only points at ones that exist.
   const [has, setHas] = useState({ title: true, description: false });
@@ -382,7 +383,7 @@ export interface ModalNavProps extends BlockProps {
 
 /** A side column at the start. Below the minimum window it moves behind a toggle above the body. */
 function Nav({ label = 'Sections', className, style, children }: ModalNavProps) {
-  const narrow = useContext(NarrowContext);
+  const narrow = useNarrow();
   const [open, setOpen] = useState(false);
   const shown = !narrow || open;
   // Choosing a section shows it: the list closes again.

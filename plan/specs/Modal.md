@@ -119,6 +119,12 @@ Global tokens added: `size.modalSm`, `size.modalMd`, `size.modalLg`, `size.modal
 
 ## Open questions
 
+Resolved 2026-10-11:
+
+- **The narrow state is read from the window** (`src/internal/useNarrow.ts`, the media query `AppShell` used), not from a context that only `AppShell` set. A modal used without an `AppShell` now fills the window below the minimum and moves its navigation behind the "Sections" toggle. `Columns` and `Card` read the same hook, so tab mode no longer needs an `AppShell` either.
+- **Focus leaves the modal when it starts to close**, not after its exit animation (`useReturnFocusOnClose`, shared with `CommandPalette`).
+
+
 None.
 
 Resolved 2026-10-10:

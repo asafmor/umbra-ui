@@ -1,9 +1,10 @@
-import { useContext, type CSSProperties, type ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
+import { useNarrow } from '../internal/useNarrow';
 import { TabStrip } from '../inputs/Tabs';
 import { warn } from '../utils/dev';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './layout.module.css';
-import { LayoutProvider, NarrowContext, useLayoutParent, useSlot, type SlotProps } from './useSlot';
+import { LayoutProvider, useLayoutParent, useSlot, type SlotProps } from './useSlot';
 import { gapStyle, type SpaceToken } from './Stack';
 
 /** Props of the default tab strip, passed to a `tabs` part function. */
@@ -38,7 +39,7 @@ export function Columns({
   ...slot
 }: ColumnsProps) {
   const { ref, props } = useSlot<HTMLDivElement>(slot);
-  const tabMode = useContext(NarrowContext) && narrow === 'tabs';
+  const tabMode = useNarrow() && narrow === 'tabs';
   const layout = useLayoutParent(ref, { tabs: tabMode });
   // Outside tab mode there is no tab state, whatever the list still holds from before.
   const tabState = layout.value.tabs;

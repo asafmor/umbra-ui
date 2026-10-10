@@ -15,6 +15,7 @@ import { createPortal } from 'react-dom';
 import { ButtonBase } from '../basics/Button';
 import { Skeleton } from '../basics/Skeleton';
 import { dataState, isContent, type DataStateProps } from '../internal/dataState';
+import { useNarrow } from '../internal/useNarrow';
 import { useShrinkLevel } from '../internal/useShrinkLevel';
 import { ActionsOverflow } from '../overlays/Menu';
 import { Popover } from '../overlays/Popover';
@@ -24,7 +25,7 @@ import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './Card.module.css';
 import { ScrollArea, type ScrollAreaProps } from './ScrollArea';
 import { MoreButton } from './SectionTitle';
-import { LayoutProvider, NarrowContext, slotMinHeight, useSlot, type SlotProps } from './useSlot';
+import { LayoutProvider, slotMinHeight, useSlot, type SlotProps } from './useSlot';
 
 interface CardContextValue {
   titleId: string;
@@ -213,7 +214,7 @@ function Root({
   const collapsedBy = userCollapsed ? 'user' : layoutCollapsed ? 'layout' : null;
   // The popover belongs to the layout-collapsed state: it closes when the card opens again or is hidden
   // behind a tab (entering or leaving tab mode), so it cannot come back by itself or stay without its anchor.
-  const narrow = useContext(NarrowContext);
+  const narrow = useNarrow();
   const [wasNarrow, setWasNarrow] = useState(narrow);
   if (narrow !== wasNarrow) setWasNarrow(narrow);
   if (popoverOpen && (collapsedBy !== 'layout' || narrow !== wasNarrow)) setPopoverOpen(false);

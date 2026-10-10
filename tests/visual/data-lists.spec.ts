@@ -349,7 +349,8 @@ test.describe('List', () => {
   });
 
   test('reaching the end asks for more, and the loading row is announced', async ({ page }) => {
-    await open(page, 'data-list--states', 1280, 520);
+    // Short, and still at the minimum window: below it the columns of the story would be tabs.
+    await open(page, 'data-list--states', 1280, 600);
     const group = card(page, 'Loading more');
     await expect(group.getByText('Rows: 12')).toBeVisible();
     await expect(group.getByRole('status', { name: 'Loading more' })).toBeAttached();

@@ -57,7 +57,7 @@ Every full screenshot: bars on top, content filling the rest, themed background 
 ## Behaviour as space shrinks
 
 - Size is `100dvw` × `100dvh` with overflow hidden, fixed to the window so the host page's margins cannot make it scroll; bars keep their height and `main` takes the rest.
-- Below the minimum window (1024 × 600) it sets `data-narrow` on the root; `Columns` reacts by switching to tabs (see `layout.md`).
+- Below the minimum window (1024 × 600) it sets `data-narrow` on the root. `Columns`, `Modal` and `Card` react to the same state, which they read from the window themselves (`src/internal/useNarrow.ts`), so they do so without an `AppShell` too (2026-10-11).
 
 ## Interaction and accessibility
 

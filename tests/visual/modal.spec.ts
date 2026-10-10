@@ -363,3 +363,43 @@ test.describe('parts and motion', () => {
     expect(await entering()).toEqual(['modal opacity', 'modal-backdrop opacity']);
   });
 });
+
+test.describe('without an AppShell', () => {
+  const story = async (page: Page, width: number, height: number) => {
+    await page.setViewportSize({ width, height });
+    await page.goto('/iframe.html?id=overlays-modal-without-a-shell--without-app-shell&viewMode=story');
+    await page.locator('#storybook-root > *').first().waitFor();
+  };
+
+  test('the narrow state comes from the window: columns become tabs and the modal fills the window', async ({
+    page,
+  }) => {
+    await story(page, 1280, 720);
+    await expect(page.locator('[data-umbra="app-shell"]')).toHaveCount(0);
+    await expect(page.getByRole('tab')).toHaveCount(0);
+    await page.getByRole('button', { name: 'Preferences' }).click();
+    const modal = page.locator('[data-umbra="modal"]');
+    await expect(modal).not.toHaveAttribute('data-narrow');
+    await expect(modal.getByRole('button', { name: 'Sections' })).toHaveCount(0);
+    await expect(modal.getByRole('button', { name: 'Display' })).toBeVisible();
+
+    // Resized below the minimum while open: it switches without being reopened.
+    await page.setViewportSize({ width: 900, height: 560 });
+    await expect(modal).toHaveAttribute('data-narrow', 'true');
+    await expect.poll(() => modal.boundingBox()).toEqual({ x: 0, y: 0, width: 900, height: 560 });
+    const toggle = modal.getByRole('button', { name: 'Sections' });
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await expect(modal.getByRole('button', { name: 'Display' })).toBeHidden();
+    await toggle.focus();
+    await page.keyboard.press('Escape');
+    await expect(modal).toHaveCount(0);
+    await expect(page.getByRole('tab')).toHaveText(['Orders', 'Reports']);
+    await expect(page.getByRole('tabpanel')).toHaveCount(1);
+
+    // Too short counts as narrow as well; back above the minimum the columns return.
+    await page.setViewportSize({ width: 1280, height: 560 });
+    await expect(page.getByRole('tab')).toHaveCount(2);
+    await page.setViewportSize({ width: 1024, height: 600 });
+    await expect(page.getByRole('tab')).toHaveCount(0);
+  });
+});

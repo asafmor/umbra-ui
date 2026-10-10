@@ -4,23 +4,13 @@ import {
   useId,
   useMemo,
   useState,
-  useSyncExternalStore,
   type CSSProperties,
   type ReactNode,
 } from 'react';
-import { NarrowContext } from '../layout/useSlot';
+import { useNarrow } from '../internal/useNarrow';
 import { ScopeProvider, useScope, type ContextTint } from '../provider/UmbraProvider';
-import { minWindow } from '../styles/tokens.generated';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './AppShell.module.css';
-
-// Narrow means below the minimum window in either direction; exactly the minimum is not narrow.
-const narrowQuery = `(max-width: ${minWindow.width - 0.02}px), (max-height: ${minWindow.height - 0.02}px)`;
-const subscribeNarrow = (onChange: () => void) => {
-  const media = window.matchMedia(narrowQuery);
-  media.addEventListener('change', onChange);
-  return () => media.removeEventListener('change', onChange);
-};
 
 interface ShellContextValue {
   mainId: string;
@@ -50,11 +40,7 @@ function Root({
   style,
   children,
 }: AppShellRootProps) {
-  const narrow = useSyncExternalStore(
-    subscribeNarrow,
-    () => window.matchMedia(narrowQuery).matches,
-    () => false,
-  );
+  const narrow = useNarrow();
   const [pageContext, setPageContext] = useState<ContextTint>();
   const scope = useScope({ context: pageContext });
   const mainId = useId();
@@ -62,21 +48,19 @@ function Root({
   return (
     <ShellContext value={shell}>
       <ScopeProvider value={scope}>
-        <NarrowContext value={narrow}>
-          <div
-            {...scope}
-            data-umbra="app-shell"
-            data-background={background}
-            data-narrow={narrow || undefined}
-            className={cx(styles.root, className)}
-            style={{ ...scope.style, ...style }}
-          >
-            <a href={`#${mainId}`} className={styles.skip}>
-              {skipLabel}
-            </a>
-            {children}
-          </div>
-        </NarrowContext>
+        <div
+          {...scope}
+          data-umbra="app-shell"
+          data-background={background}
+          data-narrow={narrow || undefined}
+          className={cx(styles.root, className)}
+          style={{ ...scope.style, ...style }}
+        >
+          <a href={`#${mainId}`} className={styles.skip}>
+            {skipLabel}
+          </a>
+          {children}
+        </div>
       </ScopeProvider>
     </ShellContext>
   );
