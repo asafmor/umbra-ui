@@ -32,16 +32,16 @@ An independent check of Milestone 0 against the plan: the checks, the "done when
 | 5 | A loading button is exposed like a disabled one; it needs a named progress element (`loadingLabel`) | should fix | owner decision, then 1a |
 | 6 | The popover of a layout-collapsed card renders the children a second time (state not shared, ids repeated) | should fix | 1c (`Popover`) |
 | 7 | Nav caret: same name as its link, no name for a non-text label, 12 to 18px target | should fix | 1c (`Menu`) |
-| 8 | `TopBar` is not built only from public blocks (context, logo and primary-action wrappers are private) | should fix | 1f |
-| 9 | `SubNav` end slot clips its controls, which stay focusable | should fix | 1f (`ShortcutBar`) |
-| 10 | The primary action is flat; the reference draws a gradient to `primaryEnd` | should fix | 1f (`PrimaryAction`) |
+| 8 | `TopBar` is not built only from public blocks (context, logo and primary-action wrappers are private) | should fix | 1f; fixed: `TopBar.Logo`, `TopBar.Context`, `TopBar.PrimaryAction`, `TopBar.Search` |
+| 9 | `SubNav` end slot clips its controls, which stay focusable | should fix | 1f (`ShortcutBar`); fixed: the slot clips nothing |
+| 10 | The primary action is flat; the reference draws a gradient to `primaryEnd` | should fix | 1f (`PrimaryAction`); fixed |
 | 11 | "ResizeObserver loop completed with undelivered notifications" fires on some resizes that change the collapsed set. No visible effect. | should fix | before 1a |
 | 12 | Stories and tests missing for: `Page` loading, footer and `padding="none"`; `narrow="keep"`, `overflow="keep"`, `gap`, nested `Columns`; `AppShell` `subNav` prop and blocks; `ScrollArea` `onReachEnd`; `SectionTitle` `onOpen` and `level`; card `bandColor`, controlled collapse and parts; provider `icons`, `shortcuts`, `reducedMotion`, `locale`; any use of `parts` or blocks in shell and basics; nav `ArrowDown`, `Escape`, `Home`, `End`; `TopBar` shrink step 1; `SubNav` label hiding; button keys, loading and `shortcut` | should fix | before 1a |
 | 13 | No automated accessibility check runs against the stories, and the visual tests use the default tint only | should fix | before 1a |
 | 14 | Scroll thumb is 1.7 to 1.9:1 against its background; skeleton 1.1 to 1.2:1 | minor | owner decision |
-| 15 | Other components' tokens are declared on `TopBar` and `SubNav` parts, so an ancestor cannot override them there | minor | 1f |
+| 15 | Other components' tokens are declared on `TopBar` and `SubNav` parts, so an ancestor cannot override them there | minor | 1f; fixed: the bars have their own tokens |
 | 16 | Generated tables list some tokens under the wrong component and have no defaults column | minor | with the customisation guide |
-| 17 | Shortcut conflicts: the first match wins silently, and a reserved key with nothing mounted swallows the app's binding | minor | 1c (`CommandPalette`) |
+| 17 | Shortcut conflicts: the first match wins silently, and a reserved key with nothing mounted swallows the app's binding | minor | 1c (`CommandPalette`); fixed: rules in `specs/UmbraProvider.md` |
 | 18 | `ScrollArea`: `axis="both"` only tracks the vertical axis; `onReachEnd` never fires when content does not overflow | minor | 1a (`List`) |
 | 19 | Commit `88f6b37` fails lint (the script arrived one commit before its config) | minor | recorded in AGENTS.md |
 | 20 | Hard-coded values without a token: logo size, badge sizes, popover minimum widths, hover and press mix steps, two durations | minor | with the theming guide |

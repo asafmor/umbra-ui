@@ -1,0 +1,109 @@
+/*
+ * The list of chips may shrink to nothing; the "+N" chip and the edit button never shrink. As a grid
+ * with a `minmax(0, auto)` track, the bar's smallest width is exactly those two, so whatever holds it
+ * (the SubNav end slot) can squeeze the chips out without ever clipping a control.
+ */
+.root {
+  flex: 0 1 auto;
+  display: grid;
+  grid-template-columns: minmax(0, auto);
+  grid-auto-flow: column;
+  grid-auto-columns: max-content;
+  align-items: center;
+  min-width: min-content;
+  max-width: 100%;
+  font: var(--umbra-shortcut-bar-font, var(--umbra-font-label));
+  white-space: nowrap;
+}
+
+/* It clips, so it can tell when the chips no longer fit. */
+.list {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-shortcut-bar-gap, var(--umbra-space-2));
+  overflow: hidden;
+}
+
+.root > .chip {
+  margin-inline-start: var(--umbra-shortcut-bar-gap, var(--umbra-space-2));
+}
+
+.root > .list:empty + .chip {
+  margin-inline-start: 0;
+}
+
+.chip {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--umbra-space-2);
+  height: var(--umbra-shortcut-bar-item-height, 22px);
+  padding: 0 var(--umbra-space-3);
+  border: var(--umbra-border-width) solid
+    var(--umbra-shortcut-bar-item-border, var(--umbra-color-base-border-strong));
+  border-radius: var(--umbra-shortcut-bar-item-radius, var(--umbra-radius-control));
+  background: var(--umbra-shortcut-bar-item-bg, var(--umbra-color-base-surface1));
+  color: var(--umbra-shortcut-bar-item-fg, var(--umbra-color-base-text-primary));
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color var(--umbra-motion-duration-fast);
+  --umbra-icon-size: 1.1em;
+}
+
+.chip[data-icon-only] {
+  width: var(--umbra-shortcut-bar-item-height, 22px);
+  padding: 0;
+  /* The count sits on the corner of the icon. */
+  position: relative;
+}
+
+.chip[data-icon-only] > [data-umbra='badge'] {
+  position: absolute;
+  top: -1px;
+  inset-inline-end: -1px;
+  scale: 0.75;
+  transform-origin: top right;
+}
+
+.chip:is([data-hovered], [aria-expanded='true']) {
+  background: color-mix(
+    in oklab,
+    var(--umbra-shortcut-bar-item-bg, var(--umbra-color-base-surface1)),
+    #fff 10%
+  );
+}
+
+.chip[data-pressed] {
+  background: color-mix(
+    in oklab,
+    var(--umbra-shortcut-bar-item-bg, var(--umbra-color-base-surface1)),
+    #000 18%
+  );
+}
+
+/* The list clips, so the ring is drawn inside the chip. */
+.chip[data-focus-visible] {
+  outline: var(--umbra-state-focus-ring-width) solid
+    var(--umbra-focus-color, var(--umbra-color-fixed-focus-ring));
+  outline-offset: calc(-1 * var(--umbra-state-focus-ring-width));
+}
+
+.chip[data-disabled] {
+  opacity: var(--umbra-state-disabled-opacity);
+  cursor: default;
+}
+
+.label {
+  flex: none;
+}
+
+/* A row of the overflow menu: the label, then its count. */
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--umbra-space-4);
+}

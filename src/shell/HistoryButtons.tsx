@@ -114,10 +114,13 @@ export function HistoryButtons({
       data-umbra="history-buttons"
       className={cx(styles.root, className)}
       style={style}
-      onPointerDown={(event) => {
-        if (event.button === 0 && !(event.target as Element).closest('[data-part="entriesTrigger"]')) startHold();
+      // Capture: the buttons keep their pointer events to themselves.
+      onPointerDownCapture={(event) => {
+        if (event.button === 0 && !(event.target as Element).closest('[data-part="entriesTrigger"]'))
+          startHold();
       }}
-      onPointerUp={endHold}
+      onPointerUpCapture={endHold}
+      onPointerCancelCapture={endHold}
       onPointerLeave={endHold}
       onContextMenu={(event) => {
         if (!hasEntries) return;

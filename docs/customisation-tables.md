@@ -1333,13 +1333,13 @@ A large value with its label, and optional unit, trend, caption and meter.
 
 The second bar: the pages of the current section, and room for shortcuts at the end.
 
-**Tokens**: `--umbra-focus-color`, `--umbra-focus-offset`, `--umbra-nav-font`, `--umbra-nav-gap`, `--umbra-nav-indicator-color`, `--umbra-subnav-bg`, `--umbra-subnav-height`, `--umbra-subnav-indicator-color`.
+**Tokens**: `--umbra-focus-color`, `--umbra-focus-offset`, `--umbra-nav-font`, `--umbra-nav-gap`, `--umbra-nav-indicator-color`, `--umbra-subnav-bg`, `--umbra-subnav-end-gap`, `--umbra-subnav-gap`, `--umbra-subnav-height`, `--umbra-subnav-indicator-color`, `--umbra-subnav-padding-x`.
 
 | Prop | Type | Purpose |
 |---|---|---|
 | `label` | `ReactNode` | The section name. |
 | `items` | `NavItem[]` | The pages of the section. Same shape as `PrimaryNav`. |
-| `end` | `ReactNode` | Free slot at the end, normally a `ShortcutBar`. |
+| `end` | `ReactNode` | Free slot at the end, normally a `ShortcutBar`. Its content is never clipped. |
 | `parts` | `see Parts` | Replace or hide named pieces. |
 | `value` | `string` | The active item. |
 | `onChange` | `((id: string) => void)` | Called with the id of the item the user chose. |
@@ -1547,7 +1547,7 @@ A short description of a control, shown on hover and on keyboard focus. Text onl
 
 The brand-coloured bar at the top: where the user is, the main sections, and the one primary action.
 
-**Tokens**: `--umbra-focus-color`, `--umbra-focus-offset`, `--umbra-nav-font`, `--umbra-nav-gap`, `--umbra-nav-indicator-color`, `--umbra-subnav-indicator-color`, `--umbra-topbar-bg`, `--umbra-topbar-fg`, `--umbra-topbar-height`.
+**Tokens**: `--umbra-focus-color`, `--umbra-focus-offset`, `--umbra-nav-font`, `--umbra-nav-gap`, `--umbra-nav-indicator-color`, `--umbra-subnav-indicator-color`, `--umbra-topbar-action-gap`, `--umbra-topbar-action-size`, `--umbra-topbar-bg`, `--umbra-topbar-fg`, `--umbra-topbar-gap`, `--umbra-topbar-height`, `--umbra-topbar-logo-size`, `--umbra-topbar-padding-x`.
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -1555,9 +1555,10 @@ The brand-coloured bar at the top: where the user is, the main sections, and the
 | `nav` | `ReactNode` | A `PrimaryNav`. |
 | `actions` | `ReactNode` | `IconButton`s. They collapse into one menu when space is short. |
 | `context` | `ReactNode` | A two-line status block. Hides first when space is short. |
-| `primaryAction` | `ReactNode` | The one primary action of the app. Give the button `collapseTo="icon"` so it can shrink to its icon. |
-| `history` | `ReactNode` | `true` shows back and forward buttons that use the browser history; a node replaces them. |
-| `onSearch` | `(() => void)` | Shows the search trigger and is called when it is used (also by the `Mod+K` shortcut). |
+| `primaryAction` | `ReactNode` | The one primary action of the app: a `PrimaryAction`. Any other node is shown as it is. |
+| `history` | `ReactNode` | `true` shows `HistoryButtons` that use the browser history; a node replaces them. |
+| `commandPalette` | `ReactNode` | A `CommandPalette`. Shows the search trigger, which opens it (also by the `Mod+K` shortcut). |
+| `onSearch` | `(() => void)` | For an app with its own search: shows the search trigger and is called when it is used (also by `Mod+K`). |
 | `searchLabel` | `string` | Accessible names of the built-in buttons. |
 | `backLabel` | `string` |  |
 | `forwardLabel` | `string` |  |
@@ -1568,9 +1569,9 @@ The brand-coloured bar at the top: where the user is, the main sections, and the
 | `style` | `CSSProperties` |  |
 | `children` | `ReactNode` |  |
 
-**Parts**: `start`, `logo`, `nav`, `actions`, `context`, `primaryAction`.
+**Parts**: `start`, `logo`, `nav`, `actions`, `search`, `context`, `primaryAction`.
 
-**Blocks**: `TopBar.Root`, `TopBar.Start`, `TopBar.Nav`, `TopBar.Actions`, `TopBar.End`.
+**Blocks**: `TopBar.Root`, `TopBar.Start`, `TopBar.Logo`, `TopBar.Nav`, `TopBar.End`, `TopBar.Actions`, `TopBar.Search`, `TopBar.Context`, `TopBar.PrimaryAction`.
 
 ## TrendArrow
 

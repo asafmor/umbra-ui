@@ -1,8 +1,8 @@
 .root {
   flex: none;
   height: var(--umbra-subnav-height, var(--umbra-size-sub-nav-height));
-  gap: var(--umbra-space-5);
-  padding: 0 var(--umbra-density-page-margin);
+  gap: var(--umbra-subnav-gap, var(--umbra-space-5));
+  padding: 0 var(--umbra-subnav-padding-x, var(--umbra-density-page-margin));
   background: var(--umbra-subnav-bg, color-mix(in oklab, var(--umbra-color-brand) 35%, #05020a));
   color: var(--umbra-color-base-text-primary);
   font: var(--umbra-font-label);
@@ -15,20 +15,16 @@
   font-weight: 700;
 }
 
-/* Shrinks long before the items do, so its own content gives way first. */
+/*
+ * Shrinks long before the items do, but never below what its content needs: a ShortcutBar gives up
+ * its labels and then its chips (down to its "+N" chip), anything else keeps its full width. Nothing
+ * in it is clipped; when it cannot shrink further, the items move into "More".
+ */
 .end {
   flex: 0 1000 auto;
-  min-width: 0;
+  min-width: min-content;
   display: flex;
   align-items: center;
-  gap: var(--umbra-space-2);
-  overflow: hidden;
+  gap: var(--umbra-subnav-end-gap, var(--umbra-space-2));
   margin-inline-start: auto;
-  /* The slot clips, and its controls are nearly as tall as it. */
-  --umbra-focus-offset: calc(-1 * var(--umbra-state-focus-ring-width));
-  --umbra-button-height: 22px;
-}
-
-.end > * {
-  flex: none;
 }

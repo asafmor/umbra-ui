@@ -1,0 +1,226 @@
+/*
+ * A modal: the page behind is dimmed and inert. It fades in over 240ms with a short slide down, which
+ * reduced motion removes (plan/interaction.md).
+ */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--umbra-command-palette-z-index, 100);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: var(--umbra-command-palette-offset, min(12vh, 96px)) var(--umbra-space-5) var(--umbra-space-5);
+  background: var(--umbra-command-palette-scrim, var(--umbra-color-base-scrim));
+  transition: opacity var(--umbra-motion-duration-slow) var(--umbra-motion-easing-enter);
+}
+
+.overlay:is([data-entering], [data-exiting]) {
+  opacity: 0;
+}
+
+.overlay[data-exiting] {
+  transition-timing-function: var(--umbra-motion-easing-exit);
+}
+
+.root {
+  display: flex;
+  width: min(var(--umbra-command-palette-width, 640px), 100%);
+  max-height: min(var(--umbra-command-palette-max-height, 480px), 100%);
+  border: var(--umbra-border-width) solid
+    var(--umbra-command-palette-border, var(--umbra-color-base-border-strong));
+  border-radius: var(--umbra-command-palette-radius, var(--umbra-radius-card));
+  background: var(--umbra-command-palette-bg, var(--umbra-color-base-surface2));
+  color: var(--umbra-color-base-text-primary);
+  box-shadow: var(--umbra-elevation-overlay);
+  font: var(--umbra-font-body);
+  overflow: hidden;
+  transition: translate var(--umbra-motion-duration-slow) var(--umbra-motion-easing-enter);
+}
+
+.root:is([data-entering], [data-exiting]) {
+  translate: 0 calc(-8px * var(--umbra-motion-scale));
+}
+
+.root[data-exiting] {
+  transition-timing-function: var(--umbra-motion-easing-exit);
+}
+
+.dialog {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  outline: none;
+}
+
+.search {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-space-3);
+  padding: 0 var(--umbra-space-5);
+  border-bottom: var(--umbra-border-width) solid
+    var(--umbra-command-palette-border, var(--umbra-color-base-border-strong));
+  color: var(--umbra-color-base-text-secondary);
+}
+
+.input {
+  flex: 1 1 0;
+  min-width: 0;
+  height: calc(var(--umbra-density-control-height) + var(--umbra-space-5));
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--umbra-color-base-text-primary);
+  font: var(--umbra-font-body);
+}
+
+.input::placeholder {
+  color: var(--umbra-color-base-text-muted);
+}
+
+/* The whole search row shows the focus, drawn inwards because the panel clips. */
+.input:focus-visible {
+  outline: none;
+}
+
+.search:has(.input:focus-visible) {
+  box-shadow: inset 0 calc(-1 * var(--umbra-state-focus-ring-width)) 0
+    var(--umbra-focus-color, var(--umbra-color-fixed-focus-ring));
+}
+
+/* A page the user is in. Pressing it goes back to before that page. */
+.crumb {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: var(--umbra-space-1) var(--umbra-space-3);
+  border: var(--umbra-border-width) solid var(--umbra-color-base-border-control);
+  border-radius: var(--umbra-radius-control);
+  background: var(--umbra-color-base-surface3);
+  color: var(--umbra-color-base-text-primary);
+  font: var(--umbra-font-label);
+  cursor: pointer;
+}
+
+/* The list scrolls; what follows it (loading rows, the error or empty text) stays in view. */
+.list {
+  flex: 0 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: var(--umbra-space-2);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--umbra-scroll-thumb, var(--umbra-color-base-border-control)) transparent;
+}
+
+.list:empty {
+  display: none;
+}
+
+.section {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.loading {
+  flex: none;
+  padding: 0 var(--umbra-space-2) var(--umbra-space-2);
+}
+
+.sectionHeader {
+  padding: var(--umbra-space-3) var(--umbra-space-4) var(--umbra-space-2);
+  font: var(--umbra-font-label);
+  color: var(--umbra-color-base-text-secondary);
+}
+
+.item {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-space-4);
+  min-height: var(--umbra-command-palette-item-height, var(--umbra-density-control-height));
+  padding: var(--umbra-space-2) var(--umbra-space-4);
+  border-radius: var(--umbra-radius-control);
+  white-space: nowrap;
+  cursor: pointer;
+  scroll-margin: var(--umbra-space-2);
+}
+
+/*
+ * The row the arrow keys are on: the selected colour, with an edge stripe so it is not colour alone.
+ * Focus itself stays in the input.
+ */
+.item[data-active] {
+  background: var(--umbra-command-palette-active-bg, var(--umbra-color-fixed-selected));
+  color: var(--umbra-command-palette-active-fg, var(--umbra-color-fixed-on-selected));
+  box-shadow: inset var(--umbra-space-1) 0 0 currentColor;
+}
+
+.item[data-disabled] {
+  opacity: var(--umbra-state-disabled-opacity);
+  cursor: default;
+}
+
+.text {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.label,
+.description {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.description {
+  font: var(--umbra-font-label);
+  color: var(--umbra-color-base-text-secondary);
+}
+
+.keys {
+  flex: none;
+  font: var(--umbra-font-label);
+  color: var(--umbra-color-base-text-secondary);
+}
+
+.item[data-active] :is(.description, .keys, [data-part='hint'], [data-part='pageIndicator']) {
+  color: inherit;
+}
+
+.item > [data-part='pageIndicator'] {
+  color: var(--umbra-color-base-text-secondary);
+}
+
+.state {
+  padding: var(--umbra-space-4);
+  font: var(--umbra-font-label);
+  color: var(--umbra-color-base-text-secondary);
+}
+
+.footer {
+  flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--umbra-space-2) var(--umbra-space-5);
+  padding: var(--umbra-space-3) var(--umbra-space-5);
+  border-top: var(--umbra-border-width) solid
+    var(--umbra-command-palette-border, var(--umbra-color-base-border-strong));
+  font: var(--umbra-font-label);
+  color: var(--umbra-color-base-text-secondary);
+}
+
+.hint > kbd {
+  padding: 0 var(--umbra-space-2);
+  border: var(--umbra-border-width) solid var(--umbra-color-base-border-control);
+  border-radius: var(--umbra-radius-control);
+  font: inherit;
+  color: var(--umbra-color-base-text-primary);
+}

@@ -1,5 +1,7 @@
 import {
+  cloneElement,
   createContext,
+  isValidElement,
   useCallback,
   useContext,
   useMemo,
@@ -13,10 +15,12 @@ import { IconButton } from '../basics/IconButton';
 import { ForceCollapseContext } from '../internal/contexts';
 import { isOverflowing, useShrinkLevel } from '../internal/useShrinkLevel';
 import { MoreButton } from '../layout/SectionTitle';
+import type { CommandPaletteProps } from '../overlays/CommandPalette';
 import { ActionsOverflow } from '../overlays/Menu';
 import { Icon } from '../provider/icons';
 import { ScopeProvider, useScope } from '../provider/UmbraProvider';
 import { cx, renderPart, type Part } from '../utils/parts';
+import { HistoryButtons } from './HistoryButtons';
 import { NavHoldContext } from './nav';
 import styles from './TopBar.module.css';
 
@@ -28,7 +32,9 @@ interface BlockProps {
 
 /**
  * Shrink steps, in order: 1 the context block hides, 2 the actions collapse into one menu, 3 the nav
- * moves items into "More", 4 the primary action shows its icon only.
+ * moves items into "More", 4 the primary action shows its icon only. Each step is taken by a block
+ * that reads the level from the root, so a bar composed by hand shrinks the same way; a step whose
+ * block is missing changes nothing and the next one follows at once.
  */
 interface TopBarContextValue {
   level: number;
@@ -47,7 +53,7 @@ export interface TopBarRootProps extends BlockProps {
 function Root({ brand, moreLabel = 'More actions', className, style, children }: TopBarRootProps) {
   const scope = useScope({ brand });
   const nav = useRef<HTMLDivElement>(null);
-  // Whether the nav has moved all it can and still overflows. A ref, because the nav reports in its
+  // Whether the nav has moved all it can. A ref, because the nav reports in its
   // layout effect and the bar reads it in its own, later in the same pass; the state forces that pass.
   const navExhausted = useRef(false);
   const [, setTick] = useState(0);
@@ -145,13 +151,77 @@ function End({ className, style, children }: BlockProps) {
   );
 }
 
-/** Hidden at the first shrink step. */
-function Context({ children }: { children: ReactNode }) {
-  const { level } = useContext(TopBarContext);
-  return level >= 1 ? null : (
-    <div data-part="context" className={styles.context}>
+/** The app or entity mark: a round badge in the bar's text colour. */
+function Logo({ className, style, children }: BlockProps) {
+  return (
+    <div data-part="logo" className={cx(styles.logo, className)} style={style}>
       {children}
     </div>
+  );
+}
+
+/** A two-line status block. Hidden at the first shrink step. */
+function Context({ className, style, children }: BlockProps) {
+  const { level } = useContext(TopBarContext);
+  return level >= 1 ? null : (
+    <div data-part="context" className={cx(styles.context, className)} style={style}>
+      {children}
+    </div>
+  );
+}
+
+/**
+ * The slot at the very end of the bar. A `PrimaryAction` in it fills the bar's height and touches the
+ * window edge; anything else is centred. At the last shrink step what is inside shows its icon only.
+ */
+function PrimaryActionSlot({ className, style, children }: BlockProps) {
+  return (
+    <div data-part="primaryAction" className={cx(styles.primaryAction, className)} style={style}>
+      {children}
+    </div>
+  );
+}
+
+export interface TopBarSearchProps {
+  /** Accessible name and tooltip of the trigger. */
+  label?: string;
+  /** Called when the trigger is used, for an app with its own search. */
+  onSearch?: () => void;
+  /** A `CommandPalette` element. The trigger opens and closes it. */
+  commandPalette?: ReactNode;
+  /** Id of the shortcut the trigger binds. */
+  shortcut?: string;
+}
+
+/** The search trigger. It opens the `commandPalette` it is given, calls `onSearch`, or both. */
+function Search({
+  label = 'Search',
+  onSearch,
+  commandPalette,
+  shortcut = 'umbra.commandPalette',
+}: TopBarSearchProps) {
+  const [own, setOwn] = useState(false);
+  const palette = isValidElement<CommandPaletteProps>(commandPalette) ? commandPalette : null;
+  // The app may control the palette itself; then the trigger only asks it to change.
+  const open = palette?.props.open ?? own;
+  const change = (next: boolean) => {
+    setOwn(next);
+    palette?.props.onOpenChange?.(next);
+  };
+  return (
+    <>
+      <IconButton
+        icon={<Icon name="search" />}
+        label={label}
+        shortcut={shortcut}
+        onPress={() => {
+          if (palette) change(!open);
+          onSearch?.();
+        }}
+      />
+      {/* The trigger owns the key, so the palette does not bind it a second time. */}
+      {palette ? cloneElement(palette, { open, onOpenChange: change, shortcut: null }) : commandPalette}
+    </>
   );
 }
 
@@ -164,11 +234,13 @@ export interface TopBarProps extends TopBarRootProps {
   actions?: ReactNode;
   /** A two-line status block. Hides first when space is short. */
   context?: ReactNode;
-  /** The one primary action of the app. Give the button `collapseTo="icon"` so it can shrink to its icon. */
+  /** The one primary action of the app: a `PrimaryAction`. Any other node is shown as it is. */
   primaryAction?: ReactNode;
-  /** `true` shows back and forward buttons that use the browser history; a node replaces them. */
+  /** `true` shows `HistoryButtons` that use the browser history; a node replaces them. */
   history?: boolean | ReactNode;
-  /** Shows the search trigger and is called when it is used (also by the `Mod+K` shortcut). */
+  /** A `CommandPalette`. Shows the search trigger, which opens it (also by the `Mod+K` shortcut). */
+  commandPalette?: ReactNode;
+  /** For an app with its own search: shows the search trigger and is called when it is used (also by `Mod+K`). */
   onSearch?: () => void;
   /** Accessible names of the built-in buttons. */
   searchLabel?: string;
@@ -180,6 +252,7 @@ export interface TopBarProps extends TopBarRootProps {
     logo?: Part<{ children: ReactNode }>;
     nav?: Part<{ children: ReactNode }>;
     actions?: Part<TopBarActionsProps>;
+    search?: Part<TopBarSearchProps>;
     context?: Part<{ children: ReactNode }>;
     primaryAction?: Part<{ children: ReactNode }>;
   };
@@ -193,6 +266,7 @@ export function TopBar({
   context,
   primaryAction,
   history = false,
+  commandPalette,
   onSearch,
   searchLabel = 'Search',
   backLabel = 'Back',
@@ -201,36 +275,15 @@ export function TopBar({
   ...root
 }: TopBarProps) {
   const historyButtons =
-    history === true ? (
-      <>
-        <IconButton icon={<Icon name="back" />} label={backLabel} onPress={() => window.history.back()} />
-        <IconButton
-          icon={<Icon name="forward" />}
-          label={forwardLabel}
-          onPress={() => window.history.forward()}
-        />
-      </>
-    ) : (
-      history
-    );
+    history === true ? <HistoryButtons backLabel={backLabel} forwardLabel={forwardLabel} /> : history;
   const logoNode = renderPart(
     parts?.logo,
     { children: logo },
-    (p) =>
-      p.children && (
-        <div data-part="logo" className={styles.logo}>
-          {p.children}
-        </div>
-      ),
+    (p) => p.children && <Logo>{p.children}</Logo>,
   );
-  const search = onSearch && (
-    <IconButton
-      icon={<Icon name="search" />}
-      label={searchLabel}
-      shortcut="umbra.commandPalette"
-      onPress={onSearch}
-    />
-  );
+  const search =
+    (onSearch || commandPalette) &&
+    renderPart(parts?.search, { label: searchLabel, onSearch, commandPalette }, (p) => <Search {...p} />);
   return (
     <Root {...root}>
       {renderPart(
@@ -254,9 +307,7 @@ export function TopBar({
         {context && renderPart(parts?.context, { children: context }, (p) => <Context>{p.children}</Context>)}
         {primaryAction &&
           renderPart(parts?.primaryAction, { children: primaryAction }, (p) => (
-            <div data-part="primaryAction" className={styles.primaryAction}>
-              {p.children}
-            </div>
+            <PrimaryActionSlot>{p.children}</PrimaryActionSlot>
           ))}
       </End>
     </Root>
@@ -265,6 +316,10 @@ export function TopBar({
 
 TopBar.Root = Root;
 TopBar.Start = Start;
+TopBar.Logo = Logo;
 TopBar.Nav = Nav;
-TopBar.Actions = Actions;
 TopBar.End = End;
+TopBar.Actions = Actions;
+TopBar.Search = Search;
+TopBar.Context = Context;
+TopBar.PrimaryAction = PrimaryActionSlot;

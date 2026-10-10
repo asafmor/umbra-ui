@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { Button } from '../basics/Button';
 import { Log, pages } from '../stories/placeholders';
 import type { NavItem } from './nav';
+import { pinned } from './samples';
+import { ShortcutBar } from './ShortcutBar';
 import { SubNav, type SubNavProps } from './SubNav';
 
 const meta = {
@@ -26,12 +28,7 @@ const withIconsAndMenu: NavItem[] = pages.map((item) => ({
       : undefined,
 }));
 
-const end = (
-  <>
-    <Button size="small">Inbox</Button>
-    <Button size="small">Team</Button>
-  </>
-);
+const end = <ShortcutBar items={pinned.slice(0, 3)} />;
 
 /** The line below the bar shows the page it reported through `onChange`. */
 function Bar(props: SubNavProps) {
@@ -44,14 +41,17 @@ function Bar(props: SubNavProps) {
   );
 }
 
-/** The section label, pages with icons and a dropdown, and the free slot at the end. */
+/** The section label, pages with icons and a dropdown, and a `ShortcutBar` in the slot at the end. */
 export const Slots: Story = { render: () => <Bar items={withIconsAndMenu} end={end} /> };
 
-/** As it narrows: the end slot gives way, pages move into "More" (the active one stays), then the label hides. */
+/**
+ * As it narrows: the shortcuts lose their labels and then move into their "+N" menu, pages move into
+ * "More" (the active one stays), then the label hides. Nothing in the end slot is clipped.
+ */
 export const Shrink: Story = {
   render: () => (
     <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 8 }}>
-      {[640, 440, 300, 190].map((width) => (
+      {[760, 560, 440, 300, 220].map((width) => (
         <div key={width} style={{ width }}>
           <Bar end={end} />
         </div>

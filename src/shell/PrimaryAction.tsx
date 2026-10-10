@@ -6,6 +6,7 @@ import { useShrinkLevel } from '../internal/useShrinkLevel';
 import { Menu, type MenuEntry } from '../overlays/Menu';
 import { Tooltip } from '../overlays/Tooltip';
 import { Icon, IconSlot } from '../provider/icons';
+import sharedStyles from '../data/shared.module.css';
 import { useShortcut } from '../provider/UmbraProvider';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './PrimaryAction.module.css';
@@ -94,10 +95,15 @@ export function PrimaryAction({
   useShortcut(shortcut, disabled || loading ? undefined : onPress);
 
   const hasBadge = badge !== undefined && badge > 0;
-  const name = [label, hasBadge && `(${badge})`, attention && `(${attentionLabel})`].filter(Boolean).join(' ');
+  // The count and the marker's text are part of the content, so they are part of the name.
+  const name = [label, hasBadge && badge, attention && attentionLabel].filter(Boolean).join(' ');
   const iconNode = loading
     ? renderPart(parts?.spinner, {}, () => <Spinner label={loadingLabel} />)
-    : renderPart(parts?.icon, { children: icon }, (p) => p.children && <IconSlot part="icon">{p.children}</IconSlot>);
+    : renderPart(
+        parts?.icon,
+        { children: icon },
+        (p) => p.children && <IconSlot part="icon">{p.children}</IconSlot>,
+      );
   const content = (
     <>
       {iconPosition === 'start' && iconNode}
@@ -116,24 +122,26 @@ export function PrimaryAction({
             ))}
         </span>
       )}
-      {/* The count and the marker are in the button's name already, so they are drawn, not read. */}
       {hasBadge &&
         renderPart(parts?.badge, { children: badge }, (p) => (
-          <span data-part="badge" aria-hidden="true" className={styles.badge}>
+          <span data-part="badge" className={styles.badge}>
             {p.children}
           </span>
         ))}
       {attention &&
         !hasBadge &&
         renderPart(parts?.attention, {}, () => (
-          <span data-part="attention" aria-hidden="true" className={styles.attention} />
+          <span data-part="attention" className={styles.attention}>
+            <span className={sharedStyles.srOnly}>{attentionLabel}</span>
+          </span>
         ))}
       {iconPosition === 'end' && iconNode}
     </>
   );
   const shared = {
     'data-part': 'button',
-    'aria-label': name === label && !collapsed ? undefined : name,
+    // With the label hidden, the name is spelled out.
+    'aria-label': collapsed ? name : undefined,
     className: styles.button,
     isDisabled: disabled,
     onPress,
@@ -143,6 +151,8 @@ export function PrimaryAction({
       ref={root}
       data-umbra="primary-action"
       data-collapsed={collapsed || undefined}
+      // With nothing left to hide, the label truncates.
+      data-truncate={(level === max && !collapsed) || undefined}
       data-attention={attention || undefined}
       data-loading={loading || undefined}
       data-disabled={disabled || undefined}

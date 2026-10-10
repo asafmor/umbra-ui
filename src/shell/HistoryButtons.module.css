@@ -2,7 +2,7 @@
   flex: none;
   display: flex;
   align-items: center;
-  gap: var(--umbra-history-buttons-gap, var(--umbra-space-1));
+  gap: var(--umbra-history-buttons-gap, var(--umbra-space-3));
 }
 
 /*
@@ -20,6 +20,8 @@
 
 /* The caret that opens the recent entries is half as wide. */
 .root .caret[data-icon-only] {
-  width: calc(var(--umbra-history-buttons-size, var(--umbra-density-control-height)) / 2 + var(--umbra-space-2));
+  width: calc(
+    var(--umbra-history-buttons-size, var(--umbra-density-control-height)) / 2 + var(--umbra-space-2)
+  );
   --umbra-icon-size: 0.875em;
 }
