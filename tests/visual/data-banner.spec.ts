@@ -241,7 +241,7 @@ test.describe('Legend', () => {
     await page.keyboard.press('Enter');
     const dialog = page.getByRole('dialog', { name: 'All items' });
     const all = dialog.getByRole('button');
-    await expect(all).toHaveCount(12);
+    await expect(all).toHaveCount(12 + 1); // the twelve items and the popover's hidden dismiss button
     await expect(all.nth(9)).toHaveAttribute('aria-pressed', 'false');
 
     // Toggling in the list changes the legend behind it.
