@@ -98,7 +98,8 @@ export const Icons: Story = {
     >
       <div style={column}>
         <TopBar logo="U" onSearch={() => {}} />
-        <div style={{ width: 280, height: 120, display: 'flex' }}>
+        {/* Wide enough that the action fits whatever the text rendering of the machine. */}
+        <div style={{ width: 360, height: 120, display: 'flex' }}>
           <Card title="Collapsible" collapsible actions={<Button size="small">Export</Button>}>
             Content
           </Card>
@@ -129,7 +130,20 @@ function ShortcutsApp(globals: Globals) {
             Refresh
           </Button>
           <label>
-            Notes <input type="text" />
+            Notes{' '}
+            <input
+              type="text"
+              // Styled in full, so the capture does not depend on the system's form control look.
+              style={{
+                font: 'inherit',
+                color: 'inherit',
+                width: 160,
+                padding: '4px 8px',
+                border: '1px solid var(--umbra-color-base-border-control)',
+                borderRadius: 4,
+                background: 'var(--umbra-color-base-surface1)',
+              }}
+            />
           </label>
         </div>
         <Log>Last shortcut: {last}</Log>
