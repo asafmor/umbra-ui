@@ -10,7 +10,7 @@ import {
 } from 'react';
 import { Skeleton } from '../basics/Skeleton';
 import { SearchField } from '../inputs/SearchField';
-import { ForceCollapseContext } from '../internal/contexts';
+import { ForceCollapseContext, useActionKind } from '../internal/contexts';
 import { useHoverTip } from '../internal/TruncatedText';
 import { isOverflowing, useShrinkLevel } from '../internal/useShrinkLevel';
 import { Popover } from '../overlays/Popover';
@@ -511,6 +511,7 @@ export type EntitySwitcherProps = Omit<EntitySwitcherRootProps, 'children'>;
 
 /** The current entity of a header, with steps to its siblings and a searchable picker. */
 export function EntitySwitcher(props: EntitySwitcherProps) {
+  useActionKind('stays');
   const start = props.stepperPosition === 'start';
   return (
     <Root {...props}>

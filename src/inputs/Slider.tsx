@@ -18,7 +18,8 @@ import { bandBoundaries, bandPattern, toFraction } from '../meters/scale';
 import { defined } from '../utils/defined';
 import { cx, renderPart, type Part } from '../utils/parts';
 import { resolveThreshold, type ThresholdBand, type ThresholdList } from '../utils/thresholds';
-import { useInOverflowMenu } from '../internal/contexts';
+import { useActionKind, useInOverflowMenu } from '../internal/contexts';
+import { TruncatedText } from '../internal/TruncatedText';
 import { bandColour } from './bandColour';
 import styles from './Slider.module.css';
 import { useFieldControl } from './useField';
@@ -46,6 +47,8 @@ interface Shared {
   spoken: (value: number) => string;
   /** The text of the whole value, as the output shows it. */
   text: (values: readonly number[]) => string;
+  /** The longest texts the output can show. */
+  widest: string[];
   name: string | undefined;
   /** The id of the label of the field around the slider. */
   labelledBy: string | undefined;
@@ -139,8 +142,21 @@ function Root<T extends SliderValue = SliderValue>({
 }: SliderRootProps<T>) {
   const control = useFieldControl({ id, invalid, disabled });
   const range = Array.isArray(value ?? defaultValue);
-  // Read-only: the value is held where it is, and the thumbs stay focusable.
-  const [held] = useState(defaultValue ?? (min as SliderValue));
+  // React Aria is always given the value, so it never changes between holding the value itself and
+  // being told it: turning `readOnly` on or off keeps what the user chose. Read-only only drops the
+  // changes, and the thumbs stay focusable.
+  const [own, setOwn] = useState<SliderValue>(defaultValue ?? min);
+  const current = value ?? own;
+  const change = (next: number | number[]) => {
+    if (readOnly) return;
+    setOwn(next as SliderValue);
+    (onChange as ((value: number | number[]) => void) | undefined)?.(next);
+  };
+  const labels = range
+    ? []
+    : (thresholds ?? []).flatMap((band) => (typeof band !== 'number' && band.label) || []);
+  const text = (all: readonly number[], label?: ReactNode) =>
+    [all.map(formatValue).join(' – '), label].filter(Boolean).join(' · ');
   const shared = (values: readonly number[]): Shared => {
     const band =
       thresholds && !range ? resolveThreshold(values[0], thresholds, { lowerIsBetter }) : undefined;
@@ -153,7 +169,16 @@ function Root<T extends SliderValue = SliderValue>({
       band,
       format: formatValue,
       spoken: (v) => [formatValue(v), band?.label].filter(Boolean).join(', '),
-      text: (all) => [all.map(formatValue).join(' – '), band?.label].filter(Boolean).join(' · '),
+      text: (all) => text(all, band?.label),
+      // Every end of the scale with every band's label: the widest of them is the room the output keeps.
+      widest: [min, max].flatMap((end) =>
+        (labels.length ? labels : [undefined]).map((label) =>
+          text(
+            values.map(() => end),
+            label,
+          ),
+        ),
+      ),
       name,
       labelledBy: control.labelledBy,
       readOnly,
@@ -172,18 +197,19 @@ function Root<T extends SliderValue = SliderValue>({
       data-range={range || undefined}
       data-readonly={readOnly || undefined}
       data-invalid={control.invalid || undefined}
+      // On the group too: the thumbs are disabled inputs, and the field's label points here.
+      aria-disabled={control.disabled || undefined}
       minValue={min}
       maxValue={max}
       step={step}
       orientation={orientation}
       isDisabled={control.disabled}
+      value={current as number | number[]}
+      onChange={change}
       {...defined({
         className: cx(styles.root, className),
         style,
         id: control.id,
-        value: (readOnly ? (value ?? held) : value) as number | number[] | undefined,
-        defaultValue: defaultValue as number | number[] | undefined,
-        onChange: readOnly ? undefined : (onChange as ((value: number | number[]) => void) | undefined),
         onChangeEnd: readOnly ? undefined : (onChangeEnd as ((value: number | number[]) => void) | undefined),
         'aria-label': ariaLabel,
         'aria-labelledby': control.labelledBy,
@@ -228,9 +254,10 @@ function Track({ className, style, children }: SliderTrackProps) {
             style={{ '--at': fraction } as CSSProperties}
           />
         ))}
-        {slider.marks.map((mark) => (
+        {slider.marks.map((mark, index) => (
           <span
-            key={mark.value}
+            // By position: an app may give the same value twice.
+            key={index}
             data-part="tick"
             className={styles.tick}
             style={{ '--at': toFraction(mark.value, slider.min, slider.max) } as CSSProperties}
@@ -301,12 +328,23 @@ export interface SliderOutputProps {
   children?: ReactNode | undefined;
 }
 
-/** The value as text. It hides when the slider is too narrow for it. */
+/**
+ * The value as text. It keeps the width of its longest text, so the track beside it is the same size
+ * whatever the value: a drag across a band with a longer label does not move the track under the
+ * pointer. Where that is more than the slider can give, the text is cut and its tooltip has the whole
+ * of it. It hides when the slider is too narrow for it.
+ */
 function Output({ className, style, children }: SliderOutputProps) {
   const slider = useSlider('Output');
+  const text = slider.text(slider.state.values);
   return (
-    <AriaSliderOutput data-part="output" {...defined({ className: cx(styles.output, className), style })}>
-      {children ?? slider.text(slider.state.values)}
+    <AriaSliderOutput
+      data-part="output"
+      // Drawn unseen under the text, one to a line: the output is as wide as the widest of them.
+      data-room={children == null ? slider.widest.join('\n') : undefined}
+      {...defined({ className: cx(styles.output, className), style })}
+    >
+      {children ?? <TruncatedText className={styles.outputText}>{text}</TruncatedText>}
     </AriaSliderOutput>
   );
 }
@@ -323,12 +361,12 @@ function Marks({ className, style }: SliderMarksProps) {
   return (
     // Decorative: a thumb says its value and its band.
     <span data-part="marks" aria-hidden="true" className={cx(styles.marks, className)} style={style}>
-      {slider.marks.map((mark) => {
+      {slider.marks.map((mark, index) => {
         const at = toFraction(mark.value, slider.min, slider.max);
         return (
           mark.label != null && (
             <span
-              key={mark.value}
+              key={index}
               data-part="markLabel"
               data-edge={at === 0 ? 'start' : at === 1 ? 'end' : undefined}
               className={styles.markLabel}
@@ -368,6 +406,7 @@ export function Slider<T extends SliderValue = SliderValue>({
   parts,
   ...root
 }: SliderProps<T>) {
+  useActionKind('stays');
   if (useInOverflowMenu()) return null;
   return (
     <Root {...root}>

@@ -13,6 +13,8 @@ import { Button as AriaButton, ToggleButton, ToggleButtonGroup } from 'react-ari
 import { Menu } from '../overlays/Menu';
 import { Icon, IconSlot, RawIcon } from '../provider/icons';
 import { cx, renderPart, type Part } from '../utils/parts';
+import { distinctIds } from '../internal/distinctIds';
+import { useActionKind } from '../internal/contexts';
 import styles from './SegmentedFilter.module.css';
 import {
   StripItemsContext,
@@ -257,12 +259,14 @@ function Item({ id, icon, count, disabled, parts, className, style, children }: 
 
 /** A row of joined segments that filters the content below it. One or several can be selected. */
 export function SegmentedFilter({ items, parts, children, ...root }: SegmentedFilterProps) {
+  useActionKind('stays');
   const { item, ...itemParts } = parts ?? {};
+  const key = distinctIds('SegmentedFilter').scope();
   return (
     <Root {...root}>
       {items
         ? items.map(({ label, ...rest }) => (
-            <Fragment key={rest.id}>
+            <Fragment key={key(rest.id)}>
               {renderPart(item, { ...rest, parts: itemParts, children: label }, (p) => (
                 <Item {...p} />
               ))}

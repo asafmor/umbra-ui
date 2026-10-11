@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addStop, boundsOf, moveStop, normalizeStops, removeStop, snap } from './colorScale';
+import { addStop, bottomOf, boundsOf, moveStop, normalizeStops, removeStop, snap } from './colorScale';
 
 const scale = { min: 0, max: 20, step: 1 };
 const stops = [
@@ -47,5 +47,16 @@ describe('colorScale', () => {
     const rest = removeStop(stops, 0, scale);
     expect(froms(rest)).toEqual([0, 15]);
     expect(rest[0]!.tone).toBe('ramp-3');
+  });
+});
+
+describe('a list in any order, without a bottom given', () => {
+  it('takes its lowest boundary as the bottom, so no stop is moved', () => {
+    const stops = [{ from: 60 }, { from: 0 }, { from: 30 }];
+    expect(bottomOf(stops)).toBe(0);
+    expect(normalizeStops(stops, { min: bottomOf(stops), max: 100, step: 1 }).map((s) => s.from)).toEqual([
+      0, 30, 60,
+    ]);
+    expect(bottomOf([])).toBe(0);
   });
 });

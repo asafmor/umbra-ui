@@ -682,8 +682,21 @@ Edits a scale of value bands and their colours: the `thresholds` that `ValuePill
 
 | Token | Default |
 |---|---|
+| `--umbra-color-scale-editor-chip-size` | `16px` |
+| `--umbra-color-scale-editor-gap` | `--umbra-space-3` (8px) |
+| `--umbra-color-scale-editor-handle-bg` | `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-color-scale-editor-hatch` | `color-mix(in oklab, var(--umbra-color-base-surface1) 75%, transparent)` |
+| `--umbra-color-scale-editor-swatch-radius` | `--umbra-radius-control` (4px) |
+| `--umbra-color-scale-editor-width` | `480px` |
+| `--umbra-field-description-color` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-field-error-color` | `--umbra-color-semantic-danger` (#f0455a) |
+| `--umbra-field-marker-color` | `--umbra-color-base-text-secondary` (#b3adbf) |
 | `--umbra-focus-color` | `--umbra-color-fixed-focus-ring` (#ffb3f5) |
 | `--umbra-focus-offset` | `2px` |
+| `--umbra-option-group-gap` | `--umbra-space-3` (8px) |
+| `--umbra-option-group-inline-gap` | `--umbra-space-6` (20px) |
+| `--umbra-option-group-min-option-width` | `12em` |
+| `--umbra-option-group-text-gap` | `--umbra-space-2` (4px) |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -713,7 +726,7 @@ Edits a scale of value bands and their colours: the `thresholds` that `ValuePill
 | `addLabel` | `string` |  |
 | `resetLabel` | `string` |  |
 | `trackLabel` | `string` | Names the track with the boundary handles. |
-| `toneLabels` | `Partial<Record<"default" \| ThresholdTone \| "custom", string>>` | The names of the colour choices. |
+| `toneLabels` | `ColorScaleToneLabels` | The names of the colour choices. |
 | `formatAnnouncement` | `((change: ColorScaleChange) => string)` | What a screen reader hears after a stop is added or removed, and after a reset. |
 
 **Parts**: `preview`, `track`, `stops`, `actions`.
@@ -907,7 +920,21 @@ The confirm step before an action that cannot be undone. An alert dialog: it ope
 
 The two-line status of a `TopBar`, with a short value in a chip, usually the time.
 
-**Tokens**: none of its own.
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-context-block-chip-bg` | `transparent` |
+| `--umbra-context-block-chip-border` | `currentColor` |
+| `--umbra-context-block-chip-font` | `--umbra-font-label` |
+| `--umbra-context-block-chip-padding-x` | `--umbra-space-3` (8px) |
+| `--umbra-context-block-chip-padding-y` | `--umbra-space-1` (2px) |
+| `--umbra-context-block-chip-radius` | `--umbra-radius-control` (4px) |
+| `--umbra-context-block-gap` | `--umbra-space-4` (12px) |
+| `--umbra-context-block-hover-bg` | `color-mix(in oklab, currentColor 12%, transparent)` |
+| `--umbra-context-block-max-width` | `none` |
+| `--umbra-context-block-primary-font` | `--umbra-font-label` |
+| `--umbra-context-block-secondary-font` | `--umbra-font-label` |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -3777,7 +3804,14 @@ Previous and next around one value, with a row of segments for the position. It 
 
 | Token | Default |
 |---|---|
+| `--umbra-field-description-color` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-field-error-color` | `--umbra-color-semantic-danger` (#f0455a) |
+| `--umbra-field-marker-color` | `--umbra-color-base-text-secondary` (#b3adbf) |
 | `--umbra-focus-color` | `--umbra-color-fixed-focus-ring` (#ffb3f5) |
+| `--umbra-option-group-gap` | `--umbra-space-3` (8px) |
+| `--umbra-option-group-inline-gap` | `--umbra-space-6` (20px) |
+| `--umbra-option-group-min-option-width` | `12em` |
+| `--umbra-option-group-text-gap` | `--umbra-space-2` (4px) |
 | `--umbra-stepper-button-fg` | `--umbra-color-base-text-secondary` (#b3adbf) |
 | `--umbra-stepper-height` | `--umbra-density-control-height` (36px at the default density) |
 | `--umbra-stepper-indicator-gap` | `3px` |

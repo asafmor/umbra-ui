@@ -202,3 +202,21 @@ export const RightToLeft: Story = {
   ),
   globals: { direction: 'rtl' },
 };
+
+/**
+ * A slot that is too small: in a short one the rows scroll inside the editor, in a `ScrollArea`; in a
+ * very narrow one each row still shows its boundary and the colour of its stop.
+ */
+export const Tight: Story = {
+  render: () => (
+    <div style={{ display: 'flex', gap: 24, alignItems: 'start' }}>
+      <div data-case="short" style={{ width: 480, height: 190, display: 'flex' }}>
+        <ColorScaleEditor aria-label="Short" min={1} max={20} defaultValue={five} />
+      </div>
+      <Width width={180}>
+        {/* A name left out with `undefined` is the default name. */}
+        <ColorScaleEditor aria-label="At 180" defaultValue={three} toneLabels={{ accent: undefined }} />
+      </Width>
+    </div>
+  ),
+};
