@@ -28,7 +28,7 @@ Label left and value right in a detail panel, grouped under section titles (9); 
 | `value` | the value: text or any node | shown |
 | `hint` | a secondary line: under the label when inline, under the value when stacked | hidden |
 
-`KeyValueList`: the rows (`item`), or `skeleton`, `empty` or `error` in their place.
+`KeyValueList`: the rows (`item`, each `data-part="item"`), or `skeleton` rows, or the `empty` or `error` state in their place.
 
 ## Variants and states
 
@@ -47,7 +47,7 @@ States (list): `loading`, `empty`, `error`. Row height and text size follow the 
 
 ### 1. Tokens
 
-`--umbra-key-value-gap`, `--umbra-key-value-label-width` (the most the label column takes, default 60%), `--umbra-key-value-label-fg`, `--umbra-key-value-value-fg`, `--umbra-key-value-hint-fg`, `--umbra-key-value-value-font` (stacked), `--umbra-key-value-row-height`, `--umbra-key-value-padding-x`, `--umbra-key-value-stripe`, `--umbra-key-value-divider`, `--umbra-key-value-min-column` (grid, default 140px).
+`--umbra-key-value-gap`, `--umbra-key-value-label-width` (the most the label column takes, default 60%), `--umbra-key-value-label-fg`, `--umbra-key-value-value-fg`, `--umbra-key-value-hint-fg`, `--umbra-key-value-value-font` (stacked), `--umbra-key-value-row-height`, `--umbra-key-value-padding-x`, `--umbra-key-value-stripe`, `--umbra-key-value-divider`, `--umbra-key-value-min-column` (grid, default 140px), `--umbra-key-value-highlight-bg`, `--umbra-key-value-highlight-fg` (a `highlighted` row).
 
 ### 2. Props
 
@@ -56,7 +56,9 @@ States (list): `loading`, `empty`, `error`. Row height and text size follow the 
 | Prop | Type | Default | Purpose |
 |---|---|---|---|
 | `label` | node | — | |
-| `value` | node | `children` | |
+| `value` | node | `children` | With neither, the row shows `emptyLabel` |
+| `emptyLabel` | node | "—" | Shown when there is no value |
+| `highlighted` | boolean | `false` | A key row: tinted, with the label in bold |
 | `icon` | node | — | Before the label |
 | `hint` | node | — | Secondary line |
 | `orientation` | see above | `inline`, or the list's | |
@@ -76,10 +78,12 @@ States (list): `loading`, `empty`, `error`. Row height and text size follow the 
 | `labelWidth` | number \| CSS length | widest label, at most 60% | Width of the shared label column |
 | `loading` | boolean | `false` | Shows skeleton rows |
 | `skeletonRows` | number | `4` | |
-| `empty` | node | "No data" | Shown when there are no items |
-| `error` | node | — | Shown in place of the items; put a retry action inside |
+| `empty` | text \| node \| `{ title, description, icon, action }` | "No data" | Shown when there are no items |
+| `error` | the same, or `true` for the default text | — | Shown in place of the items; wins over `loading` |
+| `onRetry` | function, no arguments | — | Adds a retry button to the error state |
+| `retryLabel` | string | "Try again" | |
 | `aria-label` | string | — | Names the list |
-| `highlightChanges` | boolean | off | The value flashes softly once when it changes: green when a number rose, red when it fell, neutral otherwise, with a ▲ or ▼ sign as the cue that is not colour. No flash under reduced motion; the sign stays for four seconds. Never counted up or down. |
+| `highlightChanges` | boolean | off | On a row, or on the list as the default of every row (a row's own value wins). The value flashes softly once when it changes: green when a number rose, red when it fell, neutral otherwise, with a ▲ or ▼ sign as the cue that is not colour. No flash under reduced motion; the sign stays for four seconds. Never counted up or down. |
 | `increasedLabel` / `decreasedLabel` | string | "increased" / "decreased" | What a screen reader hears with the sign |
 
 ### 3. Parts
@@ -108,13 +112,22 @@ A truncated value shows its full text in a tooltip on hover. It is measured at t
 - Not interactive. Interactive nodes inside a value keep their own behaviour.
 - A list is a `<dl>`; each row is a group with a `<dt>` and `<dd>`s. A single `KeyValue` outside a list is a one-row `<dl>`.
 - While `loading` the list is `aria-busy` and holds skeleton rows in the final layout. `error` is announced as an alert.
-- In the loading, empty and error states the root is a plain element (a description list must hold terms), a `group` when it has an `aria-label`.
+- In the loading, empty and error states the root has another role (a description list must hold terms): `group` when it has an `aria-label`, else `presentation`. It stays the same element, so the focus is kept across the states.
+- After Retry the button goes away with the error state: the focus moves to the list itself (`tabindex="-1"`), and stays there when the rows arrive. It never falls to the page.
 - Label text is the secondary text colour and the hint the muted one; both keep 4.5:1 on every card tone.
 - A value coloured to carry meaning needs a second cue (an icon or a word); the component adds none.
 
 ## Open questions
 
 None.
+
+Resolved 2026-10-11 (review fix pass):
+
+- **The list uses the shared data states** (`src/internal/dataState.tsx`): `loading`, `empty`, `error`, `onRetry`, `retryLabel` with the types and defaults of `List` and `DataTable`. `error` takes text, a node, `{ title, description, icon, action }` or `true`; it used to take a node only, with the retry action written by the app. The state is an `EmptyState` (`data-part="empty"` or `"error"`); the `empty` and `error` parts receive it as `children`.
+- **`highlightChanges` on the list.** The spec listed `highlightChanges`, `increasedLabel` and `decreasedLabel` among the list's props and the code had them on the row only. The list now takes them and hands them to every row as the default; a row can still set its own. `changeValue` stays a row prop.
+- **A row is a single-value component**: without a value it shows `emptyLabel` ("—"). No error state of its own.
+- **Key rows (the catalog's `AttributeList`).** `highlighted` on a row (and so on an item) marks a key row: a fill in the stronger card tint, and the label in bold in the primary text colour as the cue that is not colour. A prop, not only a token, because which rows are key is data. The trend and the value chip of such a row are nodes in `value` (`TrendArrow`, `ValuePill`), as before.
+- Every block passes `className` and `style` to its element, and every part carries `data-part` with its name as written here (plan/decisions/07-customisation.md).
 
 Resolved 2026-10-10:
 
@@ -125,5 +138,5 @@ Resolved 2026-10-10:
 - The list has an `error` state as well as `loading` and `empty`, as every data component does.
 - `striped` applies to rows only, and `dividers` to rows and columns: in a grid neither reads as a row.
 - The grid drops columns by itself below 140px per column, adjustable with a token.
-- The catalog's `AttributeList` (a label, a trend and a value chip per row, with tinted rows) is built from this list with nodes as values; the tinted "key" rows wait for `ValuePill` and `TrendArrow`.
+- The catalog's `AttributeList` (a label, a trend and a value chip per row, with tinted rows) is built from this list with nodes as values; the tinted "key" rows are `highlighted` (2026-10-11).
 - `KeyValueList` is part of this spec and has no catalog row of its own.

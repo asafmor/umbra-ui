@@ -143,11 +143,20 @@
   gap: var(--umbra-space-3) var(--gap);
 }
 
+/* The empty or error state spans the columns the rows would. */
 .state {
   grid-column: 1 / -1;
-  padding: var(--umbra-space-2) var(--umbra-key-value-padding-x, var(--umbra-space-3));
-  color: var(--umbra-color-base-text-secondary);
-  font: var(--umbra-font-label);
+  min-width: 0;
+}
+
+/* A key row: tinted, and its label in bold so the mark does not depend on colour. */
+.root[data-highlighted] {
+  background: var(--umbra-key-value-highlight-bg, var(--umbra-context-card-tint-strong));
+}
+
+.root[data-highlighted] > .label {
+  color: var(--umbra-key-value-highlight-fg, var(--umbra-color-base-text-primary));
+  font-weight: 700;
 }
 
 .root[data-align='end'] .skeletonValue {

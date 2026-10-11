@@ -169,7 +169,7 @@ test.describe('KeyValue', () => {
     expect(await fits(page.locator('dl[aria-label="Narrow grid"]'))).toBe(true);
   });
 
-  test('loading is busy, empty shows its text, and the retry action of an error is reachable', async ({
+  test('loading, empty and error are the shared data states, and Retry keeps the focus (A2)', async ({
     page,
   }) => {
     await open(page, 'data-keyvalue--states');
@@ -192,7 +192,32 @@ test.describe('KeyValue', () => {
     await expect(failed.getByRole('alert')).toContainText('could not be loaded');
     await expect(failed.locator('dt')).toHaveCount(0);
     await page.keyboard.press('Tab');
-    await expect(failed.getByRole('button', { name: 'Try again' })).toBeFocused();
+    const retry = failed.getByRole('button', { name: 'Try again' });
+    await expect(retry).toBeFocused();
+    // The button goes away with the error: the focus moves to the list, not to the page.
+    await page.keyboard.press('Enter');
+    await expect(retry).toHaveCount(0);
+    await expect(failed).toBeFocused();
+    await expect(failed.locator('dt')).toHaveCount(5);
+    await expect(failed).toBeFocused();
+  });
+
+  test('a row without a value shows the empty label; a key row is tinted and bold (A1, A6)', async ({
+    page,
+  }) => {
+    await open(page, 'data-keyvalue--states');
+    const values = page.locator('[aria-label="Missing values"] dd');
+    await expect(values).toHaveText(['17 Aug 2026', '—', 'Never']);
+
+    await open(page, 'data-keyvalue--customised');
+    const rows = page.locator('[aria-label="Key rows"] [data-umbra="key-value"]');
+    await expect(rows.nth(0)).toHaveAttribute('data-highlighted', 'true');
+    await expect(rows.nth(0)).toHaveAttribute('data-part', 'item');
+    await expect(rows.nth(0).locator('dt')).toHaveCSS('font-weight', '700');
+    await expect(rows.nth(1).locator('dt')).not.toHaveCSS('font-weight', '700');
+    const fills = await rows.evaluateAll((els) => els.map((el) => getComputedStyle(el).backgroundColor));
+    expect(fills[0]).not.toBe(fills[1]);
+    expect(fills[0]).toBe(fills[2]);
   });
 });
 
@@ -371,6 +396,10 @@ test.describe('highlightChanges', () => {
   });
   test('KeyValue: a changed value flashes once with a sign for its direction', async ({ page }) => {
     await expectChangeHighlights(page, 'data-keyvalue--live-updates');
+  });
+  test('KeyValueList: `highlightChanges` on the list is the default of its rows (A5)', async ({ page }) => {
+    // One flash per copy: the row that switches it off does not flash.
+    await expectChangeHighlights(page, 'data-keyvalue--live-list', false);
   });
   test('SummaryTile: a changed value flashes once with a sign for its direction', async ({ page }) => {
     await expectChangeHighlights(page, 'data-summarytile--live-updates');

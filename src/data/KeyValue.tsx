@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from 'react';
 import { Skeleton } from '../basics/Skeleton';
+import { dataState, type DataStateProps } from '../internal/dataState';
 import { useTruncatedTip } from '../internal/TruncatedText';
 import { IconSlot } from '../provider/icons';
 import {
@@ -23,7 +24,12 @@ type Orientation = 'inline' | 'stacked';
 type Align = 'start' | 'end';
 
 /** What a `KeyValueList` gives its rows: their defaults, and that they are inside a list element. */
-const ListContext = createContext<{ orientation: Orientation; align?: Align; wrap?: boolean } | null>(null);
+const ListContext = createContext<{
+  orientation: Orientation;
+  align?: Align;
+  wrap?: boolean;
+  change?: ChangeHighlightProps;
+} | null>(null);
 
 interface BlockProps {
   className?: string;
@@ -38,9 +44,20 @@ export interface KeyValueRootProps extends BlockProps {
   align?: Align;
   /** Lets a long value wrap onto more lines. Without it the value is cut with an ellipsis. */
   wrap?: boolean;
+  /** Marks a key row: a tinted fill, and the label in bold as the cue that is not colour. */
+  highlighted?: boolean;
 }
 
-function Root({ orientation, align, wrap, className, style, children }: KeyValueRootProps) {
+function Row({
+  orientation,
+  align,
+  wrap,
+  highlighted,
+  part,
+  className,
+  style,
+  children,
+}: KeyValueRootProps & { part?: string }) {
   const list = useContext(ListContext);
   const direction = orientation ?? list?.orientation ?? 'inline';
   // A row is a group inside the list's <dl>; on its own it is a one-row list.
@@ -48,6 +65,8 @@ function Root({ orientation, align, wrap, className, style, children }: KeyValue
   return (
     <Element
       data-umbra="key-value"
+      data-part={part ?? (list ? 'item' : undefined)}
+      data-highlighted={highlighted || undefined}
       data-orientation={direction}
       data-align={align ?? list?.align ?? (direction === 'inline' ? 'end' : 'start')}
       data-wrap={(wrap ?? list?.wrap) || undefined}
@@ -57,6 +76,10 @@ function Root({ orientation, align, wrap, className, style, children }: KeyValue
       {children}
     </Element>
   );
+}
+
+function Root(props: KeyValueRootProps) {
+  return <Row {...props} />;
 }
 
 export interface KeyValueLabelProps extends BlockProps {
@@ -75,7 +98,15 @@ function Label({ icon, className, style, children }: KeyValueLabelProps) {
 
 export type KeyValueValueProps = BlockProps & ChangeHighlightProps;
 
-function Value({ className, style, children, ...change }: KeyValueValueProps) {
+function Value({ className, style, children, ...own }: KeyValueValueProps) {
+  // A list's `highlightChanges` is the default of its rows; a row's own props win.
+  const list = useContext(ListContext)?.change;
+  const change: ChangeHighlightProps = {
+    highlightChanges: own.highlightChanges ?? list?.highlightChanges,
+    changeValue: own.changeValue,
+    increasedLabel: own.increasedLabel ?? list?.increasedLabel,
+    decreasedLabel: own.decreasedLabel ?? list?.decreasedLabel,
+  };
   const ref = useRef<HTMLElement>(null);
   const tip = useTruncatedTip(ref, children);
   return (
@@ -106,9 +137,11 @@ function Hint({ className, style, children }: BlockProps) {
 export interface KeyValueProps extends Omit<KeyValueRootProps, 'children'>, ChangeHighlightProps {
   /** What the value is. */
   label?: ReactNode;
-  /** The value. `children` is used when it is not set. */
+  /** The value. `children` is used when it is not set. With neither, the row shows `emptyLabel`. */
   value?: ReactNode;
   children?: ReactNode;
+  /** Shown when there is no value. */
+  emptyLabel?: ReactNode;
   /** Shown before the label. */
   icon?: ReactNode;
   /** A secondary line: under the label when inline, under the value when stacked. */
@@ -123,8 +156,18 @@ export interface KeyValueProps extends Omit<KeyValueRootProps, 'children'>, Chan
 }
 
 /** One label with its value. Use it inside a `KeyValueList`, or on its own. */
-export function KeyValue({ label, value, children, icon, hint, parts, ...rest }: KeyValueProps) {
+export function KeyValue({
+  label,
+  value,
+  children,
+  emptyLabel = '—',
+  icon,
+  hint,
+  parts,
+  ...rest
+}: KeyValueProps) {
   const [change, root] = splitChange(rest);
+  const shown = value ?? children;
   const iconNode =
     icon != null &&
     icon !== false &&
@@ -134,7 +177,7 @@ export function KeyValue({ label, value, children, icon, hint, parts, ...rest }:
       {renderPart(parts?.label, { icon: iconNode, children: label }, (p) => (
         <Label {...p} />
       ))}
-      {renderPart(parts?.value, { children: value ?? children }, (p) => (
+      {renderPart(parts?.value, { children: shown == null || shown === '' ? emptyLabel : shown }, (p) => (
         <Value {...change}>{p.children}</Value>
       ))}
       {hint != null &&
@@ -149,7 +192,7 @@ KeyValue.Label = Label;
 KeyValue.Value = Value;
 KeyValue.Hint = Hint;
 
-export interface KeyValueListRootProps extends BlockProps {
+export interface KeyValueListRootProps extends BlockProps, Omit<ChangeHighlightProps, 'changeValue'> {
   /** `rows`: one row per item, sharing one label column. `columns`: side by side. `grid`: in `columns` columns. */
   layout?: 'rows' | 'columns' | 'grid';
   /** Most columns of the `grid` layout. Fewer are used when the list is narrow. */
@@ -182,16 +225,19 @@ function ListRoot({
   dividers,
   labelWidth,
   state,
+  highlightChanges,
+  increasedLabel,
+  decreasedLabel,
   'aria-label': ariaLabel,
   className,
   style,
   children,
 }: KeyValueListRootProps) {
-  // Only real rows make a description list; skeleton rows and messages sit in a plain element.
-  const Element = state ? 'div' : 'dl';
+  // Only real rows make a description list: around skeleton rows and messages the element has another
+  // role. It stays the same element, so the focus it holds after a retry survives the change of state.
   return (
-    <Element
-      role={state && ariaLabel ? 'group' : undefined}
+    <dl
+      role={state ? (ariaLabel ? 'group' : 'presentation') : undefined}
       aria-label={ariaLabel}
       aria-busy={state === 'loading' || undefined}
       data-umbra="key-value-list"
@@ -209,29 +255,28 @@ function ListRoot({
       }}
     >
       <ListContext
-        value={{ orientation: orientation ?? (layout === 'rows' ? 'inline' : 'stacked'), align, wrap }}
+        value={{
+          orientation: orientation ?? (layout === 'rows' ? 'inline' : 'stacked'),
+          align,
+          wrap,
+          change: { highlightChanges, increasedLabel, decreasedLabel },
+        }}
       >
         {children}
       </ListContext>
-    </Element>
+    </dl>
   );
 }
 
 export type KeyValueItem = Omit<KeyValueProps, 'children'> & { key?: string | number };
 
-export interface KeyValueListProps extends Omit<KeyValueListRootProps, 'state'> {
+export interface KeyValueListProps extends Omit<KeyValueListRootProps, 'state'>, DataStateProps {
   /** The rows as data. Use this or `children`. */
   items?: KeyValueItem[];
   /** The rows as `KeyValue` elements. */
   children?: ReactNode;
-  /** Shows skeleton rows in the final layout. */
-  loading?: boolean;
   /** Number of skeleton rows. */
   skeletonRows?: number;
-  /** Shown when there are no items. */
-  empty?: ReactNode;
-  /** Shown in place of the items when set. Put a retry action inside it. */
-  error?: ReactNode;
   /** Replace or hide named pieces. `item` receives the props of each row built from `items`. */
   parts?: {
     item?: Part<KeyValueProps>;
@@ -246,14 +291,14 @@ const skeletonWidths = ['7em', '5em', '9em', '6em'];
 
 function SkeletonRows({ rows }: { rows: number }) {
   return Array.from({ length: rows }, (_, i) => (
-    <Root key={i}>
+    <Row key={i} part="skeleton">
       <div className={styles.label}>
         <Skeleton width={skeletonWidths[i % skeletonWidths.length]} />
       </div>
       <div className={styles.value}>
         <Skeleton width="3em" className={styles.skeletonValue} />
       </div>
-    </Root>
+    </Row>
   ));
 }
 
@@ -263,38 +308,37 @@ export function KeyValueList({
   children,
   loading = false,
   skeletonRows = 4,
-  empty = 'No data',
+  empty,
   error,
+  onRetry,
+  retryLabel,
   parts,
   ...root
 }: KeyValueListProps) {
   const count = items ? items.length : Children.count(children);
-  const state = loading ? 'loading' : error ? 'error' : count === 0 ? 'empty' : undefined;
+  // The shared states: an error wins over loading, as in every data component.
+  const state = error ? 'error' : loading ? 'loading' : count === 0 ? 'empty' : undefined;
+  const message = dataState(
+    { loading, empty, error, onRetry, retryLabel },
+    { isEmpty: count === 0, defaultEmpty: { title: 'No data' } },
+  );
   return (
     <ListRoot {...root} state={state}>
       {state === 'loading'
         ? renderPart(parts?.skeleton, { rows: skeletonRows }, (p) => <SkeletonRows {...p} />)
-        : state === 'error'
-          ? renderPart(parts?.error, { children: error }, (p) => (
-              <div data-part="error" role="alert" className={styles.state}>
-                {p.children}
-              </div>
+        : state
+          ? renderPart(parts?.[state], { children: message }, (p) => (
+              <div className={styles.state}>{p.children}</div>
             ))
-          : state === 'empty'
-            ? renderPart(parts?.empty, { children: empty }, (p) => (
-                <div data-part="empty" className={styles.state}>
-                  {p.children}
-                </div>
+          : items
+            ? items.map(({ key, ...item }, i) => (
+                <Fragment key={key ?? i}>
+                  {renderPart(parts?.item, item, (p) => (
+                    <KeyValue {...p} />
+                  ))}
+                </Fragment>
               ))
-            : items
-              ? items.map(({ key, ...item }, i) => (
-                  <Fragment key={key ?? i}>
-                    {renderPart(parts?.item, item, (p) => (
-                      <KeyValue {...p} />
-                    ))}
-                  </Fragment>
-                ))
-              : children}
+            : children}
     </ListRoot>
   );
 }

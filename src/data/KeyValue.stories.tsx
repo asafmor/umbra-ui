@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { CalendarDays, MapPin, Wallet } from 'lucide-react';
-import { Button } from '../basics/Button';
+import { useState } from 'react';
 import { Card } from '../layout/Card';
 import { Columns } from '../layout/Columns';
 import { Section, Sheet } from '../stories/dataValues';
@@ -111,7 +111,27 @@ export const Layouts: Story = {
   ),
 };
 
-/** Loading shows skeleton rows in the final layout; empty and error replace the rows. */
+/** An error with a retry button: pressing it loads, then shows the rows. The focus is never lost. */
+function Failing() {
+  const [state, setState] = useState<'error' | 'loading' | 'done'>('error');
+  return (
+    <KeyValueList
+      aria-label="Failed"
+      items={contract}
+      loading={state === 'loading'}
+      error={state === 'error' && 'The details could not be loaded.'}
+      onRetry={() => {
+        setState('loading');
+        setTimeout(() => setState('done'), 400);
+      }}
+    />
+  );
+}
+
+/**
+ * Loading shows skeleton rows in the final layout; empty and error replace the rows. The states are the
+ * shared ones of every data component: text, a node, `{ title, description, icon, action }`, or `true`.
+ */
 export const States: Story = {
   render: () => (
     <Sheet>
@@ -130,16 +150,29 @@ export const States: Story = {
       <Section label="A given empty text" width={260}>
         <KeyValueList aria-label="Empty contract" items={[]} empty="No contract yet." />
       </Section>
-      <Section label="error, with a retry action" width={260}>
+      <Section label="error, with onRetry" width={260}>
+        <Failing />
+      </Section>
+      <Section label="error={true}: the default text" width={260}>
+        <KeyValueList aria-label="Failed by default" items={contract} error />
+      </Section>
+      <Section label="error as pieces, retryLabel" width={260}>
         <KeyValueList
-          aria-label="Failed"
+          aria-label="Failed in pieces"
           items={contract}
-          error={
-            <div style={{ display: 'grid', gap: 8, justifyItems: 'start' }}>
-              The details could not be loaded.
-              <Button size="small">Try again</Button>
-            </div>
-          }
+          error={{ title: 'No connection', description: 'The details are kept on the server.' }}
+          onRetry={() => {}}
+          retryLabel="Reload"
+        />
+      </Section>
+      <Section label="A row without a value; emptyLabel" width={260}>
+        <KeyValueList
+          aria-label="Missing values"
+          items={[
+            { label: 'Started', value: '17 Aug 2026' },
+            { label: 'Expires', value: null },
+            { label: 'Renewed', value: undefined, emptyLabel: 'Never' },
+          ]}
         />
       </Section>
     </Sheet>
@@ -190,6 +223,17 @@ export const Customised: Story = {
           parts={{ empty: (p) => <strong>{p.children}!</strong> }}
         />
       </Section>
+      <Section label="highlighted: key rows" width={240}>
+        <KeyValueList
+          aria-label="Key rows"
+          items={[
+            { label: 'Response time', value: '1.2 s', highlighted: true },
+            { label: 'Uptime', value: '99.9%' },
+            { label: 'Error rate', value: '0.4%', highlighted: true },
+            { label: 'Queue', value: '12' },
+          ]}
+        />
+      </Section>
       <Section label="Tokens" width={240}>
         <KeyValueList
           aria-label="With tokens"
@@ -227,6 +271,24 @@ export const LiveUpdates: Story = {
   render: () => (
     <LiveValues>
       {(value) => <KeyValue label="Orders" value={value} orientation="stacked" highlightChanges />}
+    </LiveValues>
+  ),
+};
+
+/** `highlightChanges` set once on the list is the default of every row; a row can still switch it off. */
+export const LiveList: Story = {
+  render: () => (
+    <LiveValues kinds={['up', 'down', 'same']} columns={3}>
+      {(value) => (
+        <KeyValueList
+          aria-label="Live list"
+          highlightChanges
+          items={[
+            { label: 'Orders', value },
+            { label: 'Not highlighted', value: `v${value}`, highlightChanges: false },
+          ]}
+        />
+      )}
     </LiveValues>
   ),
 };
