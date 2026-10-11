@@ -103,3 +103,83 @@ The 23 components were built by six agents that did not see each other's work. T
 | `WeekStrip` | No shrink by height. | The card scrolls; which line matters is the app's. |
 | `HorizontalScroller` | The fade is a mask, not a part. | It is not an element; `fade` and its token cover it. |
 | Not examined | `EntitySwitcher`'s caret at icon-only, the `Planner`'s first scroll in tab mode, the empty space of the `Comparison` strip. | No fault showed in the compositions; not looked at one by one. |
+
+## Review 1: time, data and inputs (2026-10-11)
+
+An independent reviewer (with two sub-reviewers) checked the 12 components against their specs and the definition of done, in a browser. Verdict: six of the twelve were not done (DateChip, WeekStrip, Planner, SequenceDots, MediaCard, Slider); four findings were blockers. Status is filled in by the fix pass. "Harness" is a page that mounts the built `dist/` under development React with arbitrary props.
+
+### Blockers
+
+| Id | Component | Finding | Reproduce | Status |
+|---|---|---|---|---|
+| S-1 | SequenceDots | "Maximum update depth exceeded" and the tree unmounts when about 50 or more marks must be dropped (55 items in 100px is fine, 60 crashes; also a resize from 2000px to 100px with 100 items) | `<div style={{width:100}}><SequenceDots items={60 items} /></div>` | open |
+| T-1 | Planner | "Next month" or "Previous month" disables itself under the focus at `maxMonth` or `minMonth`; focus lands on `<body>` | Story `time-planner--plain`: focus "Next month", Enter | open |
+| T-2 | WeekStrip, Planner | Focus in a grid cell while the component swaps to its error or empty state: focus goes to `<body>` | `<WeekStrip today="2026-10-14" onDayAction onRetry error={flag} />`, Tab, ArrowRight, set `flag`; same for Planner with `error`, and `empty` | open |
+| I-1 | Slider | Turning `readOnly` on for an uncontrolled slider discards the user's value (100 goes back to `defaultValue` 30; after `readOnly` off it is 0), with "changed from uncontrolled to controlled" | `<Slider defaultValue={30} readOnly={ro} />`, focus thumb, End, toggle `ro` on, Home, toggle off | open |
+
+### Major
+
+| Id | Component | Finding | Reproduce | Status |
+|---|---|---|---|---|
+| T-3 | DateChip in WeekStrip, Planner | The day number is cut, so a wrong date is drawn ("Wed 14" reads "Wed 1"), over day widths of 60 to 78px depending on density and `slotSize`; it is in a committed baseline, and `time.spec.ts` claims "never cut" | Story `time-weekstrip--default`, 1024x600, spacious | open |
+| T-4 | Planner | PageUp or PageDown from an outside-month day does nothing when the target is in the month shown; the other direction skips a month | Story `time-planner--default`: focus Sep 28, PageDown | open |
+| T-5 | WeekStrip | Pressable cells under 24px at the default `slotSize="small"`: compact 60x20 stacked with no gap; header 21px (default), 22px (spacious) | `<WeekStrip slotsPerDay={2} onAction onDayAction />` in a 420px box | open |
+| T-6 | Planner | With a side column the ARIA columns are off by one: 8 column headers, slot rows of 7 cells with no `aria-colindex`; a Monday slot sits under "Sunday" | Story `time-planner--default`, role dump | open |
+| T-7 | WeekStrip, Planner | An item whose `slot` index is past the last line becomes "+1" while a free slot is drawn beside it; `slot: 1.5` vanishes with no mark | Two items on one day with `slot: 0` and `slot: 2` | open |
+| M-1 | MediaCard | With `onPress` the title never clamps: `titleLines` is ignored, no ellipsis, no tooltip (15 lines where the same card with `href` has 2) | `<div style={{width:220}}><MediaCard title={long} onPress={fn} /></div>` | open |
+| M-2 | MediaCard | The title tooltip on keyboard focus of the card's link is gone within about 10ms; hover works | Story `data-mediacard--links-and-actions`, the linked card at 260px with a long title, Tab to it | open |
+| M-3 | MediaCard | In a column flex container without a height it collapses to its padding and hides everything (34px compact, 2px hero): in `Card > Stack > MediaCard` and in an app's own flex column | Harness; `size="content"` on the card avoids it | open |
+| M-4 | MediaCard | Loading does not hold the final layout in a content-sized place: compact 90px grows to 142px, hero 309 to 333, pair shrinks 82 to 74 | `loading` true then false, 320px wide | open |
+| C-1 | Comparison | `variant="strip"` while loading draws the 5-row table skeleton (188px, then 36px); in a 120px slot it overflows by 68px | `<Comparison variant="strip" loading />` | open |
+| C-2 | Comparison | A strip with a `summary` and `rows={[]}` shows "Nothing to compare" instead of the strip | `variant="strip" rows={[]} summary={{values:[1,2]}}` | open |
+| I-2 | Slider | The output never truncates, so a band label eats the track: with "100 · Very high" the track is 51px in a 200px slot, 0px at 130px, and the root overflows by 3px | Thresholds with labels "Low" / "Very high", `defaultValue={100}` | open |
+| I-3 | Slider | Dragging across a band whose label has another length makes the value jump (1px moves give 61…69, 70, then 96) | Same thresholds, `defaultValue={60}`, 260px slot | open |
+| I-4 | Stepper | Native form reset does not reset it (a Slider in the same form resets) | Uncontrolled `Stepper name defaultValue={3}` in a form, ArrowUp, reset | open |
+| I-5 | ColorScaleEditor | An unsorted list without `min` is collapsed: `[{from:60},{from:0},{from:30}]` becomes 60, 61, 62 | That `defaultValue`, no `min` | open |
+
+### Minor
+
+| Id | Component | Finding | Status |
+|---|---|---|---|
+| S-2 | SequenceDots | A `mark` part given as a function or a node logs React's missing-key warning | open |
+| S-3 | SequenceDots | `tone="accent"` marks are 2.56 to 2.59:1 against the card on all four tints | open |
+| S-4 | SequenceDots | Skeleton size differs from the data: `sm` dots 56px loading, 48px loaded; with `onAction` 66x10 loading, 120x24 loaded | open |
+| S-5 | SequenceDots | The tooltip of a pressable mark is not its description (`aria-describedby` is null), and the summary holds labels only | open |
+| M-5 | MediaCard | Compact width steps fire at a card width of 254 and 194px, not 220 and 160 (the query measures the content box); hero at 222 and 162 | open |
+| M-6 | MediaCard | Focus ring over a light picture (`behind`): 1.43:1 at the top edge | open |
+| M-7 | MediaCard | The article has no name while loading, or when `title` is replaced through `parts` (`aria-labelledby` points at a missing id); without a `title` an empty heading is rendered | open |
+| M-8 | MediaCard | With `meta`, `category` and `actions` hidden by `null` parts, an empty 28px footer row stays | open |
+| M-9 | MediaCard | `MediaCardActionsProps` is not exported though `parts.actions` uses it; the spec's props table lacks `selected` and `moreLabel` and still says "No `selected`"; no `selected` in the component's own stories | open |
+| C-3 | Comparison | Skeleton rows with bars are 26.3px, loaded rows 30px | open |
+| C-4 | Comparison | Very long values overflow and are clipped with no ellipsis or tooltip | open |
+| C-5 | Comparison | The second side carries `data-part="opposite"`, not `side` as the anatomy names it | open |
+| C-6 | Comparison, MediaCard stories | Sample icons use `EntityIcon name`, so headers read "Region A Region A" | open |
+| T-8 | Time | A selected slot with `aria-label` does not say "Selected" | open |
+| T-9 | Time | Loading does not hold the layout without `slotsPerDay` | open |
+| T-10 | Time | The `font` tokens do not resize `small` | open |
+| T-11 | Time | `slot`, `placeholder` and `day` have no `data-part` | open |
+| T-12 | Time | `weekEmpty: null` leaves a blank row | open |
+| T-13 | Time | An invalid `today`, `month` or `date` throws, while an invalid item date is dropped silently | open |
+| T-14 | Time | The two Shrinking stories are clipped at 1024x600 | open |
+| T-15 | Time | Steps fire at 132/68/60/52px, not 128/64/56/48; `hiddenItemsLabel` and `moreLabel` are missing from the props tables of the specs | open |
+| I-6 | SplitButton, Menu | Duplicate item ids unmount the tree when the menu opens | open |
+| I-7 | Stepper | `required` does not block submit | open |
+| I-8 | StarRating, Slider | A `FormField` label press focuses nothing | open |
+| I-9 | SplitButton | Drops `id` | open |
+| I-10 | StarRating | Without `name` it submits under a generated key | open |
+| I-11 | StarRating | The skeleton omits the value text | open |
+| I-12 | ColorScaleEditor | Its six `--umbra-color-scale-editor-*` tokens are missing from `docs/customisation-tables.md` | open |
+| I-13 | Stepper | Shows a clamped value but submits the raw one | open |
+| I-14 | Slider | The scrubber thumb target is 20px wide | open |
+| I-15 | Slider | Duplicate marks log a key error | open |
+| I-16 | SplitButton | `onPress` receives a press event | open |
+| I-17 | ColorScaleEditor | At 180px the colour select shows only its caret | open |
+| X-1 | ScheduleSlot spec | "fixture chip" is a sport term in a spec | open |
+
+### Test gaps named by the review
+
+No test for more than about 50 marks in SequenceDots; none presses Previous/Next up to a month limit, swaps state with focus in the grid, or pages from an outside day; no "nothing moves" measurement for loading in any of the 12, and no strip-loading case; MediaCard has no focus tooltip test, no long title on a button card, and widths are checked only at 300/210/150px; Comparison's strip width steps (320, 260) are untested; shrink tests in the time and inputs files sample fixed widths only (no sweep or boundary); inputs have no native reset, `required` or `readOnly` toggling tests.
+
+### Verified correct
+
+Tokens, parts and blocks of the data group (25 token values set on an ancestor applied); 1px shrink sweeps of the data group identical both ways and equal to a fresh mount; keyboard of the data group; 22 stories at four sizes and three densities, the other tints and right to left with no page scroll, no console output and axe clean; server rendering of all 12 components; no third-party type in any `dist/**/*.d.ts`; 12 sampled mutations all caught by the tests; locales, week starts, non-Latin digits, leap day and year boundary in the time group. Not verified: a real screen reader, Firefox and Safari, hydration.
