@@ -72,7 +72,8 @@
 
 .root[data-pulse] > .dot::after {
   display: block;
-  animation: pulse 1.6s var(--umbra-motion-easing-enter) infinite;
+  animation: pulse var(--umbra-status-indicator-pulse-duration, var(--umbra-motion-duration-pulse))
+    var(--umbra-motion-easing-enter) infinite;
 }
 
 /* A ring that grows and fades. With reduced motion the scale is 0: it does not grow, so nothing moves. */

@@ -1,6 +1,7 @@
 import type { CSSProperties, ReactNode } from 'react';
-import { IconSlot, RawIcon } from '../provider/icons';
+import { RawIcon } from '../provider/icons';
 import { cx, renderPart, type Part } from '../utils/parts';
+import { IconPart, type IconPartProps } from './IconPart';
 import shared from './shared.module.css';
 import styles from './TrendArrow.module.css';
 
@@ -39,8 +40,8 @@ function Root({ direction, tone = 'neutral', className, style, children }: Trend
   );
 }
 
-function TrendIcon({ children }: { children?: ReactNode }) {
-  return <IconSlot part="icon">{children}</IconSlot>;
+function TrendIcon(props: IconPartProps) {
+  return <IconPart {...props} />;
 }
 
 function Value({ className, style, children }: BlockProps) {

@@ -46,7 +46,7 @@ Each status has its own shape in both marks, so it never depends on colour:
 
 ### 1. Tokens
 
-`--umbra-status-indicator-color`, `--umbra-status-indicator-size` (the dot), `--umbra-status-indicator-gap`. The colours are the global semantic colours.
+`--umbra-status-indicator-color`, `--umbra-status-indicator-size` (the dot), `--umbra-status-indicator-gap`, `--umbra-status-indicator-pulse-duration` (default: the global `--umbra-motion-duration-pulse`, 1600ms). The colours are the global semantic colours.
 
 ### 2. Props
 
@@ -85,6 +85,12 @@ Each status has its own shape in both marks, so it never depends on colour:
 ## Open questions
 
 None.
+
+Resolved 2026-10-11 (review fix pass):
+
+- The pulse lasts `--umbra-motion-duration-pulse` (a new global token, 1600ms), no longer a literal.
+- Every block passes `className` and `style` to its element, and every part carries `data-part` with its name as written here (plan/decisions/07-customisation.md). `StatusIndicator.Indicator` dropped `className` and `style` when it held an icon.
+- No loading, empty or error state: the indicator is decorative (plan/interaction.md).
 
 Resolved 2026-10-10:
 

@@ -85,7 +85,7 @@ export const Variants: Story = {
         <Row label="Blocks">
           <StatusIndicator.Root status="info" variant="icon">
             <StatusIndicator.Label>By hand</StatusIndicator.Label>
-            <StatusIndicator.Indicator>
+            <StatusIndicator.Indicator className="by-hand" style={{ opacity: 1 }}>
               <Smile />
             </StatusIndicator.Indicator>
           </StatusIndicator.Root>

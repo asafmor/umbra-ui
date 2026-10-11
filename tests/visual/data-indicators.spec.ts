@@ -41,6 +41,7 @@ test('a tag is removed from the keyboard, and its button names what it removes',
   await removable.getByRole('button', { name: 'Clear Filter' }).focus();
   await page.keyboard.press('Space');
   await expect(removable.getByText('Last removed: Filter')).toBeVisible();
+  await expect(removable.locator('[data-umbra="tag"]')).toHaveCount(3);
 });
 
 test('a tag with little room truncates its label and keeps its icon and remove button', async ({ page }) => {
@@ -70,11 +71,208 @@ test('tag parts are replaced by a function or a node and hidden by null', async 
   await expect(parts.getByRole('button', { name: 'Remove By hand' })).toBeVisible();
 });
 
-test('the stripe of a tag has a text equivalent', async ({ page }) => {
+test('the stripe of a tag has a text equivalent, and a tooltip on hover and on keyboard focus', async ({
+  page,
+}) => {
   await open(page, 'data-tag--variants');
   const tag = page.locator('[data-umbra="tag"][data-stripe]').first();
   await expect(tag).toHaveText('Set(under review)');
-  await expect(tag).toHaveAttribute('title', 'under review');
+  // The library tooltip, not the native `title`, which the keyboard cannot reach.
+  await expect(tag).not.toHaveAttribute('title');
+  const tooltip = page.getByRole('tooltip');
+  await tag.hover();
+  await expect(tooltip).toHaveText('under review');
+  await page.keyboard.press('Escape');
+  await expect(tooltip).toHaveCount(0);
+
+  // A striped tag with a remove button shows it while that button has keyboard focus.
+  await open(page, 'data-avatar--right-to-left');
+  const remove = page.getByRole('button', { name: 'Remove Region 2' });
+  for (let i = 0; i < 6 && !(await remove.evaluate((el) => el === document.activeElement)); i++) {
+    await page.keyboard.press('Tab');
+  }
+  await expect(remove).toBeFocused();
+  await expect(tooltip).toHaveText('under review');
+});
+
+test('removing a tag with the keyboard moves the focus to the next tag, then the previous, then the holder (A9)', async ({
+  page,
+}) => {
+  await open(page, 'data-tag--behaviour-and-parts');
+  const removable = card(page, 'Removable');
+  const names = () =>
+    removable
+      .locator('[data-umbra="tag"] [data-part="remove"]')
+      .evaluateAll((els) => els.map((el) => el.getAttribute('aria-label')));
+  const all = await names();
+  // From the first tag: the focus lands on the tag that took its place.
+  await removable.getByRole('button', { name: all[0]!, exact: true }).focus();
+  await page.keyboard.press('Enter');
+  await expect(removable.getByRole('button', { name: all[1]!, exact: true })).toBeFocused();
+  // From the last tag: on the one before it.
+  const left = await names();
+  await removable.getByRole('button', { name: left.at(-1)!, exact: true }).focus();
+  await page.keyboard.press('Enter');
+  await expect(removable.getByRole('button', { name: left.at(-2)!, exact: true })).toBeFocused();
+  // The focus never falls to the page, down to the last tag: then the element that held the tags has it.
+  for (let rest = (await names()).length; rest > 0; rest--) {
+    await page.keyboard.press('Enter');
+    await expect(removable.locator('[data-umbra="tag"] [data-part="remove"]')).toHaveCount(rest - 1);
+    await expect.poll(() => page.evaluate(() => document.activeElement !== document.body)).toBe(true);
+  }
+  expect(await page.evaluate(() => document.activeElement?.closest('[data-umbra="card"]') !== null)).toBe(
+    true,
+  );
+});
+
+test('a tag without a label shows the empty label, and its skeleton and blocks carry what they are given', async ({
+  page,
+}) => {
+  await open(page, 'data-tag--variants');
+  const row = page.locator('div', { hasText: /^No label/ }).last();
+  await expect(row.locator('[data-umbra="tag"]').nth(0)).toHaveText('—');
+  await expect(row.locator('[data-umbra="tag"]').nth(1)).toHaveText('None');
+  await expect(page.locator('[data-umbra="tag"][data-loading]').first()).toHaveAttribute(
+    'data-part',
+    'skeleton',
+  );
+  // Blocks pass `className` and `style` on (A12).
+  for (const [story, part] of [
+    ['data-tag--behaviour-and-parts', 'icon'],
+    ['data-trendarrow--variants', 'icon'],
+    ['data-statusindicator--variants', 'indicator'],
+  ] as const) {
+    await open(page, story);
+    const block = page.locator(`[data-part="${part}"].by-hand`);
+    await expect(block).toHaveCount(1);
+    await expect(block).toHaveAttribute('style', /opacity/);
+    await expect(block).toHaveAttribute('aria-hidden', 'true');
+  }
+});
+
+test('the accent dot of a badge has 3:1 against the card on every tint (A3)', async ({ page }) => {
+  for (const tint of ['violet', 'teal', 'green', 'slate']) {
+    await page.goto(`/iframe.html?id=data-badge--variants&viewMode=story&globals=context:${tint}`);
+    const dot = page.locator('[data-umbra="badge"][data-tone="accent"] [data-part="indicator"][data-dot]');
+    await dot.first().waitFor();
+    const ratio = await dot.first().evaluate((el) => {
+      // Any CSS colour to sRGB, through a canvas.
+      const rgb = (css: string) => {
+        const canvas = document.createElement('canvas');
+        canvas.width = canvas.height = 1;
+        const context = canvas.getContext('2d')!;
+        context.fillStyle = css;
+        context.fillRect(0, 0, 1, 1);
+        return [...context.getImageData(0, 0, 1, 1).data].slice(0, 3);
+      };
+      const luminance = (css: string) => {
+        const [r, g, b] = rgb(css).map((v) => {
+          const c = v / 255;
+          return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+        });
+        return 0.2126 * r! + 0.7152 * g! + 0.0722 * b!;
+      };
+      const [light, dark] = [
+        luminance(getComputedStyle(el).backgroundColor),
+        luminance(getComputedStyle(el.closest('[data-umbra="card"]')!).backgroundColor),
+      ].sort((a, b) => b - a);
+      return (light! + 0.05) / (dark! + 0.05);
+    });
+    expect(ratio, tint).toBeGreaterThanOrEqual(3);
+  }
+});
+
+test('the badges on filled buttons stay inside their card at the smallest window (A11)', async ({ page }) => {
+  await page.setViewportSize({ width: 1024, height: 600 });
+  await page.goto('/iframe.html?id=data-badge--on-filled-surfaces&viewMode=story');
+  const first = page.locator('[data-umbra="card"]').first();
+  await first.waitFor();
+  const over = await first.evaluate((el) => {
+    const box = el.getBoundingClientRect();
+    return [...el.querySelectorAll('button')].filter((b) => b.getBoundingClientRect().right > box.right)
+      .length;
+  });
+  expect(over).toBe(0);
+});
+
+test('right to left: stripe, badge, status and icons move to the other side (A7, A15)', async ({ page }) => {
+  const sides = async (direction: string) => {
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await page.goto(
+      `/iframe.html?id=data-avatar--right-to-left&viewMode=story&globals=direction:${direction}`,
+    );
+    await page.locator('[data-umbra="tag"]').first().waitFor();
+    return page.evaluate(() => {
+      const box = (selector: string) => document.querySelector(selector)!.getBoundingClientRect();
+      const centre = (selector: string) => box(selector).x + box(selector).width / 2;
+      const tag = getComputedStyle(document.querySelector('[data-umbra="tag"][data-stripe]')!);
+      const square = box('[data-umbra="avatar"][data-shape="square"]');
+      const status = box('[data-umbra="avatar"][data-shape="square"] [data-part="status"]');
+      return {
+        dir: getComputedStyle(document.querySelector('[data-umbra="tag"]')!).direction,
+        stripeLeft: parseFloat(tag.borderLeftWidth) > parseFloat(tag.borderRightWidth),
+        badgeLeft:
+          centre('[data-umbra="badge"] [data-part="indicator"]') < centre('[data-umbra="badge"] button'),
+        dotLeft:
+          centre('[data-umbra="status-indicator"] [data-part="indicator"]') <
+          centre('[data-umbra="status-indicator"] [data-part="label"]'),
+        arrowLeft:
+          centre('[data-umbra="trend-arrow"] [data-part="icon"]') <
+          centre('[data-umbra="trend-arrow"] [data-part="value"]'),
+        // How far the centre of the status is from the near and the far edge of a square avatar.
+        statusFromLeft: +(status.x + status.width / 2 - square.x).toFixed(1),
+        statusFromRight: +(square.right - status.x - status.width / 2).toFixed(1),
+      };
+    });
+  };
+  // The story is right to left by itself; the toolbar's direction is overridden by it.
+  const rtl = await sides('rtl');
+  expect(rtl).toMatchObject({
+    dir: 'rtl',
+    stripeLeft: true,
+    badgeLeft: true,
+    dotLeft: false,
+    arrowLeft: false,
+  });
+
+  await page.goto('/iframe.html?id=data-avatar--avatars&viewMode=story&globals=direction:ltr');
+  const measure = () =>
+    page
+      .locator('[data-umbra="avatar"][data-shape="square"]:has([data-part="status"])')
+      .first()
+      .evaluate((el) => {
+        const square = el.getBoundingClientRect();
+        const status = el.querySelector('[data-part="status"]')!.getBoundingClientRect();
+        return [
+          +(status.x + status.width / 2 - square.x).toFixed(1),
+          +(square.right - status.x - status.width / 2).toFixed(1),
+        ];
+      });
+  const ltr = await measure();
+  await page.goto('/iframe.html?id=data-avatar--avatars&viewMode=story&globals=direction:rtl');
+  const mirrored = await measure();
+  // The exact mirror image: what was the distance from the right is now the distance from the left.
+  expect(mirrored).toEqual([ltr[1], ltr[0]]);
+  expect(rtl.statusFromLeft).toBeLessThan(rtl.statusFromRight);
+});
+
+test('on a solid tag the ring of the remove button takes the text colour, without setting the focus token (D10)', async ({
+  page,
+}) => {
+  await open(page, 'data-avatar--right-to-left');
+  const tag = page.locator('[data-umbra="tag"][data-variant="solid"]');
+  const remove = tag.getByRole('button');
+  for (let i = 0; i < 6 && !(await remove.evaluate((el) => el === document.activeElement)); i++) {
+    await page.keyboard.press('Tab');
+  }
+  const colours = await remove.evaluate((el) => ({
+    ring: getComputedStyle(el).outlineColor,
+    text: getComputedStyle(el).color,
+    token: getComputedStyle(el).getPropertyValue('--umbra-focus-color'),
+  }));
+  expect(colours.ring).toBe(colours.text);
+  // The tag no longer declares the global token, so a value an app sets on an ancestor reaches it.
+  expect(colours.token).toBe('');
 });
 
 test('a badge shows "99+" above its maximum and reads the full count', async ({ page }) => {
@@ -356,49 +554,4 @@ test('a badge on a filled surface has a ring that keeps 3:1 against the fill', a
   expect(await anchored('primary')).toMatch(/^rgb\(255, 255, 255\).* 1px$/);
   // On a neutral surface there is no ring.
   expect(await anchored('neutral')).toMatch(/^rgba\(0, 0, 0, 0\)/);
-});
-
-test('the accent dot of a badge has 3:1 against the card on every tint (A3)', async ({ page }) => {
-  for (const tint of ['violet', 'teal', 'green', 'slate']) {
-    await page.goto(`/iframe.html?id=data-badge--variants&viewMode=story&globals=context:${tint}`);
-    const dot = page.locator('[data-umbra="badge"][data-tone="accent"] [data-part="indicator"][data-dot]');
-    await dot.first().waitFor();
-    const ratio = await dot.first().evaluate((el) => {
-      // Any CSS colour to sRGB, through a canvas.
-      const rgb = (css: string) => {
-        const canvas = document.createElement('canvas');
-        canvas.width = canvas.height = 1;
-        const context = canvas.getContext('2d')!;
-        context.fillStyle = css;
-        context.fillRect(0, 0, 1, 1);
-        return [...context.getImageData(0, 0, 1, 1).data].slice(0, 3);
-      };
-      const luminance = (css: string) => {
-        const [r, g, b] = rgb(css).map((v) => {
-          const c = v / 255;
-          return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
-        });
-        return 0.2126 * r! + 0.7152 * g! + 0.0722 * b!;
-      };
-      const [light, dark] = [
-        luminance(getComputedStyle(el).backgroundColor),
-        luminance(getComputedStyle(el.closest('[data-umbra="card"]')!).backgroundColor),
-      ].sort((a, b) => b - a);
-      return (light! + 0.05) / (dark! + 0.05);
-    });
-    expect(ratio, tint).toBeGreaterThanOrEqual(3);
-  }
-});
-
-test('the badges on filled buttons stay inside their card at the smallest window (A11)', async ({ page }) => {
-  await page.setViewportSize({ width: 1024, height: 600 });
-  await page.goto('/iframe.html?id=data-badge--on-filled-surfaces&viewMode=story');
-  const first = page.locator('[data-umbra="card"]').first();
-  await first.waitFor();
-  const over = await first.evaluate((el) => {
-    const box = el.getBoundingClientRect();
-    return [...el.querySelectorAll('button')].filter((b) => b.getBoundingClientRect().right > box.right)
-      .length;
-  });
-  expect(over).toBe(0);
 });

@@ -79,10 +79,16 @@ No states.
 
 None.
 
+Resolved 2026-10-11 (review fix pass):
+
+- Every block passes `className` and `style` to its element, and every part carries `data-part` with its name as written here (plan/decisions/07-customisation.md). `TrendArrow.Icon` dropped `className` and `style` before.
+- Right to left: the arrow comes first in reading order (on the right), and its shape does not mirror: up is up in every locale.
+- No loading, empty or error state: the arrow is decorative (plan/interaction.md).
+
 Resolved 2026-10-10:
 
 - `positive` decides which direction is good; `tone` can still be forced.
 - Arrows (not triangles) for up and down and a dash for flat.
 - The value is not coloured.
 - No `delta` prop that derives the direction from a number: the app knows what counts as flat.
-- The arrows are not in the provider's icon map yet (it belongs to another group in this batch); the `icon` prop and part replace them. Adding `trendUp`, `trendDown` and `trendFlat` to the map is a follow-up.
+- The arrows come from the provider's icon map (`trendUp`, `trendDown`, `trendFlat`), so an app replaces them everywhere at once; the `icon` prop and part replace them for one arrow.

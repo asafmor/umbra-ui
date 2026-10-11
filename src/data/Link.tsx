@@ -1,7 +1,8 @@
 import type { CSSProperties, ReactNode } from 'react';
-import { Icon, IconSlot, RawIcon } from '../provider/icons';
+import { Icon, RawIcon } from '../provider/icons';
 import type { LinkRenderProps } from '../utils/link';
 import { cx, renderPart, type Part } from '../utils/parts';
+import { IconPart, type IconPartProps } from './IconPart';
 import styles from './Link.module.css';
 import shared from './shared.module.css';
 
@@ -68,16 +69,16 @@ function Root({
   });
 }
 
-function Label({ children }: { children?: ReactNode }) {
+function Label({ className, style, children }: IconPartProps) {
   return (
-    <span data-part="label" className={styles.label}>
+    <span data-part="label" className={cx(styles.label, className)} style={style}>
       {children}
     </span>
   );
 }
 
-function LinkIcon({ part = 'icon', children }: { part?: string; children?: ReactNode }) {
-  return <IconSlot part={part}>{children}</IconSlot>;
+function LinkIcon(props: IconPartProps & { part?: string }) {
+  return <IconPart {...props} />;
 }
 
 export interface LinkProps extends LinkRootProps {
