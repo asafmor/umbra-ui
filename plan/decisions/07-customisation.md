@@ -18,6 +18,8 @@ Rules:
 - **Parts**: each component publishes a fixed list of part names. A part accepts a node (replace), `null` (hide), or a function that receives the default part's props (wrap or adjust).
 - **Blocks**: the all-in-one component is itself built from its public blocks, so anything it does can be rebuilt by hand.
 - Every component also accepts `className` and `style` on its root, and exposes its state as `data-` attributes for CSS.
+- **`data-part`** (added 2026-10-11): every piece named in a spec's anatomy carries `data-part="<name>"`, whether or not it can be replaced, and so do the placeholders shown while loading (`skeleton`) and the empty and error states (`empty`, `error`). The value is the part's name exactly as it is written in `parts` and in the spec: camelCase (`externalIcon`, `sortIndicator`), never kebab-case. A replaced part is the app's node, so it carries the attribute only if the app adds it.
+- **Blocks** take `className` and `style` like the root does, and pass them to their element.
 - **Each component's spec lists all four layers**: its tokens, props, part names and blocks. The per-component customisation table in the docs is generated from the source, so it cannot go out of date.
 
 **Rejected**: props only (prop bloat; unusual cases stay impossible). Building blocks only (simple cases need too much code).

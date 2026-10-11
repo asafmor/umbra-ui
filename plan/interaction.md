@@ -30,9 +30,17 @@ Character: **crisp and minimal**. Short fades and small slides only; no sweeps, 
 ## Loading, empty, error
 
 - **Busy controls**: a loading button keeps focus, blocks presses and is announced through a named progress element (`loadingLabel`).
-- **Loading**: skeletons. Every data component has a `loading` prop that renders grey placeholder shapes in the component's final layout, so nothing moves when data arrives. No spinners by default.
-- **Empty**: every data component has an empty state (title + explanation, replaceable).
-- **Error**: every data component has an error state with a slot for a retry action.
+- **Loading**: skeletons, in the component's final layout, so nothing moves when data arrives. No spinners by default.
+- **Which states a component has** (decided 2026-10-11) depends on what it holds:
+
+| Kind | Components | States |
+|---|---|---|
+| Holds or fetches a data set | `List`, `DataTable`, `KeyValueList`, `BarChart`, `LineChart`, `DonutChart`, `RadarChart`, `Legend`, `Card` | `loading`, `empty`, `error`, `onRetry`, `retryLabel`: the props of `src/internal/dataState.tsx`, with the same types and defaults everywhere. `empty` and `error` take text, a node or `{ title, description, icon, action }`; `error` also takes `true` for the default text. `retryLabel` defaults to "Try again". |
+| Shows one value handed to it | `StatValue`, `SummaryTile`, `KeyValue`, `ValuePill`, `ProgressBar`, `LevelMeter`, `Tag` | `loading`, and a "no value" presentation when the value is `null` or `undefined`: an em dash (`emptyLabel`, default "—") in place of the value, with nothing drawn that would read as zero. No error state: the failure belongs to the container that fetched the value (a `Card` or a `KeyValueList`). |
+| Decorative or structural | `Badge`, `Avatar`, `EntityIcon`, `TrendArrow`, `StatusIndicator`, `GroupHeader`, `Banner`, `Link`, `EmptyState`, `ListItem` | None. `Avatar` and `EntityIcon` fall back to initials when their image fails; a `ListItem` is loaded, emptied and failed by its `List`. |
+
+- **Empty**: title and explanation, replaceable. **Error**: announced (`role="alert"`), with a retry button when `onRetry` is given.
+- **Focus is never lost in a swap.** When an empty or error state that holds the focus goes away (after Retry, or when data arrives), the focus moves to the first tab stop of the component, or to the component itself when it has none.
 
 ## Live updates
 

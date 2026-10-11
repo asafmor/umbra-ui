@@ -1152,3 +1152,15 @@ test.describe('column widths', () => {
     ).toBe('5%');
   });
 });
+
+test('after Retry the focus moves into the table instead of falling to the page (D4)', async ({ page }) => {
+  await open(page, 'states');
+  const retry = page.getByRole('button', { name: 'Try again' });
+  await retry.focus();
+  await page.keyboard.press('Enter');
+  await expect(retry).toHaveCount(0);
+  // The error state held the focus and is gone: the focus is inside the table, not on <body>.
+  await expect
+    .poll(() => page.evaluate(() => document.activeElement?.closest('[data-umbra="data-table"]') !== null))
+    .toBe(true);
+});
