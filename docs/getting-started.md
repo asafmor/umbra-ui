@@ -91,17 +91,20 @@ Two colours are fixed and do not follow the theme: violet means **selected** and
 ## 4. Build the frame
 
 ```tsx
-import { Bell, Plus } from 'lucide-react';
+import { Bell, CircleHelp, Plus } from 'lucide-react';
 import { useState } from 'react';
 import {
   AppShell,
   Card,
   Columns,
   CommandPalette,
+  ContextBlock,
+  EntitySwitcher,
   IconButton,
   Page,
   PrimaryAction,
   PrimaryNav,
+  ShortcutsSheet,
   SubNav,
   TopBar,
   UmbraProvider,
@@ -117,10 +120,12 @@ const pages: NavItem[] = [
   { id: 'summary', label: 'Summary' },
   { id: 'activity', label: 'Activity' },
 ];
+const regions = ['North', 'South', 'West'].map((label) => ({ id: label, label }));
 
 export function App() {
   const [section, setSection] = useState('overview');
   const [page, setPage] = useState('summary');
+  const [region, setRegion] = useState('North');
 
   return (
     <UmbraProvider brand="#2a2f8f">
@@ -140,11 +145,25 @@ export function App() {
                 }))}
               />
             }
-            actions={<IconButton icon={<Bell />} label="Notifications" badge={3} />}
+            actions={
+              <>
+                <IconButton icon={<Bell />} label="Notifications" badge={3} />
+                <ShortcutsSheet trigger={<IconButton icon={<CircleHelp />} label="Keyboard shortcuts" />} />
+              </>
+            }
+            context={<ContextBlock primary={`Region ${region}`} secondary="Quarter close in 6 days" live />}
             primaryAction={<PrimaryAction label="New order" icon={<Plus />} />}
           />
         }
-        subNav={<SubNav label="Overview" items={pages} value={page} onChange={setPage} />}
+        subNav={
+          <SubNav
+            start={<EntitySwitcher aria-label="Region" items={regions} value={region} onChange={setRegion} />}
+            label="Overview"
+            items={pages}
+            value={page}
+            onChange={setPage}
+          />
+        }
       >
         <Page>
           <Columns>
@@ -163,6 +182,12 @@ export function App() {
 - `AppShell` is exactly the size of the window and never scrolls.
 - Navigation items are `{ id, label, href?, icon?, items?, disabled? }`. `items` makes a dropdown.
 - `history` adds back and forward buttons. `commandPalette` adds the search trigger; `Mod+K` opens it.
+- `context` is the status at the end of the bar. `ContextBlock` gives it two lines and a chip: `live`
+  makes the chip a clock, `time` shows one moment, `chip` any short value.
+- `start` of the `SubNav` is the place for an `EntitySwitcher`: the thing the whole page is about, with
+  steps to the one before and after it and a picker with a search.
+- A mounted `ShortcutsSheet` lists every shortcut that has a label, and `?` opens it
+  ([recipe](recipes.md#17-a-tour-and-the-sheet-of-shortcuts)).
 - With a router, give the items `href` and pass `renderLink` to the navs
   ([recipe](recipes.md#11-the-shell-with-a-router)).
 - As the window narrows the bars shed content in a fixed order; nothing wraps or overflows.
@@ -196,15 +221,16 @@ A part takes a node (replace it), `null` (hide it) or a function that receives t
 
 ## What is in the box
 
-| Group    | Components                                                                                                                               |
-| -------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| Layout   | `AppShell`, `Page`, `Columns`, `Stack`, `Slot`, `Card`, `SectionTitle`, `ScrollArea`, `Accordion`                                        |
-| Shell    | `TopBar`, `PrimaryNav`, `SubNav`, `VerticalNav`, `PageHeader`, `PrimaryAction`, `HistoryButtons`, `ShortcutBar`                          |
-| Data     | `List`, `ListItem`, `DataTable`, `KeyValue`, `StatValue`, `SummaryTile`, `Tag`, `Badge`, `ValuePill`, `Avatar`, and more                 |
-| Meters   | `ProgressBar`, `LevelMeter`                                                                                                              |
-| Charts   | `LineChart`, `BarChart`, `DonutChart`, `RadarChart`, from `umbra-ui/charts`                                                              |
-| Inputs   | `Button`, `IconButton`, `TextField`, `SearchField`, `Select`, `Checkbox`, `RadioGroup`, `Toggle`, `FormField`, `Tabs`, `SegmentedFilter` |
-| Overlays | `Modal`, `ConfirmDialog`, `Popover`, `Menu`, `Tooltip`, `CommandPalette`, `ActionBar`                                                    |
+| Group    | Components                                                                                                                                                                                                     |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Layout   | `AppShell`, `Page`, `Columns`, `Stack`, `Slot`, `Card`, `SectionTitle`, `ScrollArea`, `Accordion`, `WidgetBoard`, `HorizontalScroller`                                                                         |
+| Shell    | `TopBar`, `PrimaryNav`, `SubNav`, `VerticalNav`, `PageHeader`, `PrimaryAction`, `HistoryButtons`, `ShortcutBar`, `ContextBlock`, `EntitySwitcher`                                                              |
+| Data     | `List`, `ListItem`, `DataTable`, `KeyValue`, `StatValue`, `SummaryTile`, `Tag`, `Badge`, `ValuePill`, `Avatar`, `MediaCard`, `Comparison`, and more                                                            |
+| Time     | `Planner`, `WeekStrip`, `ScheduleSlot`, `DateChip`                                                                                                                                                             |
+| Meters   | `ProgressBar`, `LevelMeter`, `PieIndicator`, `DivergingMeter`                                                                                                                                                  |
+| Charts   | `LineChart`, `BarChart`, `DonutChart`, `RadarChart`, `Sparkline`, `Heatmap`, `Scatter`, from `umbra-ui/charts`                                                                                                 |
+| Inputs   | `Button`, `IconButton`, `TextField`, `SearchField`, `Select`, `Checkbox`, `RadioGroup`, `Toggle`, `FormField`, `Tabs`, `SegmentedFilter`, `Slider`, `Stepper`, `StarRating`, `SplitButton`, `ColorScaleEditor` |
+| Overlays | `Modal`, `ConfirmDialog`, `Popover`, `Menu`, `Tooltip`, `CommandPalette`, `ActionBar`, `Spotlight`, `ShortcutsSheet`                                                                                           |
 
 The [README](../README.md#components) has one line on each.
 
@@ -241,6 +267,10 @@ The stylesheet relies on current CSS and has no fallbacks for older browsers.
 - Right to left needs `dir="rtl"` on the page or a right-to-left `locale` on the provider; it does not
   depend on `lang`.
 - React 19.0 or later. No React 18.
+- Some parts load on demand, with a dynamic `import()`: the overflow menu of `Card`, `SectionTitle`,
+  `PageHeader`, `TopBar` and `GroupHeader`, and the popover of a card that its stack collapsed. Vite and
+  Rollup make a chunk of each without setup. esbuild keeps everything in one file unless
+  `splitting: true` is set; with it, the shared code is a chunk that loads first.
 - Node 20 or later, when you render on the server. In the browser the package needs a bundler (Vite,
   webpack, Next.js): it is ESM, and it imports its dependencies by name.
 
@@ -328,12 +358,12 @@ function of `next.config.js`.
 
 ## Next
 
-| Guide                                           | Read it for                                                            |
-| ----------------------------------------------- | ---------------------------------------------------------------------- |
-| [Layout](layout.md)                             | How space is shared, and what happens as it shrinks                    |
-| [Theming](theming.md)                           | Brand, context, density, tokens, fonts, icons, direction               |
-| [Customisation](customisation.md)               | The four layers, router links, translating built-in strings            |
-| [Recipes](recipes.md)                           | Thirteen whole screens, from a first page to a table with bulk actions |
-| [Customisation tables](customisation-tables.md) | Every component's tokens, props, parts and blocks                      |
+| Guide                                           | Read it for                                                        |
+| ----------------------------------------------- | ------------------------------------------------------------------ |
+| [Layout](layout.md)                             | How space is shared, and what happens as it shrinks                |
+| [Theming](theming.md)                           | Brand, context, density, tokens, fonts, icons, direction           |
+| [Customisation](customisation.md)               | The four layers, router links, translating built-in strings        |
+| [Recipes](recipes.md)                           | Nineteen whole screens, from a first page to a planner and a board |
+| [Customisation tables](customisation-tables.md) | Every component's tokens, props, parts and blocks                  |
 
 And three apps to copy from: `examples/basic`, `examples/dashboard` and `examples/advanced`.

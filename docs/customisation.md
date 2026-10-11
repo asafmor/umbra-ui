@@ -201,6 +201,8 @@ A state attribute is present while the state holds and absent otherwise. A few c
 - Prefer a token to a rule. A rule on `[data-part]` works until that piece is rearranged; a token is
   part of the component's contract.
 - Do not change `display`, `position`, sizes or `overflow` on a root. The layout system relies on them.
+- A `data-` attribute of your own on a component is not passed to its element, and TypeScript does not
+  say so. For a hook of your own (the target of a `Spotlight` step, a test) use `className`.
 
 ## Reading the generated tables
 
@@ -369,6 +371,10 @@ for one. The generated descriptions of charts are made of your own labels and of
 In an app with many screens, wrap the components you use most once, with your strings filled in, and
 import the wrappers.
 
+Dates are the exception: `Planner`, `WeekStrip` and `DateChip` write the names of months and weekdays
+themselves, in the provider's `locale`. The dates and their text are Gregorian whatever calendar the
+locale prefers; the digits and the names are the locale's.
+
 ## When not to customise
 
 Reaching for layer 3 or 4 is sometimes a sign that another component already does the job.
@@ -389,6 +395,13 @@ Reaching for layer 3 or 4 is sometimes a sign that another component already doe
 | Drawing your own spinner                                    | The `loading` prop: skeletons in the final layout                              |
 | Recolouring selected rows or the primary button             | Nothing: those two colours are fixed ([why](theming.md#what-is-not-themeable)) |
 | Letting the page scroll for one long screen                 | A card. Its body scrolls.                                                      |
+| Drawing a tiny chart in a table cell with a `LineChart`     | `Sparkline`, or `sparklineColumn` for the whole column                         |
+| Putting a `Menu` button beside a `Button`                   | `SplitButton`                                                                  |
+| Building a number field from a `TextField` and two buttons  | `Stepper`, or `Slider` when the exact value matters less than the place        |
+| Laying out cards of different heights in a CSS grid         | `WidgetBoard`                                                                  |
+| Writing two lines and a time into the `context` of a bar    | `ContextBlock`                                                                 |
+| Listing the app's shortcuts in a `Modal` by hand            | `ShortcutsSheet`: it reads the provider's registry                             |
+| Making a month view from a `DataTable`                      | `Planner`; `WeekStrip` for one week in a card                                  |
 
 If none fits and you are four layers deep, that is what the layers are for. Keep the blocks: they carry
 the keyboard handling, the accessible names and the shrink rules that a `div` of your own would not.
