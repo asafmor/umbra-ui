@@ -1,3 +1,4 @@
+import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Locator, type Page } from '@playwright/test';
 
 // Charts: keyboard, tooltip, legend, the data states, and each step of "show less as the slot shrinks".
@@ -255,14 +256,112 @@ test.describe('Chart accessibility and states', () => {
     await expect(charts.nth(0)).toHaveAttribute('aria-busy', 'true');
     await expect(charts.nth(0).getByRole('listbox')).toHaveCount(0);
     await expect(charts.nth(0).locator('[data-umbra="skeleton"]').first()).toBeAttached();
-    await expect(charts.nth(1)).toHaveText(/No data/);
-    await expect(charts.nth(3)).toHaveText(/No orders in this period\./);
+    await expect(charts.nth(0).locator('[data-part="skeleton"]')).toHaveAttribute('aria-hidden', 'true');
+    await expect(charts.nth(1).locator('[data-part="empty"]')).toHaveText('No data');
+    await expect(charts.nth(3).locator('[data-part="empty"]')).toHaveText('No orders in this period.');
+    // Nothing to summarise: the figure is not described by a sentence about no data.
+    await expect(charts.nth(1)).not.toHaveAttribute('aria-describedby');
+    await expect(charts.nth(1).getByRole('table')).toHaveCount(0);
 
     const error = charts.nth(2).getByRole('alert');
+    await expect(error).toHaveAttribute('data-part', 'error');
     await expect(error).toContainText('Retries: 0.');
     await error.getByRole('button', { name: 'Try again' }).focus();
     await page.keyboard.press('Enter');
     await expect(error).toContainText('Retries: 1.');
+    // The button is still there, and still has the focus.
+    await expect(error.getByRole('button', { name: 'Try again' })).toBeFocused();
+  });
+
+  test('the states are the shared ones: `error` takes true and pieces, and Retry keeps the focus (C6)', async ({
+    page,
+  }) => {
+    await open(page, 'charts-linechart--states');
+    const chart = tile(page, 'retry');
+    // `true` gives the default text, as on a List or a DataTable.
+    await expect(chart.getByRole('alert')).toContainText('Something went wrong');
+    await chart.getByRole('button', { name: 'Try again' }).focus();
+    await page.keyboard.press('Enter');
+    await expect(chart.getByRole('alert')).toHaveCount(0);
+    await expect(chart.getByRole('option')).toHaveCount(24);
+    // The button is gone: the focus moved into the chart instead of falling to the page.
+    await expect
+      .poll(() => page.evaluate(() => document.activeElement?.closest('[data-umbra="line-chart"]') !== null))
+      .toBe(true);
+
+    await open(page, 'charts-donutchart--states');
+    const pieces = page.getByRole('figure', { name: 'Budget used' }).getByRole('alert');
+    await expect(pieces.locator('[data-part="title"]')).toHaveText('The budget could not be loaded');
+    await expect(pieces.locator('[data-part="description"]')).toContainText('Retries: 0.');
+    await open(page, 'charts-barchart--states');
+    const empty = page.locator('figure [data-part="empty"]');
+    await expect(empty.locator('[data-part="title"]')).toHaveText('No orders in this period');
+    await expect(empty.locator('[data-part="description"]')).toHaveText(
+      'Choose a longer period to see more.',
+    );
+  });
+
+  test('with every series switched off the chart says so, keeps its legend, and has no empty list (C4)', async ({
+    page,
+  }) => {
+    for (const [story, id, names] of [
+      ['charts-linechart--interaction', 'controlled', ['Plan', 'Actual']],
+      ['charts-barchart--interaction', 'vertical', ['Plan', 'Actual']],
+      ['charts-donutchart--interaction', 'segments', ['Web', 'Phone', 'Partners', 'Other']],
+      ['charts-radarchart--interaction', 'several', ['Region 1', 'Region 2', 'Region 3']],
+    ] as const) {
+      await open(page, story);
+      const chart = tile(page, id);
+      for (const name of names) await chart.getByRole('button', { name, exact: true }).click();
+      await expect(chart.locator('[data-part="empty"]'), story).toHaveText('All series are hidden');
+      await expect(chart).toHaveAttribute('data-state', 'empty');
+      await expect(chart.getByRole('listbox')).toHaveCount(0);
+      await expect(chart.locator('[tabindex="0"]:not(button)')).toHaveCount(0);
+      const { violations } = await new AxeBuilder({ page }).include('figure').analyze();
+      expect(violations.map((v) => v.id)).toEqual([]);
+      // The legend is still there, so a series can be switched back on.
+      await chart.getByRole('button', { name: names[0], exact: true }).click();
+      await expect(chart.locator('[data-part="empty"]')).toHaveCount(0);
+      await expect(chart.getByRole('listbox')).toHaveCount(1);
+    }
+    // The text is a prop, and the state shows at once when the chart starts with everything hidden.
+    await open(page, 'charts-linechart--states');
+    await expect(tile(page, 'hidden').locator('[data-part="empty"]')).toHaveText('All series are hidden');
+    await expect(has(tile(page, 'hidden'), 'legend').getByRole('button')).toHaveCount(2);
+  });
+
+  test('the skeleton, empty, error and tooltip parts take a node, null and a function (C17)', async ({
+    page,
+  }) => {
+    await open(page, 'charts-linechart--state-parts');
+    await expect(has(tile(page, 'skeleton-node'), 'skeleton')).toHaveText('Loading orders…');
+    await expect(tile(page, 'skeleton-node').locator('[data-umbra="skeleton"]')).toHaveCount(0);
+    await expect(has(tile(page, 'skeleton-null'), 'skeleton').locator('*')).toHaveCount(0);
+    await expect(has(tile(page, 'empty-node'), 'plot')).toHaveText('Nothing to draw yet.');
+    await expect(has(tile(page, 'empty-null'), 'plot').locator('*')).toHaveCount(0);
+    // A function receives the default state as `children`.
+    await expect(tile(page, 'empty-function').locator('[data-part="empty"] [data-part="title"]')).toHaveText(
+      'No orders',
+    );
+    await expect(tile(page, 'error-node').getByRole('alert')).toHaveText('Could not load the orders.');
+    await expect(has(tile(page, 'error-null'), 'plot').locator('*')).toHaveCount(0);
+    const error = tile(page, 'error-function').getByRole('alert');
+    await expect(error).toContainText('Orders did not load');
+    await expect(error.getByRole('button', { name: 'Load again' })).toBeVisible();
+
+    await tile(page, 'tooltip-node').getByRole('option', { name: 'Actual, Dec: 90' }).hover();
+    await expect(tooltip(tile(page, 'tooltip-node'))).toHaveText('Orders');
+    await tile(page, 'tooltip-null').getByRole('option', { name: 'Actual, Dec: 90' }).hover();
+    await expect(ring(tile(page, 'tooltip-null'))).toBeAttached();
+    await expect(tooltip(tile(page, 'tooltip-null'))).toHaveCount(0);
+  });
+
+  test('a donut named by another element calls its value by `valueLabel` (C7)', async ({ page }) => {
+    await open(page, 'charts-donutchart--parts-and-blocks');
+    const chart = tile(page, 'named');
+    await expect(page.getByRole('figure', { name: 'Budget', exact: true })).toHaveCount(1);
+    await expect(chart.getByRole('option')).toHaveAccessibleName('Used: 81% (81 / 100)');
+    await expect(chart.getByRole('columnheader')).toHaveText('Used');
   });
 
   test('the tooltip part receives the title and the rows', async ({ page }) => {
@@ -465,25 +564,25 @@ test.describe('RadarChart', () => {
     const chart = tile(page, 'several');
     await marks(chart).focus();
     await page.keyboard.press('ArrowRight');
-    expect(await current(chart)).toBe('Team A, Speed: 16');
+    expect(await current(chart)).toBe('Region 1, Speed: 16');
     await page.keyboard.press('ArrowRight');
-    expect(await current(chart)).toBe('Team A, Quality: 12');
+    expect(await current(chart)).toBe('Region 1, Quality: 12');
     await page.keyboard.press('ArrowDown');
-    expect(await current(chart)).toBe('Team B, Quality: 15');
+    expect(await current(chart)).toBe('Region 2, Quality: 15');
     await expect(tooltip(chart)).toContainText('Quality');
-    await expect(tooltip(chart)).toContainText('Team C');
+    await expect(tooltip(chart)).toContainText('Region 3');
     await inside(tooltip(chart), chart);
     await page.keyboard.press('Enter');
-    await expect(page.getByText('Pressed: Team B, Quality, 15.')).toBeVisible();
+    await expect(page.getByText('Pressed: Region 2, Quality, 15.')).toBeVisible();
 
-    await chart.getByRole('button', { name: 'Team B' }).click();
+    await chart.getByRole('button', { name: 'Region 2' }).click();
     await expect(chart.locator('[data-series="b"]')).toHaveCount(0);
     await expect(chart.getByRole('option')).toHaveCount(12);
     // Each series has its own point shape, in the chart and in the legend.
     await expect(chart.locator('[data-series="c"] [data-shape="diamond"]')).toHaveCount(6);
-    await expect(chart.getByRole('button', { name: 'Team C' }).locator('[data-kind="diamond"]')).toHaveCount(
-      1,
-    );
+    await expect(
+      chart.getByRole('button', { name: 'Region 3' }).locator('[data-kind="diamond"]'),
+    ).toHaveCount(1);
   });
 
   test('sheds the legend, then the values, then the axis labels, and labels stay inside', async ({

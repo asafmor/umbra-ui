@@ -73,6 +73,8 @@ export interface DonutChartRootProps extends ChartCommonProps {
   thresholds?: { from: number; tone: DonutTone }[];
   /** Any CSS colour for the single value; wins over `tone`. */
   color?: string;
+  /** What the single value is called for screen readers when the chart is named by `aria-labelledby`. */
+  valueLabel?: string;
   /** Replace or hide named pieces. */
   parts?: ChartParts;
   /** The blocks to draw, in order. */
@@ -91,6 +93,7 @@ function Root({
   tone = 'default',
   thresholds,
   color,
+  valueLabel = 'Value',
   children,
   ...common
 }: DonutChartRootProps) {
@@ -98,7 +101,7 @@ function Root({
   const single = !data;
   const format = common.formatValue ?? numberFormat(locale, { maximumFractionDigits: 2 });
   const percent = numberFormat(locale, { style: 'percent', maximumFractionDigits: 0 });
-  const name = common['aria-label'] ?? 'Value';
+  const name = common['aria-label'] ?? valueLabel;
   const all: (DonutSegment & { color: string; fill: FillKind })[] = single
     ? [
         {

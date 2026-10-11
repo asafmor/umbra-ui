@@ -359,12 +359,6 @@
   color: var(--umbra-color-base-text-secondary);
 }
 
-.message {
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 /* Skeletons in the shape of each chart. */
 .skeletonRing {
   mask: radial-gradient(closest-side, transparent 72%, #000 73%);

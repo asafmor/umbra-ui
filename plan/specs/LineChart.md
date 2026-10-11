@@ -71,16 +71,17 @@ Shared by the four charts: `--umbra-chart-font`, `--umbra-chart-fg` (axis and la
 | `labels` | boolean | `false` | Direct labels on the chart (see Variants) |
 | `formatValue` | `(value) => string` | `Intl.NumberFormat` in the provider's locale | Text of values in labels, tooltip, names and table |
 | `onPointPress` | `(point) => void` | — | Click, Enter or Space on a point. `point` is `{ seriesId, seriesLabel, index, x, value }` |
-| `loading` | boolean | `false` | Shows the skeleton |
-| `empty` | node | "No data" | Shown when there is no data |
-| `error` | node | — | When set, shown in place of the chart |
-| `onRetry` / `retryLabel` | function / string | — / "Retry" | Adds a retry button to the error state |
+| `loading` | boolean | `false` | Shows the skeleton. The data-state props are the shared ones (`src/internal/dataState.tsx`), the same as on `List` and `DataTable` |
+| `empty` | text, node or `{ title, description, icon, action }` | "No data" | Shown when there is no data |
+| `allHiddenLabel` | string | "All series are hidden" | Shown in place of the plot when the legend has switched every series off. The legend stays |
+| `error` | text, node, `{ title, description, icon, action }` or `true` | — | When set, shown in place of the chart, also while `loading`. `true` gives "Something went wrong" |
+| `onRetry` / `retryLabel` | function / string | — / "Try again" | Adds a retry button to the error state. When the state goes away while it holds the focus, the focus moves to the points instead of being lost |
 | `pointsLabel` / `legendLabel` | string | "Data points" / "Legend" | Accessible names of the list of points and of the legend |
 | `height` | `fill`, `content`, number | `fill` | `fill` takes the height of the parent and falls back to the content's height where the parent has none (flowing content, a popover, a modal body, an accordion panel). `content` is always as tall as the content. A number is pixels. The content height of a chart is `--umbra-chart-content-height` (240px) for the plot, plus the legend. |
 
 ### 3. Parts
 
-`legend`, `tooltip`, `skeleton`, `empty`, `error`. Each accepts a node (replace), `null` (hide) or a function receiving the default part's props.
+`legend`, `tooltip`, `skeleton`, `empty`, `error`. Each accepts a node (replace), `null` (hide) or a function receiving the default part's props. `empty` and `error` receive `{ children }`, the default state (as in `DataTable`); `tooltip: null` shows no tooltip.
 
 ### 4. Blocks
 
@@ -130,7 +131,9 @@ Resolved 2026-10-10:
 - Not a layout child: a chart goes inside a `Card` or `Slot`, so it takes no `size` or `priority`.
 - The points are a `listbox` with `aria-activedescendant`: one tab stop, real option names, no roving DOM focus inside SVG.
 - The tooltip is the chart's own element inside the plot, not a portal, so it cannot leave the slot. It is clipped if the plot is shorter than the tooltip.
-- Data states are implemented in `src/charts/internal/Frame.tsx` with the agreed prop names (`loading`, `empty`, `error`, `onRetry`, `retryLabel`); `src/internal/dataState.tsx` did not exist in this checkout.
+- Data states come from `src/internal/dataState.tsx` (changed 2026-10-11, review C6): the same props, types and defaults as `List` and `DataTable`. The retry label is "Try again" (was "Retry"), `error` wins over `loading`, and the `error` part receives `{ children }` only (it had `onRetry` and `retryLabel`).
+- With every series switched off (review C4) the chart shows the empty state with `allHiddenLabel` and keeps its legend, so a series can be switched back on. Bare axes were rejected: they read as a chart of nothing. The list of points is a `listbox` and a tab stop only while it has points.
+- The hidden summary is left out when there is no data (review C8); it read "0: ".
 - While loading, the legend's place is held by a placeholder line, so the plot does not move when the data arrives.
 - The generated summary lists the series and the range; apps that need a sentence in their own language set `description`.
 - A numeric y axis does not start at zero unless `area` is set; `yDomain` sets it.

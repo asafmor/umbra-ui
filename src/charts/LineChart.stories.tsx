@@ -19,14 +19,11 @@ const planActual: LineSeries[] = [
   { id: 'plan', label: 'Plan', data: over(plan) },
   { id: 'actual', label: 'Actual', data: over(actual) },
 ];
-// A running total over 45 minutes, held between events.
-const running = (id: string, label: string, steps: [number, number][]): LineSeries => ({
+// Jobs waiting in a queue over a day: each count holds until the next change.
+const held = (id: string, label: string, steps: [number, number][]): LineSeries => ({
   id,
   label,
-  data: [[0, 0] as [number, number], ...steps, [45, steps.at(-1)![1]] as [number, number]].map(([x, y]) => ({
-    x,
-    y,
-  })),
+  data: [...steps, [24, steps.at(-1)![1]] as [number, number]].map(([x, y]) => ({ x, y })),
 });
 const levels = ['Tier C', 'Tier B', 'Tier A'];
 const moved = 'var(--umbra-color-semantic-success)';
@@ -72,23 +69,26 @@ export const Variants: Story = {
       </Tile>
       <Tile title="Step lines" id="step">
         <LineChart
-          aria-label="Running total, two teams"
+          aria-label="Jobs waiting, by region"
           curve="step"
           points={false}
           series={[
-            running('a', 'Team A', [
-              [6, 0.1],
-              [14, 0.45],
-              [22, 0.5],
-              [37, 0.72],
+            held('r1', 'Region 1', [
+              [0, 12],
+              [5, 30],
+              [9, 64],
+              [13, 41],
+              [18, 22],
             ]),
-            running('b', 'Team B', [
-              [9, 0.05],
-              [30, 0.15],
+            held('r2', 'Region 2', [
+              [0, 8],
+              [7, 19],
+              [15, 35],
+              [21, 10],
             ]),
           ]}
-          xTitle="Minutes"
-          annotations={[{ type: 'line', axis: 'x', value: 22.5, label: 'Half-way' }]}
+          xTitle="Hour"
+          annotations={[{ type: 'line', axis: 'x', value: 12, label: 'Noon' }]}
         />
       </Tile>
       <Tile title="Ordinal levels" id="ordinal">
@@ -128,12 +128,16 @@ export const Variants: Story = {
   ),
 };
 
-/** Loading, no data, and an error with a retry action. */
+/**
+ * Loading, no data, and an error with a retry action. `empty` and `error` take text, a node or
+ * `{ title, description, icon, action }`, as on every data component; `error` also takes `true`.
+ */
 export const States: Story = {
   render: function Render() {
     const [tries, setTries] = useState(0);
+    const [failed, setFailed] = useState(true);
     return (
-      <Tiles columns={2}>
+      <Tiles>
         <Tile title="Loading">
           <LineChart aria-label="Orders" series={planActual} loading />
         </Tile>
@@ -146,15 +150,91 @@ export const States: Story = {
             series={planActual}
             error={`The orders could not be loaded. Retries: ${tries}.`}
             onRetry={() => setTries(tries + 1)}
-            retryLabel="Try again"
           />
         </Tile>
         <Tile title="Empty, with the app's own text">
           <LineChart aria-label="Orders" series={[]} empty="No orders in this period." />
         </Tile>
+        <Tile title="Error: true, and Retry brings the chart back" id="retry">
+          <LineChart
+            aria-label="Orders, plan and actual"
+            series={planActual}
+            error={failed}
+            onRetry={() => setFailed(false)}
+          />
+        </Tile>
+        <Tile title="Every series switched off in the legend" id="hidden">
+          <LineChart
+            aria-label="Orders, plan and actual"
+            series={planActual}
+            defaultHiddenIds={['plan', 'actual']}
+          />
+        </Tile>
       </Tiles>
     );
   },
+};
+
+/** Every kind of the `skeleton`, `empty`, `error` and `tooltip` parts: a node, `null`, and a function. */
+export const StateParts: Story = {
+  render: () => (
+    <Tiles columns={4}>
+      <Tile title="skeleton: a node" id="skeleton-node">
+        <LineChart
+          aria-label="Orders"
+          series={planActual}
+          loading
+          parts={{ skeleton: <em>Loading orders…</em> }}
+        />
+      </Tile>
+      <Tile title="skeleton: null" id="skeleton-null">
+        <LineChart aria-label="Orders" series={planActual} loading parts={{ skeleton: null }} />
+      </Tile>
+      <Tile title="empty: a node" id="empty-node">
+        <LineChart aria-label="Orders" series={[]} parts={{ empty: <em>Nothing to draw yet.</em> }} />
+      </Tile>
+      <Tile title="empty: null" id="empty-null">
+        <LineChart aria-label="Orders" series={[]} parts={{ empty: null }} />
+      </Tile>
+      <Tile title="empty: a function around the default" id="empty-function">
+        <LineChart
+          aria-label="Orders"
+          series={[]}
+          empty={{ title: 'No orders', description: 'Orders appear here once the first one is placed.' }}
+          parts={{
+            empty: (p) => <div style={{ position: 'absolute', inset: 0, opacity: 0.7 }}>{p.children}</div>,
+          }}
+        />
+      </Tile>
+      <Tile title="error: a node" id="error-node">
+        <LineChart
+          aria-label="Orders"
+          series={planActual}
+          error
+          parts={{ error: <strong role="alert">Could not load the orders.</strong> }}
+        />
+      </Tile>
+      <Tile title="error: null" id="error-null">
+        <LineChart aria-label="Orders" series={planActual} error parts={{ error: null }} />
+      </Tile>
+      <Tile title="error: the pieces, in a function" id="error-function">
+        <LineChart
+          aria-label="Orders"
+          series={planActual}
+          error={{ title: 'Orders did not load', description: 'The server did not answer.' }}
+          onRetry={() => {}}
+          retryLabel="Load again"
+          parts={{ error: (p) => <div style={{ position: 'absolute', inset: 0 }}>{p.children}</div> }}
+        />
+      </Tile>
+      <Tile title="tooltip: a node" id="tooltip-node">
+        <LineChart aria-label="Orders" series={planActual} legend={false} parts={{ tooltip: 'Orders' }} />
+      </Tile>
+      <Tile title="tooltip: null" id="tooltip-null">
+        <LineChart aria-label="Orders" series={planActual} legend={false} parts={{ tooltip: null }} />
+      </Tile>
+    </Tiles>
+  ),
 };
 
 const full = (
@@ -266,9 +346,6 @@ export const PartsAndBlocks: Story = {
           <LineChart.Grid />
           <LineChart.Axes />
         </LineChart.Root>
-      </Tile>
-      <Tile title="Empty part replaced">
-        <LineChart aria-label="Orders" series={[]} parts={{ empty: <em>Nothing to draw yet.</em> }} />
       </Tile>
     </Tiles>
   ),
