@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from 'react';
 import { flushSync } from 'react-dom';
-import { Label as AriaLabel, Meter as AriaMeter } from 'react-aria-components';
+import { Meter as AriaMeter } from 'react-aria-components';
 import { Skeleton } from '../basics/Skeleton';
 import { useHoverTip } from '../internal/TruncatedText';
 import { useShrinkLevel } from '../internal/useShrinkLevel';
@@ -19,6 +19,7 @@ import {
   type ChangeHighlightProps,
 } from '../internal/ChangeHighlight';
 import { cx, renderPart, type Part } from '../utils/parts';
+import { MeterLabel, useInMeterList } from './label';
 import styles from './LevelMeter.module.css';
 import { resolveThreshold, type ThresholdList } from '../utils/thresholds';
 import {
@@ -135,7 +136,7 @@ function Root({
   thresholds,
   lowerIsBetter,
   tone = 'default',
-  orientation = 'horizontal',
+  orientation: orientationProp = 'horizontal',
   size = 'default',
   boxed = true,
   formatValue,
@@ -149,6 +150,8 @@ function Root({
   ...rest
 }: LevelMeterRootProps) {
   const ref = useRef<HTMLDivElement>(null);
+  // A row of a `MeterList` is horizontal: its strip is in the list's column of bars.
+  const orientation = useInMeterList() ? 'horizontal' : orientationProp;
   const vertical = orientation === 'vertical';
 
   // The shrink level restarts when the element gets wider. A vertical meter restarts on its height.
@@ -275,11 +278,10 @@ function Root({
 
 /** The name of the meter. Truncates once the ticks have thinned as far as they go. */
 function Label({ children, className, style }: BlockProps) {
-  const props = { 'data-part': 'label', className: cx(styles.label, className), style };
-  return useMeter().loading ? (
-    <span {...props}>{children}</span>
-  ) : (
-    <AriaLabel {...props}>{children}</AriaLabel>
+  return (
+    <MeterLabel loading={useMeter().loading} className={cx(styles.label, className)} style={style}>
+      {children}
+    </MeterLabel>
   );
 }
 

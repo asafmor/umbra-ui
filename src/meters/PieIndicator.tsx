@@ -1,5 +1,5 @@
 import { createContext, useContext, useId, useRef, type CSSProperties, type ReactNode } from 'react';
-import { Label as AriaLabel, Meter as AriaMeter } from 'react-aria-components';
+import { Meter as AriaMeter } from 'react-aria-components';
 import { Skeleton } from '../basics/Skeleton';
 import { useHoverTip } from '../internal/TruncatedText';
 import { useShrinkLevel } from '../internal/useShrinkLevel';
@@ -14,6 +14,7 @@ import { defined } from '../utils/defined';
 import { valueOrNull } from '../utils/finite';
 import { resolveThreshold, type ThresholdList } from '../utils/thresholds';
 import { tooNarrow } from './fit';
+import { MeterLabel, useInMeterList } from './label';
 import styles from './PieIndicator.module.css';
 import { describe, outOfRange, thirdsThresholds, toFraction, type MeterTone } from './scale';
 import tones from './tone.module.css';
@@ -101,7 +102,7 @@ function Root({
   thresholds,
   lowerIsBetter,
   size = 'default',
-  layout = 'inline',
+  layout: layoutProp = 'inline',
   segments = 8,
   variant = 'segmented',
   formatValue,
@@ -115,7 +116,10 @@ function Root({
   ...rest
 }: PieIndicatorRootProps) {
   const ref = useRef<HTMLDivElement>(null);
-  const hideValue = useShrinkLevel(ref, 1, undefined, { overflowing: narrow }) === 1;
+  // In a `MeterList` the list sets the columns and hides the values of all its rows together.
+  const inList = useInMeterList();
+  const layout = inList ? 'inline' : layoutProp;
+  const hideValue = useShrinkLevel(ref, inList ? 0 : 1, undefined, { overflowing: narrow }) === 1;
 
   const range = max > min ? max - min : 0;
   // No value is not zero: the disc is drawn empty with a dashed edge, and the text says so.
@@ -269,9 +273,11 @@ function Disc({ skeleton, className, style }: PieIndicatorDiscProps) {
 
 /** The name of the indicator. Truncates when the row is narrow. */
 function Label({ children, className, style }: BlockProps) {
-  const props = { 'data-part': 'label', className: cx(styles.label, className), style };
-  // While loading the root is not a meter, so there is nothing to label.
-  return usePie().loading ? <span {...props}>{children}</span> : <AriaLabel {...props}>{children}</AriaLabel>;
+  return (
+    <MeterLabel loading={usePie().loading} className={cx(styles.label, className)} style={style}>
+      {children}
+    </MeterLabel>
+  );
 }
 
 export type PieIndicatorValueProps = BlockProps & ChangeHighlightProps;

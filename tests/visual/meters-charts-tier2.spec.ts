@@ -1650,6 +1650,7 @@ test.describe('Review 2: measured', () => {
   }) => {
     test.slow();
     await openChart(page, 'charts-edge-cases--many-marks');
+    await page.getByRole('button', { name: 'Draw 5,000 marks each' }).click();
     for (const id of ['scatter', 'heatmap'])
       await expect(tile(page, id).getByRole('option')).toHaveCount(5000);
     // What the work is made of, counted: labels measured in the page, and values formatted.

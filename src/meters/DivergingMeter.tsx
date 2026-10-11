@@ -1,5 +1,5 @@
 import { createContext, useContext, useRef, type CSSProperties, type ReactNode } from 'react';
-import { Label as AriaLabel, Meter as AriaMeter } from 'react-aria-components';
+import { Meter as AriaMeter } from 'react-aria-components';
 import { Skeleton } from '../basics/Skeleton';
 import { useHoverTip } from '../internal/TruncatedText';
 import { useShrinkLevel } from '../internal/useShrinkLevel';
@@ -13,6 +13,7 @@ import { cx, renderPart, type Part } from '../utils/parts';
 import { defined } from '../utils/defined';
 import { valueOrNull } from '../utils/finite';
 import { resolveThreshold, type ThresholdList } from '../utils/thresholds';
+import { MeterLabel, useInMeterList } from './label';
 import styles from './DivergingMeter.module.css';
 import { tooNarrow } from './fit';
 import { describe, outOfRange, toFraction, type MeterTone } from './scale';
@@ -105,7 +106,7 @@ function Root({
   thresholds,
   lowerIsBetter = false,
   size = 'default',
-  layout = 'block',
+  layout: layoutProp = 'block',
   originTick = true,
   formatValue,
   loading = false,
@@ -118,7 +119,10 @@ function Root({
   ...rest
 }: DivergingMeterRootProps) {
   const ref = useRef<HTMLDivElement>(null);
-  const hideValue = useShrinkLevel(ref, 1, undefined, { overflowing: tooNarrow }) === 1;
+  // In a `MeterList` the list sets the columns and hides the values of all its rows together.
+  const inList = useInMeterList();
+  const layout = inList ? 'inline' : layoutProp;
+  const hideValue = useShrinkLevel(ref, inList ? 0 : 1, undefined, { overflowing: tooNarrow }) === 1;
 
   const range = max > min;
   const origin = originProp ?? (min <= 0 && max >= 0 ? 0 : (min + max) / 2);
@@ -204,12 +208,10 @@ function Root({
 
 /** The name of the meter. Truncates when the meter is narrow. */
 function Label({ children, className, style }: BlockProps) {
-  const props = { 'data-part': 'label', className: cx(styles.label, className), style };
-  // While loading the root is not a meter, so there is nothing to label.
-  return useMeter().loading ? (
-    <span {...props}>{children}</span>
-  ) : (
-    <AriaLabel {...props}>{children}</AriaLabel>
+  return (
+    <MeterLabel loading={useMeter().loading} className={cx(styles.label, className)} style={style}>
+      {children}
+    </MeterLabel>
   );
 }
 

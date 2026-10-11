@@ -269,18 +269,29 @@ const wide = Array.from({ length: 100 }, (_, i) => `c${i + 1}`);
 const tall = Array.from({ length: 50 }, (_, i) => `r${i + 1}`);
 const grid = tall.map((_, r) => wide.map((_, c) => (r * 7 + c * 13) % 97));
 
-/** Five thousand marks: the chart still answers a resize and a key within a frame or two. */
+/**
+ * Five thousand marks each: the charts still answer a resize and a key. Drawn on demand, so the checks
+ * that open every story (the images, the automated accessibility check) do not walk 10,000 marks.
+ */
 export const ManyMarks: Story = {
-  render: () => (
-    <Tiles columns={2}>
-      <Tile title="Scatter: 5,000 points with labels" id="scatter">
-        <Scatter aria-label="Many points" series={many} labels />
-      </Tile>
-      <Tile title="Heatmap: 5,000 cells" id="heatmap">
-        <Heatmap aria-label="Many cells" rows={tall} columns={wide} values={grid} />
-      </Tile>
-    </Tiles>
-  ),
+  render: function Render() {
+    const [drawn, setDrawn] = useState(false);
+    return (
+      <div style={{ display: 'grid', gridTemplateRows: 'auto minmax(0, 1fr)', gap: 12, height: '100%' }}>
+        <div>
+          <Button onPress={() => setDrawn(!drawn)}>{drawn ? 'Clear' : 'Draw 5,000 marks each'}</Button>
+        </div>
+        <Tiles columns={2}>
+          <Tile title="Scatter: 5,000 points with labels" id="scatter">
+            <Scatter aria-label="Many points" series={drawn ? many : []} labels />
+          </Tile>
+          <Tile title="Heatmap: 5,000 cells" id="heatmap">
+            <Heatmap aria-label="Many cells" rows={tall} columns={wide} values={drawn ? grid : []} />
+          </Tile>
+        </Tiles>
+      </div>
+    );
+  },
 };
 
 /** In a modal body beside other content, a chart that fills takes its content height: the body does not scroll. */
