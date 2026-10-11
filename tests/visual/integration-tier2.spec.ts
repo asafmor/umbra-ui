@@ -468,3 +468,97 @@ test.describe('EntitySwitcher and ContextBlock in one TopBar', () => {
     }
   });
 });
+
+test.describe('content-sized cards in a stack that is too short', () => {
+  const CARDS = 'integration-tier-2--content-cards';
+
+  test('no card is shorter than its header: the content-sized cards give way, and scroll inside', async ({
+    page,
+  }) => {
+    await openStory(page, CARDS, { width: 1024, height: 600, density: 'spacious' });
+    await settle(page);
+    const stack = page.locator('[data-umbra="stack"]').first();
+    const cards = await stack.locator('> [data-umbra="card"]').evaluateAll((list) =>
+      list.map((el) => {
+        const header = el.querySelector<HTMLElement>(':scope > [data-part="header"]')!;
+        const title = header.querySelector('h1, h2, h3, h4, h5, h6')!.getBoundingClientRect();
+        const box = el.getBoundingClientRect();
+        return {
+          cut: header.scrollHeight - Math.round(box.height),
+          titleInside: title.bottom <= box.bottom + 1,
+        };
+      }),
+    );
+    expect(cards).toHaveLength(4);
+    await expect(card(page, 'Notes')).toHaveAttribute('data-collapsed', 'layout');
+    for (const one of cards) {
+      expect(one.cut).toBeLessThanOrEqual(1);
+      expect(one.titleInside).toBe(true);
+    }
+    // Nothing leaves the stack.
+    expect(
+      await stack.evaluate((el) => {
+        const last = el.lastElementChild!.getBoundingClientRect();
+        return last.bottom <= el.getBoundingClientRect().bottom + 1;
+      }),
+    ).toBe(true);
+    await noPageScroll(page);
+  });
+
+  test('a Comparison in a content-sized card keeps its rows, whatever sizes the window had before', async ({
+    page,
+  }) => {
+    await openStory(page, CARDS);
+    const sites = card(page, 'Sites');
+    const whole = async () => {
+      await settle(page);
+      await expect(sites.locator('[data-part="strip"]')).toHaveCount(0);
+      await expect(sites.getByText('On time')).toBeAttached();
+    };
+    await whole();
+    const fresh = (await sites.boundingBox())!.height;
+    await page.setViewportSize({ width: 1024, height: 600 });
+    await whole();
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await whole();
+    expect((await sites.boundingBox())!.height).toBeCloseTo(fresh, 0);
+  });
+
+  test('a Sparkline in the trend slot of a SummaryTile has a width', async ({ page }) => {
+    await openStory(page, CARDS);
+    const spark = page.locator('[data-umbra="summary-tile"] [data-umbra="sparkline"]');
+    expect((await spark.boundingBox())!.width).toBeGreaterThanOrEqual(48);
+    await expect(spark.locator('svg')).toBeVisible();
+  });
+
+  test('a selected MediaCard: the selected fill, an edge that is not the fill, and aria-current', async ({
+    page,
+  }) => {
+    await openStory(page, CARDS);
+    const look = (el: Locator) =>
+      el.evaluate((node) => [getComputedStyle(node).backgroundColor, getComputedStyle(node).boxShadow]);
+    const cards = page.locator('[data-umbra="media-card"]');
+    const [chosen, other] = [await look(cards.nth(0)), await look(cards.nth(1))];
+    await expect(cards.nth(0)).toHaveAttribute('aria-current', 'true');
+    await expect(cards.nth(1)).not.toHaveAttribute('aria-current', 'true');
+    expect(chosen[0]).not.toBe(other[0]);
+    expect(chosen[1]).not.toBe('none');
+    expect(other[1]).toBe('none');
+  });
+});
+
+test('a day with more items than slots says so: "+1" beside the date, named by the items it stands for', async ({
+  page,
+}) => {
+  await openStory(page, 'integration-tier-2--content-cards');
+  const day = page.locator('[data-umbra="week-strip"] [data-cell][data-date="2026-10-11"][data-line="0"]');
+  const mark = day.locator('[data-part="hiddenItems"]');
+  await expect(mark).toHaveText('+1');
+  await expect(mark).toHaveAttribute('aria-label', /^1 more: \S/);
+  // A day whose items all have a slot has no mark.
+  await expect(
+    page.locator('[data-umbra="week-strip"] [data-cell][data-date="2026-10-15"] [data-part="hiddenItems"]'),
+  ).toHaveCount(0);
+  await mark.hover();
+  await expect(page.getByRole('tooltip')).toContainText('1 more: ');
+});

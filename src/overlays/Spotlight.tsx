@@ -18,6 +18,7 @@ import { Button } from '../basics/Button';
 import { focusableIn, focusLost } from '../internal/focus';
 import { useScopeAttributes } from '../provider/UmbraProvider';
 import { defined } from '../utils/defined';
+import { warn } from '../utils/dev';
 import { cx, renderPart, type Part } from '../utils/parts';
 import { toAriaPlacement, useOpenState, useOverlayLayer, type OverlayPlacement } from './shared';
 import styles from './Spotlight.module.css';
@@ -188,6 +189,10 @@ function Root({
         // Once per target: an app that keeps the spotlight open is not asked again and again.
         if (lostFor !== wanted) {
           lostFor = wanted;
+          // A selector with a typing mistake, or an attribute the target's component does not pass on.
+          warn(
+            `Spotlight: the target ${typeof wanted === 'string' ? `"${wanted}" ` : ''}is not in the page, or is not shown.`,
+          );
           (latest.current.onTargetLost ?? (() => latest.current.setOpen(false)))();
         }
         return;

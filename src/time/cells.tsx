@@ -1,7 +1,8 @@
 // The rows and cells of a grid of days, shared by WeekStrip and Planner: both are the same grid, one
 // week or several. The keyboard is in grid.ts, which finds the cells by the attributes set here.
-import { createContext, useContext, type CSSProperties, type ReactNode } from 'react';
+import { createContext, useContext, useRef, type CSSProperties, type ReactNode } from 'react';
 import shared from '../data/shared.module.css';
+import { useHoverTip } from '../internal/TruncatedText';
 import { cx, renderPart, type Part } from '../utils/parts';
 import { DateChip, type DateChipProps } from './DateChip';
 import { daysBetween, type IsoDate } from './dates';
@@ -110,6 +111,27 @@ export interface ScheduleParts {
   skeleton?: Part<{ date: IsoDate; line: number }> | undefined;
 }
 
+const nameOf = (item: ScheduleItem) => item.textValue ?? (typeof item.label === 'string' ? item.label : '');
+
+/**
+ * The mark of a day that has more items than slots: "+2" beside its date. It is named by the count and
+ * the items themselves, so the day's cell says them, and a pointer reads them in a tooltip.
+ */
+function HiddenItems({ items, label }: { items: ScheduleItem[]; label: string }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const names = items.map(nameOf).filter(Boolean).join(', ');
+  const text = names ? `${label}: ${names}` : label;
+  const tip = useHoverTip(ref, text);
+  return (
+    <>
+      <span ref={ref} role="img" aria-label={text} data-part="hiddenItems" className={styles.hiddenItems}>
+        +{items.length}
+      </span>
+      {tip}
+    </>
+  );
+}
+
 /** Internal: the lines of one week, as the all-in-one components draw them. */
 export function WeekLines({
   days,
@@ -125,13 +147,14 @@ export function WeekLines({
   chip,
   slot,
   freeLabel,
+  hiddenItemsLabel,
   parts,
   columnHeaders = false,
   aside,
   empty,
 }: {
   days: IsoDate[];
-  placed: Map<IsoDate, (ScheduleItem | undefined)[]>;
+  placed: Map<IsoDate, (ScheduleItem | undefined)[]> & { rest?: Map<IsoDate, ScheduleItem[]> | undefined };
   slotsPerDay: number;
   baseId: string;
   today: IsoDate;
@@ -145,6 +168,7 @@ export function WeekLines({
   chip: (date: IsoDate) => Partial<DateChipProps>;
   slot: Pick<ScheduleSlotProps, 'size' | 'display'>;
   freeLabel: string;
+  hiddenItemsLabel: (count: number) => string;
   parts: ScheduleParts | undefined;
   /** One week only: the headers of the days head their columns, so a slot needs no other word for its day. */
   columnHeaders?: boolean | undefined;
@@ -185,6 +209,12 @@ export function WeekLines({
               (p) => (
                 <DateChip {...p} />
               ),
+            )}
+            {!loading && placed.rest?.get(date) && (
+              <HiddenItems
+                items={placed.rest.get(date)!}
+                label={hiddenItemsLabel(placed.rest.get(date)!.length)}
+              />
             )}
           </Cell>
         ))}

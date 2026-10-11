@@ -269,6 +269,8 @@ export interface PlannerGridProps extends DataStateProps {
   emptyWeekLabel?: ReactNode | undefined;
   /** What assistive technology reads for a free slot. */
   freeLabel?: string | undefined;
+  /** Names the mark of a day with more items than `slotsPerDay`: "+2" beside its date, read as "2 more" and the items. */
+  hiddenItemsLabel?: ((count: number) => string) | undefined;
   /** The names of the weekdays above the grid. `auto` shortens them as the columns narrow. */
   weekdayFormat?: WeekdayFormat | 'auto' | undefined;
   slotSize?: 'default' | 'small' | undefined;
@@ -305,6 +307,7 @@ function Grid({
   weekLabel = 'Week',
   emptyWeekLabel = 'Nothing planned',
   freeLabel = 'Free',
+  hiddenItemsLabel = (count) => `${count} more`,
   weekdayFormat = 'auto',
   slotSize = 'default',
   slotDisplay = 'auto',
@@ -440,6 +443,7 @@ function Grid({
                 chip={(date) => ({ showMonth: date === first || 'auto' })}
                 slot={{ size: slotSize, display: collapsed ? 'icon' : slotDisplay }}
                 freeLabel={freeLabel}
+                hiddenItemsLabel={hiddenItemsLabel}
                 parts={parts}
                 empty={
                   isEmpty

@@ -117,6 +117,8 @@ export interface WeekStripProps
   onDayAction?: ((date: IsoDate) => void) | undefined;
   /** What assistive technology reads for a free slot. */
   freeLabel?: string | undefined;
+  /** Names the mark of a day with more items than `slotsPerDay`: "+2" beside its date, read as "2 more" and the items. */
+  hiddenItemsLabel?: ((count: number) => string) | undefined;
   /** Replace or hide named pieces. */
   parts?:
     | (ScheduleParts & {
@@ -144,6 +146,7 @@ export function WeekStrip({
   onAction,
   onDayAction,
   freeLabel = 'Free',
+  hiddenItemsLabel = (count) => `${count} more`,
   loading = false,
   empty,
   error,
@@ -196,6 +199,7 @@ export function WeekStrip({
         })}
         slot={{ size: slotSize, display: slotDisplay }}
         freeLabel={freeLabel}
+        hiddenItemsLabel={hiddenItemsLabel}
         parts={parts}
         columnHeaders
       />

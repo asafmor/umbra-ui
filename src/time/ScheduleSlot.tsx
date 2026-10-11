@@ -231,18 +231,22 @@ export interface ScheduleItem {
   disabled?: boolean | undefined;
 }
 
-/** The items of each day, placed in its slots: `undefined` is a free slot. */
+/**
+ * The items of each day, placed in its slots: `undefined` is a free slot. `rest` holds, per day, the
+ * items that found no slot: the day's header says how many, and names them.
+ */
 export function placeItems(items: readonly ScheduleItem[], days: readonly IsoDate[], slotsPerDay: number) {
   const byDay = new Map<IsoDate, (ScheduleItem | undefined)[]>(
     days.map((day) => [day, Array.from<ScheduleItem | undefined>({ length: slotsPerDay })]),
   );
+  const rest = new Map<IsoDate, ScheduleItem[]>();
   // Items that name their slot first, so the others fill what is left.
   for (const item of [...items].sort((a, b) => Number(b.slot !== undefined) - Number(a.slot !== undefined))) {
     const slots = byDay.get(item.date);
     if (!slots) continue;
     const at = item.slot !== undefined && !slots[item.slot] ? item.slot : slots.indexOf(undefined);
-    // A day with more items than slots drops the rest: `slotsPerDay` is the app's to raise.
     if (at >= 0 && at < slotsPerDay) slots[at] = item;
+    else rest.set(item.date, [...(rest.get(item.date) ?? []), item]);
   }
-  return byDay;
+  return Object.assign(byDay, { rest });
 }

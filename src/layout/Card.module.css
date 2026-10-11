@@ -31,14 +31,15 @@
  * much, the card shrinks and its body scrolls inside.
  */
 .root[data-size='content'] {
-  flex-shrink: 1;
+  flex-shrink: 1000;
 }
 
 .root[data-size='content'] > .body {
   flex: 0 1 auto;
 }
 
-/* When even the headers do not all fit, the collapsed cards shrink too, so nothing leaves the stack. */
+/* When even the headers do not all fit, the collapsed cards shrink too, so nothing leaves the stack.
+   Far less readily than a content-sized card (above): that one scrolls inside, a header only gets cut. */
 .root[data-collapsed] {
   flex-shrink: 1;
 }

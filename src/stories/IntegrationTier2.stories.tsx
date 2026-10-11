@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { Button } from '../basics/Button';
 import { Heatmap } from '../charts/Heatmap';
 import { Sparkline } from '../charts/Sparkline';
+import { Comparison } from '../data/Comparison';
 import { KeyValue, KeyValueList } from '../data/KeyValue';
 import { List } from '../data/List';
 import { MediaCard } from '../data/MediaCard';
@@ -398,4 +399,65 @@ function CompositionsDemo({ globals }: { globals: Globals }) {
  */
 export const Compositions: Story = {
   render: (_, { globals }) => <CompositionsDemo globals={globals as Globals} />,
+};
+
+/**
+ * Content-sized cards in a stack that is too short for everything: they give way (their bodies scroll)
+ * before a collapsed card loses any of its header, and a `Comparison` in one keeps its rows. Beside
+ * them: a `Sparkline` in the `trend` slot of a `SummaryTile`, and a selected `MediaCard`.
+ */
+export const ContentCards: Story = {
+  render: () => (
+    <AppShell>
+      <Page>
+        <Columns>
+          <Stack>
+            <Card title="Week" size="content" padding="none">
+              {/* One slot a day for two items: the second is the "+1" beside the date. */}
+              <WeekStrip
+                aria-label="Week"
+                today={TODAY}
+                startDate="2026-10-11"
+                items={thisWeek}
+                slotsPerDay={1}
+              />
+            </Card>
+            <Card title="Sites" size="content">
+              <Comparison
+                aria-label="Site A and Site B"
+                sides={[{ name: 'Site A' }, { name: 'Site B' }]}
+                showBars
+                rows={[
+                  { id: 'score', label: 'Score', values: [82, 76] },
+                  { id: 'time', label: 'On time', values: [91, 84] },
+                  { id: 'returns', label: 'Returns', values: [4, 9], lowerIsBetter: true },
+                ]}
+              />
+            </Card>
+            <Card title="Team" padding="none" minHeight={160} priority={2}>
+              <List aria-label="Team">
+                {[1, 2, 3, 4, 5, 6].map((n) => (
+                  <List.Item key={n} id={`person-${n}`} title={`Person ${n}`} />
+                ))}
+              </List>
+            </Card>
+            <Card title="Notes" minHeight={160} priority={1}>
+              Collapsed first.
+            </Card>
+          </Stack>
+          <Stack>
+            <Stack size="content" style={{ height: 96 }}>
+              <SummaryTile
+                title="Load"
+                value="72%"
+                trend={<Sparkline data={[4, 6, 5, 8, 9]} aria-label="Load, five weeks" />}
+              />
+            </Stack>
+            <MediaCard selected title="Story 1" meta="Chosen" image={<Picture />} onPress={() => {}} />
+            <MediaCard title="Story 2" meta="Not chosen" image={<Picture />} onPress={() => {}} />
+          </Stack>
+        </Columns>
+      </Page>
+    </AppShell>
+  ),
 };

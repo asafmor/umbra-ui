@@ -40,6 +40,8 @@ export interface MediaCardRootProps extends BlockProps, SlotProps {
   interactive?: boolean | undefined;
   /** Marks the card busy for assistive technology. */
   loading?: boolean | undefined;
+  /** The card is the chosen one of its set: the selected fill and an edge, and `aria-current`. */
+  selected?: boolean | undefined;
   /** Names a card that has no title. */
   'aria-label'?: string | undefined;
 }
@@ -49,6 +51,7 @@ function Root({
   imagePlacement = 'above',
   interactive,
   loading,
+  selected,
   'aria-label': label,
   className,
   style,
@@ -69,6 +72,8 @@ function Root({
       data-image={variant === 'hero' ? imagePlacement : undefined}
       data-interactive={interactive || undefined}
       data-level={level || undefined}
+      data-selected={selected || undefined}
+      aria-current={selected || undefined}
       aria-label={label}
       aria-busy={loading || undefined}
       className={cx(styles.root, className)}
