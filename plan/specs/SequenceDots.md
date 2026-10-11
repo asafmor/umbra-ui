@@ -51,7 +51,7 @@ States: loading, no value, and, with `onAction`: hover, pressed, focus, disabled
 
 ### 1. Tokens
 
-`--umbra-sequence-dots-size` (a dot), `--umbra-sequence-dots-bar-width`, `--umbra-sequence-dots-bar-height`, `--umbra-sequence-dots-gap`, `--umbra-sequence-dots-target-size` (a mark that can be pressed, 24px), `--umbra-sequence-dots-empty-color`, `--umbra-sequence-dots-focus-offset` (inwards, because the row clips; passed on as the private `--focus-offset`, so `--umbra-focus-offset` set by the app wins).
+`--umbra-sequence-dots-size` (a dot), `--umbra-sequence-dots-bar-width`, `--umbra-sequence-dots-bar-height`, `--umbra-sequence-dots-gap`, `--umbra-sequence-dots-target-size` (a mark that can be pressed, 24px), `--umbra-sequence-dots-empty-color`, `--umbra-sequence-dots-accent-color` (the `accent` marks: a lighter violet than the fixed one, which is 2.6:1 on a card), `--umbra-sequence-dots-focus-offset` (inwards, because the row clips; passed on as the private `--focus-offset`, so `--umbra-focus-offset` set by the app wins).
 
 ### 2. Props
 
@@ -63,9 +63,9 @@ States: loading, no value, and, with `onAction`: hover, pressed, focus, disabled
 | `max` | number | — | The most marks shown: the newest ones |
 | `range` | `[min, max]` | 0 to the largest value | `bars`: the values of an empty and of a full bar |
 | `onAction` | `(id) => void` | — | Makes each mark a button |
-| `formatSummary` | `(items) => string` | the labels joined by commas | The text assistive technology reads |
+| `formatSummary` | `(items) => string` | the labels joined by commas, each with its `tooltip` in brackets when that is another text | The text assistive technology reads |
 | `aria-label` | string | from `formatSummary` | Replaces the summary |
-| `loading` | boolean | `false` | A placeholder of the sequence's size |
+| `loading` | boolean | `false` | A placeholder of exactly the size of the marks (their count, size, variant, and the 24px targets with `onAction`) |
 | `loadingLabel` | string | "Loading" | The name while loading, when there is no `aria-label` |
 | `emptyLabel` | node | "—" | Shown when there is no value |
 | `noValueLabel` | string | "No value" | Read by assistive technology when there is no value |
@@ -85,16 +85,18 @@ Measured (`useShrinkLevel`), by the width the row is given:
 | Step | Trigger | Result |
 |---|---|---|
 | 1 | Any width | At most `max` marks: the newest |
-| 2 | The marks are wider than the row | The oldest mark goes, one per step, until the rest fit |
+| 2 | The marks are wider than the row | The oldest marks go, as many as do not fit, until the rest fit |
 | 3 | Room for one mark only | The newest mark stays; it is never dropped |
 
 Growing starts again from all the marks. The row never wraps and never overflows.
+
+The number of marks that fit is counted from the measured widths in one step (the marks are of one width), so any number of items settles in a render or two: 60, 500 and 5,000 items are tested. Every item is drawn once before the count; give `max` to a sequence of thousands.
 
 ## Interaction and accessibility
 
 - Without `onAction` the whole sequence is one image (`role="img"`) named by the summary, so a screen reader reads "Run 1: Passed, Run 2: Failed, …" once and not five unnamed shapes. The summary is of the data: the items up to `max`, also when fewer fit.
 - With `onAction` the sequence is a toolbar named by the summary, and each mark is a button named by its `label`: one tab stop, the arrow keys move between the marks (they follow what is drawn in a right-to-left page), `Enter` and `Space` act. A disabled mark is passed over. Each button is a 24px target whatever the size of its drawing.
-- A `tooltip` shows on hover, and on keyboard focus of a mark that can be pressed. A mark that cannot be pressed has no focus, so its tooltip is for the pointer; the summary carries the same information.
+- A `tooltip` shows on hover, and on keyboard focus of a mark that can be pressed; a text tooltip is that button's description (`aria-describedby`). A mark that cannot be pressed has no focus, so its tooltip is for the pointer; the summary carries the same information: the default summary adds a text tooltip in brackets after its label.
 - Newest last: at the right in a left-to-right page and at the left in a right-to-left one, by the direction of the row alone.
 - No value: an em dash, with `noValueLabel` for assistive technology and no mark that would read as an outcome. No error state: the failure belongs to the container that fetched the items (`plan/interaction.md`, "Shows one value handed to it").
 - When a resize drops the mark that has the focus, the focus moves to a mark that stays.
@@ -113,4 +115,5 @@ Resolved 2026-10-11 (under the owner's delegation):
 - **The summary does not follow the width**: marks dropped for lack of room are still in the text for assistive technology.
 - **No `highlightChanges`**: a new item moves every mark; there is no single value to flash.
 - **Loading has a name**: an image needs one, so `loadingLabel` ("Loading") stands in while there is no summary.
+- **Review 1 (2026-10-11)**: dropping one mark per render stopped at React's limit of 50 nested renders and unmounted the tree; the count is now one measurement (`advance` of `useShrinkLevel`). The `accent` marks take a lighter violet (3:1 on every tint). The placeholder is counted from the same sizes as the marks. A `mark` part needs no key. A text tooltip is the description of a pressable mark and part of the default summary.
 - **Three vocabularies of shapes, by job** (recorded in the integration pass, 2026-10-11): the outcome marks here (a shape per tone: dot, ring, half, square, diamond, dash), the legend swatches of a series (`src/internal/SeriesMarker.tsx`) and the points drawn at data coordinates in a chart (`src/charts/internal/cues.tsx`, which `Scatter` uses like `LineChart`). They are not merged: an outcome is not a series, and a ring or a half has no meaning as a series marker.

@@ -163,6 +163,12 @@ export function useShrinkLevel(
     overflowing?: ((element: HTMLElement) => boolean) | undefined;
     /** The level only rises past `level` while this returns true. */
     canAdvance?: ((level: number) => boolean) | undefined;
+    /**
+     * How many steps to take at once from `level`, for a caller that can tell from what it measures
+     * (default 1). A row with thousands of things to drop then settles in a few renders, not one per
+     * thing: React stops a component that renders itself again more than 50 times.
+     */
+    advance?: ((element: HTMLElement, level: number) => number) | undefined;
     /** More elements whose growth restarts the level, besides the element and its parent. */
     watch?: ((element: HTMLElement) => (Element | null | undefined)[]) | undefined;
   } = {},
@@ -178,6 +184,12 @@ export function useShrinkLevel(
   /** True when one more step can and must be taken from `l`. */
   const mustAdvance = (l: number) =>
     l < limit.current && (latest.current.canAdvance?.(l) ?? true) && overflowing();
+
+  /** The level after the step from `l`: one more, or as many as the caller counts, up to the limit. */
+  const stepFrom = (l: number) => {
+    const steps = element.current ? (latest.current.advance?.(element.current, l) ?? 1) : 1;
+    return Math.min(limit.current, l + Math.max(1, Math.floor(steps) || 1));
+  };
 
   // The observed elements, and their widths when the level was last settled.
   const watched = useRef<Element[]>([]);
@@ -214,7 +226,7 @@ export function useShrinkLevel(
     const restart = reset.current[0] !== resetKey || reset.current[1] !== max;
     reset.current = [resetKey, max];
     if (restart && level !== 0) return setLevel(0);
-    if (mustAdvance(level)) return setLevel(level + 1);
+    if (mustAdvance(level)) return setLevel(stepFrom(level));
     settled.current = widths();
     if (checking.current || (level >= max && !refocus.current)) return;
     checking.current = true;
@@ -223,7 +235,7 @@ export function useShrinkLevel(
       checking.current = false;
       if (!element.current) return;
       // Advancing renders again, and that render ends here in its turn.
-      if (shown.current === level && mustAdvance(level)) return apply([to(level + 1)]);
+      if (shown.current === level && mustAdvance(level)) return apply([to(stepFrom(level))]);
       refocus.current?.();
       refocus.current = null;
     });
@@ -247,7 +259,7 @@ export function useShrinkLevel(
     };
     const restart = () => {
       if (shown.current !== 0) return to(0);
-      if (mustAdvance(0)) return to(1);
+      if (mustAdvance(0)) return to(stepFrom(0));
     };
 
     return addRow({
@@ -257,7 +269,7 @@ export function useShrinkLevel(
         const grew = now.some((width, i) => width > (settled.current[i] ?? width) + 0.5);
         settled.current = now;
         if (grew) return 'restart';
-        if (mustAdvance(shown.current)) return to(shown.current + 1);
+        if (mustAdvance(shown.current)) return to(stepFrom(shown.current));
       },
       restart,
       busy,
