@@ -1,4 +1,4 @@
-// The small app the three page stories share: one shell, and a place that the navigation, the history
+// The small app the five page stories share: one shell, and a place that the navigation, the history
 // buttons and the command palette change. No router and no fetching: the place is state.
 import {
   Bell,
@@ -18,6 +18,7 @@ import {
   AppShell,
   Card,
   CommandPalette,
+  EntitySwitcher,
   HistoryButtons,
   IconButton,
   Page,
@@ -30,12 +31,14 @@ import {
   type NavItem,
 } from '../../index';
 import { SampleContext } from '../../shell/samples';
+import { AnalysisScreen } from './AnalysisScreen';
 import { messages } from './data';
 import { OrdersScreen } from './OrdersScreen';
 import { OverviewScreen } from './OverviewScreen';
+import { PlanningScreen, teams } from './PlanningScreen';
 import { RequestsScreen } from './RequestsScreen';
 
-/** A place is `section/page`. Three of them are built; the others show an empty state. */
+/** A place is `section/page`. Five of them are built; the others show an empty state. */
 export type Place = string;
 
 const sections: (NavItem & { pages: [id: string, label: string][] })[] = [
@@ -116,6 +119,8 @@ export function App({ initial }: { initial: Place }) {
     setRead((ids) => (ids.includes(id) ? ids : [...ids, id]));
   };
   const unread = messages.filter((m) => m.unread && !read.includes(m.id)).length;
+  // The team the planning page shows: chosen in the bar, above the page.
+  const [team, setTeam] = useState('team-2');
 
   const [sectionId] = place.split('/') as [string];
   const current = section(sectionId);
@@ -181,7 +186,9 @@ export function App({ initial }: { initial: Place }) {
             />
           }
           nav={<PrimaryNav items={primaryItems} value={sectionId} onChange={go} />}
-          commandPalette={<CommandPalette commands={commands} placeholder="Search pages and actions" />}
+          commandPalette={
+            <CommandPalette commands={commands} placeholder="Search pages and actions" includeShortcuts />
+          }
           actions={
             <>
               <IconButton icon={<Bookmark />} label="Bookmarks" />
@@ -217,6 +224,11 @@ export function App({ initial }: { initial: Place }) {
       }
       subNav={
         <SubNav
+          start={
+            place === 'planning/schedule' && (
+              <EntitySwitcher aria-label="Team" items={teams} value={team} onChange={setTeam} wrap />
+            )
+          }
           label={current.label}
           items={current.pages.map(([id, text]) => ({ id: `${current.id}/${id}`, label: text }))}
           value={place}
@@ -243,6 +255,10 @@ export function App({ initial }: { initial: Place }) {
         <RequestsScreen messageId={messageId} read={read} onSelect={select} />
       ) : place === 'orders/all' ? (
         <OrdersScreen />
+      ) : place === 'planning/schedule' ? (
+        <PlanningScreen team={team} />
+      ) : place === 'overview/reports' ? (
+        <AnalysisScreen />
       ) : (
         <Page>
           <Card
