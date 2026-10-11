@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Locator, type Page } from '@playwright/test';
+import { runAxe } from './helpers';
 
 // Charts: keyboard, tooltip, legend, the data states, and each step of "show less as the slot shrinks".
 const open = async (page: Page, id: string, width = 1280, height = 720) => {
@@ -14,15 +15,7 @@ const open = async (page: Page, id: string, width = 1280, height = 720) => {
   });
 };
 /** Axe on the charts of the page. Storybook's own accessibility panel may be running axe: wait for it. */
-const axe = async (page: Page, tries = 20): Promise<Awaited<ReturnType<AxeBuilder['analyze']>>> => {
-  try {
-    return await new AxeBuilder({ page }).include('figure').analyze();
-  } catch (error) {
-    if (tries === 0 || !String(error).includes('already running')) throw error;
-    await page.waitForTimeout(250);
-    return axe(page, tries - 1);
-  }
-};
+const axe = (page: Page) => runAxe(page, new AxeBuilder({ page }).include('figure'));
 const tile = (page: Page, id: string) => page.locator(`[data-tile="${id}"] figure`);
 const sized = (page: Page, size: string, nth = 0) => page.locator(`[data-size="${size}"] figure`).nth(nth);
 const marks = (chart: Locator) => chart.getByRole('listbox');

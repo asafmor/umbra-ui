@@ -1,7 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { contextPresets } from '../../src/styles/tokens.generated';
-import { expectFocusKept, openStory, settle } from './helpers';
+import { expectFocusKept, openStory, runAxe, settle } from './helpers';
 
 // One test (or a few) per finding of the second review, for what no other spec covers. The id of the
 // finding is in each title.
@@ -17,7 +17,7 @@ const axe = async (page: Page) => {
         .map((a) => a.finished.catch(() => null)),
     ),
   );
-  const { violations } = await new AxeBuilder({ page }).withTags(tags).analyze();
+  const { violations } = await runAxe(page, new AxeBuilder({ page }).withTags(tags));
   return violations.flatMap((v) => v.nodes.map((n) => `${v.id}: ${n.html.slice(0, 200)}`));
 };
 /** True when the focus ring of `el` (its outline, with its offset) lies inside the box of `clip`. */

@@ -2,6 +2,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { contextPresets } from '../../src/styles/tokens.generated';
+import { runAxe } from './helpers';
 
 // Every story must pass the automated WCAG 2.2 AA checks on every context tint
 // (plan/interaction.md, "Accessibility"). Automated checks find only part of the problems;
@@ -32,17 +33,7 @@ for (const story of Object.values(index.entries).filter((e) => e.type === 'story
             .map((a) => a.finished.catch(() => null)),
         );
       });
-      // Storybook's own accessibility panel may be running axe on the same page; wait for it.
-      const analyze = async (tries = 20): Promise<Awaited<ReturnType<AxeBuilder['analyze']>>> => {
-        try {
-          return await new AxeBuilder({ page }).withTags(tags).analyze();
-        } catch (error) {
-          if (tries === 0 || !String(error).includes('already running')) throw error;
-          await page.waitForTimeout(250);
-          return analyze(tries - 1);
-        }
-      };
-      const { violations } = await analyze();
+      const { violations } = await runAxe(page, new AxeBuilder({ page }).withTags(tags));
       expect(violations.flatMap((v) => v.nodes.map((n) => `${v.id}: ${n.html.slice(0, 600)}`))).toEqual([]);
     });
   }

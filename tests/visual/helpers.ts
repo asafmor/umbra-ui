@@ -1,3 +1,4 @@
+import type AxeBuilder from '@axe-core/playwright';
 import { expect, type Page } from '@playwright/test';
 
 /**
@@ -62,3 +63,21 @@ export const resizeTwice = (page: Page, selector: string, first: number, second:
       }),
     [selector, first, second] as const,
   );
+
+/**
+ * Runs axe. Storybook's own accessibility panel may be running axe on the same page, and axe refuses
+ * a second run: wait for the first to end. Every axe run in the tests goes through here.
+ */
+export async function runAxe(
+  page: Page,
+  builder: AxeBuilder,
+  tries = 20,
+): Promise<Awaited<ReturnType<AxeBuilder['analyze']>>> {
+  try {
+    return await builder.analyze();
+  } catch (error) {
+    if (tries === 0 || !String(error).includes('already running')) throw error;
+    await page.waitForTimeout(250);
+    return runAxe(page, builder, tries - 1);
+  }
+}
