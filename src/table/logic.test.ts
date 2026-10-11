@@ -2,7 +2,13 @@ import { describe, expect, it } from 'vitest';
 import {
   resolveWidth,
   changeDirection,
+  applyColumnState,
+  clampWidth,
   fitColumns,
+  MAX_COLUMN_WIDTH,
+  MIN_COLUMN_WIDTH,
+  moveColumn,
+  orderColumns,
   offsetsOf,
   orderGroups,
   rangeIds,
@@ -203,5 +209,87 @@ describe('selectStep', () => {
     const memo = { anchor: null, base: [] };
     expect(selectStep('single', ['a'], memo, 'b', {}, order).ids).toEqual(['b']);
     expect(selectStep('single', ['b'], memo, 'b', {}, order).ids).toEqual([]);
+  });
+});
+
+describe('column state', () => {
+  const defs = [
+    { id: 'name', pin: 'start' as const, priority: 'always' as const },
+    { id: 'a', priority: 3 },
+    { id: 'b', priority: 1, width: { min: 100 } },
+    { id: 'c', priority: 2, minWidth: 60, maxWidth: 200 },
+    { id: 'actions', pin: 'end' as const, hideable: false },
+  ];
+  const ids = (list: { id: string }[]) => list.map((c) => c.id);
+
+  it('orders by the saved list, drops ids it does not know and keeps new columns beside their neighbour', () => {
+    expect(orderColumns(['a', 'b', 'c'], undefined)).toEqual(['a', 'b', 'c']);
+    expect(orderColumns(['a', 'b', 'c'], ['c', 'gone', 'a', 'c'])).toEqual(['c', 'a', 'b']);
+    expect(orderColumns(['new', 'a', 'b', 'newer', 'c'], ['c', 'b', 'a'])).toEqual([
+      'new',
+      'c',
+      'b',
+      'newer',
+      'a',
+    ]);
+  });
+
+  it('with no state the columns are the very objects of the app', () => {
+    const result = applyColumnState(defs, {});
+    expect(result.hidden).toEqual([]);
+    result.columns.forEach((column, index) => expect(column).toBe(defs[index]));
+  });
+
+  it('draws pinned columns at their edge, whatever the order says', () => {
+    const result = applyColumnState(defs, { order: ['c', 'actions', 'b', 'name', 'a'], pins: { b: 'start' } });
+    expect(ids(result.columns)).toEqual(['b', 'name', 'c', 'a', 'actions']);
+    expect(ids(applyColumnState(defs, { pins: { name: 'none', a: 'end' } }).columns)).toEqual([
+      'name',
+      'b',
+      'c',
+      'a',
+      'actions',
+    ]);
+  });
+
+  it('a column the user asked for never hides; one they hid is listed, unless it cannot be hidden', () => {
+    const result = applyColumnState(defs, { visibility: { b: true, c: false, actions: false } });
+    expect(result.hidden).toEqual(['c']);
+    expect(result.columns.find((c) => c.id === 'b')!.priority).toBe('always');
+    expect(result.columns.find((c) => c.id === 'a')).toBe(defs[1]);
+  });
+
+  it('a user width replaces the definition, inside the limits of the column', () => {
+    const width = (state: Record<string, number>) =>
+      Object.fromEntries(applyColumnState(defs, { widths: state }).columns.map((c) => [c.id, c.width]));
+    expect(width({ b: 180.4, c: 500 })).toMatchObject({ b: 180, c: 200 });
+    expect(width({ b: 10, c: 10 })).toMatchObject({ b: MIN_COLUMN_WIDTH, c: 60 });
+    expect(clampWidth({ id: 'x' }, 5000)).toBe(MAX_COLUMN_WIDTH);
+  });
+
+  it('moves a column to a position, and stops at the end of its pin group', () => {
+    const order = ['name', 'a', 'b', 'c', 'actions'];
+    const group = (id: string) => defs.find((c) => c.id === id)!.pin;
+    expect(moveColumn(order, 'c', 1, group)).toEqual(['name', 'c', 'a', 'b', 'actions']);
+    expect(moveColumn(order, 'a', 2, group)).toEqual(['name', 'b', 'a', 'c', 'actions']);
+    expect(moveColumn(order, 'a', 0, group)).toBe(order);
+    expect(moveColumn(order, 'b', 9, group)).toEqual(['name', 'a', 'c', 'b', 'actions']);
+    expect(moveColumn(order, 'name', 3, group)).toBe(order);
+    expect(moveColumn(order, 'gone', 1, group)).toBe(order);
+  });
+
+  it('a width the user set takes no spare width, and the others share the rest', () => {
+    const sized = [
+      column('name', 120),
+      column('wide', 180, { max: 180, flex: 0, utility: true }),
+      column('rest', 96),
+    ];
+    const fit = fitColumns(sized, 601);
+    expect(fit.widths.wide).toBe(180);
+    expect(fit.total).toBe(601);
+    // Too wide for the table: the columns that may hide go first, then the table is wider than its slot.
+    expect(fitColumns(sized, 300)).toMatchObject({ hidden: ['rest'], widths: { name: 120, wide: 180 } });
+    const kept = sized.map((c) => ({ ...c, priority: 'always' as const }));
+    expect(fitColumns(kept, 300)).toMatchObject({ hidden: [], total: 396 });
   });
 });
