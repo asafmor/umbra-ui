@@ -2,14 +2,11 @@ import {
   Children,
   Fragment,
   isValidElement,
-  useLayoutEffect,
   useRef,
-  useState,
   type CSSProperties,
   type ReactElement,
   type ReactNode,
 } from 'react';
-import { flushSync } from 'react-dom';
 import { Button as AriaButton, Link as AriaLink, Toolbar } from 'react-aria-components';
 import { Badge } from '../data/Badge';
 import { useShrinkLevel } from '../internal/useShrinkLevel';
@@ -118,31 +115,18 @@ export function ShortcutBar({
   const { icons } = useUmbra();
   const list = useRef<HTMLDivElement>(null);
   const all = items ?? toItems(children);
-  // The bar is as wide as what it shows, so it never grows by itself: when the room around it grows
-  // (its slot, or the bar that holds the slot), it starts again from everything visible.
-  const [room, setRoom] = useState(0);
-  useLayoutEffect(() => {
-    const slot = list.current?.parentElement?.parentElement;
-    if (!slot) return;
-    const widths = new Map<Element, number>();
-    const observer = new ResizeObserver((entries) => {
-      let grew = false;
-      for (const entry of entries) {
-        const before = widths.get(entry.target);
-        if (before !== undefined && entry.contentRect.width > before + 0.5) grew = true;
-        widths.set(entry.target, entry.contentRect.width);
-      }
-      if (grew) flushSync(() => setRoom((r) => r + 1));
-    });
-    observer.observe(slot);
-    if (slot.parentElement) observer.observe(slot.parentElement);
-    return () => observer.disconnect();
-  }, []);
   // Shrink steps: first the labels go (in `auto`, when every item has an icon), then the items move
   // into the menu one at a time, last first.
   const canDropLabels = mode === 'auto' && all.length > 0 && all.every((item) => !!item.icon);
   const labelSteps = canDropLabels ? 1 : 0;
-  const level = useShrinkLevel(list, labelSteps + all.length, `${mode}:${all.length}:${room}`);
+  // The bar is as wide as what it shows, so it never grows by itself: it starts again from everything
+  // visible when the room around it grows (its slot, or the bar that holds the slot).
+  const level = useShrinkLevel(list, labelSteps + all.length, `${mode}:${all.length}`, {
+    watch: (el) => {
+      const slot = el.parentElement?.parentElement;
+      return [slot, slot?.parentElement];
+    },
+  });
   const iconsOnly = mode === 'icons' || (canDropLabels && level >= 1);
   const visible = all.slice(0, all.length - Math.max(0, level - labelSteps));
   const moved = all.slice(visible.length);

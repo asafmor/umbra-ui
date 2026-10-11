@@ -6,13 +6,8 @@ const open = async (page: Page, id: string, width = 1280, height = 720) => {
   await page.setViewportSize({ width, height });
   await page.goto(`/iframe.html?id=${id}&viewMode=story`);
   await page.locator('#storybook-root > *').first().waitFor();
-  // Load every Latin font face now: a face that first loads later restarts every shrink level.
-  await page.evaluate(async () => {
-    await Promise.all(
-      [...document.fonts].filter((f) => f.unicodeRange.startsWith('U+0-FF')).map((f) => f.load()),
-    );
-    await document.fonts.ready;
-  });
+  // No font face is loaded ahead of time: one that first loads when a menu opens must disturb nothing.
+  await page.evaluate(() => document.fonts.ready);
 };
 
 const press = async (page: Page, ...keys: string[]) => {

@@ -6,12 +6,8 @@ const open = async (page: Page, id: string, width = 1280, height = 720, globals 
   await page.setViewportSize({ width, height });
   await page.goto(`/iframe.html?id=${id}&viewMode=story${globals && `&globals=${globals}`}`);
   await page.locator('#storybook-root > *').first().waitFor();
-  await page.evaluate(async () => {
-    await Promise.all(
-      [...document.fonts].filter((f) => f.unicodeRange.startsWith('U+0-FF')).map((f) => f.load()),
-    );
-    await document.fonts.ready;
-  });
+  // No font face is loaded ahead of time: one that first loads when a menu opens must disturb nothing.
+  await page.evaluate(() => document.fonts.ready);
 };
 
 /** WCAG contrast ratio of two `rgb()` colours. */

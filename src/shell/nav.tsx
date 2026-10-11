@@ -12,7 +12,7 @@ import {
   type ReactElement,
   type ReactNode,
 } from 'react';
-import { useShrinkLevel } from '../internal/useShrinkLevel';
+import { isOverflowing, useShrinkLevel } from '../internal/useShrinkLevel';
 import { Menu as UmbraMenu, type MenuEntry } from '../overlays/Menu';
 import { Icon, IconSlot } from '../provider/icons';
 import { warn } from '../utils/dev';
@@ -278,7 +278,16 @@ export function NavList({
   const activeIndex = items.findIndex((item) => item.props.id === value);
   const movable = items.length - (activeIndex >= 0 ? 1 : 0);
   const max = held?.hold ? 0 : movable + extraSteps;
-  const level = useShrinkLevel(list, max, items.length);
+  const level = useShrinkLevel(list, max, items.length, {
+    // A `ShortcutBar` in the end slot of the same bar gives way first. While it still has chips to move
+    // (its own list is cut), no page moves; the list is measured again when the bar has settled.
+    canAdvance: () =>
+      ![
+        ...(list.current?.parentElement?.querySelectorAll<HTMLElement>(
+          ':scope > [data-part="end"] [data-umbra="shortcut-bar"] > [data-part="list"]',
+        ) ?? []),
+      ].some(isOverflowing),
+  });
   const moved = new Set<number>();
   for (let i = items.length - 1; i >= 0 && moved.size < Math.min(level, movable); i--) {
     if (i !== activeIndex) moved.add(i);

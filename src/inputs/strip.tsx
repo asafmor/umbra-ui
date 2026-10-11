@@ -133,8 +133,10 @@ export function moreRows(
  * beside the "more" button. `keep` (the selected item) always stays: it takes the last place that fits.
  *
  * While `overflowed` is `null` nothing is known: every item and the "more" button are rendered, measured
- * before the browser paints, and the result is stored. A narrower parent or another `keep` measures again;
- * a wider one restarts the shrink levels, which makes `active` false and clears the result.
+ * before the browser paints, and the result is stored with the parent's width at that moment. A parent
+ * narrower than that width, or another `keep`, measures again; a wider one restarts the shrink levels,
+ * which makes `active` false and clears the result. The width is the one measured at, not the last one
+ * the observer delivered, so two changes within one frame cannot leave an old result standing.
  */
 export function useMoreItems(
   element: RefObject<HTMLElement | null>,
@@ -144,6 +146,7 @@ export function useMoreItems(
 ) {
   const [overflowed, setOverflowed] = useState<string[] | null>(null);
   const kept = useRef(keep);
+  const measuredAt = useRef(0);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps -- measured after every render on purpose; it ends once a result is stored
   useLayoutEffect(() => {
@@ -154,6 +157,7 @@ export function useMoreItems(
     if (!active) return overflowed ? setOverflowed(null) : undefined;
     if (changed && overflowed?.length) return setOverflowed(null);
     if (overflowed) return;
+    measuredAt.current = el.parentElement?.getBoundingClientRect().width ?? 0;
 
     const items = [...el.querySelectorAll<HTMLElement>(':scope > [data-id]')];
     const first = items[0]?.getBoundingClientRect();
@@ -182,11 +186,9 @@ export function useMoreItems(
   useLayoutEffect(() => {
     const parent = element.current?.parentElement;
     if (!active || !parent) return;
-    let width: number | undefined;
-    const observer = new ResizeObserver(([entry]) => {
-      const next = entry!.contentRect.width;
-      if (width !== undefined && next < width - 0.5) flushSync(() => setOverflowed(null));
-      width = next;
+    const observer = new ResizeObserver(() => {
+      if (parent.getBoundingClientRect().width < measuredAt.current - 0.5)
+        flushSync(() => setOverflowed(null));
     });
     observer.observe(parent);
     return () => observer.disconnect();
