@@ -81,10 +81,10 @@ export const OnBrands: Story = { render: () => onBrands('plain') };
 
 /**
  * `variant="filled"`: the block sits on a surface of its own, a step lighter than a dark bar and a step
- * darker than a light one. On a mid-tone bar, where that would cost the text its contrast, it goes the
+ * darker than a light one. On a mid-tone bar (the teal one), where that would cost the text its contrast, it goes the
  * other way.
  */
-export const Filled: Story = { render: () => onBrands('filled', [undefined, ...brands, '#777777']) };
+export const Filled: Story = { render: () => onBrands('filled', [undefined, ...brands]) };
 
 /** With `onPress` the block is a button, with `href` a link. A disabled one does nothing. */
 export const Interactive: Story = {

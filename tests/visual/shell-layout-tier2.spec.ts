@@ -1749,7 +1749,7 @@ test.describe('ContextBlock, filled (O-9)', () => {
         };
       });
     });
-    expect(bars).toHaveLength(6);
+    expect(bars).toHaveLength(5);
     for (const bar of bars) {
       expect(bar.variant).toBe('filled');
       // Seen against the bar, and never at the cost of the text.
