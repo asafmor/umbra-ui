@@ -1,8 +1,16 @@
-import { Children, useEffect, useState, type CSSProperties, type ReactNode } from 'react';
+import {
+  Children,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from 'react';
 import { IconButton } from '../basics/IconButton';
 import { Skeleton } from '../basics/Skeleton';
 import { dataState, type DataStateProps } from '../internal/dataState';
-import { focusableIn, moveFocusFrom } from '../internal/focus';
+import { focusableIn } from '../internal/focus';
 import { Icon } from '../provider/icons';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './HorizontalScroller.module.css';
@@ -82,6 +90,18 @@ function Root({
   // State, not a ref: the list comes and goes with the empty and error states, and the effect follows it.
   const [list, setList] = useState<HTMLDivElement | null>(null);
   const [more, setMore] = useState({ start: false, end: false });
+  /** The button that takes the focus as soon as it is drawn (see `hand` below). */
+  const handTo = useRef<'previous' | 'next' | null>(null);
+  useLayoutEffect(() => {
+    const part = handTo.current;
+    handTo.current = null;
+    if (!part || !list) return;
+    const target =
+      ref.current?.querySelector<HTMLElement>(`:scope > [data-part="${part}"] button`) ??
+      focusableIn(list)[0] ??
+      list.parentElement;
+    target?.focus({ preventScroll: true });
+  }, [more, list, ref]);
   const state = dataState(
     { loading, empty, error, onRetry, retryLabel },
     { isEmpty: Children.count(children) === 0, variant: 'inline', part: true },
@@ -94,12 +114,17 @@ function Root({
     const measure = () => {
       const position = Math.abs(view.scrollLeft);
       const next = { start: position > 1, end: position < view.scrollWidth - view.clientWidth - 1 };
-      // A button that is about to go hands the focus on: to the other button, else into the row.
+      // A button that is about to go hands the focus on: to the other button, else into the row. The
+      // other one may not be drawn yet (both changed in one scroll): it is then focused once it is.
       const control = (part: string) => root.querySelector<HTMLElement>(`:scope > [data-part="${part}"]`);
-      const inRow = () => focusableIn(list)[0] ?? view;
-      if (!next.start)
-        moveFocusFrom(control('previous'), control('next')?.querySelector('button') ?? inRow());
-      if (!next.end) moveFocusFrom(control('next'), control('previous')?.querySelector('button') ?? inRow());
+      const hand = (leaving: 'previous' | 'next', other: 'previous' | 'next', otherStays: boolean) => {
+        if (!control(leaving)?.contains(document.activeElement)) return;
+        const target = control(other)?.querySelector('button');
+        if (target || !otherStays) (target ?? focusableIn(list)[0] ?? view).focus({ preventScroll: true });
+        else handTo.current = other;
+      };
+      if (!next.start) hand('previous', 'next', next.end);
+      if (!next.end) hand('next', 'previous', next.start);
       setMore((prev) => (prev.start === next.start && prev.end === next.end ? prev : next));
     };
     // Arrow keys move between items, on top of the natural tab order. A native listener: it is on a list.

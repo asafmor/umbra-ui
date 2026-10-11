@@ -1033,6 +1033,9 @@ test.describe('HorizontalScroller', () => {
     await view(page).evaluate((el) => el.scrollTo({ left: el.scrollWidth }));
     await expect(page.getByText('reached the end: 1')).toBeVisible();
     await view(page).evaluate((el) => el.scrollTo({ left: 0 }));
+    // The row has seen that it left the end (its scroll event has been handled) before it goes back.
+    await expect(root(page).locator('[data-umbra="scroll-area"]')).toHaveAttribute('data-fade-end', 'true');
+    await expect(previous(page)).toHaveCount(0);
     await view(page).evaluate((el) => el.scrollTo({ left: el.scrollWidth }));
     await expect(page.getByText('reached the end: 2')).toBeVisible();
   });
