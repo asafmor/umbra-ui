@@ -119,7 +119,7 @@
   --travel: 1;
 }
 
-.root:dir(rtl) {
+.root:is([dir='rtl'], [dir='rtl'] *) {
   --toward-end: 270deg;
   --travel: -1;
 }
@@ -142,6 +142,10 @@
 
 .fill[data-tone='info'] {
   --paint: var(--umbra-color-semantic-info);
+}
+
+.fill[data-tone='accent'] {
+  --paint: var(--umbra-color-fixed-selected);
 }
 
 .fill[data-tone='ramp-1'] {

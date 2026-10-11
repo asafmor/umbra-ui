@@ -45,6 +45,38 @@
   --fill: var(--umbra-color-value-ramp-5);
 }
 
+/* A band of `thresholds` with a tone in place of a ramp step. The tones carry the same dark text. */
+.pill[data-tone] {
+  --fill: var(--umbra-color-base-text-muted);
+  --ink: var(--umbra-color-base-surface1);
+}
+
+.pill[data-tone='info'] {
+  --fill: var(--umbra-color-semantic-info);
+}
+
+.pill[data-tone='success'] {
+  --fill: var(--umbra-color-semantic-success);
+}
+
+.pill[data-tone='warning'] {
+  --fill: var(--umbra-color-semantic-warning);
+}
+
+.pill[data-tone='danger'] {
+  --fill: var(--umbra-color-semantic-danger);
+}
+
+.pill[data-tone='accent'] {
+  --fill: var(--umbra-color-fixed-selected);
+  --ink: var(--umbra-color-fixed-on-selected);
+}
+
+/* A free colour sets both inline; one the library cannot read (not hex or rgb) gets light text. */
+.pill[data-tone='custom'] {
+  --ink: var(--umbra-color-base-text-primary);
+}
+
 .pill[data-size='small'] {
   min-width: var(--umbra-value-pill-min-width, 2.6em);
   padding: var(--umbra-value-pill-padding, 0 var(--umbra-space-2));

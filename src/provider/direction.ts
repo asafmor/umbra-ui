@@ -2,6 +2,9 @@ import { warn } from '../utils/dev';
 
 type Direction = 'ltr' | 'rtl';
 
+/** The scripts written right to left, for a browser that cannot say how a locale is written. */
+const rtlScripts = new Set(['Adlm', 'Arab', 'Hebr', 'Mand', 'Mend', 'Nkoo', 'Rohg', 'Samr', 'Syrc', 'Thaa']);
+
 /** The direction a locale is written in, or undefined when it is not a valid language tag. */
 export function textDirection(locale: string): Direction | undefined {
   try {
@@ -9,7 +12,12 @@ export function textDirection(locale: string): Direction | undefined {
       getTextInfo?: (() => { direction: Direction }) | undefined;
       textInfo?: { direction: Direction } | undefined;
     };
-    return info.getTextInfo?.().direction ?? info.textInfo?.direction ?? 'ltr';
+    // Firefox before 153 has neither form. The script of the locale decides there, as in React Aria.
+    return (
+      info.getTextInfo?.().direction ??
+      info.textInfo?.direction ??
+      (rtlScripts.has(info.maximize().script ?? '') ? 'rtl' : 'ltr')
+    );
   } catch {
     warn(`locale "${locale}" is not a valid language tag.`);
     return undefined;

@@ -3,7 +3,7 @@
   --pad: var(--umbra-popover-padding, var(--umbra-density-card-padding));
   --line: var(--umbra-popover-border, var(--umbra-color-base-border-strong));
   --surface: var(--umbra-popover-bg, var(--umbra-color-base-surface2));
-  --umbra-scroll-fade-color: var(--surface);
+  --scroll-fade-color: var(--surface);
 
   /* React Aria sets the position and the tallest it may be; the frame inside shrinks to that. */
   display: flex;
@@ -33,7 +33,7 @@
 /* The panel takes focus when it opens. The ring is drawn inside, where nothing clips it. */
 .root[role='dialog']:focus-visible {
   outline: var(--umbra-state-focus-ring-width) solid
-    var(--umbra-focus-color, var(--umbra-color-fixed-focus-ring));
+    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-fixed-focus-ring)));
   outline-offset: calc(-1 * var(--umbra-state-focus-ring-width));
 }
 

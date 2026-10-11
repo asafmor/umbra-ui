@@ -39,6 +39,8 @@ No variants. Text colour on the bar is computed from the brand colour (light or 
 
 The bar declares no token of another component on its parts: its parts read the bar's own tokens, so an app can set them from any ancestor. A `PrimaryAction` and `HistoryButtons` in the bar are sized by their own tokens.
 
+Defaults for what is inside, as private properties, never as public tokens: the focus ring takes the colour the provider computed for the brand (`--focus-color`), and a badge gets a ring in the bar's text colour (`--badge-ring`). The app's own value of the global token, set on any ancestor, wins over these defaults (2026-10-11, `plan/decisions/07-customisation.md`, "Tokens").
+
 ### 2. Props
 
 | Prop | Type | Default | Purpose |
@@ -108,5 +110,5 @@ Resolved 2026-10-10: for a brand colour where neither white nor near-black text 
 
 Resolved 2026-10-11 (review 2):
 
-- The bar declares no public token of another component (F21): what it needs inside itself is a private default (`--primary-action-min-height`, `--icon-size`), which the component reads after its public token, so `--umbra-primary-action-min-height` or `--umbra-icon-size` set by the app on any ancestor wins. `--umbra-badge-ring` is still declared here, because `Badge` (another group's file) does not read a private default yet.
+- The bar declares no public token of another component (F21): what it needs inside itself is a private default (`--primary-action-min-height`, `--icon-size`), which the component reads after its public token, so `--umbra-primary-action-min-height` or `--umbra-icon-size` set by the app on any ancestor wins. The badge ring and the focus colour followed on 2026-10-11 (`--badge-ring`, `--focus-color`).
 - When nothing is left to move, "More" itself gives way: its label ends in an ellipsis and its caret stays, so it is not cut at the edge down to a bar 470px wide (it was cut from 470px; F31). Narrower than that the logo and the actions alone are wider than the bar: not supported, as phones are not a design target (`plan/layout.md`).

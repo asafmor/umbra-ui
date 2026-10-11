@@ -180,7 +180,7 @@
   overflow: hidden;
   white-space: nowrap;
   /* It clips, so the rings of its controls are drawn inside them. */
-  --umbra-focus-offset: var(--umbra-list-item-focus-offset, calc(-1 * var(--umbra-state-focus-ring-width)));
+  --focus-offset: var(--umbra-list-item-focus-offset, calc(-1 * var(--umbra-state-focus-ring-width)));
 }
 
 /*
@@ -301,7 +301,7 @@
 
 .link:focus-visible::after {
   outline: var(--umbra-state-focus-ring-width) solid
-    var(--umbra-focus-color, var(--umbra-color-fixed-focus-ring));
+    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-fixed-focus-ring)));
   outline-offset: calc(-1 * var(--umbra-state-focus-ring-width));
 }
 

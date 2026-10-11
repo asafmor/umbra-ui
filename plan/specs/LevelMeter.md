@@ -38,8 +38,8 @@ Every part carries `data-part` with its name. Inside the strip, `plot`, each `ti
 |---|---|---|
 | scale | numeric (`min`, `max`, `steps`), named (`levels`) | On a named scale the marker sits on a level |
 | `range` | `[low, high]` | A band, alone or with a marker inside it |
-| `zones` | `{ from, to, tone, label }[]` | The marker takes the tone of its zone; zone edges are taller ticks |
-| `tone` | `default`, `neutral`, `info`, `success`, `warning`, `danger`, `ramp-1` to `ramp-5` | Marker colour when no zone or level sets it |
+| `thresholds` | a list of `{ from, tone?, color?, label? }`, or number[] | The marker takes the colour of the band it is in (the shared shape of `plan/decisions/07-customisation.md`, "Thresholds"); where a band starts inside the scale is a taller tick. Numbers are boundaries on the value ramp. `lowerIsBetter` mirrors the colours. `data-band` on the root. |
+| `tone` | `default`, `neutral`, `info`, `success`, `warning`, `danger`, `accent`, `ramp-1` to `ramp-5` | Marker colour when no band or level sets it |
 | `orientation` | `horizontal`, `vertical` | Vertical runs from the bottom up and fills the height it is given |
 | `size` | `small` (14px), `default` (20px), `large` (28px) | `small` is for table cells |
 | `boxed` | boolean | The border and surface around the ticks |
@@ -65,7 +65,7 @@ States: `loading`, no value (`data-empty`), out of range (`data-out-of-range`), 
 | `range` | `[low, high]` | — | |
 | `compare` / `compareLabel` | number \| level id / string | — / "Comparison" | |
 | `rangeLabel` | string | "Range" | Names the band for assistive technology |
-| `zones` | see above | — | |
+| `thresholds` / `lowerIsBetter` | see above / boolean | — / `false` | |
 | `tone` | see above | `default` | |
 | `label` | node | — | |
 | `aria-label` | string | — | Names a meter with no visible label |
@@ -105,15 +105,15 @@ The marker, the band and the comparison marker always stay, at the same place on
 
 - Not focusable; no keyboard interaction.
 - Built on React Aria's `Meter` (`role="meter"`). The visible label names it; without one, `aria-label` does.
-- `aria-valuetext` describes it in words: the value or level, the zone's label, the range and the comparison ("62, Fair, Range: 40 – 65, Last month: 45").
+- `aria-valuetext` describes it in words: the value or level, the band's label, the range and the comparison ("62, Fair, Range: 40 – 65, Last month: 45").
 - On a named scale `aria-valuenow` is the index of the level. A meter that shows only a range reports the middle of the range.
-- Colour is never the only cue: the marker is taller and wider than a tick, the comparison has its own shape, zone edges are taller ticks, and the zone's label is in the text.
+- Colour is never the only cue: the marker is taller and wider than a tick, the comparison has its own shape, the start of a band is a taller tick, and the band's label is in the text.
 - A value outside the scale clamps the marker; the text keeps the real value.
 - **No value** (`value` is `null`, missing or names no level, and there is no `range`): no marker and no lit tick are drawn, the value text is `emptyLabel` ("—"), and `aria-valuetext` and the tooltip say `noValueLabel` ("No value"), followed by the comparison when there is one. `aria-valuenow` stays at `min` because the role requires it; the text is what is read. The root carries `data-empty`. There is no error state (plan/interaction.md, "Which states a component has").
 - **Right to left**: the scale runs from the right; the marker, the band, the comparison and the end labels mirror. A vertical meter does not change.
 - **Non-text contrast**, measured on violet / teal / green / slate: the box against the card 4.16 / 4.12 / 4.11 / 4.15; an unlit tick against the strip 4.26 on every tint; a lit tick 9.2. Lit and unlit ticks also differ in height (70% and 40% of the strip), so the difference does not depend on colour.
 - While loading, the root is not a meter; it sets `aria-busy`.
-- Hovering the meter shows the same text as `aria-valuetext` (value, zone, range, comparison) in a tooltip (500ms delay, Escape closes it). `tooltip={false}` turns it off. The meter is still not a tab stop; if the app makes it or a control around it focusable, keyboard focus shows the tooltip too.
+- Hovering the meter shows the same text as `aria-valuetext` (value, band, range, comparison) in a tooltip (500ms delay, Escape closes it). `tooltip={false}` turns it off. The meter is still not a tab stop; if the app makes it or a control around it focusable, keyboard focus shows the tooltip too.
 
 ## Open questions
 
@@ -121,7 +121,7 @@ None.
 
 Resolved 2026-10-10:
 
-- 2026-10-11 (review B7): unlit ticks and the box border use `border-control` (they measured 1.9:1 in `border-strong`). Lit ticks are `text-secondary` and taller, and zone edges keep `text-muted` through their own token, `--umbra-level-meter-boundary`.
+- 2026-10-11 (review B7): unlit ticks and the box border use `border-control` (they measured 1.9:1 in `border-strong`). Lit ticks are `text-secondary` and taller, and band edges keep `text-muted` through their own token, `--umbra-level-meter-boundary`.
 - 2026-10-11 (review B6, B8): a missing value is announced as "No value", not as 0%. No error and no empty state. `value` accepts `null`.
 - 2026-10-11: the shrink steps are three, as the code has them; the label truncates at the third.
 
@@ -129,7 +129,8 @@ Resolved 2026-10-10:
 - The marker sits at the exact value, not on the nearest tick; ticks up to it are lit, as in the source.
 - `value`, `compare` and the ends of `range` accept a level id or a number.
 - A value that names no level draws no marker.
-- Zones apply to numeric scales; on a named scale each level carries its own tone.
+- 2026-10-11 (Milestone 2): `zones` (`{ from, to, tone, label }[]`) became `thresholds`, the shared list: a band runs to the next entry, so `to` is gone. To end a coloured band before the end of the scale, add an entry with no `tone` (the marker keeps the meter's `tone` there). The cue that is not colour is the band's label and the taller ticks; a marker is too small for a pattern.
+- Thresholds apply to numeric scales; on a named scale each level carries its own tone.
 - The band has one neutral colour (`--umbra-level-meter-band`); the marker inside it carries the tone.
 - The strip fills the room it is given, like every component. `--umbra-level-meter-length` caps it for a compact meter in a header.
 - A vertical meter shrinks by its height, in the same steps.

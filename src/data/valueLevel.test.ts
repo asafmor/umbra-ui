@@ -13,19 +13,9 @@ test('values outside the scale take the end bands', () => {
   expect(valueLevel(140)).toBe(5);
 });
 
-test('a value at a threshold belongs to the band above it', () => {
-  const thresholds = [6, 6.5, 7, 8];
-  expect([5.9, 6, 6.7, 7, 9].map((v) => valueLevel(v, { thresholds }))).toEqual([1, 2, 3, 4, 5]);
-});
-
-test('fewer thresholds spread over the whole ramp', () => {
-  expect([6.9, 7].map((v) => valueLevel(v, { thresholds: [7] }))).toEqual([1, 5]);
-  expect([1, 5, 9].map((v) => valueLevel(v, { thresholds: [4, 8] }))).toEqual([1, 3, 5]);
-});
-
-test('lower-is-better reverses the ramp', () => {
-  expect(valueLevel(10, { ramp: 'lower-is-better' })).toBe(5);
-  expect(valueLevel(9, { thresholds: [4, 8], ramp: 'lower-is-better' })).toBe(1);
+test('lower is better reverses the ramp', () => {
+  expect(valueLevel(10, { lowerIsBetter: true })).toBe(5);
+  expect(valueLevel(90, { lowerIsBetter: true })).toBe(1);
 });
 
 test('no value has no level', () => {

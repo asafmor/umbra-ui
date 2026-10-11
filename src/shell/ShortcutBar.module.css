@@ -68,7 +68,7 @@
   transform-origin: top right;
 }
 
-.chip[data-icon-only] > [data-umbra='badge']:dir(rtl) {
+.chip[data-icon-only] > [data-umbra='badge']:is([dir='rtl'], [dir='rtl'] *) {
   transform-origin: top left;
 }
 
@@ -91,7 +91,7 @@
 /* The list clips, so the ring is drawn inside the chip. */
 .chip[data-focus-visible] {
   outline: var(--umbra-state-focus-ring-width) solid
-    var(--umbra-focus-color, var(--umbra-color-fixed-focus-ring));
+    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-fixed-focus-ring)));
   outline-offset: calc(-1 * var(--umbra-state-focus-ring-width));
 }
 

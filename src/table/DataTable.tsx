@@ -39,6 +39,7 @@ import { ScrollArea } from '../layout/ScrollArea';
 import { Menu, type MenuEntry } from '../overlays/Menu';
 import { Icon } from '../provider/icons';
 import { useUmbra } from '../provider/UmbraProvider';
+import { minWindow } from '../styles/tokens.generated';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './DataTable.module.css';
 import {
@@ -1457,7 +1458,8 @@ export function DataTable<Row>({
     [items, metrics],
   );
   const indexByKey = useMemo(() => new Map(items.map((item, index) => [item.key, index])), [items]);
-  const viewHeight = size?.height ?? 600;
+  // Before the first measure: the smallest window there is.
+  const viewHeight = size?.height ?? minWindow.height;
   // One more screen of rows is rendered in the direction of travel, so a fast scroll does not outrun them.
   const ahead = Math.max(OVERSCAN, Math.ceil(viewHeight / metrics.row));
   const windowAt = (top: number, direction: number) =>

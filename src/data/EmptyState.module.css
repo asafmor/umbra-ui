@@ -7,7 +7,7 @@
    * The root clips, so the ring of a control inside it is drawn inwards. Set from the component's own
    * token, so an app still has a way to change it.
    */
-  --umbra-focus-offset: var(--umbra-empty-state-focus-offset, calc(-1 * var(--umbra-state-focus-ring-width)));
+  --focus-offset: var(--umbra-empty-state-focus-offset, calc(-1 * var(--umbra-state-focus-ring-width)));
 }
 
 /* Block: centred in its slot. Without a definite height around it, it is as tall as its content. */
@@ -20,6 +20,13 @@
   gap: var(--umbra-empty-state-gap, var(--umbra-space-3));
   padding: var(--umbra-empty-state-padding, var(--umbra-space-4));
   text-align: center;
+}
+
+/* Safari before 17.6 has no `safe` alignment and would drop the line, leaving the block at the top. */
+@supports not (justify-content: safe center) {
+  .root[data-variant='block'] {
+    justify-content: center;
+  }
 }
 
 .root[data-variant='block'] > * {
@@ -41,11 +48,11 @@
 .icon {
   display: inline-flex;
   color: var(--umbra-empty-state-icon-color, var(--umbra-color-base-text-muted));
-  --umbra-icon-size: var(--umbra-empty-state-icon-size, 2em);
+  --icon-size: var(--umbra-empty-state-icon-size, 2em);
 }
 
 .root[data-variant='inline'] > .icon {
-  --umbra-icon-size: var(--umbra-empty-state-inline-icon-size, 1.25em);
+  --icon-size: var(--umbra-empty-state-inline-icon-size, 1.25em);
 }
 
 .title {

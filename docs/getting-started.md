@@ -218,18 +218,26 @@ The stylesheet relies on current CSS and has no fallbacks for older browsers.
 | Firefox         | 121     | `:has()`                 |
 | Safari          | 16.2    | `color-mix()` in `oklab` |
 
-| Feature                               | Used for                                              | Without it                                                    |
-| ------------------------------------- | ----------------------------------------------------- | ------------------------------------------------------------- |
-| `color-mix()` in `oklab`              | Tints, hover and pressed colours, borders             | Required: those colours are missing                           |
-| `:has()`                              | States that depend on a child (a hovered trigger)     | Required                                                      |
-| Container queries                     | Showing less as a component narrows                   | Required: content is cut instead                              |
-| `dvh` and `dvw` units                 | The shell is exactly the window                       | Required                                                      |
-| Subgrid                               | One label column for every row of a `KeyValueList`    | Degrades: each row sizes its own label. Chrome 111 is enough. |
-| `transition-behavior: allow-discrete` | Hiding the scrollbar while an `Accordion` panel opens | Degrades: the scrollbar shows during the transition           |
-| `scrollbar-color`, `scrollbar-width`  | Thin scrollbars in Firefox                            | Degrades: the browser's own scrollbar                         |
+| Feature                               | Used for                                                         | Without it                                                                                    |
+| ------------------------------------- | ---------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `color-mix()` in `oklab`              | Tints, hover and pressed colours, borders                        | Required: those colours are missing                                                           |
+| `:has()`                              | States that depend on a child (a hovered trigger)                | Required                                                                                      |
+| Container queries                     | Showing less as a component narrows                              | Required: content is cut instead                                                              |
+| `dvh` and `dvw` units                 | The shell is exactly the window                                  | Required                                                                                      |
+| Subgrid                               | One label column for every row of a `KeyValueList`               | Degrades: each row sizes its own label. Chrome 111 is enough.                                 |
+| `transition-behavior: allow-discrete` | Hiding the scrollbar while an `Accordion` panel opens            | Degrades: the scrollbar shows during the transition                                           |
+| `scrollbar-color`, `scrollbar-width`  | Thin scrollbars in Firefox                                       | Degrades: Chrome before 121 and Safari take the `::-webkit-scrollbar` rules                   |
+| `lh` unit                             | Centring a checkbox, a radio or one line of text on its row      | Degrades in Safari 16.2 and 16.3: a few pixels off; nothing is hidden                         |
+| `contain-intrinsic-block-size`        | The 240px of a chart that has no height to fill                  | Safari before 17: `height="content"` has a fallback; give other charts a parent with a height |
+| `safe` alignment                      | An `EmptyState` taller than its slot stays readable from the top | Safari before 17.6: centred by a fallback, cut at both ends when too tall                     |
+| Popover API                           | The chart tooltip, above everything                              | Firefox before 125, Safari before 17: a fixed element, which a clipping ancestor can cut      |
 
-- The automated tests run in Chromium only. Firefox and Safari are expected to work from the versions
-  above, and are not tested yet.
+- `npm run lint` fails when the stylesheet or the code uses a feature newer than the minimums without a
+  fallback (`scripts/check-browsers.mjs` holds the list, with the version of each browser that ships it).
+- The automated tests run in Chromium only. Firefox and Safari are supported from the versions above
+  and looked at by hand before a release ([the checklist](browser-checks.md)).
+- Right to left needs `dir="rtl"` on the page or a right-to-left `locale` on the provider; it does not
+  depend on `lang`.
 - React 19.0 or later. No React 18.
 - Node 20 or later, when you render on the server. In the browser the package needs a bundler (Vite,
   webpack, Next.js): it is ESM, and it imports its dependencies by name.
@@ -244,6 +252,77 @@ The stylesheet relies on current CSS and has no fallbacks for older browsers.
 - What depends on measured sizes (which cards of a stack collapse, which nav items move to the "more"
   menu) is settled in the browser, after hydration.
 - Import `umbra-ui/styles.css` once, in the root layout.
+
+## Debugging
+
+What the package ships, so that an error inside a component can be read:
+
+- **Readable modules.** One JavaScript file per source file, not minified: `dist/layout/Card.js` is
+  `Card.tsx` without its types. Your bundler minifies your build.
+- **Source maps with the source inside.** Every module has a `.js.map` that holds its `.tsx` file, so a
+  stack frame can be shown as a line of the original source. The package does not hold `src/`.
+- **Names.** React DevTools and component stacks show `Card`, `Card.Header`, `DataTable.Root`.
+
+What DevTools shows for a frame inside the library depends on whether your bundler reads the package's
+maps. Checked with the versions in the table:
+
+| Bundler                               | Without setup                    | To see the `.tsx` lines                                 |
+| ------------------------------------- | -------------------------------- | ------------------------------------------------------- |
+| Vite 8.3, development server          | The built module, `dist/**/*.js` | Keep the library out of the pre-bundle (below)          |
+| webpack 5.111                         | The built module                 | `source-map-loader` 5 (below)                           |
+| Next.js 16.4 (Turbopack, the default) | The `.tsx` lines                 | Nothing                                                 |
+| Next.js 16.4 with `--webpack`         | The built module                 | `source-map-loader`, added in `webpack()` of the config |
+
+- The built module is close to the source: same names, same order, comments kept. Most errors can be read
+  from it, so the setup below is optional.
+- In Next.js, `transpilePackages` is not needed for the library and does not change what the maps show.
+  Every module starts with `'use client'`, so a Server Component can import a component directly
+  ([Server rendering](#server-rendering)).
+
+**Vite.** Vite bundles each dependency before serving it, and that bundle's map stops at the built
+modules. Excluded from the pre-bundle, the library is served module by module with its own maps. Its
+dependencies must stay in: some hold CommonJS, which a browser cannot load as it is.
+
+```ts
+// vite.config.ts
+import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vite';
+
+export default defineConfig({
+  plugins: [react()],
+  optimizeDeps: {
+    exclude: ['umbra-ui'],
+    include: ['react-aria-components', '@tanstack/react-table', 'd3-scale', 'd3-shape', 'lucide-react'].map(
+      (name) => `umbra-ui > ${name}`,
+    ),
+  },
+});
+```
+
+The development server then makes one request per module of the library that the page uses. This
+changes the development server only, not `vite build`.
+
+**webpack.** Install `source-map-loader` and run it before the other loaders, for the library only:
+
+```js
+// webpack.config.js
+export default {
+  devtool: 'source-map',
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        enforce: 'pre',
+        include: /node_modules[\\/]umbra-ui/,
+        use: ['source-map-loader'],
+      },
+    ],
+  },
+};
+```
+
+In Next.js with `--webpack`, push the same rule onto `config.module.rules` in the `webpack(config)`
+function of `next.config.js`.
 
 ## Next
 

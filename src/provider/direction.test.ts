@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import { resolveLocale } from './direction';
+import { resolveLocale, textDirection } from './direction';
 
 test('the `locale` prop decides, whatever the document and the browser say', () => {
   expect(resolveLocale('he-IL', 'ltr', 'en-US')).toEqual({ locale: 'he-IL', direction: 'rtl' });
@@ -20,4 +20,25 @@ test("with neither, the browser's locale decides, and the direction is always kn
   expect(resolveLocale(undefined, '', 'he-IL')).toEqual({ locale: 'he-IL', direction: 'rtl' });
   expect(resolveLocale(undefined, '', 'ar')).toEqual({ locale: 'ar', direction: 'rtl' });
   expect(resolveLocale(undefined, 'auto', 'fr-FR')).toEqual({ locale: 'fr-FR', direction: 'ltr' });
+});
+
+test('a browser that cannot say how a locale is written (Firefox before 153): the script decides', () => {
+  const proto = Intl.Locale.prototype;
+  const saved = (['getTextInfo', 'textInfo'] as const).map(
+    (name) => [name, Object.getOwnPropertyDescriptor(proto, name)] as const,
+  );
+  for (const [name] of saved) Reflect.deleteProperty(proto, name);
+  try {
+    const info = new Intl.Locale('he') as unknown as Record<string, unknown>;
+    expect([info.getTextInfo, info.textInfo]).toEqual([undefined, undefined]);
+    expect(['he-IL', 'ar', 'fa-IR', 'ur', 'ps', 'dv', 'yi', 'ckb', 'en-Arab-US'].map(textDirection)).toEqual(
+      Array(9).fill('rtl'),
+    );
+    expect(['en-US', 'fr', 'ja', 'ru', 'he-Latn-IL', 'az', 'tr'].map(textDirection)).toEqual(
+      Array(7).fill('ltr'),
+    );
+  } finally {
+    for (const [name, descriptor] of saved) if (descriptor) Object.defineProperty(proto, name, descriptor);
+  }
+  expect(textDirection('he-IL')).toBe('rtl');
 });

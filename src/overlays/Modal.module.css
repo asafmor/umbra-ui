@@ -46,7 +46,7 @@
   --border: var(--umbra-modal-border, var(--umbra-color-base-border-strong));
   --pad: var(--umbra-modal-padding, var(--umbra-density-card-padding));
   --width: var(--umbra-size-modal-md);
-  --umbra-scroll-fade-color: var(--bg);
+  --scroll-fade-color: var(--bg);
   /* How far the panel moves as it enters: a small rise, or a drawer's own size. */
   --from: 0 calc(var(--umbra-space-3) * var(--umbra-motion-scale));
 
@@ -119,11 +119,11 @@
 }
 
 .panel[data-side='start'],
-.panel[data-side='end']:dir(rtl) {
+.panel[data-side='end']:is([dir='rtl'], [dir='rtl'] *) {
   --from: calc(-100% * var(--umbra-motion-scale)) 0;
 }
 
-.panel[data-side='start']:dir(rtl) {
+.panel[data-side='start']:is([dir='rtl'], [dir='rtl'] *) {
   --from: calc(100% * var(--umbra-motion-scale)) 0;
 }
 

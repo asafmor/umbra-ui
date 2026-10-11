@@ -15,10 +15,13 @@ between them.
 | CI is green on that commit                       | The badge in the README, or the Actions tab |
 | You are signed in to npm as the package owner    | `npm whoami`                                |
 | The release can be made                          | `npm run build && npm run release:check`    |
+| Firefox and Safari have been looked at           | [The checks by hand](browser-checks.md)     |
 
 `release:check` rehearses the version bump on a copy in a temporary folder and prints what it would
 release (`umbra-ui 0.0.0 -> 0.1.0`), then checks that the package holds every file its `exports` name
-and nothing outside `dist/`. CI runs it on every push.
+and nothing outside `dist/`. It prints the packed and unpacked size with the share that is source maps,
+and fails when the packed package is over `PACKED_LIMIT_KB` in `scripts/check-release.mjs` (1300 kB):
+find what grew before raising it. CI runs it on every push.
 
 ## The steps
 
@@ -94,7 +97,7 @@ the first run has worked.
 `npm install github:asafmor/umbra-ui` downloads the whole repository, with the baseline images of the
 visual tests (about 180 MB), installs the development dependencies and builds the package.
 It takes minutes and is meant for trying an unreleased commit only. The package on npm holds `dist/`,
-the README, the licence and the changelog: about 200 kB.
+the README, the licence and the changelog: about 670 kB packed, more than half of it source maps.
 
 ## Trying a release without publishing
 

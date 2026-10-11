@@ -234,6 +234,54 @@ colour blindness and each keeps 4.8:1 against a card on every preset tint.
 </UmbraScope>
 ```
 
+## Colour by value: one `thresholds` list
+
+`ValuePill`, `ProgressBar`, `LevelMeter`, `BarChart` and `DonutChart` colour a value by the band it
+falls in, and all take the same `thresholds`: an ascending list where each entry runs from its `from`
+up to the next one.
+
+```tsx
+import { ProgressBar, ValuePill, type Threshold } from 'umbra-ui';
+import { BarChart, DonutChart } from 'umbra-ui/charts';
+
+const bands: Threshold[] = [
+  { from: 0, tone: 'danger', label: 'Low' },
+  { from: 40, tone: 'warning', label: 'Medium' },
+  { from: 70, color: '#5aa9ff', label: 'High' },
+  { from: 90, tone: 'ramp-5', label: 'Top' },
+];
+
+export function Scores({ score }: { score: number }) {
+  return (
+    <>
+      <ValuePill value={score} thresholds={bands} />
+      <ProgressBar label="Score" kind="meter" value={score} thresholds={bands} showValue />
+      <DonutChart aria-label="Score" value={score} thresholds={bands} />
+      <BarChart
+        aria-label="Score by region"
+        categories={['North', 'South']}
+        series={[{ id: 'score', label: 'Score', values: [score, 55] }]}
+        thresholds={bands}
+      />
+    </>
+  );
+}
+```
+
+- `tone` is a meaning (`neutral`, `info`, `success`, `warning`, `danger`, `accent`) or a step of the
+  value ramp (`ramp-1` to `ramp-5`). `color` is any CSS colour and wins. With neither, the band keeps
+  the component's own colour.
+- Colour is never the only cue, also for a free `color`: each band gets a pattern by its position
+  (a hatch in `ProgressBar`, a fill in `BarChart`), and its `label` joins the value in the text, the
+  tooltip and for screen readers.
+- Plain numbers are shorthand for boundaries on the value ramp: `thresholds={[40, 70, 90]}`. Four
+  boundaries give the five steps. `ProgressBar` also takes `thresholds` alone (`true`): thirds of its
+  scale, danger, warning, success.
+- `lowerIsBetter` mirrors the colours for a scale where low is good; the labels stay with their bands.
+- A value below the first `from` is in no band. Each component sets `data-band` (the band's position,
+  from 0) for CSS.
+- Your own cell or badge: `resolveThreshold(value, bands)` returns the band the components would pick.
+
 ## Fonts
 
 The library names two families and ships neither: **the app loads them**.

@@ -43,6 +43,8 @@ States: image, initials, silhouette (chosen in that order); image failed.
 
 `--umbra-avatar-size`, `--umbra-avatar-bg`, `--umbra-avatar-fg`, `--umbra-avatar-fallback-fg`, `--umbra-avatar-radius` (square), `--umbra-avatar-ring`, `--umbra-avatar-status-size`, `--umbra-avatar-group-overlap` (a share of the size, default 0.16), `--umbra-avatar-group-border` (the line between overlapping avatars; set it to the colour of the surface behind).
 
+`--umbra-avatar-size` is read before the private `--avatar-size`, the default a container gives the avatars inside it (`PageHeader`'s media): the app's token set on any ancestor wins (2026-10-11).
+
 ### 2. Props
 
 `Avatar`:

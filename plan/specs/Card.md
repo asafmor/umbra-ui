@@ -41,6 +41,8 @@ States: `collapsed`, `loading`, `empty`, `error`, `focus-within`.
 
 `--umbra-card-bg`, `--umbra-card-border`, `--umbra-card-radius`, `--umbra-card-padding`, `--umbra-card-header-bg`, `--umbra-card-min-height`. Padding and minimum height follow the density level.
 
+Defaults for what is inside, as private properties, never as public tokens: the fade of a `ScrollArea` blends into the card's background (`--scroll-fade-color`), and a badge in a band header gets a ring in the header's text colour (`--badge-ring`). The app's own value of the global token, set on any ancestor, wins over these defaults (2026-10-11, `plan/decisions/07-customisation.md`, "Tokens"). The card also declares `--umbra-slot-min-height`, the minimum height the `Stack` around it reads: it is reset on every layout child, so it is never inherited.
+
 ### 2. Props
 
 | Prop | Type | Default | Purpose |

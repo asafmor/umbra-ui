@@ -36,7 +36,9 @@ Scrollbars are the browser's own, styled thin with a transparent track.
 
 ### 1. Tokens
 
-`--umbra-scroll-thumb`, `--umbra-scroll-thumb-hover`, `--umbra-scroll-thumb-size`, `--umbra-scroll-fade-color` (the colour the fade blends into; a `Card` sets it to its own background).
+`--umbra-scroll-thumb`, `--umbra-scroll-thumb-hover`, `--umbra-scroll-thumb-size`, `--umbra-scroll-fade-color` (the colour the fade blends into).
+
+`--umbra-scroll-fade-color` is read before the private `--scroll-fade-color`, which a surface sets to its own background (`Card`, `Modal`, `Popover`, a card `Accordion`): the app's token set on any ancestor wins (2026-10-11).
 
 ### 2. Props
 

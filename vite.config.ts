@@ -14,9 +14,11 @@ const blockNames = (): Plugin => ({
   apply: 'build',
   transform(code, id) {
     if (!/\/src\/.*\.tsx$/.test(id) || /\.(stories|test)\.tsx$/.test(id)) return null;
+    // On the same line, never on a new one: the source map of the module is kept as it is (`map: null`),
+    // so an added line would move every line below it in the map (`npm run check:package` checks them).
     let named = code.replace(
       /^([A-Z]\w*)\.([A-Z]\w*) = ([A-Z]\w*);$/gm,
-      (line, owner, member, fn) => `${line}\n${fn}.displayName ??= '${owner}.${member}';`,
+      (line, owner, member, fn) => `${line} ${fn}.displayName ??= '${owner}.${member}';`,
     );
     // A component whose name is also an import of its module (`Button as AriaButton`) is renamed by
     // the bundler (`Button$1`), so it states its name. Only those: a statement at the top of a module
@@ -30,6 +32,10 @@ const blockNames = (): Plugin => ({
 export default defineConfig({
   plugins: [react(), blockNames()],
   build: {
+    // The minimum browsers of the README. Lightning CSS, which minifies the stylesheet, adds prefixes
+    // and merges rules for these versions, and rewrites what they lack: scripts/check-browsers.mjs
+    // holds the same versions, and fails when they differ or when a rewrite reached the stylesheet.
+    cssTarget: ['chrome117', 'edge117', 'firefox121', 'safari16.2'],
     lib: {
       entry: { index: 'src/index.ts', charts: 'src/charts/index.ts' },
       formats: ['es'],

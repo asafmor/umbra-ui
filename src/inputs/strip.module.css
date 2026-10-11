@@ -6,7 +6,7 @@
   scrollbar-width: none;
 }
 
-.strip:dir(rtl) {
+.strip:is([dir='rtl'], [dir='rtl'] *) {
   --to: left;
 }
 

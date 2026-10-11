@@ -24,6 +24,7 @@ import { focusLost, holdFocus } from './focus';
  * - A menu opened from the row (the "more" menu). Restarting unmounts its trigger, so the restart waits
  *   until nothing in or beside the row is expanded. A web font that arrives because the menu opened
  *   (its rows use another weight) therefore cannot close it.
+ *   The restart then runs as soon as the focus is back on the trigger, in the same task.
  * - Focus. When the focused control is rendered again or moves into the "more" menu, focus goes to its
  *   replacement, or to the first control of the row.
  *

@@ -83,7 +83,8 @@ function Root({
             ['--umbra-page-header-bg' as string]: bandColor,
             // Text and focus rings on a custom band are light or dark, whichever contrasts more with it.
             ['--umbra-page-header-fg' as string]: onBand,
-            ['--umbra-focus-color' as string]: onBand,
+            // Private: the app's own `--umbra-focus-color`, set on any ancestor, still wins.
+            ['--focus-color' as string]: onBand,
           }),
         ...style,
       }}

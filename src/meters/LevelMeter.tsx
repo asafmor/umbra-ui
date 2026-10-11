@@ -20,16 +20,15 @@ import {
 } from '../internal/ChangeHighlight';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './LevelMeter.module.css';
+import { resolveThreshold, type ThresholdList } from '../utils/thresholds';
 import {
+  bandBoundaries,
   describe,
   outOfRange,
   tickFractions,
   tickShown,
   toFraction,
-  zoneBoundaries,
-  zoneFor,
   type MeterTone,
-  type Zone,
 } from './scale';
 import { defined } from '../utils/defined';
 
@@ -51,6 +50,7 @@ interface MeterContext {
   compare?: number | undefined;
   band?: [number, number] | undefined;
   tone: MeterTone;
+  color?: string | undefined;
   valueText: ReactNode;
   /** How far the meter has shrunk: 1 hides the end labels, 2 and 3 thin the ticks. */
   level: number;
@@ -88,9 +88,15 @@ export interface LevelMeterRootProps extends BlockProps {
   compareLabel?: string | undefined;
   /** Names the band for assistive technology. */
   rangeLabel?: string | undefined;
-  /** Colours the marker by the zone it is in. Zone edges are drawn as taller ticks, and the zone's label is read out. */
-  zones?: Zone[] | undefined;
-  /** Colour of the marker, when no zone or level sets it. */
+  /**
+   * Colours the marker by the band of the value: an ascending list of `{ from, tone?, color?, label? }`,
+   * or plain numbers as boundaries on the value ramp. Where a band starts is drawn as a taller tick, and
+   * the band's `label` joins the value text.
+   */
+  thresholds?: ThresholdList | undefined;
+  /** For a scale where low is good: mirrors the colours of the bands. The labels stay. */
+  lowerIsBetter?: boolean | undefined;
+  /** Colour of the marker, when no band or level sets it. */
   tone?: MeterTone | undefined;
   orientation?: 'horizontal' | 'vertical' | undefined;
   size?: 'small' | 'default' | 'large' | undefined;
@@ -124,7 +130,8 @@ function Root({
   compare: compareProp,
   compareLabel = 'Comparison',
   rangeLabel = 'Range',
-  zones,
+  thresholds,
+  lowerIsBetter,
   tone = 'default',
   orientation = 'horizontal',
   size = 'default',
@@ -177,7 +184,7 @@ function Root({
       ? [toFraction(Math.min(low, high), min, max), toFraction(Math.max(low, high), min, max)]
       : undefined;
 
-  const zone = value !== undefined && zones && !levels ? zoneFor(value, zones) : undefined;
+  const zone = levels ? undefined : resolveThreshold(value, thresholds, { lowerIsBetter });
   const markerTone =
     (levels && value !== undefined ? levels[Math.round(value)]?.tone : undefined) ?? zone?.tone ?? tone;
   const valueFraction = fraction(value);
@@ -204,7 +211,8 @@ function Root({
     'data-orientation': orientation,
     'data-size': size,
     'data-boxed': boxed || undefined,
-    'data-tone': markerTone,
+    'data-tone': zone?.color ? 'custom' : markerTone,
+    'data-band': zone?.index,
     'data-shrink': level || undefined,
     'data-empty': (value === undefined && !hasRange) || undefined,
     'data-out-of-range': value === undefined ? undefined : outOfRange(value, min, max),
@@ -213,11 +221,12 @@ function Root({
   };
   const context: MeterContext = {
     ticks,
-    boundaries: zones && !levels ? zoneBoundaries(zones, min, max) : [],
+    boundaries: levels ? [] : bandBoundaries(thresholds, min, max),
     value: valueFraction,
     compare: fraction(compare),
     band,
     tone: markerTone,
+    color: zone?.color,
     valueText,
     level,
     loading,
@@ -344,9 +353,12 @@ function Marker({ kind = 'value', className, style }: LevelMeterMarkerProps) {
   return (
     <i
       data-part={kind === 'value' ? 'marker' : 'compare'}
-      data-tone={kind === 'value' ? meter.tone : undefined}
+      data-tone={kind !== 'value' ? undefined : meter.color ? 'custom' : meter.tone}
       className={className}
-      style={at(fraction, style)}
+      style={at(
+        fraction,
+        kind === 'value' && meter.color ? ({ '--paint': meter.color, ...style } as CSSProperties) : style,
+      )}
     />
   );
 }
