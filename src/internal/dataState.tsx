@@ -115,8 +115,13 @@ export function dataState(
         {retryLabel}
       </Button>
     );
-    return state(error, { title: 'Something went wrong' }, { variant, tone: 'error', role: 'alert' }, retry);
+    return state(
+      error,
+      { title: 'Something went wrong' },
+      { variant, tone: 'error', role: 'alert', 'data-part': 'error' },
+      retry,
+    );
   }
   if (loading || !isEmpty) return null;
-  return state(empty, defaultEmpty, { variant });
+  return state(empty, defaultEmpty, { variant, 'data-part': 'empty' });
 }

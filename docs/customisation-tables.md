@@ -613,6 +613,7 @@ Says that a region has nothing to show, or failed to load, and what to do about 
 | `tone` | `"neutral" \| "error"` | `error` marks a failure: a danger-coloured icon, the built-in one unless `icon` is given. |
 | `variant` | `"block" \| "inline"` | `block` is centred in its slot; `inline` is one line of text. |
 | `role` | `"alert" \| "status"` | `alert` announces the content when it appears (for an error); `status` announces it politely. |
+| `data-part` | `string` | The part this state plays in the component that shows it (`empty`, `error`). |
 
 **Parts**: `icon`, `title`, `description`, `action`.
 
