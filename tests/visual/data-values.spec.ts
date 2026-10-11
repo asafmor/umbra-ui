@@ -181,6 +181,7 @@ test.describe('KeyValue', () => {
     await expect(page.locator('[aria-label="Empty contract"]')).toHaveText('No contract yet.');
 
     // `true` is the default text, with no button; pieces and `retryLabel` are taken as given.
+    await open(page, 'data-keyvalue--errors');
     const byDefault = page.locator('[aria-label="Failed by default"]');
     await expect(byDefault.getByRole('alert')).toHaveText('Something went wrong');
     await expect(byDefault.getByRole('button')).toHaveCount(0);
@@ -205,7 +206,7 @@ test.describe('KeyValue', () => {
   test('a row without a value shows the empty label; a key row is tinted and bold (A1, A6)', async ({
     page,
   }) => {
-    await open(page, 'data-keyvalue--states');
+    await open(page, 'data-keyvalue--errors');
     const values = page.locator('[aria-label="Missing values"] dd');
     await expect(values).toHaveText(['17 Aug 2026', '—', 'Never']);
 

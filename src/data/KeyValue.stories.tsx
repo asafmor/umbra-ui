@@ -128,10 +128,7 @@ function Failing() {
   );
 }
 
-/**
- * Loading shows skeleton rows in the final layout; empty and error replace the rows. The states are the
- * shared ones of every data component: text, a node, `{ title, description, icon, action }`, or `true`.
- */
+/** Loading shows skeleton rows in the final layout; the empty state replaces the rows. */
 export const States: Story = {
   render: () => (
     <Sheet>
@@ -150,6 +147,17 @@ export const States: Story = {
       <Section label="A given empty text" width={260}>
         <KeyValueList aria-label="Empty contract" items={[]} empty="No contract yet." />
       </Section>
+    </Sheet>
+  ),
+};
+
+/**
+ * The error state is the shared one of every data component: text, a node,
+ * `{ title, description, icon, action }`, or `true`. A row without a value shows `emptyLabel`.
+ */
+export const Errors: Story = {
+  render: () => (
+    <Sheet>
       <Section label="error, with onRetry" width={260}>
         <Failing />
       </Section>
@@ -220,7 +228,11 @@ export const Customised: Story = {
         <KeyValueList
           aria-label="Custom empty"
           items={[]}
-          parts={{ empty: (p) => <strong>{p.children}!</strong> }}
+          parts={{
+            empty: (p) => (
+              <div style={{ outline: '1px dashed var(--umbra-color-base-border-control)' }}>{p.children}</div>
+            ),
+          }}
         />
       </Section>
       <Section label="highlighted: key rows" width={240}>
