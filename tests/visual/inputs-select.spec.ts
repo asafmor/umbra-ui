@@ -13,7 +13,9 @@ const box = async (locator: Locator) => {
   await locator.evaluate(async (el) => {
     await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
     const moving = [el, el.closest('[data-umbra-overlay]'), el.closest('[data-part="field"]')];
-    await Promise.all(moving.flatMap((m) => m?.getAnimations() ?? []).map((a) => a.finished));
+    await Promise.all(
+      moving.flatMap((m) => m?.getAnimations() ?? []).map((a) => a.finished.catch(() => null)),
+    );
   });
   return (await locator.boundingBox())!;
 };
