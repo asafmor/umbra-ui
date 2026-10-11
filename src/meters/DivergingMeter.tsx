@@ -13,7 +13,7 @@ import { cx, renderPart, type Part } from '../utils/parts';
 import { defined } from '../utils/defined';
 import { valueOrNull } from '../utils/finite';
 import { resolveThreshold, type ThresholdList } from '../utils/thresholds';
-import { MeterLabel, useInMeterList } from './label';
+import { MeterLabel, notOnCutLabel, useInMeterList } from './label';
 import styles from './DivergingMeter.module.css';
 import { tooNarrow } from './fit';
 import { describe, outOfRange, toFraction, type MeterTone } from './scale';
@@ -170,7 +170,7 @@ function Root({
   };
   const content = <Context.Provider value={context}>{children}</Context.Provider>;
   // The exact value, for a bar that is too small to show it or shows none.
-  const tip = useHoverTip(ref, tooltip && !loading ? spoken : null);
+  const tip = useHoverTip(ref, tooltip && !loading ? spoken : null, notOnCutLabel);
 
   if (loading) {
     return (

@@ -19,7 +19,7 @@ import {
   type ChangeHighlightProps,
 } from '../internal/ChangeHighlight';
 import { cx, renderPart, type Part } from '../utils/parts';
-import { MeterLabel, useInMeterList } from './label';
+import { MeterLabel, notOnCutLabel, useInMeterList } from './label';
 import styles from './LevelMeter.module.css';
 import { resolveThreshold, type ThresholdList } from '../utils/thresholds';
 import {
@@ -239,7 +239,7 @@ function Root({
   };
   const content = <Context.Provider value={context}>{children}</Context.Provider>;
   // The exact value, range and comparison, which the ticks only approximate.
-  const tip = useHoverTip(ref, tooltip && !loading ? spoken : null);
+  const tip = useHoverTip(ref, tooltip && !loading ? spoken : null, notOnCutLabel);
 
   if (loading) {
     return (

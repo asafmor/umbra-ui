@@ -127,3 +127,104 @@ test('numbers are boundaries on the value ramp, and lower is better mirrors the 
   await expect(low.locator('[data-part="fill"]')).toHaveAttribute('data-pattern', 'none');
   await expect(low).toHaveAttribute('aria-valuetext', '25%, Low');
 });
+
+// The meters and charts of tier 2 (review 2 of Milestone 2, X-7): the same list, the same bands.
+test('the tier 2 meters and charts put the same values in the same bands', async ({ page }) => {
+  const tier2 = 'foundation-thresholds--tier-2';
+  await openStory(page, tier2);
+  const expected = ['0', '1', '2', '3'];
+  expect(await bandsOf(page, 'pie', '[data-umbra="pie-indicator"]')).toEqual(expected);
+  expect(await bandsOf(page, 'diverging', '[data-umbra="diverging-meter"]')).toEqual(expected);
+  expect(await bandsOf(page, 'spark', '[data-part="bar"]')).toEqual(expected);
+  expect(await bandsOf(page, 'heat', '[data-part="cells"] > g')).toEqual(expected);
+
+  const attrs = (id: string, selector: string, name: string) =>
+    sample(page, id)
+      .locator(selector)
+      .evaluateAll((els, attr) => els.map((el) => el.getAttribute(attr)), name);
+  const paint = (id: string, selector: string, property: 'fill' | 'backgroundColor') =>
+    sample(page, id)
+      .locator(selector)
+      .evaluateAll((els, p) => els.map((el) => getComputedStyle(el)[p as 'fill']), property);
+  const free = 'rgb(90, 169, 255)';
+  const colourOf = (token: string) =>
+    page.evaluate((name) => {
+      const probe = document.body.appendChild(document.createElement('i'));
+      probe.style.color = `var(${name})`;
+      const colour = getComputedStyle(probe).color;
+      probe.remove();
+      return colour;
+    }, token);
+  const [danger, warning, top] = [
+    await colourOf('--umbra-color-semantic-danger'),
+    await colourOf('--umbra-color-semantic-warning'),
+    await colourOf('--umbra-color-value-ramp-5'),
+  ];
+  const looks = [danger, warning, free, top];
+
+  // PieIndicator: the tone or the free colour of the band on the fill, and its label with the value.
+  expect(await attrs('pie', '[data-part="fill"]', 'data-tone')).toEqual([
+    'danger',
+    'warning',
+    null,
+    'ramp-5',
+  ]);
+  expect(await attrs('pie', '[data-umbra="pie-indicator"]', 'data-tone')).toEqual([
+    'danger',
+    'warning',
+    'custom',
+    'ramp-5',
+  ]);
+  expect(await paint('pie', '[data-part="fill"]', 'fill')).toEqual(looks);
+  expect(await attrs('pie', '[data-umbra="pie-indicator"]', 'aria-valuetext')).toEqual([
+    '25%, Low',
+    '55%, Medium',
+    '80%, High',
+    '95%, Top',
+  ]);
+  await expect(sample(page, 'pie').locator('[data-part="value"]').nth(2)).toHaveText('80% · High');
+  // The amount filled is the cue that is not colour: it grows with the band.
+  const filled = await sample(page, 'pie')
+    .locator('[data-part="fill"]')
+    .evaluateAll((els) => els.map((el) => el.getBoundingClientRect().width));
+  expect(filled[0]!).toBeLessThan(filled[3]!);
+
+  // DivergingMeter: the same, and the fill is hatched below the origin whatever the band.
+  expect(await attrs('diverging', '[data-part="fill"]', 'data-tone')).toEqual([
+    'danger',
+    'warning',
+    null,
+    'ramp-5',
+  ]);
+  expect(await paint('diverging', '[data-part="fill"]', 'backgroundColor')).toEqual(looks);
+  expect(await attrs('diverging', '[data-part="fill"]', 'data-direction')).toEqual([
+    'negative',
+    'positive',
+    'positive',
+    'positive',
+  ]);
+  expect(await attrs('diverging', '[data-umbra="diverging-meter"]', 'aria-valuetext')).toEqual([
+    '25, Low',
+    '55, Medium',
+    '80, High',
+    '95, Top',
+  ]);
+
+  // Lower is better: the lowest band takes the look of the top one, and keeps its own label.
+  for (const id of ['pie-low', 'diverging-low']) {
+    const low = sample(page, id).getByRole('meter');
+    await expect(low).toHaveAttribute('data-band', '0');
+    await expect(low.locator('[data-part="fill"]')).toHaveAttribute('data-tone', 'ramp-5');
+    await expect(low).toHaveAttribute('aria-valuetext', /, Low$/);
+  }
+
+  // Sparkline: each bar, and the last point of a line, in the colour of its band.
+  expect(await paint('spark', '[data-part="bar"]', 'fill')).toEqual(looks);
+  expect(await paint('spark', '[data-part="lastPoint"]', 'fill')).toEqual([top]);
+
+  // Heatmap: the cells, with the label in the name of each.
+  expect(await paint('heat', '[data-part="cell"]', 'fill')).toEqual(looks);
+  await expect(
+    sample(page, 'heat').getByRole('option', { name: 'Completed, Region 3: 80 · High' }),
+  ).toHaveCount(1);
+});

@@ -14,7 +14,7 @@ import { defined } from '../utils/defined';
 import { valueOrNull } from '../utils/finite';
 import { resolveThreshold, type ThresholdList } from '../utils/thresholds';
 import { tooNarrow } from './fit';
-import { MeterLabel, useInMeterList } from './label';
+import { MeterLabel, notOnCutLabel, useInMeterList } from './label';
 import styles from './PieIndicator.module.css';
 import { describe, outOfRange, thirdsThresholds, toFraction, type MeterTone } from './scale';
 import tones from './tone.module.css';
@@ -168,7 +168,7 @@ function Root({
   };
   const content = <Context.Provider value={context}>{children}</Context.Provider>;
   // The exact value, which a few wedges only approximate.
-  const tip = useHoverTip(ref, tooltip && !loading ? spoken : null);
+  const tip = useHoverTip(ref, tooltip && !loading ? spoken : null, notOnCutLabel);
 
   if (loading) {
     return (

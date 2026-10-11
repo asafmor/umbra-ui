@@ -10,7 +10,7 @@ import {
   type ChangeHighlightProps,
 } from '../internal/ChangeHighlight';
 import { cx, renderPart, type Part } from '../utils/parts';
-import { MeterLabel, useInMeterList } from './label';
+import { MeterLabel, notOnCutLabel, useInMeterList } from './label';
 import styles from './ProgressBar.module.css';
 import { resolveThreshold, type ThresholdList } from '../utils/thresholds';
 import {
@@ -233,7 +233,7 @@ function Root({
   };
   const content = <Context.Provider value={context}>{children}</Context.Provider>;
   // The exact value, for a bar that is too small to show it or shows none.
-  const tip = useHoverTip(ref, tooltip && !loading && !indeterminate ? spoken : null);
+  const tip = useHoverTip(ref, tooltip && !loading && !indeterminate ? spoken : null, notOnCutLabel);
 
   if (loading) {
     return (

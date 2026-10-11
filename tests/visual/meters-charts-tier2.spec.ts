@@ -1725,3 +1725,227 @@ test.describe('Review 2: measured', () => {
     }
   });
 });
+
+// MeterList (the owner's O-7): the labels in one column, the bars in the next, the values in the last.
+test.describe('MeterList', () => {
+  const list = (page: Page, name: string) => page.getByRole('group', { name, exact: true });
+  /** Where each row's label, bar and value start and end, rounded. */
+  const columns = (rows: Locator) =>
+    rows.evaluateAll((els) =>
+      els.map((row) => {
+        const edge = (selector: string) => {
+          const el = row.querySelector(`:scope > ${selector}`);
+          if (!el) return null;
+          const r = el.getBoundingClientRect();
+          return [Math.round(r.left), Math.round(r.right)];
+        };
+        return {
+          label: edge('[data-part="label"]'),
+          bar: edge(':is([data-part="track"], [data-part="strip"], [data-part="disc"], [data-part="bar"])'),
+          value: edge('[data-part="value"]'),
+        };
+      }),
+    );
+  const one = (values: (number | undefined)[]) => new Set(values).size === 1;
+
+  test('any of the four meters share a column of labels, one of bars and one of values', async ({ page }) => {
+    await openStory(page, 'meters-meterlist--variants');
+    for (const name of ['Skills', 'Figures', 'Figures, half']) {
+      const group = list(page, name);
+      const rows = await columns(group.locator('> [data-umbra]'));
+      expect(rows.length).toBe(4);
+      // Labels start together, bars start together, values end together.
+      expect(one(rows.map((r) => r.label?.[0])), name).toBe(true);
+      expect(one(rows.map((r) => r.bar?.[0])), name).toBe(true);
+      expect(one(rows.map((r) => r.value?.[1])), name).toBe(true);
+      // The bars start after the longest label.
+      expect(rows[0]!.bar![0]!).toBeGreaterThan(Math.max(...rows.map((r) => r.label![1]!)));
+    }
+    // The four kinds are in one list, each still what it is for assistive technology.
+    const mixed = list(page, 'Figures');
+    await expect(mixed.locator('> [data-umbra]')).toHaveCount(4);
+    expect(
+      await mixed
+        .locator('> [data-umbra]')
+        .evaluateAll((els) => els.map((el) => el.getAttribute('data-umbra'))),
+    ).toEqual(['progress-bar', 'level-meter', 'pie-indicator', 'diverging-meter']);
+    await expect(mixed.getByRole('progressbar', { name: 'Budget used' })).toHaveAttribute(
+      'aria-valuetext',
+      '62%',
+    );
+    await expect(mixed.getByRole('meter', { name: 'Coverage of the region' })).toHaveAttribute(
+      'aria-valuetext',
+      '75%',
+    );
+    // A bar or strip takes the whole of its column; a meter in a list is laid out on one line.
+    const bars = await columns(mixed.locator('> [data-umbra]'));
+    expect(bars[0]!.bar![1]).toBe(bars[1]!.bar![1]);
+    expect(bars[0]!.bar![1]).toBe(bars[3]!.bar![1]);
+    await expect(mixed.locator('[data-umbra="progress-bar"]')).toHaveAttribute('data-layout', 'inline');
+
+    // Without values there is no third column: the bars reach the end of the list.
+    const plain = list(page, 'Progress');
+    const end = (await box(plain)).x + (await box(plain)).width;
+    for (const row of await columns(plain.locator('> [data-umbra]')))
+      expect(row.bar![1]).toBe(Math.round(end));
+
+    // A row of its own may load, or have no value: it keeps its columns.
+    const states = await columns(list(page, 'States of rows').locator('> [data-umbra]'));
+    expect(one(states.map((r) => r.label?.[0]))).toBe(true);
+    expect(one(states.map((r) => r.value?.[1]))).toBe(true);
+  });
+
+  test('`labelWidth` sets the label column; a cut label shows its text in a tooltip', async ({ page }) => {
+    await openStory(page, 'meters-meterlist--variants');
+    const narrow = list(page, 'Skills, narrow labels');
+    const rows = await columns(narrow.locator('> [data-umbra]'));
+    for (const row of rows) expect(row.label![1]! - row.label![0]!).toBe(96);
+    expect(one(rows.map((r) => r.bar?.[0]))).toBe(true);
+    const label = part(narrow.getByRole('meter', { name: 'Knowledge of the region' }), 'label');
+    expect(await label.evaluate((el) => el.scrollWidth > el.clientWidth)).toBe(true);
+    await label.hover();
+    await expect(page.getByRole('tooltip')).toHaveText('Knowledge of the region');
+    // A label that fits has none of its own: the tooltip is the meter's exact value.
+    await page.mouse.move(0, 0);
+    await expect(page.getByRole('tooltip')).toHaveCount(0);
+    await part(narrow.getByRole('meter', { name: 'Care' }), 'label').hover();
+    await expect(page.getByRole('tooltip')).toHaveText('5');
+    // A percentage, or any track size.
+    const half = list(page, 'Figures, half');
+    const first = (await columns(half.locator('> [data-umbra]')))[0]!;
+    const width = (await box(half)).width;
+    expect(Math.abs(first.label![1]! - first.label![0]! - width / 2)).toBeLessThanOrEqual(1);
+  });
+
+  test('as the list narrows the values hide, then each label moves above its bar', async ({ page }) => {
+    await openStory(page, 'meters-meterlist--shrink');
+    const at = async (px: number) => {
+      const group = page.locator(`[data-width="${px}"] [data-umbra="meter-list"]`);
+      const rows = group.locator('> [data-umbra]');
+      const first = rows.first();
+      const [label, bar] = [await box(part(first, 'label')), await box(part(first, 'track'))];
+      return {
+        shrink: await group.getAttribute('data-shrink'),
+        values: await group.locator('[data-part="value"]:visible').count(),
+        above: label.y + label.height <= bar.y + 1,
+        cut: await group
+          .locator('[data-part="label"]')
+          .evaluateAll((els) => els.filter((el) => el.scrollWidth > el.clientWidth).length),
+        inside: await group.evaluate((el) => el.scrollWidth <= el.clientWidth),
+      };
+    };
+    expect(await at(320)).toEqual({ shrink: null, values: 4, above: false, cut: 0, inside: true });
+    expect(await at(230)).toEqual({ shrink: '1', values: 0, above: false, cut: 0, inside: true });
+    expect(await at(160)).toEqual({ shrink: '2', values: 0, above: true, cut: 0, inside: true });
+    // With a `labelWidth` a cut label is the app's choice: only the values give way.
+    expect(await at(200)).toEqual({ shrink: '1', values: 0, above: false, cut: 1, inside: true });
+
+    // The hidden value is still read, and on the tooltip.
+    const hidden = page.locator('[data-width="230"]').getByRole('progressbar', { name: 'Budget used' });
+    await expect(hidden).toHaveAttribute('aria-valuetext', '62%');
+    await part(hidden, 'track').hover();
+    await expect(page.getByRole('tooltip')).toHaveText('62%');
+
+    // The step is a function of the width: the same on the way down, on the way up, and afresh.
+    const holder = page.locator('[data-width="320"]');
+    const sweep: Record<number, string | null> = {};
+    const level = () => holder.locator('[data-umbra="meter-list"]').getAttribute('data-shrink');
+    for (let px = 320; px >= 140; px -= 6) {
+      await holder.evaluate((el, w) => ((el as HTMLElement).style.width = `${w}px`), px);
+      await settle(page);
+      sweep[px] = await level();
+    }
+    expect(Object.values(sweep)).toContain('1');
+    expect(sweep[140]).toBe('2');
+    for (let px = 140; px <= 320; px += 6) {
+      await holder.evaluate((el, w) => ((el as HTMLElement).style.width = `${w}px`), px);
+      await settle(page);
+      expect(await level(), `${px}px on the way up`).toBe(sweep[px]);
+    }
+    // Each step comes once, in order.
+    const order = Object.keys(sweep)
+      .map(Number)
+      .sort((a, b) => b - a)
+      .map((px) => Number(sweep[px] ?? 0));
+    expect(order).toEqual([...order].sort((a, b) => a - b));
+  });
+
+  test('loading shows skeleton rows in the three columns; empty and error take the list’s place', async ({
+    page,
+  }) => {
+    await openStory(page, 'meters-meterlist--states');
+    const loading = list(page, 'Loading');
+    await expect(loading).toHaveAttribute('aria-busy', 'true');
+    await expect(loading).toHaveAttribute('data-state', 'loading');
+    await expect(loading.getByRole('meter')).toHaveCount(0);
+    const rows = await columns(loading.locator('> [data-part="skeleton"]'));
+    expect(rows.length).toBe(3);
+    expect(one(rows.map((r) => r.bar?.[0]))).toBe(true);
+    expect(one(rows.map((r) => r.value?.[1]))).toBe(true);
+    expect(rows[0]!.bar![0]!).toBeGreaterThan(Math.max(...rows.map((r) => r.label![1]!)));
+
+    await expect(list(page, 'Empty')).toHaveAttribute('data-state', 'empty');
+    await expect(list(page, 'Empty')).toContainText('Nothing measured yet');
+    const failed = list(page, 'Failed');
+    await expect(failed.getByRole('alert')).toContainText('Retries: 0.');
+    await expect(failed.getByRole('meter')).toHaveCount(0);
+    await failed.getByRole('button', { name: 'Try again' }).focus();
+    await pressKeys(page, 'Enter');
+    await expect(failed.getByRole('alert')).toContainText('Retries: 1.');
+  });
+
+  test('right to left: the labels are on the right, the values on the left', async ({ page }) => {
+    await openStory(page, 'meters-meterlist--right-to-left');
+    const rows = await columns(list(page, 'Figures').locator('> [data-umbra]'));
+    expect(one(rows.map((r) => r.label?.[1]))).toBe(true);
+    expect(one(rows.map((r) => r.bar?.[1]))).toBe(true);
+    expect(one(rows.map((r) => r.value?.[0]))).toBe(true);
+    for (const row of rows) {
+      expect(row.label![0]!).toBeGreaterThan(row.bar![1]!);
+      expect(row.value![1]!).toBeLessThan(row.bar![0]!);
+    }
+  });
+
+  test('tokens, parts and the root block', async ({ page }) => {
+    await openStory(page, 'meters-meterlist--customised');
+    const tokens = list(page, 'Tokens');
+    const style = await tokens.evaluate((el) => {
+      const s = getComputedStyle(el);
+      return { row: s.rowGap, column: s.columnGap };
+    });
+    expect(style).toEqual({ row: '4px', column: '24px' });
+    const label = part(tokens.getByRole('progressbar'), 'label');
+    const primary = await page.evaluate(() => {
+      const probe = document.body.appendChild(document.createElement('i'));
+      probe.style.color = 'var(--umbra-color-base-text-primary)';
+      const colour = getComputedStyle(probe).color;
+      probe.remove();
+      return colour;
+    });
+    expect(await label.evaluate((el) => getComputedStyle(el).color)).toBe(primary);
+    // The shortest bar is 120px here, so in this panel the values give way to it.
+    expect((await box(part(tokens.getByRole('progressbar'), 'track'))).width).toBeGreaterThanOrEqual(120);
+
+    await expect(list(page, 'Skeleton node')).toHaveText('Loading the figures…');
+    await expect(list(page, 'Skeleton null').locator('*')).toHaveCount(0);
+    await expect(list(page, 'Skeleton function')).toHaveText('4 rows on their way');
+    await expect(list(page, 'Empty part')).toHaveText('No figures.');
+    await expect(list(page, 'Error part').locator('[data-own="error"]').getByRole('alert')).toContainText(
+      'Not loaded',
+    );
+    const byHand = list(page, 'By hand');
+    await expect(byHand).toHaveClass(/own/);
+    expect(await byHand.evaluate((el) => el.style.opacity)).toBe('0.9');
+    await expect(byHand.getByRole('meter')).toHaveCount(4);
+  });
+
+  test('on the detail screen the strips of the scores start in one line (O-7)', async ({ page }) => {
+    await openStory(page, 'pages-list-and-detail--list-and-detail', { width: 1920, height: 1080 });
+    const scores = list(page, 'Scores by attribute');
+    const rows = await columns(scores.locator('> [data-umbra="level-meter"]'));
+    expect(rows.length).toBe(5);
+    expect(one(rows.map((r) => r.bar?.[0]))).toBe(true);
+    expect(one(rows.map((r) => r.bar?.[1]))).toBe(true);
+    expect(one(rows.map((r) => r.label?.[0]))).toBe(true);
+  });
+});

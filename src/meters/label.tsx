@@ -39,3 +39,12 @@ export function MeterLabel({
     </>
   );
 }
+
+/**
+ * For the tooltip of a meter's value: not while the pointer is on a label that is cut, whose own
+ * tooltip shows its text. One tooltip shows at a time, and there the label's is the one wanted.
+ */
+export const notOnCutLabel = (root: HTMLElement) => {
+  const label = root.querySelector<HTMLElement>(':scope > [data-part="label"]:hover');
+  return !label || label.scrollWidth <= label.clientWidth;
+};
