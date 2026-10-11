@@ -58,6 +58,7 @@ The owner approved the plan and delegated the open questions (`plan/reviews/mile
 
 - Open findings of the Milestone 0 review, with the batch that takes each: `plan/reviews/milestone-0.md`.
 - Commit `88f6b37` fails lint: the `lint` script arrived one commit before its config.
+- Commit `37fc048` ("WIP: …") fails lint (Prettier, three files). Two more WIP commits pass. They were already pushed, so they stay.
 - Commit `973f274` breaks "tests pass at every commit": it adds two navigation tests whose story arrives in the next commit. It was already pushed, so it stays.
 
 ## Commands
@@ -74,12 +75,18 @@ The owner approved the plan and delegated the open questions (`plan/reviews/mile
 | `npm run test:visual:update` | Same, and rewrites the baselines in `tests/visual/__screenshots__/`. Look at the changed images before committing. |
 | `npm run docs:tables` | Regenerates `docs/customisation-tables.md` from the source. `npm run lint` fails when it is out of date, so run it after changing props, parts, blocks or CSS variables. |
 | `npm run docs:check` | Typechecks every `tsx` sample in `README.md` and `docs/*.md` against the source (`scripts/check-docs.mjs`). `npm run lint` runs it. A sample may be a fragment: names it does not define come from the library or from `scripts/check-docs-prelude.ts`. |
-| `npm run build -w examples/basic` | Builds one example app against the built package (run `npm run build` first). The others: `examples/dashboard`, `examples/advanced`. |
+| `npm run build-storybook` | Builds the static Storybook into `storybook-static/` (the browser tests and the Pages workflow use it). |
+| `npm run examples` | Installs and builds the three example apps in place, each in its own folder against the built package (run `npm run build` first; `scripts/examples.mjs`). One only: `npm run examples -- basic`. Then `npm run dev --prefix examples/basic`. Run it again after rebuilding the library: an example holds a copy of the package, not a link. |
+| `npm run examples:standalone` | Copies each example out of the repository, points `umbra-ui` at the packed tarball, and runs `npm install && npm run build` there: proof that each works as a template (`scripts/check-examples-standalone.mjs`). CI runs it. |
 | `npm run test:examples` | Builds the package and the three examples, serves each with `vite preview` and drives them with Playwright (`playwright.examples.config.ts`, ports from `UMBRA_EXAMPLES_PORT`, default 6017). |
 | `npm run changeset` | Adds a changelog entry; needed for any change users will notice |
+| `npm run release:check` | Rehearses `changeset version` on a temporary copy and checks what `npm pack` would hold (`scripts/check-release.mjs`). Changes and publishes nothing. CI runs it. Run `npm run build` first. |
+| `npm run version` | Owner's release step 1: turns the pending changesets into the version and `CHANGELOG.md`, and updates the lock file. |
+| `npm run release` | Owner only. Lint, typecheck, unit tests, build, the final package check, then `changeset publish`. Steps: `docs/releasing.md`. |
 
 - Run lint, typecheck, unit and visual tests before every commit; all must pass.
-- Do not run `npm run release` or publish to npm without the owner's go-ahead.
+- Do not run `npm run release` or `npm publish`, create a tag or a GitHub release, or change repository settings: only the owner releases (`docs/releasing.md`). `npm publish --dry-run` in a scratch clone is fine.
+- The examples are plain folders, not npm workspaces (`plan/decisions/05-packaging.md`): the root `npm install` does not install them.
 - Component conventions: CSS Modules; a token is read as `var(--umbra-<component>-<name>, <fallback>)` and never declared on the component, so apps can set it from any ancestor; roots carry `data-umbra="<name>"`, parts `data-part="<name>"`, state as `data-` attributes; `parts` props go through `renderPart`; React Aria types stay out of public props.
 - Stories get the whole window (`layout: 'fullscreen'`). For a small component, set `parameters: { frame: 'padded' }`.
 
@@ -100,13 +107,31 @@ The owner approved the plan and delegated the open questions (`plan/reviews/mile
 | `plan/reference/` | `index.html`: the static reference screen, the visual ground truth for the look (open it in a browser; `?density=compact&context=teal` switches settings). `shot-*.png`: renders at three sizes. |
 | `plan/reviews/` | Review reports. `milestone-0.md`: what the independent review found, what was fixed, and what is open. |
 | `plan/prompts/` | `component-brief.md`: the rules for building a batch of components (read it before adding one). Ready-made prompts for starting a fresh agent session: `milestone-0.md` (used), `verify-milestone-0.md` (independent review of Milestone 0), `milestone-1.md` (plan and build Milestone 1). |
-| `src/` | Library source. `src/styles/`: base CSS and the generated tokens. `src/provider/`: provider, scope, icon map, shortcut registry. `src/layout/`: Page, Columns, Stack, Slot, Card, SectionTitle, ScrollArea (`useSlot.tsx` and `collapse.ts` hold the layout rules). `src/shell/`: AppShell, TopBar, PrimaryNav, SubNav (`nav.tsx` is shared). `src/basics/`: Button, IconButton, Skeleton. `src/data/`: the data basics (Tag, Badge, List, KeyValue, Banner, Legend, EmptyState and the rest of batch 1a). `src/inputs/`: form controls, SegmentedFilter, Tabs. `src/overlays/`: Popover, Tooltip, Menu, ActionBar. `src/meters/`: ProgressBar, LevelMeter. `src/internal/`: not exported; shared contexts, the loading/empty/error helper (`dataState.tsx`), series markers and `useShrinkLevel`, the hook behind every "show less as it narrows" rule. `src/utils/`: shared helpers (`parts.ts` implements the parts layer). `src/charts/`: the `umbra-ui/charts` entry (Donut, Radar, Line and Bar charts; `d3-scale` and `d3-shape` only). |
-| `scripts/` | Build scripts: `build-tokens.mjs`, and `build-customisation.mjs` for the customisation tables. |
+| `src/` | Library source, one folder per group. `index.ts` is the `umbra-ui` entry. Each component is a `.tsx` with its `.module.css` and `.stories.tsx`; `samples.*` and `story*.tsx` files are story helpers. |
+| `src/styles/` | `index.css` (base CSS) and the generated `tokens.css` and `tokens.generated.ts`. |
+| `src/provider/` | `UmbraProvider` and `UmbraScope`, the icon map (`icons.tsx`), the shortcut registry (`shortcuts.ts`), `contrast.ts`. |
+| `src/layout/` | Page, Columns, Stack, Slot, Card, SectionTitle, ScrollArea, Accordion. `useSlot.tsx` and `collapse.ts` hold the layout rules. |
+| `src/shell/` | AppShell, TopBar, PrimaryNav, SubNav, VerticalNav, PageHeader, PrimaryAction, HistoryButtons, ShortcutBar. `nav.tsx` is shared by the navs. |
+| `src/basics/` | Button, IconButton, Skeleton. |
+| `src/data/` | Tag, Badge, ValuePill, Avatar, EntityIcon, KeyValue, StatValue, SummaryTile, TrendArrow, StatusIndicator, GroupHeader, List, ListItem, Banner, Legend, EmptyState, Link. Shared: `tone.ts`, `valueLevel.ts`, `entity.ts`. |
+| `src/inputs/` | TextField, SearchField, Select, Checkbox, Radio, Toggle, FormField, SegmentedFilter, Tabs. Shared: `useField.ts`, `fieldParts.tsx`, `strip.tsx`. |
+| `src/overlays/` | Popover, Tooltip, Menu, Modal (with ConfirmDialog), CommandPalette (`commandMatch.ts`), ActionBar. `shared.ts` is common to them. |
+| `src/table/` | DataTable, on TanStack Table: `logic.ts` (sorting, groups, selection; unit-tested) and `grid.ts` (the keyboard grid). |
+| `src/meters/` | ProgressBar, LevelMeter; `scale.ts`. |
+| `src/charts/` | The `umbra-ui/charts` entry (`index.ts`): LineChart, BarChart, DonutChart, RadarChart, with their shared code in `internal/`; `d3-scale` and `d3-shape` only. |
+| `src/internal/` | Not exported: shared contexts, the loading/empty/error helper (`dataState.tsx`), `height.ts`, series markers, truncated text, change highlighting, `useNarrow`, and `useShrinkLevel`, the hook behind every "show less as it narrows" rule. |
+| `src/utils/` | Shared helpers: `parts.ts` (the parts layer), `link.ts` (`renderLink`), `dev.ts` (development warnings). |
+| `src/stories/` | Story-only code, never published: placeholders and sample data, and `pages/`, the three full-page reference stories (overview, list and detail, table). |
+| `scripts/` | `build-tokens.mjs` (tokens to CSS and TypeScript), `build-customisation.mjs` (the customisation tables and the built-in strings table), `check-docs.mjs` with `check-docs-prelude.ts` (typechecks the docs samples), `examples.mjs` (installs and builds the examples), `check-examples-standalone.mjs` (each example as a template), `check-release.mjs` (the release rehearsal and the package check). |
 | `.storybook/` | Storybook config; the toolbar switches density and context. |
-| `docs/` | Guides in Markdown (`getting-started.md`, `layout.md`, `theming.md`, `customisation.md`, `recipes.md`) and the generated `customisation-tables.md`. `docs/storybook/*.mdx` show them in Storybook. Every `tsx` sample must compile (`npm run docs:check`). |
-| `examples/` | Three apps that import the built package, each an npm workspace: `basic`, `dashboard` (many cards, charts, switchers, command palette) and `advanced` (hash router, list + detail, table with bulk actions and a modal form, settings, a component built from blocks and parts). |
-| `tests/visual/` | Playwright tests against the built Storybook: `stories.spec.ts` (captures and the no-page-scroll check), `a11y.spec.ts` (axe, WCAG 2.2 AA, every story on every tint) and `interactions.spec.ts` (popovers, tab mode, overflow menus, keys), with the baseline images. The comparison is strict on purpose; a changed baseline is a change to look at. |
-| `tests/examples/` | Playwright tests against the built example apps: `examples.spec.ts` (every app: clean load, no page scroll across sizes and densities, tab mode, a keyboard walk) and one file per app for its own interactions. |
+| `docs/` | Guides in Markdown (`getting-started.md`, `layout.md`, `theming.md`, `customisation.md`, `recipes.md`), the generated `customisation-tables.md`, and `releasing.md` (the release steps, for the owner). Every `tsx` sample must compile (`npm run docs:check`). |
+| `docs/storybook/` | The guides as Storybook pages: one `.mdx` per guide, `Guide.tsx` (rewrites links between the Markdown files to Storybook pages, and keeps wide tables inside the page), and the Welcome page (`Welcome.mdx`, `welcome.md`). |
+| `examples/` | Three complete Vite apps that import the built package, each a plain folder with its own `package.json` (not a workspace) that works as a template when copied out: `basic`, `dashboard` (many cards, charts, switchers, command palette) and `advanced` (hash router, list + detail, table with bulk actions and a modal form, settings, a component built from blocks and parts). |
+| `tests/visual/` | Playwright tests against the built Storybook, with the baseline images in `__screenshots__/` (policy: `plan/decisions/06-docs-and-testing.md`, "Baseline images"). The comparison is strict on purpose; a changed baseline is a change to look at. For every story: `stories.spec.ts` (captures and the no-page-scroll check) and `a11y.spec.ts` (axe, WCAG 2.2 AA, on every tint). Behaviour a still image cannot show, one file per group: `interactions.spec.ts` (Milestone 0: popovers, tab mode, overflow menus), `structure.spec.ts` (PageHeader, ActionBar, VerticalNav, Accordion), `shell-extras.spec.ts` (PrimaryAction, HistoryButtons, ShortcutBar, CommandPalette, shortcuts), `data-values.spec.ts`, `data-indicators.spec.ts`, `data-lists.spec.ts`, `data-banner.spec.ts`, `inputs-form.spec.ts`, `inputs-select.spec.ts`, `inputs-tabs.spec.ts`, `overlays.spec.ts` (Popover, Tooltip, Menu), `modal.spec.ts`, `table.spec.ts`, `meters.spec.ts`, `charts.spec.ts`, `pages.spec.ts` (the full-page stories). `live.ts` is a shared helper. |
+| `tests/examples/` | Playwright tests against the built example apps: `examples.spec.ts` (every app: clean load, no page scroll across sizes and densities, tab mode, a keyboard walk), `dashboard.spec.ts` and `advanced.spec.ts` (each app's own interactions). |
+| `.changeset/` | The pending changelog entries (`npm run changeset`), consumed by `npm run version`. |
+| `.github/` | `workflows/ci.yml` (lint, typecheck, unit tests, build, release check; the browser tests in six shards; the examples) and `workflows/docs.yml` (Storybook to GitHub Pages, started by hand). Issue forms and the pull request template. |
+| `CONTRIBUTING.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md` | For contributors: set-up and what a change needs; how to report a vulnerability; the Contributor Covenant 2.1. |
 
 ## Decisions that bind every task
 
