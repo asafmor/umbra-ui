@@ -3,27 +3,27 @@ import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './ScrollArea.module.css';
 
 export interface ScrollAreaProps {
-  axis?: 'vertical' | 'horizontal' | 'both';
+  axis?: 'vertical' | 'horizontal' | 'both' | undefined;
   /** `hover` shows the thumb only while the pointer or focus is inside the area. */
-  scrollbar?: 'auto' | 'hover';
+  scrollbar?: 'auto' | 'hover' | undefined;
   /** A soft fade at an edge that has more content. */
-  fade?: boolean;
+  fade?: boolean | undefined;
   /**
    * Called when the end is reached, for loading more: the bottom (`vertical`, `both`) or the far edge
    * (`horizontal`). Once each time the end is reached. It is also called when the content does not fill
    * the area, since its end is then in view: once when the area mounts, and once more each time the
    * content has grown and still fits. A first page that is too short can therefore load the next.
    */
-  onReachEnd?: () => void;
+  onReachEnd?: (() => void) | undefined;
   /** Accessible name, used when the area itself has to be focusable to be scrolled by keyboard. */
-  'aria-label'?: string;
+  'aria-label'?: string | undefined;
   /** Replace or hide named pieces. */
-  parts?: { fade?: Part<{ edge: ScrollEdge }> };
+  parts?: { fade?: Part<{ edge: ScrollEdge }> | undefined } | undefined;
   /** The root element. */
-  ref?: Ref<HTMLDivElement>;
-  className?: string;
-  style?: CSSProperties;
-  children?: ReactNode;
+  ref?: Ref<HTMLDivElement> | undefined;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
+  children?: ReactNode | undefined;
   /** `data-` attributes go on the root element. */
   [data: `data-${string}`]: string | undefined;
 }

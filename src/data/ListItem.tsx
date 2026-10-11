@@ -10,9 +10,9 @@ import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './ListItem.module.css';
 
 interface BlockProps {
-  className?: string;
-  style?: CSSProperties;
-  children?: ReactNode;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
+  children?: ReactNode | undefined;
 }
 
 export interface ListItemRootProps extends BlockProps {
@@ -20,18 +20,18 @@ export interface ListItemRootProps extends BlockProps {
    * `message`: sender and tag on the first line, title and time on the second. `pair`: two sides that
    * mirror each other around a centre (set by `opposite`).
    */
-  variant?: 'default' | 'message' | 'pair';
+  variant?: 'default' | 'message' | 'pair' | undefined;
   /** `compact` is one control high, for leaderboards and short lists. Otherwise the height follows the density level. */
-  size?: 'default' | 'compact';
+  size?: 'default' | 'compact' | undefined;
   /** Violet fill with an edge stripe. Inside a `List`, selection sets it. */
-  selected?: boolean;
+  selected?: boolean | undefined;
   /** `true`: bold title and a dot. `false`: the title is dimmed as read. Leave unset where rows have no read state. */
-  unread?: boolean;
+  unread?: boolean | undefined;
   /** A colour for an edge stripe that carries a category. Give `accentLabel` too, so it is not colour alone. */
-  accent?: string;
-  disabled?: boolean;
+  accent?: string | undefined;
+  disabled?: boolean | undefined;
   /** Shows hover and press feedback. Set by `List`, and by `href` or `onPress`. */
-  interactive?: boolean;
+  interactive?: boolean | undefined;
 }
 
 function Root({
@@ -79,7 +79,7 @@ const Content = block('content', styles.content);
 const Overline = block('overline', styles.overline);
 export interface ListItemDescriptionProps extends BlockProps {
   /** The most lines the text wraps to before it ends in an ellipsis. */
-  lines?: number;
+  lines?: number | undefined;
 }
 
 function Description({ lines = 1, className, style, children }: ListItemDescriptionProps) {
@@ -99,7 +99,7 @@ const Center = block('center', styles.center, 'span');
 
 export interface ListItemSideProps extends BlockProps {
   /** The second side: its pieces start at the centre and its text is aligned to the start. */
-  opposite?: boolean;
+  opposite?: boolean | undefined;
 }
 
 /** One side of a `pair` row. Put the pieces in reading order, from the row's edge to its centre. */
@@ -124,10 +124,10 @@ const Trailing = block('trailing', styles.trailing);
 
 export interface ListItemTitleProps extends BlockProps {
   /** Makes the whole row a link. */
-  href?: string;
+  href?: string | undefined;
   /** Makes the whole row a button. */
-  onPress?: () => void;
-  disabled?: boolean;
+  onPress?: (() => void) | undefined;
+  disabled?: boolean | undefined;
 }
 
 /** The title. With `href` or `onPress` it is a link or button whose hit area covers the whole row. */
@@ -158,9 +158,9 @@ function Title({ href, onPress, disabled, className, style, children }: ListItem
 
 export interface ListItemUnreadProps {
   /** What assistive technology hears for the dot. */
-  label?: string;
-  className?: string;
-  style?: CSSProperties;
+  label?: string | undefined;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
 }
 
 /** A dot with a text for assistive technology, so "unread" is not carried by weight and colour alone. */
@@ -174,46 +174,48 @@ function Unread({ label = 'Unread', className, style }: ListItemUnreadProps) {
 
 export interface ListItemProps extends Omit<ListItemRootProps, 'children'>, ChangeHighlightProps {
   /** The main line. Truncates last. */
-  title?: ReactNode;
+  title?: ReactNode | undefined;
   /** A second line under the title. */
-  description?: ReactNode;
+  description?: ReactNode | undefined;
   /** The most lines the description wraps to, for a row that holds a paragraph beside an icon or image. */
-  descriptionLines?: number;
+  descriptionLines?: number | undefined;
   /**
    * The second side of a two-sided row: `title`, `leading` and `meta` are the first side, and these mirror
    * them on the other side of `center`. Sets the `pair` variant.
    */
-  opposite?: { title: ReactNode; leading?: ReactNode; meta?: ReactNode };
+  opposite?: { title: ReactNode; leading?: ReactNode | undefined; meta?: ReactNode | undefined } | undefined;
   /** What stands between the two sides of a `pair` row: a short text or an icon. */
-  center?: ReactNode;
+  center?: ReactNode | undefined;
   /** A small line above the title, for example a sender. */
-  overline?: ReactNode;
+  overline?: ReactNode | undefined;
   /** Leading node: an avatar or icon. */
-  leading?: ReactNode;
+  leading?: ReactNode | undefined;
   /** Trailing text, for example a time or a value. */
-  meta?: ReactNode;
+  meta?: ReactNode | undefined;
   /** Trailing node: tags, a badge or actions. Hides first when the row is narrow. */
-  trailing?: ReactNode;
+  trailing?: ReactNode | undefined;
   /** What assistive technology hears for the unread dot. */
-  unreadLabel?: string;
+  unreadLabel?: string | undefined;
   /** What assistive technology hears for the `accent` stripe, for example the category's name. */
-  accentLabel?: string;
+  accentLabel?: string | undefined;
   /** Makes the whole row a link. Inside a `List`, the list handles it. */
-  href?: string;
+  href?: string | undefined;
   /** Makes the whole row a button. Inside a `List`, the list handles it. */
-  onPress?: () => void;
+  onPress?: (() => void) | undefined;
   /** Replace or hide named pieces. */
-  parts?: {
-    leading?: Part<{ children: ReactNode }>;
-    overline?: Part<{ children: ReactNode }>;
-    title?: Part<ListItemTitleProps>;
-    description?: Part<ListItemDescriptionProps>;
-    meta?: Part<{ children: ReactNode }>;
-    opposite?: Part<ListItemSideProps>;
-    center?: Part<{ children: ReactNode }>;
-    unread?: Part<ListItemUnreadProps>;
-    trailing?: Part<{ children: ReactNode }>;
-  };
+  parts?:
+    | {
+        leading?: Part<{ children: ReactNode }> | undefined;
+        overline?: Part<{ children: ReactNode }> | undefined;
+        title?: Part<ListItemTitleProps> | undefined;
+        description?: Part<ListItemDescriptionProps> | undefined;
+        meta?: Part<{ children: ReactNode }> | undefined;
+        opposite?: Part<ListItemSideProps> | undefined;
+        center?: Part<{ children: ReactNode }> | undefined;
+        unread?: Part<ListItemUnreadProps> | undefined;
+        trailing?: Part<{ children: ReactNode }> | undefined;
+      }
+    | undefined;
 }
 
 /** The content of one row of a list: a title with optional lines, and leading and trailing pieces. */

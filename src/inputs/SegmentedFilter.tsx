@@ -23,90 +23,91 @@ import {
   useStripItem,
   type StripRow,
 } from './strip';
+import { defined } from '../utils/defined';
 
 /** One segment, as data. */
 export interface SegmentedFilterItem {
   id: string;
   label: ReactNode;
   /** A number shown after the label and read with it ("Unread, 4"). */
-  count?: number;
-  icon?: ReactNode;
-  disabled?: boolean;
+  count?: number | undefined;
+  icon?: ReactNode | undefined;
+  disabled?: boolean | undefined;
 }
 
 type ItemParts = {
-  icon?: Part<{ children: ReactNode }>;
-  count?: Part<{ children: number }>;
+  icon?: Part<{ children: ReactNode }> | undefined;
+  count?: Part<{ children: number }> | undefined;
   /** The mark of a selected segment when several can be selected. */
-  check?: Part;
+  check?: Part | undefined;
 };
 
 export interface SegmentedFilterItemProps extends Omit<SegmentedFilterItem, 'label'> {
   /** Replace or hide named pieces of this segment. */
-  parts?: ItemParts;
-  className?: string;
-  style?: CSSProperties;
+  parts?: ItemParts | undefined;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
   /** The label. */
-  children?: ReactNode;
+  children?: ReactNode | undefined;
 }
 
 interface SingleSelection {
   /** `single`: one segment, like radio buttons. `multiple`: any number, like toggle buttons. */
-  selectionMode?: 'single';
+  selectionMode?: 'single' | undefined;
   /** The selected segment. `null` selects none, or the "All" segment when `all` is set. */
-  value?: string | null;
-  defaultValue?: string | null;
+  value?: string | null | undefined;
+  defaultValue?: string | null | undefined;
   /** Called with the selected id (`null` for "All"), or with the list of ids in `multiple` mode. */
-  onChange?: (id: string | null) => void;
+  onChange?: ((id: string | null) => void) | undefined;
   /** The selected segments in `multiple` mode. An empty list selects the "All" segment when `all` is set. */
-  values?: never;
-  defaultValues?: never;
+  values?: never | undefined;
+  defaultValues?: never | undefined;
 }
 
 interface MultipleSelection {
   selectionMode: 'multiple';
-  values?: string[];
-  defaultValues?: string[];
-  onChange?: (ids: string[]) => void;
-  value?: never;
-  defaultValue?: never;
+  values?: string[] | undefined;
+  defaultValues?: string[] | undefined;
+  onChange?: ((ids: string[]) => void) | undefined;
+  value?: never | undefined;
+  defaultValue?: never | undefined;
 }
 
 interface RootBase {
   /** Adds a first segment that stands for "no filter". Choosing it clears the others. */
-  all?: boolean;
+  all?: boolean | undefined;
   /** Label of the "All" segment. */
-  allLabel?: string;
+  allLabel?: string | undefined;
   /** Count of the "All" segment. */
-  allCount?: number;
+  allCount?: number | undefined;
   /** `small` is for table cells and dense toolbars. Otherwise the height follows the density level. */
-  size?: 'default' | 'small';
+  size?: 'default' | 'small' | undefined;
   /** Fills the width of its container with equal segments. */
-  fullWidth?: boolean;
-  disabled?: boolean;
+  fullWidth?: boolean | undefined;
+  disabled?: boolean | undefined;
   /** Accessible name of the button that opens the menu of segments that do not fit. */
-  moreLabel?: string;
+  moreLabel?: string | undefined;
   /** Accessible name of the group. */
-  'aria-label'?: string;
+  'aria-label'?: string | undefined;
   /** Id of the element that names the group. */
-  'aria-labelledby'?: string;
-  className?: string;
-  style?: CSSProperties;
+  'aria-labelledby'?: string | undefined;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
 }
 
 export type SegmentedFilterRootProps = RootBase &
   (SingleSelection | MultipleSelection) & {
     /** `SegmentedFilter.Item` elements. */
-    children?: ReactNode;
+    children?: ReactNode | undefined;
   };
 
 export type SegmentedFilterProps = RootBase &
   (SingleSelection | MultipleSelection) & {
     /** The segments. Leave out to pass `SegmentedFilter.Item` children instead. */
-    items?: SegmentedFilterItem[];
+    items?: SegmentedFilterItem[] | undefined;
     /** Replace or hide named pieces. */
-    parts?: ItemParts & { item?: Part<SegmentedFilterItemProps> };
-    children?: ReactNode;
+    parts?: (ItemParts & { item?: Part<SegmentedFilterItemProps> | undefined }) | undefined;
+    children?: ReactNode | undefined;
   };
 
 // The key of the "All" segment.
@@ -155,15 +156,13 @@ function Root(props: SegmentedFilterRootProps) {
           selectedKeys={keys}
           onSelectionChange={change}
           isDisabled={disabled}
-          aria-label={props['aria-label']}
-          aria-labelledby={props['aria-labelledby']}
+          {...defined({ 'aria-label': props['aria-label'], 'aria-labelledby': props['aria-labelledby'] })}
           {...strip.attributes}
           data-umbra="segmented-filter"
           data-size={size}
           data-selection={multiple ? 'multiple' : 'single'}
           data-full-width={fullWidth || undefined}
-          className={cx(strip.className, styles.root, className)}
-          style={style}
+          {...defined({ className: cx(strip.className, styles.root, className), style })}
         >
           {all && (
             <Item id={ALL} count={allCount}>
@@ -192,7 +191,7 @@ function Root(props: SegmentedFilterRootProps) {
                   data-part="more"
                   // A selected segment in the menu shows on the button, with the bar of a selected segment.
                   data-has-selected={keys.some((id) => overflow.hidden.has(id)) || undefined}
-                  className={cx(styles.item, styles.more)}
+                  {...defined({ className: cx(styles.item, styles.more) })}
                 >
                   <Icon name="more" />
                 </AriaButton>
@@ -212,11 +211,9 @@ function Item({ id, icon, count, disabled, parts, className, style, children }: 
     <ToggleButton
       id={id}
       data-id={id}
-      isDisabled={disabled}
-      aria-label={nameWithCount(children, count)}
+      {...defined({ isDisabled: disabled, 'aria-label': nameWithCount(children, count) })}
       data-part="item"
-      className={cx(styles.item, className)}
-      style={style}
+      {...defined({ className: cx(styles.item, className), style })}
       // React Aria moves focus with the arrow keys; Home and End are added here.
       onKeyDown={(event) => {
         if (event.key !== 'Home' && event.key !== 'End') return event.continuePropagation();

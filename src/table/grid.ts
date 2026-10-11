@@ -26,8 +26,8 @@ export const widgetsOf = (cell: Element) =>
 
 /** What a row does when it is activated or selected from the keyboard. Set by `DataTable.Row`. */
 export interface RowHandlers {
-  onAction?: () => void;
-  onSelect?: (options: { range: boolean; anchor?: boolean }) => void;
+  onAction?: (() => void) | undefined;
+  onSelect?: ((options: { range: boolean; anchor?: boolean | undefined }) => void) | undefined;
 }
 export const rowHandlers = new WeakMap<Element, RowHandlers>();
 /** What Ctrl or Cmd+A does in a table, by its `<table>` element. Set by `DataTable.Root`. */

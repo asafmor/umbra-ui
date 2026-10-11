@@ -6,16 +6,16 @@ import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './Page.module.css';
 
 interface BlockProps {
-  className?: string;
-  style?: CSSProperties;
-  children?: ReactNode;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
+  children?: ReactNode | undefined;
 }
 
 export interface PageRootProps extends BlockProps {
   /** Context tint for this page: a preset name or a colour. Defaults to the provider's. */
-  context?: ContextTint;
+  context?: ContextTint | undefined;
   /** `none` for edge-to-edge content. */
-  padding?: 'default' | 'none';
+  padding?: 'default' | 'none' | undefined;
 }
 
 function Root({ context, padding = 'default', className, style, children }: PageRootProps) {
@@ -41,7 +41,12 @@ function Root({ context, padding = 'default', className, style, children }: Page
 }
 
 const block = (part: 'header' | 'content' | 'footer') =>
-  function PageBlock({ className, style, children, ...rest }: BlockProps & { 'aria-busy'?: boolean }) {
+  function PageBlock({
+    className,
+    style,
+    children,
+    ...rest
+  }: BlockProps & { 'aria-busy'?: boolean | undefined }) {
     return (
       <div {...rest} data-part={part} className={cx(styles[part], className)} style={style}>
         {children}
@@ -54,19 +59,21 @@ const Footer = block('footer');
 
 export interface PageProps extends PageRootProps {
   /** A `PageHeader`, fixed above the content. */
-  header?: ReactNode;
+  header?: ReactNode | undefined;
   /** An `ActionBar`, fixed below the content. */
-  footer?: ReactNode;
+  footer?: ReactNode | undefined;
   /** Shows a skeleton in place of the content. */
-  loading?: boolean;
+  loading?: boolean | undefined;
   /** Replace or hide named pieces. */
-  parts?: {
-    header?: Part<{ children: ReactNode }>;
-    content?: Part<{ children: ReactNode }>;
-    footer?: Part<{ children: ReactNode }>;
-  };
+  parts?:
+    | {
+        header?: Part<{ children: ReactNode }> | undefined;
+        content?: Part<{ children: ReactNode }> | undefined;
+        footer?: Part<{ children: ReactNode }> | undefined;
+      }
+    | undefined;
   /** One `Columns`, `Stack` or `Card`. */
-  children?: ReactNode;
+  children?: ReactNode | undefined;
 }
 
 /** The content area under the bars: applies the outer margin and the context tint. */

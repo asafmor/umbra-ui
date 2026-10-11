@@ -36,41 +36,41 @@ export type ContextTint = ContextPreset | (string & {});
  * Token overrides, keyed by variable name without the `--umbra-` prefix.
  * Example: `{ 'radius-card': '12px', 'card-bg': '#101018' }`.
  */
-export type TokenOverrides = Partial<Record<TokenName | (string & {}), string | number>>;
+export type TokenOverrides = Partial<Record<TokenName | (string & {}), string | number | undefined>>;
 
 export interface UmbraScopeProps {
   /** Brand colour, used by the TopBar. Text on it is computed for contrast. Hex or `rgb()`. */
-  brand?: string;
+  brand?: string | undefined;
   /** Context tint for the page background and tinted cards. */
-  context?: ContextTint;
+  context?: ContextTint | undefined;
   /** Spacing, row heights and text sizes. */
-  density?: Density;
+  density?: Density | undefined;
   /** Overrides individual tokens for this subtree. */
-  tokens?: TokenOverrides;
-  className?: string;
-  style?: CSSProperties;
-  children?: ReactNode;
+  tokens?: TokenOverrides | undefined;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
+  children?: ReactNode | undefined;
 }
 
 export interface UmbraProviderProps extends UmbraScopeProps {
   /** Overrides built-in icons by name. */
-  icons?: Partial<IconMap>;
+  icons?: Partial<IconMap> | undefined;
   /** The app's key bindings. */
-  shortcuts?: Shortcut[];
+  shortcuts?: Shortcut[] | undefined;
   /** `system` follows the operating system setting. */
-  reducedMotion?: 'system' | 'always' | 'never';
+  reducedMotion?: 'system' | 'always' | 'never' | undefined;
   /** Locale for number and date formatting and text direction. Defaults to the browser's. */
-  locale?: string;
+  locale?: string | undefined;
 }
 
 type ScopeAttributes = {
   'data-umbra-scope': '';
   /** The resolved text direction and the locale, so every portal carries them too. */
-  dir?: 'ltr' | 'rtl';
-  lang?: string;
-  'data-umbra-density'?: Density;
-  'data-umbra-context'?: ContextPreset;
-  'data-umbra-reduced-motion'?: string;
+  dir?: 'ltr' | 'rtl' | undefined;
+  lang?: string | undefined;
+  'data-umbra-density'?: Density | undefined;
+  'data-umbra-context'?: ContextPreset | undefined;
+  'data-umbra-reduced-motion'?: string | undefined;
   style: CSSProperties;
 };
 

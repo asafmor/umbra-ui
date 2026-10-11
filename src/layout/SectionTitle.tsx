@@ -9,30 +9,32 @@ import styles from './SectionTitle.module.css';
 
 export interface SectionTitleProps {
   /** The title. */
-  children?: ReactNode;
+  children?: ReactNode | undefined;
   /** `link` is chosen automatically when `href` or `onOpen` is set. */
-  variant?: 'heading' | 'link' | 'rule';
+  variant?: 'heading' | 'link' | 'rule' | undefined;
   /** Heading level. */
-  headingLevel?: 2 | 3 | 4 | 5 | 6;
+  headingLevel?: 2 | 3 | 4 | 5 | 6 | undefined;
   /** Makes the title a link to a fuller view of the section. */
-  href?: string;
+  href?: string | undefined;
   /** Plugs in the app's router link for `href`. Defaults to a plain `<a>`. */
-  renderLink?: (props: LinkRenderProps) => ReactNode;
-  onOpen?: () => void;
+  renderLink?: ((props: LinkRenderProps) => ReactNode) | undefined;
+  onOpen?: (() => void) | undefined;
   /** A number shown after the title. */
-  count?: number;
+  count?: number | undefined;
   /** Trailing controls. They move into an overflow menu when they do not fit. */
-  actions?: ReactNode;
+  actions?: ReactNode | undefined;
   /** Accessible name of the overflow menu button. */
-  moreLabel?: string;
+  moreLabel?: string | undefined;
   /** Replace or hide named pieces. */
-  parts?: {
-    title?: Part<{ children: ReactNode }>;
-    count?: Part<{ children: number }>;
-    actions?: Part<{ children: ReactNode }>;
-  };
-  className?: string;
-  style?: CSSProperties;
+  parts?:
+    | {
+        title?: Part<{ children: ReactNode }> | undefined;
+        count?: Part<{ children: number }> | undefined;
+        actions?: Part<{ children: ReactNode }> | undefined;
+      }
+    | undefined;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
 }
 
 /** Internal: the "more" button used by overflow menus in headers. */

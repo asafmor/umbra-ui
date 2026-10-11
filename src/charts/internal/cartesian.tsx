@@ -16,8 +16,8 @@ export interface AnnotationMark {
   vertical: boolean;
   from: number;
   to: number;
-  label?: string;
-  color?: string;
+  label?: string | undefined;
+  color?: string | undefined;
 }
 
 export interface CartesianModel extends FrameModel {
@@ -33,8 +33,8 @@ export interface CartesianModel extends FrameModel {
   /** Where the two axis lines sit; a bar chart puts the category axis on zero. */
   xAxisAt: number;
   yAxisAt: number;
-  xTitle?: string;
-  yTitle?: string;
+  xTitle?: string | undefined;
+  yTitle?: string | undefined;
   annotations: AnnotationMark[];
   fontSize: number;
 }
@@ -42,14 +42,20 @@ export interface CartesianModel extends FrameModel {
 export type ChartAnnotationValue = number | string | Date;
 /** A reference line at one value, or a band between two, on either axis. */
 export type ChartAnnotation =
-  | { type: 'line'; axis?: 'x' | 'y'; value: ChartAnnotationValue; label?: string; color?: string }
+  | {
+      type: 'line';
+      axis?: 'x' | 'y' | undefined;
+      value: ChartAnnotationValue;
+      label?: string | undefined;
+      color?: string | undefined;
+    }
   | {
       type: 'band';
-      axis?: 'x' | 'y';
+      axis?: 'x' | 'y' | undefined;
       from: ChartAnnotationValue;
       to: ChartAnnotationValue;
-      label?: string;
-      color?: string;
+      label?: string | undefined;
+      color?: string | undefined;
     };
 
 /** Turns annotations into pixels. `position` returns NaN for a value the axis does not have. */

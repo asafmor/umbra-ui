@@ -17,18 +17,19 @@ import { useUmbra } from '../provider/UmbraProvider';
 import type { LinkRenderProps } from '../utils/link';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './ShortcutBar.module.css';
+import { defined } from '../utils/defined';
 
 /** One pinned shortcut. */
 export interface ShortcutBarItem {
   id: string;
   label: string;
-  icon?: ReactNode;
+  icon?: ReactNode | undefined;
   /** Makes it a link. */
-  href?: string;
-  onPress?: () => void;
+  href?: string | undefined;
+  onPress?: (() => void) | undefined;
   /** A count, or `true` for a dot. */
-  badge?: number | true;
-  disabled?: boolean;
+  badge?: number | true | undefined;
+  disabled?: boolean | undefined;
 }
 
 export interface ShortcutBarItemProps extends Omit<ShortcutBarItem, 'label'> {
@@ -41,7 +42,7 @@ const Item = (() => null) as (props: ShortcutBarItemProps) => null;
 
 function toItems(children: ReactNode): ShortcutBarItem[] {
   return Children.toArray(children).flatMap((child): ShortcutBarItem[] => {
-    if (!isValidElement<{ children?: ReactNode }>(child)) return [];
+    if (!isValidElement<{ children?: ReactNode | undefined }>(child)) return [];
     if (child.type === Fragment) return toItems(child.props.children);
     if (child.type !== Item) return [];
     const { children: label, ...item } = child.props as ShortcutBarItemProps;
@@ -60,36 +61,38 @@ export interface ShortcutBarItemPartProps {
 
 export interface ShortcutBarProps {
   /** The shortcuts, as data. */
-  items?: ShortcutBarItem[];
+  items?: ShortcutBarItem[] | undefined;
   /** The shortcuts, as `ShortcutBar.Item` blocks. */
-  children?: ReactNode;
+  children?: ReactNode | undefined;
   /** Plugs in the app's router link for items with `href`. Defaults to a plain `<a>`. */
-  renderLink?: (props: LinkRenderProps) => ReactNode;
+  renderLink?: ((props: LinkRenderProps) => ReactNode) | undefined;
   /**
    * `labels`: icon and label. `icons`: icons only, the label is the tooltip. `auto`: labels while they
    * fit, then icons, when every item has one.
    */
-  mode?: 'labels' | 'icons' | 'auto';
+  mode?: 'labels' | 'icons' | 'auto' | undefined;
   /** The text of the overflow chip, from the number of items in its menu. */
-  moreLabel?: (count: number) => string;
+  moreLabel?: ((count: number) => string) | undefined;
   /** Accessible name of the overflow chip and its menu, from the same number. */
-  moreName?: (count: number) => string;
+  moreName?: ((count: number) => string) | undefined;
   /** Shows a button at the end for changing the shortcuts. */
-  onEdit?: () => void;
-  editLabel?: string;
+  onEdit?: (() => void) | undefined;
+  editLabel?: string | undefined;
   /** Accessible name of the toolbar. */
-  'aria-label'?: string;
+  'aria-label'?: string | undefined;
   /** Replace or hide named pieces. */
-  parts?: {
-    /** The content of a chip. */
-    item?: Part<ShortcutBarItemPartProps>;
-    /** The content of the overflow chip. */
-    more?: Part<{ count: number; children: string }>;
-    /** The icon of the edit button. */
-    editIcon?: Part;
-  };
-  className?: string;
-  style?: CSSProperties;
+  parts?:
+    | {
+        /** The content of a chip. */
+        item?: Part<ShortcutBarItemPartProps> | undefined;
+        /** The content of the overflow chip. */
+        more?: Part<{ count: number; children: string }> | undefined;
+        /** The icon of the edit button. */
+        editIcon?: Part | undefined;
+      }
+    | undefined;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
 }
 
 const plainLink = (props: LinkRenderProps) => <a {...props} />;
@@ -171,14 +174,14 @@ export function ShortcutBar({
       <Tooltip key={item.id} content={iconOnly ? item.label : null} placement="bottom">
         {item.href && !item.disabled ? (
           <AriaLink
-            {...shared}
+            {...defined(shared)}
             href={item.href}
             render={(dom) => renderLink(dom as LinkRenderProps) as ReactElement}
           >
             {content}
           </AriaLink>
         ) : (
-          <AriaButton {...shared}>{content}</AriaButton>
+          <AriaButton {...defined(shared)}>{content}</AriaButton>
         )}
       </Tooltip>
     );
@@ -190,8 +193,7 @@ export function ShortcutBar({
       data-umbra="shortcut-bar"
       data-mode={iconsOnly ? 'icons' : 'labels'}
       data-overflow={moved.length || undefined}
-      className={cx(styles.root, className)}
-      style={style}
+      {...defined({ className: cx(styles.root, className), style })}
     >
       <div ref={list} data-part="list" className={styles.list}>
         {visible.map(chip)}
@@ -215,7 +217,11 @@ export function ShortcutBar({
           renderLink={renderLink}
           placement="bottom end"
           trigger={
-            <AriaButton data-part="more" aria-label={moreName(moved.length)} className={styles.chip}>
+            <AriaButton
+              data-part="more"
+              aria-label={moreName(moved.length)}
+              {...defined({ className: styles.chip })}
+            >
               {renderPart(
                 parts?.more,
                 { count: moved.length, children: moreLabel(moved.length) },
@@ -231,7 +237,7 @@ export function ShortcutBar({
             data-part="edit"
             data-icon-only=""
             aria-label={editLabel}
-            className={styles.chip}
+            {...defined({ className: styles.chip })}
             onPress={onEdit}
           >
             <IconSlot>{renderPart(parts?.editIcon, {}, () => icons.edit)}</IconSlot>

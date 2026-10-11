@@ -12,12 +12,12 @@ export const gapStyle = (gap: SpaceToken | undefined): CSSProperties | undefined
 
 export interface StackProps extends SlotProps {
   /** Overrides the gap, which otherwise follows the density level. */
-  gap?: SpaceToken;
+  gap?: SpaceToken | undefined;
   /** `collapse` shrinks the lowest-priority cards to their headers when they cannot all fit. */
-  overflow?: 'collapse' | 'keep';
-  className?: string;
-  style?: CSSProperties;
-  children?: ReactNode;
+  overflow?: 'collapse' | 'keep' | undefined;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
+  children?: ReactNode | undefined;
 }
 
 /** Shares its height among its children. */

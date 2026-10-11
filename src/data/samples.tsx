@@ -42,9 +42,9 @@ export function Box({
   label,
   children,
 }: {
-  width?: number | string;
-  height?: number | string;
-  label?: string;
+  width?: number | string | undefined;
+  height?: number | string | undefined;
+  label?: string | undefined;
   children: ReactNode;
 }) {
   const caption: CSSProperties = {

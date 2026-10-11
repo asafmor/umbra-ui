@@ -36,37 +36,38 @@ import {
   useOverlayLayer,
   type OverlayPlacement,
 } from './shared';
+import { defined } from '../utils/defined';
 
 /** One row of a menu. `items` inside it makes a submenu. */
 export interface MenuItemData {
   id: string;
   label: ReactNode;
   /** The label as text, for type-ahead. Needed when `label` is not a string. */
-  textValue?: string;
-  icon?: ReactNode;
+  textValue?: string | undefined;
+  icon?: ReactNode | undefined;
   /** Id of a shortcut in the provider's list: its keys are shown at the end of the row. */
-  shortcut?: string;
+  shortcut?: string | undefined;
   /** A second, quieter line. */
-  description?: ReactNode;
-  disabled?: boolean;
+  description?: ReactNode | undefined;
+  disabled?: boolean | undefined;
   /** Marks a destructive action. */
-  danger?: boolean;
+  danger?: boolean | undefined;
   /** Makes the row a link. */
-  href?: string;
+  href?: string | undefined;
   /** Marks the link to the current page (`aria-current`, with an edge stripe). */
-  current?: boolean;
+  current?: boolean | undefined;
   /** The rows of a submenu. */
-  items?: MenuEntry[];
+  items?: MenuEntry[] | undefined;
   /** `checkbox` rows toggle on their own; neighbouring `radio` rows form one group. */
-  type?: 'item' | 'checkbox' | 'radio';
+  type?: 'item' | 'checkbox' | 'radio' | undefined;
   /** For `checkbox` and `radio`: sets the state of this row, whatever `selectedIds` says. */
-  checked?: boolean;
+  checked?: boolean | undefined;
 }
 
 /** A group of rows under an optional heading. */
 export interface MenuSectionData {
   type: 'section';
-  label?: ReactNode;
+  label?: ReactNode | undefined;
   items: MenuEntry[];
 }
 
@@ -86,10 +87,10 @@ export interface MenuItemPartProps {
 
 interface MenuParts {
   /** The content of a row. */
-  item?: Part<MenuItemPartProps>;
+  item?: Part<MenuItemPartProps> | undefined;
   /** The mark of a checked row. */
-  check?: Part;
-  sectionHeader?: Part<{ children: ReactNode }>;
+  check?: Part | undefined;
+  sectionHeader?: Part<{ children: ReactNode }> | undefined;
 }
 
 // Blocks. They only carry data: `Menu` reads their props and renders the rows itself, so they must be
@@ -97,15 +98,15 @@ interface MenuParts {
 
 export interface MenuItemProps extends Omit<MenuItemData, 'label' | 'items'> {
   /** The label. */
-  children?: ReactNode;
+  children?: ReactNode | undefined;
 }
 const Item = (() => null) as (props: MenuItemProps) => null;
 
 export interface MenuSectionProps {
   /** The heading. */
-  label?: ReactNode;
+  label?: ReactNode | undefined;
   /** `Menu.Item`s and `Menu.Sub`s. */
-  children?: ReactNode;
+  children?: ReactNode | undefined;
 }
 const Section = (() => null) as (props: MenuSectionProps) => null;
 
@@ -113,14 +114,14 @@ const Separator = () => null;
 
 export interface MenuSubProps extends Pick<MenuItemData, 'id' | 'label' | 'textValue' | 'icon' | 'disabled'> {
   /** The rows of the submenu. */
-  children?: ReactNode;
+  children?: ReactNode | undefined;
 }
 const Sub = (() => null) as (props: MenuSubProps) => null;
 
 function toEntries(children: ReactNode): MenuEntry[] {
   return Children.toArray(children).flatMap((child): MenuEntry[] => {
     if (!isValidElement<Record<string, unknown>>(child)) return [];
-    const { children: inner, ...props } = child.props as { children?: ReactNode };
+    const { children: inner, ...props } = child.props as { children?: ReactNode | undefined };
     if (child.type === Fragment) return toEntries(inner);
     if (child.type === Separator) return [{ type: 'separator' }];
     if (child.type === Section)
@@ -198,12 +199,11 @@ function row(item: MenuItemData, shared: Shared, gutters: Gutters) {
       key={item.id}
       id={item.id}
       textValue={text ?? item.id}
-      href={item.disabled ? undefined : item.href}
-      isDisabled={item.disabled}
+      {...defined({ href: item.disabled ? undefined : item.href, isDisabled: item.disabled })}
       data-part="item"
       data-danger={item.danger || undefined}
       data-current={item.current || undefined}
-      className={styles.item}
+      {...defined({ className: styles.item })}
       render={(dom) => {
         const props = { ...dom, 'aria-current': item.current ? ('page' as const) : undefined };
         return 'href' in props && props.href ? (
@@ -239,7 +239,7 @@ function group(items: MenuItemData[], shared: Shared, gutters: Gutters, key: str
     return heading === undefined ? (
       rows
     ) : (
-      <AriaMenuSection key={key} className={styles.section}>
+      <AriaMenuSection key={key} {...defined({ className: styles.section })}>
         {header}
         {rows}
       </AriaMenuSection>
@@ -249,7 +249,7 @@ function group(items: MenuItemData[], shared: Shared, gutters: Gutters, key: str
   return (
     <AriaMenuSection
       key={key}
-      className={styles.section}
+      {...defined({ className: styles.section })}
       selectionMode={kind === 'radio' ? 'single' : 'multiple'}
       disallowEmptySelection={kind === 'radio'}
       selectedKeys={items.filter(shared.isSelected).map((item) => item.id)}
@@ -275,7 +275,11 @@ function entriesToRows(entries: MenuEntry[], shared: Shared) {
     flush();
     if (entry.type === 'separator') {
       out.push(
-        <AriaSeparator key={`separator-${index}`} data-part="separator" className={styles.separator} />,
+        <AriaSeparator
+          key={`separator-${index}`}
+          data-part="separator"
+          {...defined({ className: styles.separator })}
+        />,
       );
     } else {
       // The heading goes on the first group of the section.
@@ -292,17 +296,17 @@ interface PanelProps {
   entries: MenuEntry[];
   shared: Shared;
   /** A submenu: its anchor and state come from the row that opens it. */
-  sub?: boolean;
-  anchorRef?: RefObject<Element | null>;
-  open?: boolean;
-  onOpenChange?: (open: boolean) => void;
-  'aria-label'?: string;
-  placement?: OverlayPlacement;
-  offset?: number;
-  matchAnchorWidth?: boolean;
-  maxHeight?: number;
-  className?: string;
-  style?: CSSProperties;
+  sub?: boolean | undefined;
+  anchorRef?: RefObject<Element | null> | undefined;
+  open?: boolean | undefined;
+  onOpenChange?: ((open: boolean) => void) | undefined;
+  'aria-label'?: string | undefined;
+  placement?: OverlayPlacement | undefined;
+  offset?: number | undefined;
+  matchAnchorWidth?: boolean | undefined;
+  maxHeight?: number | undefined;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
 }
 
 function Surface({
@@ -324,22 +328,24 @@ function Surface({
   return (
     <AriaPopover
       {...scope}
-      {...layer}
+      {...defined(layer)}
       ref={flipWhenCut}
-      {...(sub
-        ? { offset: -4 }
-        : {
-            triggerRef: anchorRef,
-            isOpen: open,
-            onOpenChange,
-            placement: toAriaPlacement(placement),
-            offset,
-          })}
-      maxHeight={maxHeight}
+      {...defined(
+        sub
+          ? { offset: -4 }
+          : {
+              triggerRef: anchorRef,
+              isOpen: open,
+              onOpenChange,
+              placement: toAriaPlacement(placement),
+              offset,
+            },
+      )}
+      {...defined({ maxHeight })}
       data-umbra="menu"
       data-umbra-overlay=""
       data-match-width={matchAnchorWidth || undefined}
-      className={cx(styles.root, className)}
+      {...defined({ className: cx(styles.root, className) })}
       style={{ ...scope.style, ...style }}
     >
       {children}
@@ -351,14 +357,12 @@ function Panel({ entries, shared, 'aria-label': label, onOpenChange, ...surface 
   return (
     <Surface {...surface} onOpenChange={onOpenChange}>
       <AriaMenu
-        aria-label={label}
-        // A menu that is not opened by a trigger child starts on its first row.
-        autoFocus={surface.anchorRef ? 'first' : undefined}
+        {...defined({ 'aria-label': label, autoFocus: surface.anchorRef ? 'first' : undefined })}
         onAction={(key) => shared.onAction?.(String(key))}
-        onClose={surface.anchorRef ? () => onOpenChange?.(false) : undefined}
+        {...defined({ onClose: surface.anchorRef ? () => onOpenChange?.(false) : undefined })}
         renderEmptyState={() => <div className={styles.empty}>{shared.emptyLabel}</div>}
         data-part="list"
-        className={styles.list}
+        {...defined({ className: styles.list })}
       >
         {entriesToRows(entries, shared)}
       </AriaMenu>
@@ -376,42 +380,42 @@ const pressable = (trigger: ReactNode) =>
 
 export interface MenuProps {
   /** The rows, as data. */
-  items?: MenuEntry[];
+  items?: MenuEntry[] | undefined;
   /** The rows, as `Menu.Item`, `Menu.Section`, `Menu.Separator` and `Menu.Sub` blocks. */
-  children?: ReactNode;
+  children?: ReactNode | undefined;
   /** The control that opens the menu: an umbra-ui button, or a plain `<button>`. Leave it out to use `anchorRef`. */
-  trigger?: ReactNode;
+  trigger?: ReactNode | undefined;
   /** The element to open against, when there is no `trigger`. Use it with `open`. */
-  anchorRef?: RefObject<Element | null>;
+  anchorRef?: RefObject<Element | null> | undefined;
   /** Controlled state. */
-  open?: boolean;
-  defaultOpen?: boolean;
-  onOpenChange?: (open: boolean) => void;
+  open?: boolean | undefined;
+  defaultOpen?: boolean | undefined;
+  onOpenChange?: ((open: boolean) => void) | undefined;
   /** Accessible name. A menu with a `trigger` is named by it. */
-  'aria-label'?: string;
+  'aria-label'?: string | undefined;
   /** Called with the id of the row the user chose. */
-  onAction?: (id: string) => void;
+  onAction?: ((id: string) => void) | undefined;
   /** The checked `checkbox` and `radio` rows, in every section and submenu. */
-  selectedIds?: string[];
-  defaultSelectedIds?: string[];
-  onSelectionChange?: (ids: string[]) => void;
+  selectedIds?: string[] | undefined;
+  defaultSelectedIds?: string[] | undefined;
+  onSelectionChange?: ((ids: string[]) => void) | undefined;
   /** Side of the anchor and alignment along it. It flips to the other side to stay in the window. */
-  placement?: OverlayPlacement;
+  placement?: OverlayPlacement | undefined;
   /** Gap between the anchor and the menu, in pixels. */
-  offset?: number;
+  offset?: number | undefined;
   /** Makes the menu at least as wide as its anchor. */
-  matchAnchorWidth?: boolean;
+  matchAnchorWidth?: boolean | undefined;
   /** Tallest the menu may be, in pixels. It is never taller than the room in the window; the rows scroll. */
-  maxHeight?: number;
+  maxHeight?: number | undefined;
   /** Plugs in the app's router link for rows with `href`. Defaults to a plain `<a>`. */
-  renderLink?: (props: LinkRenderProps) => ReactNode;
+  renderLink?: ((props: LinkRenderProps) => ReactNode) | undefined;
   /** Shown when there are no rows. */
-  emptyLabel?: string;
+  emptyLabel?: string | undefined;
   /** Replace or hide named pieces. */
-  parts?: MenuParts;
+  parts?: MenuParts | undefined;
   /** On the menu's panel. */
-  className?: string;
-  style?: CSSProperties;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
 }
 
 const plainLink = (props: LinkRenderProps) => <a {...props} />;
@@ -492,16 +496,16 @@ export interface MenuContextProps extends Omit<
   'children' | 'trigger' | 'anchorRef' | 'open' | 'defaultOpen' | 'placement' | 'offset' | 'matchAnchorWidth'
 > {
   /** The region the menu belongs to. */
-  children?: ReactNode;
+  children?: ReactNode | undefined;
   /** The rows as blocks, in place of `items`. */
-  content?: ReactNode;
+  content?: ReactNode | undefined;
   /** Leaves the browser's own context menu alone. */
-  disabled?: boolean;
+  disabled?: boolean | undefined;
   /** Called when the menu opens or closes. */
-  onOpenChange?: (open: boolean) => void;
+  onOpenChange?: ((open: boolean) => void) | undefined;
   /** On the region's wrapper, which by default adds no box of its own. */
-  className?: string;
-  style?: CSSProperties;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
 }
 
 /**
@@ -578,7 +582,7 @@ Menu.Context = Context;
  */
 function rowsOnly(children: ReactNode): ReactNode {
   return Children.map(children, (child) => {
-    if (!isValidElement<{ children?: ReactNode }>(child)) return null;
+    if (!isValidElement<{ children?: ReactNode | undefined }>(child)) return null;
     const plain = typeof child.type === 'string' || child.type === Fragment;
     return plain ? rowsOnly(child.props.children) : child;
   });
@@ -602,7 +606,7 @@ export function ActionsOverflow({
       {trigger}
       <Surface placement="bottom end">
         <OverflowMenuContext value={true}>
-          <AriaMenu aria-label={label} data-part="list" className={styles.list}>
+          <AriaMenu aria-label={label} data-part="list" {...defined({ className: styles.list })}>
             {rowsOnly(children)}
           </AriaMenu>
         </OverflowMenuContext>

@@ -13,7 +13,7 @@ export interface ColumnSize {
   /** Higher stays longer. `always` never hides. */
   priority: number | 'always';
   /** A utility column (checkbox, disclosure): it takes no spare width. */
-  utility?: boolean;
+  utility?: boolean | undefined;
 }
 
 /** What a column width is measured in. Read from the table itself, so density and tokens are followed. */
@@ -40,7 +40,11 @@ export const defaultWidthMetrics: WidthMetrics = { fontSize: BASE_FONT_SIZE, ch:
  *   (room for a sort arrow).
  */
 export function resolveWidth(
-  width: number | 'content' | { min?: number; max?: number; flex?: number } | undefined,
+  width:
+    | number
+    | 'content'
+    | { min?: number | undefined; max?: number | undefined; flex?: number | undefined }
+    | undefined,
   metrics: WidthMetrics,
   chars = 0,
   extra = 0,
@@ -195,7 +199,7 @@ export function selectStep(
   selected: string[],
   memo: SelectionMemo,
   id: string,
-  options: { range?: boolean; anchor?: boolean },
+  options: { range?: boolean | undefined; anchor?: boolean | undefined },
   order: () => string[],
 ): { ids: string[]; memo: SelectionMemo } {
   const isSelected = selected.includes(id);

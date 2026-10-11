@@ -25,9 +25,9 @@ import { NavHoldContext } from './nav';
 import styles from './TopBar.module.css';
 
 interface BlockProps {
-  className?: string;
-  style?: CSSProperties;
-  children?: ReactNode;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
+  children?: ReactNode | undefined;
 }
 
 /**
@@ -45,9 +45,9 @@ const NavRefContext = createContext<RefObject<HTMLDivElement | null> | null>(nul
 
 export interface TopBarRootProps extends BlockProps {
   /** Overrides the brand colour for this bar only. Text on it is computed for contrast. */
-  brand?: string;
+  brand?: string | undefined;
   /** Accessible name of the menu that holds the actions when they do not fit. */
-  moreLabel?: string;
+  moreLabel?: string | undefined;
 }
 
 function Root({ brand, moreLabel = 'More actions', className, style, children }: TopBarRootProps) {
@@ -124,7 +124,7 @@ function Nav({ className, style, children }: BlockProps) {
 
 export interface TopBarActionsProps extends BlockProps {
   /** Stays visible when the other actions collapse into the menu, for example the search trigger. */
-  pinned?: ReactNode;
+  pinned?: ReactNode | undefined;
 }
 
 function Actions({ pinned, className, style, children }: TopBarActionsProps) {
@@ -184,13 +184,13 @@ function PrimaryActionSlot({ className, style, children }: BlockProps) {
 
 export interface TopBarSearchProps {
   /** Accessible name and tooltip of the trigger. */
-  label?: string;
+  label?: string | undefined;
   /** Called when the trigger is used, for an app with its own search. */
-  onSearch?: () => void;
+  onSearch?: (() => void) | undefined;
   /** A `CommandPalette` element. The trigger opens and closes it. */
-  commandPalette?: ReactNode;
+  commandPalette?: ReactNode | undefined;
   /** Id of the shortcut the trigger binds. */
-  shortcut?: string;
+  shortcut?: string | undefined;
 }
 
 /** The search trigger. It opens the `commandPalette` it is given, calls `onSearch`, or both. */
@@ -227,35 +227,37 @@ function Search({
 
 export interface TopBarProps extends TopBarRootProps {
   /** App or entity mark. */
-  logo?: ReactNode;
+  logo?: ReactNode | undefined;
   /** A `PrimaryNav`. */
-  nav?: ReactNode;
+  nav?: ReactNode | undefined;
   /** `IconButton`s. They collapse into one menu when space is short. */
-  actions?: ReactNode;
+  actions?: ReactNode | undefined;
   /** A two-line status block. Hides first when space is short. */
-  context?: ReactNode;
+  context?: ReactNode | undefined;
   /** The one primary action of the app: a `PrimaryAction`. Any other node is shown as it is. */
-  primaryAction?: ReactNode;
+  primaryAction?: ReactNode | undefined;
   /** `true` shows `HistoryButtons` that use the browser history; a node replaces them. */
-  history?: boolean | ReactNode;
+  history?: boolean | ReactNode | undefined;
   /** A `CommandPalette`. Shows the search trigger, which opens it (also by the `Mod+K` shortcut). */
-  commandPalette?: ReactNode;
+  commandPalette?: ReactNode | undefined;
   /** For an app with its own search: shows the search trigger and is called when it is used (also by `Mod+K`). */
-  onSearch?: () => void;
+  onSearch?: (() => void) | undefined;
   /** Accessible names of the built-in buttons. */
-  searchLabel?: string;
-  backLabel?: string;
-  forwardLabel?: string;
+  searchLabel?: string | undefined;
+  backLabel?: string | undefined;
+  forwardLabel?: string | undefined;
   /** Replace or hide named pieces. */
-  parts?: {
-    start?: Part<{ children: ReactNode }>;
-    logo?: Part<{ children: ReactNode }>;
-    nav?: Part<{ children: ReactNode }>;
-    actions?: Part<TopBarActionsProps>;
-    search?: Part<TopBarSearchProps>;
-    context?: Part<{ children: ReactNode }>;
-    primaryAction?: Part<{ children: ReactNode }>;
-  };
+  parts?:
+    | {
+        start?: Part<{ children: ReactNode }> | undefined;
+        logo?: Part<{ children: ReactNode }> | undefined;
+        nav?: Part<{ children: ReactNode }> | undefined;
+        actions?: Part<TopBarActionsProps> | undefined;
+        search?: Part<TopBarSearchProps> | undefined;
+        context?: Part<{ children: ReactNode }> | undefined;
+        primaryAction?: Part<{ children: ReactNode }> | undefined;
+      }
+    | undefined;
 }
 
 /** The brand-coloured bar at the top: where the user is, the main sections, and the one primary action. */

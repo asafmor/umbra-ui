@@ -1,11 +1,11 @@
 export interface ValueLevelOptions {
   /** The bottom and top of the scale, split into five equal bands. */
-  min?: number;
-  max?: number;
+  min?: number | undefined;
+  max?: number | undefined;
   /** Ascending boundaries, at most four. A value at a boundary belongs to the band above it. */
-  thresholds?: readonly number[];
+  thresholds?: readonly number[] | undefined;
   /** Which end of the scale gets the top of the ramp. */
-  ramp?: 'higher-is-better' | 'lower-is-better';
+  ramp?: 'higher-is-better' | 'lower-is-better' | undefined;
 }
 
 export const rampSteps = 5;

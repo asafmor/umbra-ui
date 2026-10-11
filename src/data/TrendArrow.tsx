@@ -15,15 +15,15 @@ const arrows: Record<TrendDirection, ReactNode> = {
 };
 
 interface BlockProps {
-  className?: string;
-  style?: CSSProperties;
-  children?: ReactNode;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
+  children?: ReactNode | undefined;
 }
 
 export interface TrendArrowRootProps extends BlockProps {
   direction: TrendDirection;
   /** The colour of the arrow. */
-  tone?: TrendTone;
+  tone?: TrendTone | undefined;
 }
 
 function Root({ direction, tone = 'neutral', className, style, children }: TrendArrowRootProps) {
@@ -54,21 +54,23 @@ function Value({ className, style, children }: BlockProps) {
 
 export interface TrendArrowProps extends Omit<TrendArrowRootProps, 'children'> {
   /** Which direction is good: it gets the success colour, the other the danger colour. `flat` is neutral. */
-  positive?: 'up' | 'down';
+  positive?: 'up' | 'down' | undefined;
   /** Text after the arrow, for example the size of the change. */
-  value?: ReactNode;
+  value?: ReactNode | undefined;
   /** Replaces the arrow. Keep a different shape per direction: the shape is the cue that is not colour. */
-  icon?: ReactNode;
+  icon?: ReactNode | undefined;
   /** What a screen reader hears for the direction. Defaults to the label of the direction below. */
-  label?: string;
-  upLabel?: string;
-  downLabel?: string;
-  flatLabel?: string;
+  label?: string | undefined;
+  upLabel?: string | undefined;
+  downLabel?: string | undefined;
+  flatLabel?: string | undefined;
   /** Replace or hide named pieces. */
-  parts?: {
-    icon?: Part<{ children: ReactNode }>;
-    value?: Part<{ children: ReactNode }>;
-  };
+  parts?:
+    | {
+        icon?: Part<{ children: ReactNode }> | undefined;
+        value?: Part<{ children: ReactNode }> | undefined;
+      }
+    | undefined;
 }
 
 /** The direction of a change: up, down or flat. */

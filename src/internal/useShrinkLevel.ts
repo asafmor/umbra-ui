@@ -118,11 +118,11 @@ export function useShrinkLevel(
   resetKey?: unknown,
   options: {
     /** Replaces the default test (content wider than the element). */
-    overflowing?: (element: HTMLElement) => boolean;
+    overflowing?: ((element: HTMLElement) => boolean) | undefined;
     /** The level only rises past `level` while this returns true. */
-    canAdvance?: (level: number) => boolean;
+    canAdvance?: ((level: number) => boolean) | undefined;
     /** More elements whose growth restarts the level, besides the element and its parent. */
-    watch?: (element: HTMLElement) => (Element | null | undefined)[];
+    watch?: ((element: HTMLElement) => (Element | null | undefined)[]) | undefined;
   } = {},
 ) {
   const [level, setLevel] = useState(0);

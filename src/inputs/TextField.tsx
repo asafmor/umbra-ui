@@ -10,11 +10,12 @@ import { cx, renderPart, type Part } from '../utils/parts';
 import type { BlockProps } from './fieldParts';
 import styles from './TextField.module.css';
 import { useFieldControl } from './useField';
+import { defined } from '../utils/defined';
 
 interface TextFieldContextValue {
   multiline: boolean;
   rows: number;
-  placeholder?: string;
+  placeholder?: string | undefined;
   inputRef: RefObject<HTMLInputElement | HTMLTextAreaElement | null>;
   canClear: boolean;
   clear: () => void;
@@ -28,31 +29,31 @@ function useTextField() {
 
 export interface TextFieldRootProps extends BlockProps {
   /** Controlled text. */
-  value?: string;
-  defaultValue?: string;
-  onChange?: (value: string) => void;
+  value?: string | undefined;
+  defaultValue?: string | undefined;
+  onChange?: ((value: string) => void) | undefined;
   /** Several lines: a text area of `rows` lines. */
-  multiline?: boolean;
+  multiline?: boolean | undefined;
   /** Visible lines of a `multiline` field. */
-  rows?: number;
-  type?: 'text' | 'number' | 'password' | 'email' | 'url';
-  placeholder?: string;
-  disabled?: boolean;
+  rows?: number | undefined;
+  type?: 'text' | 'number' | 'password' | 'email' | 'url' | undefined;
+  placeholder?: string | undefined;
+  disabled?: boolean | undefined;
   /** Focusable and selectable, but cannot be changed. */
-  readOnly?: boolean;
+  readOnly?: boolean | undefined;
   /** Shows the danger border and an error icon. Put the message in the `error` of a `FormField`. */
-  invalid?: boolean;
-  required?: boolean;
+  invalid?: boolean | undefined;
+  required?: boolean | undefined;
   /** `small` is for use inside table cells. Otherwise the height follows the density level. */
-  size?: 'default' | 'small';
+  size?: 'default' | 'small' | undefined;
   /** Form field name. */
-  name?: string;
+  name?: string | undefined;
   /** The browser's autofill hint, for example `email` or `off`. */
-  autoComplete?: string;
-  maxLength?: number;
-  id?: string;
+  autoComplete?: string | undefined;
+  maxLength?: number | undefined;
+  id?: string | undefined;
   /** Accessible name of a field that has no `FormField` label. */
-  'aria-label'?: string;
+  'aria-label'?: string | undefined;
 }
 
 function Root({
@@ -90,22 +91,23 @@ function Root({
       data-umbra="text-field"
       data-size={size}
       data-multiline={multiline || undefined}
-      className={cx(styles.root, className)}
-      style={style}
+      {...defined({ className: cx(styles.root, className), style })}
       value={current}
       onChange={change}
       type={type}
       isDisabled={control.disabled}
-      isReadOnly={readOnly}
+      {...defined({ isReadOnly: readOnly })}
       isInvalid={control.invalid}
       isRequired={control.required}
-      name={name}
-      autoComplete={autoComplete}
-      maxLength={maxLength}
-      id={control.id}
-      aria-label={ariaLabel}
-      aria-labelledby={control.labelledBy}
-      aria-describedby={control.describedBy}
+      {...defined({
+        name,
+        autoComplete,
+        maxLength,
+        id: control.id,
+        'aria-label': ariaLabel,
+        'aria-labelledby': control.labelledBy,
+        'aria-describedby': control.describedBy,
+      })}
       // A click on the padding, the prefix or the suffix puts the caret in the field.
       onClick={(event) => {
         if (!(event.target as Element).closest('button, a, input, textarea')) inputRef.current?.focus();
@@ -135,9 +137,9 @@ function Input({ className, style }: Omit<BlockProps, 'children'>) {
   const { multiline, rows, placeholder, inputRef } = useTextField();
   const shared = { 'data-part': 'input', className: cx(styles.input, className), style, placeholder };
   return multiline ? (
-    <AriaTextArea {...shared} rows={rows} ref={inputRef as RefObject<HTMLTextAreaElement>} />
+    <AriaTextArea {...defined(shared)} rows={rows} ref={inputRef as RefObject<HTMLTextAreaElement>} />
   ) : (
-    <AriaInput {...shared} ref={inputRef as RefObject<HTMLInputElement>} />
+    <AriaInput {...defined(shared)} ref={inputRef as RefObject<HTMLInputElement>} />
   );
 }
 
@@ -170,9 +172,9 @@ function InvalidIcon({ className, style, children }: BlockProps) {
 
 export interface TextFieldClearProps {
   /** Accessible name of the button. */
-  label?: string;
-  className?: string;
-  style?: React.CSSProperties;
+  label?: string | undefined;
+  className?: string | undefined;
+  style?: React.CSSProperties | undefined;
 }
 
 /** The button that empties the field. It is rendered only while there is text to clear. */
@@ -190,21 +192,23 @@ function Clear({ label = 'Clear', className, style }: TextFieldClearProps) {
 
 export interface TextFieldProps extends Omit<TextFieldRootProps, 'children'> {
   /** Text or an icon before the text. */
-  prefix?: ReactNode;
+  prefix?: ReactNode | undefined;
   /** Text, an icon or a small control after the text. */
-  suffix?: ReactNode;
+  suffix?: ReactNode | undefined;
   /** Shows a button that empties the field while it holds text. */
-  clearable?: boolean;
+  clearable?: boolean | undefined;
   /** Accessible name of the clear button. */
-  clearLabel?: string;
+  clearLabel?: string | undefined;
   /** Replace or hide named pieces. */
-  parts?: {
-    prefix?: Part<{ children: ReactNode }>;
-    input?: Part<Omit<BlockProps, 'children'>>;
-    invalidIcon?: Part<BlockProps>;
-    clear?: Part<TextFieldClearProps>;
-    suffix?: Part<{ children: ReactNode }>;
-  };
+  parts?:
+    | {
+        prefix?: Part<{ children: ReactNode }> | undefined;
+        input?: Part<Omit<BlockProps, 'children'>> | undefined;
+        invalidIcon?: Part<BlockProps> | undefined;
+        clear?: Part<TextFieldClearProps> | undefined;
+        suffix?: Part<{ children: ReactNode }> | undefined;
+      }
+    | undefined;
 }
 
 /** A box for typing one line of text, or several with `multiline`. */

@@ -39,9 +39,9 @@ export interface BarSeries {
   /** One value per category, in the order of `categories`. `null` leaves the bar out. */
   values: (number | null)[];
   /** Any CSS colour. Without it the series takes the series palette, by its position. */
-  color?: string;
+  color?: string | undefined;
   /** The fill: solid, or outlined with a pattern. By default series take them in turn. */
-  marker?: FillKind;
+  marker?: FillKind | undefined;
 }
 
 export interface BarThreshold {
@@ -49,7 +49,7 @@ export interface BarThreshold {
   from: number;
   color: string;
   /** The fill that goes with the colour. By default thresholds take the fills in turn. */
-  marker?: FillKind;
+  marker?: FillKind | undefined;
 }
 
 interface Paint {
@@ -75,28 +75,28 @@ export interface BarChartRootProps extends ChartCommonProps {
   categories: string[];
   series: BarSeries[];
   /** `horizontal` puts the categories on the left and draws the bars sideways. */
-  orientation?: 'vertical' | 'horizontal';
+  orientation?: 'vertical' | 'horizontal' | undefined;
   /**
    * `grouped`: the series side by side. `stacked`: on top of each other. `diverging`: every second
    * series is drawn on the other side of zero, with all values shown as positive.
    */
-  variant?: 'grouped' | 'stacked' | 'diverging';
+  variant?: 'grouped' | 'stacked' | 'diverging' | undefined;
   /** `sign` colours bars by the sign of their value; negative bars are also striped. */
-  colorBy?: 'series' | 'sign';
+  colorBy?: 'series' | 'sign' | undefined;
   /** Colours bars by value. Each threshold also has a fill, so the steps differ without colour. */
-  thresholds?: BarThreshold[];
+  thresholds?: BarThreshold[] | undefined;
   /** The range of the value axis. Defaults to round numbers around the data, with zero. */
-  valueDomain?: [number, number];
+  valueDomain?: [number, number] | undefined;
   /** Reference lines and bands on the value axis. */
-  annotations?: ChartAnnotation[];
+  annotations?: ChartAnnotation[] | undefined;
   /** Title of the horizontal axis. */
-  xTitle?: string;
+  xTitle?: string | undefined;
   /** Title of the vertical axis. */
-  yTitle?: string;
+  yTitle?: string | undefined;
   /** Replace or hide named pieces. */
-  parts?: ChartParts;
+  parts?: ChartParts | undefined;
   /** The blocks to draw, in order. */
-  children?: ReactNode;
+  children?: ReactNode | undefined;
 }
 
 const clamp = (v: number, min: number, max: number) => Math.min(Math.max(v, min), max);

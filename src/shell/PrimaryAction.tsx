@@ -10,52 +10,55 @@ import sharedStyles from '../data/shared.module.css';
 import { useShortcut } from '../provider/UmbraProvider';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './PrimaryAction.module.css';
+import { defined } from '../utils/defined';
 
 export interface PrimaryActionProps {
   /** What the action does now. It changes with the state of the app ("Continue", "Review 3 items"). */
   label: string;
   /** A second, smaller line under the label. */
-  description?: ReactNode;
+  description?: ReactNode | undefined;
   /** Shown at the end of the button, and alone when the button collapses. */
-  icon?: ReactNode;
+  icon?: ReactNode | undefined;
   /** Puts the icon before the label. */
-  iconPosition?: 'start' | 'end';
-  onPress?: () => void;
+  iconPosition?: 'start' | 'end' | undefined;
+  onPress?: (() => void) | undefined;
   /** Renders a link. */
-  href?: string;
+  href?: string | undefined;
   /** Shows the spinner and blocks presses. The button stays focusable. */
-  loading?: boolean;
+  loading?: boolean | undefined;
   /** What a screen reader hears while `loading`. */
-  loadingLabel?: string;
-  disabled?: boolean;
+  loadingLabel?: string | undefined;
+  disabled?: boolean | undefined;
   /** Id of a shortcut in the provider's list: binds the key and shows the hint in the tooltip. */
-  shortcut?: string;
+  shortcut?: string | undefined;
   /** A count beside the label, for example the items that wait for the user. */
-  badge?: number;
+  badge?: number | undefined;
   /** Marks that the app needs the user before it can go on: a still marker, never a pulse. */
-  attention?: boolean;
+  attention?: boolean | undefined;
   /** What a screen reader hears for the `attention` marker. */
-  attentionLabel?: string;
+  attentionLabel?: string | undefined;
   /** Alternative actions. They open from a caret at the end of the button. */
-  menu?: MenuEntry[];
+  menu?: MenuEntry[] | undefined;
   /** Called with the id of the chosen alternative. */
-  onMenuAction?: (id: string) => void;
+  onMenuAction?: ((id: string) => void) | undefined;
   /** Accessible name of the caret that opens `menu`. */
-  menuLabel?: string;
+  menuLabel?: string | undefined;
   /** Shows the icon only. Set by the `TopBar` when it runs out of room; the button also does it by itself. */
-  collapsed?: boolean;
+  collapsed?: boolean | undefined;
   /** Replace or hide named pieces. */
-  parts?: {
-    icon?: Part<{ children: ReactNode }>;
-    label?: Part<{ children: ReactNode }>;
-    description?: Part<{ children: ReactNode }>;
-    badge?: Part<{ children: number }>;
-    attention?: Part;
-    spinner?: Part;
-    menuTrigger?: Part;
-  };
-  className?: string;
-  style?: CSSProperties;
+  parts?:
+    | {
+        icon?: Part<{ children: ReactNode }> | undefined;
+        label?: Part<{ children: ReactNode }> | undefined;
+        description?: Part<{ children: ReactNode }> | undefined;
+        badge?: Part<{ children: number }> | undefined;
+        attention?: Part | undefined;
+        spinner?: Part | undefined;
+        menuTrigger?: Part | undefined;
+      }
+    | undefined;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
 }
 
 /**
@@ -163,11 +166,11 @@ export function PrimaryAction({
     >
       <Tooltip content={collapsed ? label : null} shortcut={shortcut} placement="bottom">
         {href && !disabled ? (
-          <AriaLink {...shared} href={href}>
+          <AriaLink {...defined(shared)} href={href}>
             {content}
           </AriaLink>
         ) : (
-          <AriaButton {...shared} isPending={loading}>
+          <AriaButton {...defined(shared)} isPending={loading}>
             {content}
           </AriaButton>
         )}
@@ -182,7 +185,7 @@ export function PrimaryAction({
               data-part="menuTrigger"
               aria-label={menuLabel}
               isDisabled={disabled}
-              className={styles.caret}
+              {...defined({ className: styles.caret })}
             >
               {renderPart(parts?.menuTrigger, {}, () => (
                 <Icon name="chevronDown" />

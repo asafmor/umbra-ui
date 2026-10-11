@@ -18,12 +18,12 @@ export interface DonutOptions {
   total: number;
   outer: number;
   inner: number;
-  startAngle?: number;
+  startAngle?: number | undefined;
   /** Degrees the ring covers; 360 is a full ring. */
-  sweep?: number;
+  sweep?: number | undefined;
   /** Degrees left empty between two segments. */
-  gap?: number;
-  rounded?: boolean;
+  gap?: number | undefined;
+  rounded?: boolean | undefined;
 }
 
 const radians = (degrees: number) => (degrees * Math.PI) / 180;

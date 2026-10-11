@@ -78,9 +78,9 @@ export const nameWithCount = (label: unknown, count: number | undefined) =>
 /** What an item tells its strip, so the strip can list it in the "more" menu. */
 export interface StripRow {
   label: ReactNode;
-  count?: number;
-  icon?: ReactNode;
-  disabled?: boolean;
+  count?: number | undefined;
+  icon?: ReactNode | undefined;
+  disabled?: boolean | undefined;
 }
 
 const none: ReadonlySet<string> = new Set();

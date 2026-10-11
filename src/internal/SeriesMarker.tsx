@@ -62,11 +62,11 @@ const drawings: Record<SeriesMarkerKind, React.ReactNode> = {
 };
 
 export interface SeriesMarkerProps {
-  kind?: SeriesMarkerKind;
+  kind?: SeriesMarkerKind | undefined;
   /** Any CSS colour. Defaults to the text colour. */
-  color?: string;
-  className?: string;
-  style?: CSSProperties;
+  color?: string | undefined;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
 }
 
 /** Internal: draws one series marker. Decorative; the label beside it carries the name. */

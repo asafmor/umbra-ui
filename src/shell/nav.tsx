@@ -26,42 +26,42 @@ export interface NavItem {
   id: string;
   label: ReactNode;
   /** The label as text. Required when `label` is not a string: it names the item's dropdown and its rows. */
-  textValue?: string;
-  icon?: ReactNode;
-  href?: string;
-  items?: NavItem[];
-  disabled?: boolean;
+  textValue?: string | undefined;
+  icon?: ReactNode | undefined;
+  href?: string | undefined;
+  items?: NavItem[] | undefined;
+  disabled?: boolean | undefined;
 }
 
 export interface NavItemProps {
   id: string;
   /** The label as text. Required when the label is not a string: it names the item's dropdown and its rows. */
-  textValue?: string;
-  href?: string;
-  icon?: ReactNode;
-  disabled?: boolean;
+  textValue?: string | undefined;
+  href?: string | undefined;
+  icon?: ReactNode | undefined;
+  disabled?: boolean | undefined;
   /** A `Menu` block with the sub-pages. */
-  menu?: ReactNode;
+  menu?: ReactNode | undefined;
   /** The label. */
-  children?: ReactNode;
+  children?: ReactNode | undefined;
 }
 
 export interface NavRootProps {
   /** The active item. */
-  value?: string;
+  value?: string | undefined;
   /** Called with the id of the item the user chose. */
-  onChange?: (id: string) => void;
+  onChange?: ((id: string) => void) | undefined;
   /** Plugs in the app's router link. Defaults to a plain `<a>`. */
-  renderLink?: (props: LinkRenderProps) => ReactNode;
+  renderLink?: ((props: LinkRenderProps) => ReactNode) | undefined;
   /** Label of the overflow item. */
-  moreLabel?: string;
+  moreLabel?: string | undefined;
   /** Accessible name of the caret that opens an item's dropdown, from the item's label. */
-  submenuLabel?: (label: string) => string;
+  submenuLabel?: ((label: string) => string) | undefined;
   /** Accessible name of the navigation landmark. */
-  'aria-label'?: string;
-  className?: string;
-  style?: CSSProperties;
-  children?: ReactNode;
+  'aria-label'?: string | undefined;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
+  children?: ReactNode | undefined;
 }
 
 interface NavContextValue {
@@ -95,7 +95,9 @@ function textOf({ id, textValue, children }: NavItemProps) {
 /** The sub-pages given in an item's `menu`, as elements. */
 const subItems = (menu: ReactNode) =>
   Children.toArray(
-    isValidElement<{ children?: ReactNode }>(menu) && menu.type === Menu ? menu.props.children : menu,
+    isValidElement<{ children?: ReactNode | undefined }>(menu) && menu.type === Menu
+      ? menu.props.children
+      : menu,
   ).filter(isValidElement) as ReactElement<NavItemProps>[];
 
 /**
@@ -243,7 +245,7 @@ export function Item(props: NavItemProps) {
 }
 
 /** The dropdown of an item: its children are `Item`s. */
-export function Menu({ children }: { children?: ReactNode }) {
+export function Menu({ children }: { children?: ReactNode | undefined }) {
   return children;
 }
 
@@ -282,11 +284,13 @@ function More({ label, nav, children }: { label: string; nav: NavContextValue; c
 }
 
 interface NavListProps extends Omit<NavRootProps, 'className' | 'style' | 'aria-label'> {
-  parts?: { indicator?: Part; more?: Part<{ label: string; children: ReactNode }> };
+  parts?:
+    | { indicator?: Part | undefined; more?: Part<{ label: string; children: ReactNode }> | undefined }
+    | undefined;
   /** Further shrink steps after every movable item is in "More" (SubNav hides its label). */
-  extraSteps?: number;
+  extraSteps?: number | undefined;
   /** Called with how many of the extra steps are in use. */
-  onExtraSteps?: (count: number) => void;
+  onExtraSteps?: ((count: number) => void) | undefined;
 }
 
 /**

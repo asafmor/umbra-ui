@@ -26,6 +26,7 @@ import styles from './Modal.module.css';
 import { OverlayContainerContext } from '../internal/contexts';
 import { focusableIn, moveFocusFrom } from '../internal/focus';
 import { useReturnFocusOnClose, useOpenState } from './shared';
+import { defined } from '../utils/defined';
 
 export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'full';
 export type ModalVariant = 'dialog' | 'alertdialog' | 'drawer';
@@ -56,36 +57,36 @@ function useModal() {
 }
 
 interface BlockProps {
-  className?: string;
-  style?: CSSProperties;
-  children?: ReactNode;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
+  children?: ReactNode | undefined;
 }
 
 export interface ModalRootProps {
   /** Controlled open state. */
-  open?: boolean;
-  defaultOpen?: boolean;
-  onOpenChange?: (open: boolean) => void;
+  open?: boolean | undefined;
+  defaultOpen?: boolean | undefined;
+  onOpenChange?: ((open: boolean) => void) | undefined;
   /** Called before the modal closes, however it was asked to. Return `false` to keep it open (unsaved changes). */
-  onRequestClose?: () => boolean | void;
+  onRequestClose?: (() => boolean | void) | undefined;
   /** `alertdialog` asks for a decision: no outside press, no close button. `drawer` slides in from an edge. */
-  variant?: ModalVariant;
+  variant?: ModalVariant | undefined;
   /** The edge a `drawer` is attached to. */
-  side?: 'start' | 'end' | 'bottom';
+  side?: 'start' | 'end' | 'bottom' | undefined;
   /** Width. `full` fills the window minus a margin. A bottom drawer is always as wide as the window. */
-  size?: ModalSize;
+  size?: ModalSize | undefined;
   /** `auto`: as tall as the content, up to the window. `fill`: always the full available height. */
-  height?: 'auto' | 'fill';
-  dismissOnEscape?: boolean;
+  height?: 'auto' | 'fill' | undefined;
+  dismissOnEscape?: boolean | undefined;
   /** Default: true, and always false for an `alertdialog`. */
-  dismissOnOutsidePress?: boolean;
+  dismissOnOutsidePress?: boolean | undefined;
   /** Focused when the modal opens, instead of its first control. An element marked `data-autofocus` works too. */
-  initialFocusRef?: RefObject<HTMLElement | null>;
+  initialFocusRef?: RefObject<HTMLElement | null> | undefined;
   /** Heading level of the title. */
-  headingLevel?: 1 | 2 | 3 | 4 | 5 | 6;
+  headingLevel?: 1 | 2 | 3 | 4 | 5 | 6 | undefined;
   /** Accessible name, for a modal without a title. */
-  'aria-label'?: string;
-  children?: ReactNode;
+  'aria-label'?: string | undefined;
+  children?: ReactNode | undefined;
 }
 
 function Root({
@@ -177,7 +178,7 @@ function Overlay({ className, style, children }: BlockProps) {
       data-side={modal.variant === 'drawer' ? modal.side : undefined}
       data-narrow={narrow || undefined}
       data-instant={modal.instant || undefined}
-      className={cx(styles.backdrop, className)}
+      {...defined({ className: cx(styles.backdrop, className) })}
       style={{ ...scope.style, ...style }}
     >
       <OverlayContainerContext value={backdrop}>{children}</OverlayContainerContext>
@@ -258,16 +259,17 @@ function Content({ className, style, children }: BlockProps) {
       data-size={modal.size}
       data-height={modal.height}
       data-narrow={narrow || undefined}
-      className={cx(styles.panel, className)}
-      style={style}
+      {...defined({ className: cx(styles.panel, className), style })}
     >
       <Dialog
         ref={dialog}
         role={modal.variant === 'alertdialog' ? 'alertdialog' : 'dialog'}
-        aria-label={modal.ariaLabel}
-        aria-labelledby={modal.ariaLabel || !has.title ? undefined : modal.titleId}
-        aria-describedby={has.description ? modal.descriptionId : undefined}
-        className={styles.dialog}
+        {...defined({
+          'aria-label': modal.ariaLabel,
+          'aria-labelledby': modal.ariaLabel || !has.title ? undefined : modal.titleId,
+          'aria-describedby': has.description ? modal.descriptionId : undefined,
+          className: styles.dialog,
+        })}
       >
         {/* Layout children inside the modal belong to it, not to the layout it was opened from. */}
         <LayoutProvider value={null}>{children}</LayoutProvider>
@@ -301,9 +303,9 @@ function Description({ className, style, children }: BlockProps) {
 
 export interface ModalCloseProps extends Omit<ButtonProps, 'href' | 'type' | 'children'> {
   /** A label makes it a text button (for a footer). Without one it is the close icon button. */
-  children?: ReactNode;
+  children?: ReactNode | undefined;
   /** Accessible name of the icon button. */
-  label?: string;
+  label?: string | undefined;
 }
 
 /** A button that closes the modal, after its own `onPress`. */
@@ -334,21 +336,23 @@ function Close({ children, label = 'Close', onPress, ...button }: ModalCloseProp
 
 export interface ModalHeaderProps extends BlockProps {
   /** Leading icon or image. */
-  icon?: ReactNode;
-  title?: ReactNode;
+  icon?: ReactNode | undefined;
+  title?: ReactNode | undefined;
   /** A line under the title. It is also what a screen reader hears as the modal's description. */
-  description?: ReactNode;
+  description?: ReactNode | undefined;
   /** Default: false, and true for an `alertdialog`. */
-  hideClose?: boolean;
+  hideClose?: boolean | undefined;
   /** Accessible name of the close button. */
-  closeLabel?: string;
+  closeLabel?: string | undefined;
   /** Replace or hide named pieces. */
-  parts?: {
-    icon?: Part<{ children: ReactNode }>;
-    title?: Part<BlockProps>;
-    description?: Part<BlockProps>;
-    close?: Part<ModalCloseProps>;
-  };
+  parts?:
+    | {
+        icon?: Part<{ children: ReactNode }> | undefined;
+        title?: Part<BlockProps> | undefined;
+        description?: Part<BlockProps> | undefined;
+        close?: Part<ModalCloseProps> | undefined;
+      }
+    | undefined;
 }
 
 function Header({
@@ -393,7 +397,7 @@ function Toolbar({ className, style, children }: BlockProps) {
 
 export interface ModalNavProps extends BlockProps {
   /** Text of the toggle that shows the navigation below the minimum window. */
-  label?: string;
+  label?: string | undefined;
 }
 
 /** A side column at the start. Below the minimum window it moves behind a toggle above the body. */
@@ -440,7 +444,7 @@ function Nav({ label = 'Sections', className, style, children }: ModalNavProps) 
 export interface ModalBodyProps
   extends BlockProps, Pick<ScrollAreaProps, 'axis' | 'scrollbar' | 'fade' | 'onReachEnd'> {
   /** `none` for edge-to-edge tables and media. */
-  padding?: 'default' | 'none';
+  padding?: 'default' | 'none' | undefined;
 }
 
 /** The content. It scrolls inside the modal; the page never does. */
@@ -466,28 +470,30 @@ export interface ModalProps
     Pick<ModalHeaderProps, 'icon' | 'title' | 'description' | 'hideClose' | 'closeLabel'>,
     BlockProps {
   /** A button that opens the modal. Leave out to control it with `open`. */
-  trigger?: ReactNode;
+  trigger?: ReactNode | undefined;
   /** Tabs or filters that stay fixed under the header. */
-  toolbar?: ReactNode;
+  toolbar?: ReactNode | undefined;
   /** Side navigation at the start: the panel becomes two columns. */
-  nav?: ReactNode;
+  nav?: ReactNode | undefined;
   /** Text of the toggle that shows `nav` below the minimum window. */
-  navLabel?: string;
+  navLabel?: string | undefined;
   /** Status and actions, fixed below the body. */
-  footer?: ReactNode;
+  footer?: ReactNode | undefined;
   /** `none` for an edge-to-edge body. */
-  padding?: 'default' | 'none';
+  padding?: 'default' | 'none' | undefined;
   /** Replace or hide named pieces. */
-  parts?: {
-    header?: Part<ModalHeaderProps>;
-    title?: Part<BlockProps>;
-    description?: Part<BlockProps>;
-    close?: Part<ModalCloseProps>;
-    toolbar?: Part<{ children: ReactNode }>;
-    nav?: Part<ModalNavProps>;
-    body?: Part<ModalBodyProps>;
-    footer?: Part<{ children: ReactNode }>;
-  };
+  parts?:
+    | {
+        header?: Part<ModalHeaderProps> | undefined;
+        title?: Part<BlockProps> | undefined;
+        description?: Part<BlockProps> | undefined;
+        close?: Part<ModalCloseProps> | undefined;
+        toolbar?: Part<{ children: ReactNode }> | undefined;
+        nav?: Part<ModalNavProps> | undefined;
+        body?: Part<ModalBodyProps> | undefined;
+        footer?: Part<{ children: ReactNode }> | undefined;
+      }
+    | undefined;
 }
 
 /**
@@ -559,24 +565,26 @@ export interface ConfirmDialogProps
     BlockProps {
   title: ReactNode;
   /** What will happen, in a sentence. */
-  description?: ReactNode;
-  confirmLabel?: string;
-  cancelLabel?: string;
+  description?: ReactNode | undefined;
+  confirmLabel?: string | undefined;
+  cancelLabel?: string | undefined;
   /** `danger` makes the confirm button a danger button. */
-  tone?: 'default' | 'danger';
+  tone?: 'default' | 'danger' | undefined;
   /**
    * Called on confirm. When it returns a promise, the confirm button shows `loading` until it settles:
    * the dialog closes when it resolves and stays open when it rejects.
    */
-  onConfirm?: () => void | Promise<unknown>;
-  onCancel?: () => void;
+  onConfirm?: (() => void | Promise<unknown>) | undefined;
+  onCancel?: (() => void) | undefined;
   /** What a screen reader hears while the confirm action runs. */
-  loadingLabel?: string;
+  loadingLabel?: string | undefined;
   /** Replace or hide named pieces. */
-  parts?: {
-    cancel?: Part<ButtonProps>;
-    confirm?: Part<ButtonProps>;
-  };
+  parts?:
+    | {
+        cancel?: Part<ButtonProps> | undefined;
+        confirm?: Part<ButtonProps> | undefined;
+      }
+    | undefined;
 }
 
 /**

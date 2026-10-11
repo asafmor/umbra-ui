@@ -37,6 +37,7 @@ import {
   useOverlayLayer,
   type OverlayPlacement,
 } from './shared';
+import { defined } from '../utils/defined';
 
 interface PopoverContextValue {
   titleId: string;
@@ -50,21 +51,21 @@ function usePopover() {
 }
 
 interface BlockProps {
-  className?: string;
-  style?: CSSProperties;
-  children?: ReactNode;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
+  children?: ReactNode | undefined;
 }
 
 interface OpenProps {
   /** Controlled state. */
-  open?: boolean;
-  defaultOpen?: boolean;
-  onOpenChange?: (open: boolean) => void;
+  open?: boolean | undefined;
+  defaultOpen?: boolean | undefined;
+  onOpenChange?: ((open: boolean) => void) | undefined;
 }
 
 export interface PopoverRootProps extends OpenProps {
   /** A `Popover.Trigger` and a `Popover.Content`. */
-  children?: ReactNode;
+  children?: ReactNode | undefined;
 }
 
 function Root({ open, defaultOpen, onOpenChange, children }: PopoverRootProps) {
@@ -77,7 +78,7 @@ function Root({ open, defaultOpen, onOpenChange, children }: PopoverRootProps) {
 }
 
 /** The control that opens the popover: an umbra-ui button, or a plain `<button>`. */
-function Trigger({ children }: { children?: ReactNode }) {
+function Trigger({ children }: { children?: ReactNode | undefined }) {
   return isValidElement(children) && typeof children.type === 'string' ? (
     <Pressable>{children as React.ReactElement<React.DOMAttributes<HTMLElement>, string>}</Pressable>
   ) : (
@@ -87,25 +88,25 @@ function Trigger({ children }: { children?: ReactNode }) {
 
 export interface PopoverContentProps extends OpenProps, Omit<BlockProps, 'children'> {
   /** The element to open against, when there is no `Popover.Trigger`. Use it with `open`. */
-  anchorRef?: RefObject<Element | null>;
+  anchorRef?: RefObject<Element | null> | undefined;
   /** Side of the anchor and alignment along it. It flips to the other side to stay in the window. */
-  placement?: OverlayPlacement;
+  placement?: OverlayPlacement | undefined;
   /** Gap between the anchor and the panel, in pixels. */
-  offset?: number;
+  offset?: number | undefined;
   /** Gives the panel the width of its anchor. */
-  matchAnchorWidth?: boolean;
+  matchAnchorWidth?: boolean | undefined;
   /** Tallest the panel may be, in pixels. It is never taller than the room in the window; the body scrolls. */
-  maxHeight?: number;
+  maxHeight?: number | undefined;
   /** `large` is a wide panel with room for a toolbar and a footer. */
-  size?: 'default' | 'large';
+  size?: 'default' | 'large' | undefined;
   /** A small pointer towards the anchor. */
-  arrow?: boolean;
+  arrow?: boolean | undefined;
   /** Accessible name, when there is no title. */
-  'aria-label'?: string;
+  'aria-label'?: string | undefined;
   /** Closes when keyboard focus leaves the panel. Escape and a press outside always close it. */
-  dismissOnBlur?: boolean;
+  dismissOnBlur?: boolean | undefined;
   /** The blocks. A function receives `close`. */
-  children?: ReactNode | ((close: () => void) => ReactNode);
+  children?: ReactNode | ((close: () => void) => ReactNode) | undefined;
 }
 
 const ARROW = 6;
@@ -247,16 +248,16 @@ function Content({
   return (
     <AriaPopover
       {...scope}
-      {...layer}
+      {...defined(layer)}
       ref={setPanel}
-      triggerRef={anchor}
+      {...defined({ triggerRef: anchor })}
       isOpen={isOpen}
       onOpenChange={setOpen}
       // Not modal: the page behind stays usable, and there is no backdrop.
       isNonModal
       placement={toAriaPlacement(placement)}
       offset={offset + (arrow ? ARROW : 0)}
-      maxHeight={cap}
+      {...defined({ maxHeight: cap })}
       // Without a backdrop this only decides whether focus leaving the panel closes it.
       shouldCloseOnInteractOutside={(element) =>
         dismissOnBlur &&
@@ -272,20 +273,24 @@ function Content({
           role="dialog"
           tabIndex={-1}
           // A `label` names the dialog; the trigger's id, which React Aria adds by itself, would win over it.
-          aria-labelledby={label ? undefined : (props as { 'aria-labelledby'?: string })['aria-labelledby']}
+          aria-labelledby={
+            label ? undefined : (props as { 'aria-labelledby'?: string | undefined })['aria-labelledby']
+          }
         />
       )}
-      aria-label={label}
-      aria-labelledby={label ? undefined : hasTitle ? titleId : fromTrigger?.['aria-labelledby']}
+      {...defined({
+        'aria-label': label,
+        'aria-labelledby': label ? undefined : hasTitle ? titleId : fromTrigger?.['aria-labelledby'],
+      })}
       data-umbra="popover"
       data-umbra-overlay=""
       data-size={size}
       data-match-width={matchAnchorWidth || undefined}
-      className={cx(styles.root, className)}
+      {...defined({ className: cx(styles.root, className) })}
       style={{ ...scope.style, ...style }}
     >
       {arrow && (
-        <OverlayArrow data-part="arrow" className={styles.arrow}>
+        <OverlayArrow data-part="arrow" {...defined({ className: styles.arrow })}>
           <svg width={ARROW * 2} height={ARROW} viewBox="0 0 12 6" aria-hidden="true">
             <path d="M0 0 L6 6 L12 0" />
           </svg>
@@ -301,17 +306,17 @@ function Content({
 }
 
 export interface PopoverHeaderProps extends BlockProps {
-  title?: ReactNode;
+  title?: ReactNode | undefined;
   /** Second line, in the body font. */
-  subtitle?: ReactNode;
+  subtitle?: ReactNode | undefined;
   /** Trailing controls, for example the popover's main action. */
-  actions?: ReactNode;
+  actions?: ReactNode | undefined;
   /** Shows a close button. */
-  closeButton?: boolean;
+  closeButton?: boolean | undefined;
   /** Accessible name of the close button. */
-  closeLabel?: string;
+  closeLabel?: string | undefined;
   /** Heading level of the title. */
-  headingLevel?: 2 | 3 | 4 | 5 | 6;
+  headingLevel?: 2 | 3 | 4 | 5 | 6 | undefined;
 }
 
 function Header({
@@ -370,7 +375,7 @@ function Toolbar({ className, style, children }: BlockProps) {
 export interface PopoverBodyProps
   extends BlockProps, Pick<ScrollAreaProps, 'axis' | 'scrollbar' | 'fade' | 'onReachEnd'> {
   /** `none` for edge-to-edge lists and tables. */
-  padding?: 'default' | 'none';
+  padding?: 'default' | 'none' | undefined;
 }
 
 function Body({ padding = 'default', className, children, ...scroll }: PopoverBodyProps) {
@@ -395,20 +400,22 @@ export interface PopoverProps
     Pick<PopoverHeaderProps, 'title' | 'subtitle' | 'actions' | 'closeButton' | 'closeLabel'>,
     Pick<PopoverBodyProps, 'padding'> {
   /** The control that opens it: an umbra-ui button, or a plain `<button>`. Leave it out to use `anchorRef`. */
-  trigger?: ReactNode;
+  trigger?: ReactNode | undefined;
   /** Filters or tabs that stay fixed above the body. */
-  toolbar?: ReactNode;
+  toolbar?: ReactNode | undefined;
   /** Status or actions fixed below the body. */
-  footer?: ReactNode;
+  footer?: ReactNode | undefined;
   /** The body. A function receives `close`. */
-  children?: ReactNode | ((close: () => void) => ReactNode);
+  children?: ReactNode | ((close: () => void) => ReactNode) | undefined;
   /** Replace or hide named pieces. */
-  parts?: {
-    header?: Part<PopoverHeaderProps>;
-    toolbar?: Part<{ children: ReactNode }>;
-    body?: Part<PopoverBodyProps>;
-    footer?: Part<{ children: ReactNode }>;
-  };
+  parts?:
+    | {
+        header?: Part<PopoverHeaderProps> | undefined;
+        toolbar?: Part<{ children: ReactNode }> | undefined;
+        body?: Part<PopoverBodyProps> | undefined;
+        footer?: Part<{ children: ReactNode }> | undefined;
+      }
+    | undefined;
 }
 
 /**

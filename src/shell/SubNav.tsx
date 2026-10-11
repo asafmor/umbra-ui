@@ -13,9 +13,9 @@ import {
 import styles from './SubNav.module.css';
 
 interface BlockProps {
-  className?: string;
-  style?: CSSProperties;
-  children?: ReactNode;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
+  children?: ReactNode | undefined;
 }
 
 function Label({ className, style, children }: BlockProps) {
@@ -36,7 +36,9 @@ function End({ className, style, children }: BlockProps) {
 
 export interface SubNavRootProps extends NavRootProps {
   /** Replace or hide named pieces. */
-  parts?: { indicator?: Part; more?: Part<{ label: string; children: ReactNode }> };
+  parts?:
+    | { indicator?: Part | undefined; more?: Part<{ label: string; children: ReactNode }> | undefined }
+    | undefined;
 }
 
 interface FrameProps extends SubNavRootProps {
@@ -74,17 +76,19 @@ function Root({ children, ...frame }: SubNavRootProps) {
 
 export interface SubNavProps extends Omit<SubNavRootProps, 'children' | 'parts'> {
   /** The section name. */
-  label?: ReactNode;
+  label?: ReactNode | undefined;
   /** The pages of the section. Same shape as `PrimaryNav`. */
-  items?: NavItem[];
+  items?: NavItem[] | undefined;
   /** Free slot at the end, normally a `ShortcutBar`. Its content is never clipped. */
-  end?: ReactNode;
+  end?: ReactNode | undefined;
   /** Replace or hide named pieces. */
-  parts?: SubNavRootProps['parts'] & {
-    label?: Part<{ children: ReactNode }>;
-    item?: Part<NavItemProps>;
-    end?: Part<{ children: ReactNode }>;
-  };
+  parts?:
+    | (SubNavRootProps['parts'] & {
+        label?: Part<{ children: ReactNode }> | undefined;
+        item?: Part<NavItemProps> | undefined;
+        end?: Part<{ children: ReactNode }> | undefined;
+      })
+    | undefined;
 }
 
 /** The second bar: the pages of the current section, and room for shortcuts at the end. */

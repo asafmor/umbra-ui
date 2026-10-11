@@ -8,20 +8,20 @@ import shared from './shared.module.css';
 
 export interface LinkRootProps {
   /** Where it goes. Without it the link is a button that calls `onPress`. */
-  href?: string;
-  onPress?: () => void;
+  href?: string | undefined;
+  onPress?: (() => void) | undefined;
   /** Opens in a new tab, with `rel="noopener noreferrer"`. */
-  external?: boolean;
+  external?: boolean | undefined;
   /** Plugs in the app's router link. Defaults to a plain `<a>`. */
-  renderLink?: (props: LinkRenderProps) => ReactNode;
-  disabled?: boolean;
+  renderLink?: ((props: LinkRenderProps) => ReactNode) | undefined;
+  disabled?: boolean | undefined;
   /** `inline` sits in a sentence and wraps with it. `standalone` is one line on its own ("See all"). */
-  variant?: 'inline' | 'standalone';
+  variant?: 'inline' | 'standalone' | undefined;
   /** `neutral` takes the colour of the text around it. */
-  tone?: 'accent' | 'neutral';
-  className?: string;
-  style?: CSSProperties;
-  children?: ReactNode;
+  tone?: 'accent' | 'neutral' | undefined;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
+  children?: ReactNode | undefined;
 }
 
 const plainLink = (props: LinkRenderProps) => <a {...props} />;
@@ -77,21 +77,23 @@ function Label({ className, style, children }: IconPartProps) {
   );
 }
 
-function LinkIcon(props: IconPartProps & { part?: string }) {
+function LinkIcon(props: IconPartProps & { part?: string | undefined }) {
   return <IconPart {...props} />;
 }
 
 export interface LinkProps extends LinkRootProps {
   /** Adds a trailing chevron: "See all ›". */
-  chevron?: boolean;
+  chevron?: boolean | undefined;
   /** What a screen reader hears after the text of an `external` link. */
-  externalLabel?: string;
+  externalLabel?: string | undefined;
   /** Replace or hide named pieces. */
-  parts?: {
-    label?: Part<{ children: ReactNode }>;
-    externalIcon?: Part<{ label: string }>;
-    chevron?: Part;
-  };
+  parts?:
+    | {
+        label?: Part<{ children: ReactNode }> | undefined;
+        externalIcon?: Part<{ label: string }> | undefined;
+        chevron?: Part | undefined;
+      }
+    | undefined;
 }
 
 /** A text link: inside a sentence, or on its own line as the way to a fuller view. */

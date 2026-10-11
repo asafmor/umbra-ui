@@ -16,7 +16,7 @@ export function Hint({ id }: { id: string }) {
 }
 
 /** Internal: the mark of a checked row. Also used by buttons shown as rows of an overflow menu. */
-export function CheckMark({ shown, part }: { shown: boolean; part?: Part }) {
+export function CheckMark({ shown, part }: { shown: boolean; part?: Part | undefined }) {
   return (
     <span data-part="check" className={styles.check} aria-hidden="true">
       {shown && renderPart(part, {}, () => <RawIcon name="check" />)}

@@ -10,6 +10,7 @@ import {
 import { Tooltip as AriaTooltip, TooltipTriggerStateContext } from 'react-aria-components';
 import tooltipStyles from '../overlays/Tooltip.module.css';
 import { useScopeAttributes } from '../provider/UmbraProvider';
+import { defined } from '../utils/defined';
 
 /** Milliseconds before the tip shows on hover, as for `Tooltip`. Keyboard focus shows it at once. */
 const HOVER_DELAY = 500;
@@ -99,7 +100,7 @@ export function useHoverTip(
         offset={6}
         data-umbra="tooltip"
         data-umbra-overlay=""
-        className={tooltipStyles.root}
+        {...defined({ className: tooltipStyles.root })}
         style={scope.style}
       >
         <span data-part="body" className={tooltipStyles.body}>
@@ -123,12 +124,12 @@ export function TruncatedText({
   className,
   style,
 }: {
-  children?: ReactNode;
-  part?: string;
+  children?: ReactNode | undefined;
+  part?: string | undefined;
   /** The text sits under its control's hit area (the value of a `Select`): hovering the control shows the tip. */
-  hoverOwner?: boolean;
-  className?: string;
-  style?: CSSProperties;
+  hoverOwner?: boolean | undefined;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
 }) {
   const ref = useRef<HTMLSpanElement>(null);
   const tip = useTruncatedTip(ref, children, hoverOwner);

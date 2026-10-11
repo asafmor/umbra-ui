@@ -6,8 +6,8 @@ type Direction = 'ltr' | 'rtl';
 export function textDirection(locale: string): Direction | undefined {
   try {
     const info = new Intl.Locale(locale) as Intl.Locale & {
-      getTextInfo?: () => { direction: Direction };
-      textInfo?: { direction: Direction };
+      getTextInfo?: (() => { direction: Direction }) | undefined;
+      textInfo?: { direction: Direction } | undefined;
     };
     return info.getTextInfo?.().direction ?? info.textInfo?.direction ?? 'ltr';
   } catch {

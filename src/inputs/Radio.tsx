@@ -16,6 +16,7 @@ import {
 } from './fieldParts';
 import styles from './Radio.module.css';
 import { FieldContext, noField, useFieldControl } from './useField';
+import { defined } from '../utils/defined';
 
 export type RadioVariant = 'default' | 'card';
 
@@ -24,9 +25,9 @@ const VariantContext = createContext<RadioVariant>('default');
 export interface RadioRootProps extends BlockProps {
   /** What the group's `value` is when this option is chosen. */
   value: string;
-  disabled?: boolean;
+  disabled?: boolean | undefined;
   /** Accessible name of an option that has no visible label. */
-  'aria-label'?: string;
+  'aria-label'?: string | undefined;
 }
 
 function Root({ value, disabled, 'aria-label': ariaLabel, className, style, children }: RadioRootProps) {
@@ -36,13 +37,14 @@ function Root({ value, disabled, 'aria-label': ariaLabel, className, style, chil
     <AriaRadio
       data-umbra="radio"
       data-variant={useContext(VariantContext)}
-      className={cx(styles.root, className)}
-      style={style}
+      {...defined({ className: cx(styles.root, className), style })}
       value={value}
-      isDisabled={disabled}
-      aria-label={ariaLabel}
-      aria-labelledby={slots.labelledBy || undefined}
-      aria-describedby={describedBy || undefined}
+      {...defined({
+        isDisabled: disabled,
+        'aria-label': ariaLabel,
+        'aria-labelledby': slots.labelledBy || undefined,
+        'aria-describedby': describedBy || undefined,
+      })}
     >
       <TextSlotsProvider value={slots}>{children}</TextSlotsProvider>
     </AriaRadio>
@@ -77,18 +79,20 @@ function Description(props: BlockProps) {
 
 export interface RadioProps extends Omit<RadioRootProps, 'children'> {
   /** The label; the title of a `card` option. */
-  children?: ReactNode;
+  children?: ReactNode | undefined;
   /** A second line under the label. */
-  description?: ReactNode;
+  description?: ReactNode | undefined;
   /** An icon or a small image, shown by the `card` variant. It hides when the card is narrow. */
-  media?: ReactNode;
+  media?: ReactNode | undefined;
   /** Replace or hide named pieces. */
-  parts?: {
-    mark?: Part<BlockProps>;
-    media?: Part<{ children: ReactNode }>;
-    label?: Part<{ children: ReactNode }>;
-    description?: Part<{ children: ReactNode }>;
-  };
+  parts?:
+    | {
+        mark?: Part<BlockProps> | undefined;
+        media?: Part<{ children: ReactNode }> | undefined;
+        label?: Part<{ children: ReactNode }> | undefined;
+        description?: Part<{ children: ReactNode }> | undefined;
+      }
+    | undefined;
 }
 
 /** One option of a `RadioGroup`. */
@@ -119,24 +123,24 @@ Radio.Description = Description;
 
 export interface RadioGroupRootProps extends BlockProps {
   /** Controlled: the `value` of the chosen option. */
-  value?: string | null;
-  defaultValue?: string;
-  onChange?: (value: string) => void;
+  value?: string | null | undefined;
+  defaultValue?: string | undefined;
+  onChange?: ((value: string) => void) | undefined;
   /** `default`: a dot and a label. `card`: a bordered tile with a title, a description and an icon. */
-  variant?: RadioVariant;
+  variant?: RadioVariant | undefined;
   /** The direction of the options, and of the arrow keys that move between them. */
-  orientation?: 'vertical' | 'horizontal';
-  disabled?: boolean;
-  readOnly?: boolean;
-  invalid?: boolean;
-  required?: boolean;
+  orientation?: 'vertical' | 'horizontal' | undefined;
+  disabled?: boolean | undefined;
+  readOnly?: boolean | undefined;
+  invalid?: boolean | undefined;
+  required?: boolean | undefined;
   /** The text of the required marker after the group label. */
-  requiredLabel?: string;
+  requiredLabel?: string | undefined;
   /** Form field name. */
-  name?: string;
-  id?: string;
+  name?: string | undefined;
+  id?: string | undefined;
   /** Accessible name of a group that has no visible label. */
-  'aria-label'?: string;
+  'aria-label'?: string | undefined;
 }
 
 function GroupRoot({
@@ -170,21 +174,19 @@ function GroupRoot({
     <AriaRadioGroup
       data-umbra="radio-group"
       data-variant={variant}
-      className={cx(groupClass, className)}
-      style={style}
-      value={value}
-      defaultValue={defaultValue}
-      onChange={onChange}
+      {...defined({ className: cx(groupClass, className), style, value, defaultValue, onChange })}
       orientation={orientation}
       isDisabled={control.disabled}
-      isReadOnly={readOnly}
+      {...defined({ isReadOnly: readOnly })}
       isInvalid={control.invalid}
       isRequired={control.required}
-      name={name}
-      id={control.id}
-      aria-label={ariaLabel}
-      aria-labelledby={control.labelledBy}
-      aria-describedby={control.describedBy}
+      {...defined({
+        name,
+        id: control.id,
+        'aria-label': ariaLabel,
+        'aria-labelledby': control.labelledBy,
+        'aria-describedby': control.describedBy,
+      })}
     >
       <TextSlotsProvider
         value={{ ...slots, marker: required && <Marker kind="required">{requiredLabel}</Marker> }}
@@ -206,25 +208,27 @@ function GroupLabel(props: BlockProps) {
 
 export interface RadioGroupProps extends Omit<RadioGroupRootProps, 'children'> {
   /** The options. */
-  children?: ReactNode;
+  children?: ReactNode | undefined;
   /** The group's label. */
-  label?: ReactNode;
+  label?: ReactNode | undefined;
   /** A line under the label. */
-  description?: ReactNode;
+  description?: ReactNode | undefined;
   /** An error message under the options, shown with an icon. Setting it makes the group invalid. */
-  error?: ReactNode;
+  error?: ReactNode | undefined;
   /**
    * Lays the options in a grid of at most this many columns; columns drop as the group narrows.
    * `card` options are always in a grid, of one column by default.
    */
-  columns?: number;
+  columns?: number | undefined;
   /** Replace or hide named pieces. */
-  parts?: {
-    label?: Part<{ children: ReactNode }>;
-    description?: Part<{ children: ReactNode }>;
-    options?: Part<{ columns?: number; children: ReactNode }>;
-    error?: Part<{ children: ReactNode }>;
-  };
+  parts?:
+    | {
+        label?: Part<{ children: ReactNode }> | undefined;
+        description?: Part<{ children: ReactNode }> | undefined;
+        options?: Part<{ columns?: number | undefined; children: ReactNode }> | undefined;
+        error?: Part<{ children: ReactNode }> | undefined;
+      }
+    | undefined;
 }
 
 /** A choice of exactly one option among a few, all visible at once. */

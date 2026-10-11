@@ -8,9 +8,9 @@ import { useMounted } from './useField';
 // controls, and the ids that tie them to the control for a screen reader.
 
 export interface BlockProps {
-  className?: string;
-  style?: CSSProperties;
-  children?: ReactNode;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
+  children?: ReactNode | undefined;
 }
 
 export interface TextSlots {
@@ -27,9 +27,9 @@ export interface TextSlots {
   hasDescription: boolean;
   hasError: boolean;
   /** Shown after the label: the "required" or "optional" marker. */
-  marker?: ReactNode;
+  marker?: ReactNode | undefined;
   /** The label is a `<label>` for this id. */
-  htmlFor?: string;
+  htmlFor?: string | undefined;
 }
 
 /**
@@ -139,7 +139,12 @@ export function SlotError({ className, style, children }: BlockProps) {
 }
 
 /** Holds the options of a group. `columns` lays them in a grid that drops columns as it narrows. */
-export function GroupOptions({ columns, className, style, children }: BlockProps & { columns?: number }) {
+export function GroupOptions({
+  columns,
+  className,
+  style,
+  children,
+}: BlockProps & { columns?: number | undefined }) {
   return (
     <div
       data-part="options"

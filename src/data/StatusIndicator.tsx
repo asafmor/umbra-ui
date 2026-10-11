@@ -18,21 +18,21 @@ const icons: Record<Status, ReactNode> = {
 };
 
 interface BlockProps {
-  className?: string;
-  style?: CSSProperties;
-  children?: ReactNode;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
+  children?: ReactNode | undefined;
 }
 
 export interface StatusIndicatorRootProps extends BlockProps {
-  status?: Status;
+  status?: Status | undefined;
   /** A custom colour (any CSS colour). Replaces the colour of `status`; the shape stays. */
-  color?: string;
+  color?: string | undefined;
   /** `dot`: a small shape. `icon`: the status icon. `label`: no mark, the label itself is coloured. */
-  variant?: 'dot' | 'icon' | 'label';
+  variant?: 'dot' | 'icon' | 'label' | undefined;
   /** Draws attention with a slow pulse around the dot. With reduced motion the dot stays still. */
-  pulse?: boolean;
+  pulse?: boolean | undefined;
   /** Names an indicator that has no visible label. */
-  'aria-label'?: string;
+  'aria-label'?: string | undefined;
 }
 
 function Root({
@@ -82,14 +82,16 @@ function Label({ className, style, children }: BlockProps) {
 
 export interface StatusIndicatorProps extends Omit<StatusIndicatorRootProps, 'children'> {
   /** The label. Without one, give `aria-label`. */
-  children?: ReactNode;
+  children?: ReactNode | undefined;
   /** Replaces the icon of the `icon` variant. */
-  icon?: ReactNode;
+  icon?: ReactNode | undefined;
   /** Replace or hide named pieces. */
-  parts?: {
-    indicator?: Part<{ children: ReactNode }>;
-    label?: Part<{ children: ReactNode }>;
-  };
+  parts?:
+    | {
+        indicator?: Part<{ children: ReactNode }> | undefined;
+        label?: Part<{ children: ReactNode }> | undefined;
+      }
+    | undefined;
 }
 
 /** A status as a dot or an icon with a label, or as a coloured label. */

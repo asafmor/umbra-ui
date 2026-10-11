@@ -2,8 +2,8 @@
 
 export interface Matchable {
   label: string;
-  description?: string;
-  keywords?: string[];
+  description?: string | undefined;
+  keywords?: string[] | undefined;
 }
 
 /** Rank of one match, best first. */

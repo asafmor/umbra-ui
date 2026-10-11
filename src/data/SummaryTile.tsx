@@ -12,25 +12,26 @@ import {
 } from '../internal/ChangeHighlight';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './SummaryTile.module.css';
+import { defined } from '../utils/defined';
 
 interface BlockProps {
-  className?: string;
-  style?: CSSProperties;
-  children?: ReactNode;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
+  children?: ReactNode | undefined;
 }
 
 export interface SummaryTileRootProps extends BlockProps, SlotProps {
   /** Makes the whole tile one link. */
-  href?: string;
+  href?: string | undefined;
   /** Makes the whole tile one button. */
-  onPress?: () => void;
+  onPress?: (() => void) | undefined;
   /** Marks the tile as the current one: a link gets `aria-current`, a button `aria-pressed`. */
-  selected?: boolean;
-  disabled?: boolean;
+  selected?: boolean | undefined;
+  disabled?: boolean | undefined;
   /** Marks the tile busy for assistive technology. */
-  loading?: boolean;
+  loading?: boolean | undefined;
   /** Accessible name, when the content does not name the tile. */
-  'aria-label'?: string;
+  'aria-label'?: string | undefined;
 }
 
 function Root({
@@ -62,16 +63,21 @@ function Root({
     >
       {href !== undefined ? (
         <AriaLink
-          {...surface}
+          {...defined(surface)}
           href={href}
-          onPress={onPress}
+          {...defined({ onPress })}
           isDisabled={disabled}
-          aria-current={selected ? 'true' : undefined}
+          {...defined({ 'aria-current': selected ? 'true' : undefined })}
         >
           {children}
         </AriaLink>
       ) : onPress ? (
-        <AriaButton {...surface} onPress={onPress} isDisabled={disabled} aria-pressed={selected}>
+        <AriaButton
+          {...defined(surface)}
+          onPress={onPress}
+          isDisabled={disabled}
+          {...defined({ 'aria-pressed': selected })}
+        >
           {children}
         </AriaButton>
       ) : (
@@ -151,28 +157,30 @@ function Caption({ className, style, children }: BlockProps) {
 
 export interface SummaryTileProps extends Omit<SummaryTileRootProps, 'children'>, ChangeHighlightProps {
   /** Shown in a block at the start of the tile. */
-  icon?: ReactNode;
+  icon?: ReactNode | undefined;
   /** What the tile is about. */
-  title?: ReactNode;
+  title?: ReactNode | undefined;
   /** The one value the tile shows. `null`, `undefined` or an empty text shows `emptyLabel`, without the trend. */
-  value?: ReactNode;
+  value?: ReactNode | undefined;
   /** Shown when there is no value. */
-  emptyLabel?: ReactNode;
+  emptyLabel?: ReactNode | undefined;
   /** A secondary line under the value. */
-  caption?: ReactNode;
+  caption?: ReactNode | undefined;
   /** A node after the value that shows its direction, for example a `TrendArrow`. */
-  trend?: ReactNode;
+  trend?: ReactNode | undefined;
   /** Shows skeletons in place of the value and caption. */
-  loading?: boolean;
+  loading?: boolean | undefined;
   /** Replace or hide named pieces. */
-  parts?: {
-    icon?: Part<{ children: ReactNode }>;
-    title?: Part<{ children: ReactNode }>;
-    value?: Part<{ children: ReactNode }>;
-    trend?: Part<{ children: ReactNode }>;
-    caption?: Part<{ children: ReactNode }>;
-    skeleton?: Part;
-  };
+  parts?:
+    | {
+        icon?: Part<{ children: ReactNode }> | undefined;
+        title?: Part<{ children: ReactNode }> | undefined;
+        value?: Part<{ children: ReactNode }> | undefined;
+        trend?: Part<{ children: ReactNode }> | undefined;
+        caption?: Part<{ children: ReactNode }> | undefined;
+        skeleton?: Part | undefined;
+      }
+    | undefined;
 }
 
 const has = (node: ReactNode) => node != null && node !== false;
