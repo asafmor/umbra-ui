@@ -62,11 +62,12 @@ import {
   type SelectionMemo,
   type ColumnSize,
 } from './logic';
+import { defined } from '../utils/defined';
 
 interface BlockProps {
-  className?: string;
-  style?: CSSProperties;
-  children?: ReactNode;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
+  children?: ReactNode | undefined;
 }
 
 export type DataTableAlign = 'start' | 'center' | 'end';
@@ -87,7 +88,8 @@ export interface DataTableSort {
  * Pixels are written for the default density and scale with the cell font size (13px there), so a
  * width that fits its text at one density fits it at the others: 80 is 74px at compact and 86px at spacious.
  */
-export type DataTableColumnWidth = number | 'content' | { min?: number; max?: number; flex?: number };
+export type DataTableColumnWidth =
+  number | 'content' | { min?: number | undefined; max?: number | undefined; flex?: number | undefined };
 
 /** What a cell renderer receives besides the row. */
 export interface DataTableCellContext<Row> {
@@ -109,45 +111,45 @@ export interface DataTableColumn<Row> {
   /** Unique in the table. What `sort`, `columnGroups` and `onHiddenColumnsChange` refer to. */
   id: string;
   /** The header's content. */
-  header?: ReactNode;
+  header?: ReactNode | undefined;
   /** The header as text, for assistive technology and for the label of a hidden column, when `header` is not text. */
-  headerLabel?: string;
+  headerLabel?: string | undefined;
   /** A longer explanation of the column, read by assistive technology after the header. */
-  description?: string;
+  description?: string | undefined;
   /** A hint for the header, shown in a tooltip on hover and keyboard focus, and read after the header unless `description` is set. */
-  tooltip?: string;
+  tooltip?: string | undefined;
   /** Hides the header's content visually; it stays for assistive technology. */
-  hideHeader?: boolean;
+  hideHeader?: boolean | undefined;
   /** The value of a row in this column: a key of the row, or a function. Used to sort, and to render when there is no `cell`. */
-  accessor?: (keyof Row & string) | ((row: Row) => unknown);
+  accessor?: (keyof Row & string) | ((row: Row) => unknown) | undefined;
   /** Renders the cell. Without it, the cell shows the value as text. */
-  cell?: (row: Row, context: DataTableCellContext<Row>) => ReactNode;
+  cell?: ((row: Row, context: DataTableCellContext<Row>) => ReactNode) | undefined;
   /** Turns the value into text: for the cell, for its tooltip when truncated, and for `context.text`. */
-  format?: (value: unknown, row: Row) => string;
+  format?: ((value: unknown, row: Row) => string) | undefined;
   /** Default: `end` for a numeric column, otherwise `start`. */
-  align?: DataTableAlign;
+  align?: DataTableAlign | undefined;
   /** Tabular figures, and `end` alignment by default. Default: on when the first row's value is a number. */
-  numeric?: boolean;
+  numeric?: boolean | undefined;
   /** Default: `{ min: 96, flex: 1 }`. */
-  width?: DataTableColumnWidth;
+  width?: DataTableColumnWidth | undefined;
   /** Which columns hide first as the table narrows. Higher stays longer; equal priorities hide from the end. `always` never hides. Default 0. */
-  priority?: number | 'always';
+  priority?: number | 'always' | undefined;
   /** The header sorts the table by this column. */
-  sortable?: boolean;
+  sortable?: boolean | undefined;
   /** Compares two rows in ascending order. Default: by the `accessor` value (text in natural order, numbers, dates). */
-  sortFn?: (a: Row, b: Row) => number;
+  sortFn?: ((a: Row, b: Row) => number) | undefined;
   /** The first click sorts descending (largest first). */
-  sortDescFirst?: boolean;
+  sortDescFirst?: boolean | undefined;
   /** Lets the text wrap onto more lines. Default: one line, cut with an ellipsis. Wrapping rows are not virtualised. */
-  wrap?: boolean;
+  wrap?: boolean | undefined;
   /** Keeps the column in view while the table scrolls sideways. */
-  pin?: DataTablePin;
+  pin?: DataTablePin | undefined;
   /** The column's cell in the footer row: a node, or a function of the rows in their current order. */
-  footer?: ReactNode | ((rows: Row[]) => ReactNode);
+  footer?: ReactNode | ((rows: Row[]) => ReactNode) | undefined;
   /** The column's cell in each group header row, from that group's rows. Not for the first column, which holds the group's title. */
-  aggregate?: (rows: Row[]) => ReactNode;
+  aggregate?: ((rows: Row[]) => ReactNode) | undefined;
   /** Marks the column's cells as the header of their row. */
-  rowHeader?: boolean;
+  rowHeader?: boolean | undefined;
 }
 
 /** A header that spans several columns, in a row above the column headers. */
@@ -163,9 +165,9 @@ export interface DataTableGroup {
   /** The value `groupBy` returns for the rows of this group. */
   key: string;
   /** Default: the key. */
-  title?: ReactNode;
+  title?: ReactNode | undefined;
   /** Trailing text in the group header row. */
-  meta?: ReactNode;
+  meta?: ReactNode | undefined;
 }
 
 /** A coloured edge stripe on a row, and what it means. */
@@ -183,39 +185,39 @@ const pinStyle = (pin: DataTablePin | undefined, offset: number | undefined, sty
 
 export interface DataTableRootProps extends BlockProps {
   /** Accessible name of the table. Give this, `aria-labelledby` or `caption`. */
-  'aria-label'?: string;
-  'aria-labelledby'?: string;
+  'aria-label'?: string | undefined;
+  'aria-labelledby'?: string | undefined;
   /** Names the table. Read by assistive technology; shown above the table with `showCaption`. */
-  caption?: ReactNode;
-  showCaption?: boolean;
+  caption?: ReactNode | undefined;
+  showCaption?: boolean | undefined;
   /** Says that several rows can be selected. */
-  multiselectable?: boolean;
+  multiselectable?: boolean | undefined;
   /** Number of rows and columns in the whole table, when not all of them are rendered. */
-  rowCount?: number;
-  columnCount?: number;
+  rowCount?: number | undefined;
+  columnCount?: number | undefined;
   /** Width of the table in pixels. Sets a fixed column layout: give the widths in a `<colgroup>`. Default: as wide as the slot, columns sized by their content. */
-  width?: number;
+  width?: number | undefined;
   /** Number of header rows, so the second one and the group rows stick below the first. */
-  headerRows?: number;
+  headerRows?: number | undefined;
   /** A line under every row. */
-  dividers?: boolean;
+  dividers?: boolean | undefined;
   /**
    * `fill` (default) takes the height of the parent, and falls back to the content's height in a parent
    * that has none (flowing content, a popover, a modal body, an accordion panel). `content` is always
    * as tall as the content. A number is a height in pixels.
    */
-  height?: 'fill' | 'content' | number;
+  height?: 'fill' | 'content' | number | undefined;
   /** Marks the table busy for assistive technology. */
-  loading?: boolean;
+  loading?: boolean | undefined;
   /** Shown below the header in place of the rows: an empty or error state. */
-  state?: ReactNode;
+  state?: ReactNode | undefined;
   /** Text announced politely to assistive technology, for example while more rows load. */
-  announcement?: string;
+  announcement?: string | undefined;
   /** Called when the table is scrolled to its end. */
-  onReachEnd?: () => void;
+  onReachEnd?: (() => void) | undefined;
   /** Called on Ctrl or Cmd+A. Without it the key is left to the browser. */
-  onSelectAll?: () => void;
-  elementRef?: RefObject<HTMLDivElement | null>;
+  onSelectAll?: (() => void) | undefined;
+  elementRef?: RefObject<HTMLDivElement | null> | undefined;
 }
 
 /** The frame: a grid that scrolls inside its slot in both directions, with one tab stop and arrow keys. */
@@ -368,7 +370,7 @@ function Root({
             offset={6}
             data-umbra="tooltip"
             data-umbra-overlay=""
-            className={tipStyles.root}
+            {...defined({ className: tipStyles.root })}
           >
             <span data-part="body" className={tipStyles.body}>
               {tip.text}
@@ -409,7 +411,7 @@ export interface DataTableSortIndicatorProps {
   /** `none`: the column can be sorted and is not. */
   direction: DataTableSortDirection | 'none';
   /** The column's place in a sort by several columns, from 1. */
-  index?: number;
+  index?: number | undefined;
 }
 
 /** The arrow in a sortable header. The direction is its shape, not its colour. */
@@ -432,38 +434,38 @@ function SortIndicator({ direction, index }: DataTableSortIndicatorProps) {
 
 interface CellLayoutProps {
   /** The column's id: what the keyboard focus remembers. */
-  columnId?: string;
-  align?: DataTableAlign;
+  columnId?: string | undefined;
+  align?: DataTableAlign | undefined;
   /** Sticks the cell to an edge while the table scrolls sideways. */
-  pin?: DataTablePin;
+  pin?: DataTablePin | undefined;
   /** Distance from that edge in pixels: the widths of the pinned columns before it. */
-  pinOffset?: number;
+  pinOffset?: number | undefined;
   /** The last pinned cell at the start, or the first at the end: it shows the edge line. */
-  pinEdge?: boolean;
-  colSpan?: number;
+  pinEdge?: boolean | undefined;
+  colSpan?: number | undefined;
   /** Position of the column, from 1. */
-  index?: number;
+  index?: number | undefined;
 }
 
 export interface DataTableHeaderCellProps extends BlockProps, CellLayoutProps {
   /** Makes the header sortable, and shows the current direction. */
-  sort?: DataTableSortDirection | 'none';
+  sort?: DataTableSortDirection | 'none' | undefined;
   /** The column's place in a sort by several columns, from 1. */
-  sortIndex?: number;
+  sortIndex?: number | undefined;
   /** Called when the header is pressed; `multi` when Shift was held. */
-  onSort?: (multi: boolean) => void;
+  onSort?: ((multi: boolean) => void) | undefined;
   /** Replaces the sort arrow. */
-  sortIndicator?: ReactNode;
+  sortIndicator?: ReactNode | undefined;
   /** Accessible name, when the content is not text. */
-  label?: string;
+  label?: string | undefined;
   /** A longer explanation, read after the name. Assistive technology only. */
-  description?: string;
+  description?: string | undefined;
   /** A hint shown in a tooltip on hover and keyboard focus. Also read after the name, unless `description` is set. */
-  tooltip?: string;
+  tooltip?: string | undefined;
   /** Hides the content visually. */
-  hideLabel?: boolean;
+  hideLabel?: boolean | undefined;
   /** `colgroup` for a header that spans several columns. */
-  scope?: 'col' | 'colgroup';
+  scope?: 'col' | 'colgroup' | undefined;
 }
 
 function HeaderCell({
@@ -542,26 +544,26 @@ function HeaderCell({
 
 export interface DataTableRowProps extends BlockProps {
   /** Identifies the row for the keyboard focus. Unique in the table. Default: generated. */
-  rowKey?: string;
+  rowKey?: string | undefined;
   /** Position of the row in the whole table, from 1, header rows included. */
-  index?: number;
+  index?: number | undefined;
   /** Set (true or false) when rows can be selected. */
-  selected?: boolean;
+  selected?: boolean | undefined;
   /** A stronger fill and an edge marker: "my row" in a ranking. */
-  highlighted?: boolean;
+  highlighted?: boolean | undefined;
   /** The stripe fill of a striped table. */
-  striped?: boolean;
+  striped?: boolean | undefined;
   /** Dimmed; `onAction` and `onSelect` are not called. */
-  disabled?: boolean;
+  disabled?: boolean | undefined;
   /** Colour of an edge stripe that carries a category. Say what it means in a cell, so it is not colour alone. */
-  accent?: string;
+  accent?: string | undefined;
   /** Called on Enter, on a double click, and on a click when there is no `onSelect`. */
-  onAction?: () => void;
+  onAction?: (() => void) | undefined;
   /**
    * Called on Space and on a click; `range` with Shift. `anchor` says that a new range starts at this
    * row: the first Shift+Arrow of a run starts where the focus is.
    */
-  onSelect?: (options: { range: boolean; anchor?: boolean }) => void;
+  onSelect?: ((options: { range: boolean; anchor?: boolean | undefined }) => void) | undefined;
   /** `data-` attributes go on the row element. */
   [data: `data-${string}`]: string | undefined;
 }
@@ -631,17 +633,17 @@ function Row({
 
 export interface DataTableCellProps extends BlockProps, CellLayoutProps {
   /** The cell is the header of its row. */
-  rowHeader?: boolean;
+  rowHeader?: boolean | undefined;
   /** Tabular figures. */
-  numeric?: boolean;
+  numeric?: boolean | undefined;
   /** Lets the text wrap. Default: one line, cut with an ellipsis. */
-  wrap?: boolean;
+  wrap?: boolean | undefined;
   /** The cell's full text: shown in a tooltip while the cell cuts it. */
-  title?: string;
+  title?: string | undefined;
   /** A hint shown in a tooltip on hover and keyboard focus, whether or not the text is cut. */
-  tooltip?: string;
+  tooltip?: string | undefined;
   /** `false` keeps the cell out of the keyboard grid: a placeholder or a skeleton. */
-  focusable?: boolean;
+  focusable?: boolean | undefined;
 }
 
 function Cell({
@@ -689,28 +691,28 @@ function Cell({
 
 export interface DataTableGroupRowProps extends BlockProps {
   /** Identifies the row for the keyboard focus. */
-  rowKey?: string;
+  rowKey?: string | undefined;
   /** Position of the row in the whole table, from 1. */
-  index?: number;
+  index?: number | undefined;
   /** The group's name. */
-  title?: ReactNode;
+  title?: ReactNode | undefined;
   /** Number of rows in the group, shown after the title. */
-  count?: number;
+  count?: number | undefined;
   /** Trailing text. */
-  meta?: ReactNode;
+  meta?: ReactNode | undefined;
   /** Adds a caret that collapses the group. The table (or the app) hides its rows. */
-  collapsible?: boolean;
-  collapsed?: boolean;
-  onCollapsedChange?: (collapsed: boolean) => void;
+  collapsible?: boolean | undefined;
+  collapsed?: boolean | undefined;
+  onCollapsedChange?: ((collapsed: boolean) => void) | undefined;
   /** Accessible names of the caret. A text `title` is added: "Collapse Open". */
-  collapseLabel?: string;
-  expandLabel?: string;
+  collapseLabel?: string | undefined;
+  expandLabel?: string | undefined;
   /** Sticks below the header while its rows scroll. */
-  sticky?: boolean;
+  sticky?: boolean | undefined;
   /** Number of columns the title cell spans. The `children` fill the rest. */
-  colSpan?: number;
+  colSpan?: number | undefined;
   /** Cells after the title cell: one per remaining column, for the group's aggregates. */
-  children?: ReactNode;
+  children?: ReactNode | undefined;
 }
 
 /** The header row of one group of rows, in the look of `GroupHeader`. */
@@ -791,7 +793,11 @@ function useSelect(
   useLayoutEffect(() => {
     latest.current = selectedIds;
   });
-  return (id: string, options: { range?: boolean; anchor?: boolean }, order: () => string[]) => {
+  return (
+    id: string,
+    options: { range?: boolean | undefined; anchor?: boolean | undefined },
+    order: () => string[],
+  ) => {
     const next = selectStep(mode, latest.current, memo.current, id, options, order);
     memo.current = next.memo;
     latest.current = next.ids;
@@ -930,10 +936,10 @@ const textOf = <Row,>(column: DataTableColumn<Row>, row: Row): string => {
 /** A laid-out column: one of the app's, or the checkbox or disclosure column the table adds. */
 interface Col<Row> {
   id: string;
-  def?: DataTableColumn<Row>;
-  pin?: DataTablePin;
-  pinOffset?: number;
-  pinEdge?: boolean;
+  def?: DataTableColumn<Row> | undefined;
+  pin?: DataTablePin | undefined;
+  pinOffset?: number | undefined;
+  pinEdge?: boolean | undefined;
   align: DataTableAlign;
   numeric: boolean;
   width: number;
@@ -949,127 +955,129 @@ export interface DataTableProps<Row> extends DataStateProps {
   /** The columns, in order. Pinned columns move to their edge. Keep the array stable between renders. */
   columns: DataTableColumn<Row>[];
   /** Headers that span several columns, in a row above the column headers. */
-  columnGroups?: DataTableColumnGroup[];
+  columnGroups?: DataTableColumnGroup[] | undefined;
 
   /** Controlled sort order: the first entry sorts first. */
-  sort?: DataTableSort[];
-  defaultSort?: DataTableSort[];
-  onSortChange?: (sort: DataTableSort[]) => void;
+  sort?: DataTableSort[] | undefined;
+  defaultSort?: DataTableSort[] | undefined;
+  onSortChange?: ((sort: DataTableSort[]) => void) | undefined;
   /** Shift+click or Shift+Enter on a header adds it to the sort instead of replacing it. */
-  multiSort?: boolean;
+  multiSort?: boolean | undefined;
   /** The rows arrive sorted (by a server): headers still show and report the sort, the table does not reorder. */
-  manualSorting?: boolean;
+  manualSorting?: boolean | undefined;
 
   /** Lets the user select rows, and adds a column for it: a radio per row in `single`, a checkbox in `multiple`. */
-  selectionMode?: 'none' | 'single' | 'multiple';
+  selectionMode?: 'none' | 'single' | 'multiple' | undefined;
   /** Controlled selection: the ids of the selected rows. */
-  selectedIds?: string[];
-  defaultSelectedIds?: string[];
-  onSelectionChange?: (ids: string[]) => void;
+  selectedIds?: string[] | undefined;
+  defaultSelectedIds?: string[] | undefined;
+  onSelectionChange?: ((ids: string[]) => void) | undefined;
   /** Accessible name of a row's checkbox or radio. */
-  selectRowLabel?: (row: Row) => string;
+  selectRowLabel?: ((row: Row) => string) | undefined;
   /** Accessible name of the header checkbox, or of the radio column in `single`. */
-  selectAllLabel?: string;
+  selectAllLabel?: string | undefined;
 
   /** Ids of rows shown with a stronger fill and an edge marker: "my row" in a ranking. */
-  highlightedRowIds?: string[];
+  highlightedRowIds?: string[] | undefined;
   /** The same, as a function. */
-  rowHighlight?: (row: Row) => boolean;
+  rowHighlight?: ((row: Row) => boolean) | undefined;
   /** What assistive technology hears for a highlighted row. */
-  highlightLabel?: string;
+  highlightLabel?: string | undefined;
   /** A coloured edge stripe that carries a category or status, with the label that says what it means. */
-  rowAccent?: (row: Row) => DataTableRowAccent | undefined;
+  rowAccent?: ((row: Row) => DataTableRowAccent | undefined) | undefined;
   /** A faint fill on every other row. */
-  striped?: boolean;
+  striped?: boolean | undefined;
   /** A line under every row. */
-  dividers?: boolean;
+  dividers?: boolean | undefined;
   /** Called when a row is activated: Enter, a double click, or a single click when rows cannot be selected. */
-  onRowAction?: (row: Row) => void;
+  onRowAction?: ((row: Row) => void) | undefined;
   /** Makes the row a link: its row header cell (or first cell) holds the link, and activating the row follows it. */
-  rowHref?: (row: Row) => string | undefined;
+  rowHref?: ((row: Row) => string | undefined) | undefined;
   /** Disabled rows are dimmed and can be neither selected nor activated. */
-  isRowDisabled?: (row: Row) => boolean;
+  isRowDisabled?: ((row: Row) => boolean) | undefined;
 
   /** Groups the rows under header rows: a key of the row, or a function that returns the group's key. */
-  groupBy?: (keyof Row & string) | ((row: Row) => string);
+  groupBy?: (keyof Row & string) | ((row: Row) => string) | undefined;
   /** Titles and order of the groups. Groups not listed follow, titled by their key, as they first appear. */
-  groups?: DataTableGroup[];
+  groups?: DataTableGroup[] | undefined;
   /** Adds a caret to every group header row. */
-  collapsibleGroups?: boolean;
+  collapsibleGroups?: boolean | undefined;
   /** Controlled: the keys of the collapsed groups. */
-  collapsedGroups?: string[];
-  defaultCollapsedGroups?: string[];
-  onCollapsedGroupsChange?: (keys: string[]) => void;
+  collapsedGroups?: string[] | undefined;
+  defaultCollapsedGroups?: string[] | undefined;
+  onCollapsedGroupsChange?: ((keys: string[]) => void) | undefined;
   /** Group header rows stick below the header while their rows scroll. */
-  stickyGroups?: boolean;
+  stickyGroups?: boolean | undefined;
   /** Accessible names of a group's caret; the group's title is added. */
-  collapseGroupLabel?: string;
-  expandGroupLabel?: string;
+  collapseGroupLabel?: string | undefined;
+  expandGroupLabel?: string | undefined;
 
   /** Called with the ids of the columns hidden for lack of width, whenever they change. */
-  onHiddenColumnsChange?: (ids: string[]) => void;
+  onHiddenColumnsChange?: ((ids: string[]) => void) | undefined;
   /** While columns are hidden, each row gets a control that shows their labels and values under the row. */
-  expandableHidden?: boolean;
+  expandableHidden?: boolean | undefined;
   /** Accessible names of that control. */
-  showDetailsLabel?: string;
-  hideDetailsLabel?: string;
+  showDetailsLabel?: string | undefined;
+  hideDetailsLabel?: string | undefined;
   /**
    * Accessible name of the mark in the header that says columns are hidden ("+3"), from their number.
    * The mark is shown while columns are hidden and rows cannot show them (no `expandableHidden`).
    */
-  hiddenColumnsLabel?: (count: number) => string;
+  hiddenColumnsLabel?: ((count: number) => string) | undefined;
 
   /** Number of skeleton rows shown while `loading`. */
-  skeletonRows?: number;
+  skeletonRows?: number | undefined;
   /**
    * `fill` (default) takes the height of the parent, and falls back to the content's height in a parent
    * that has none (flowing content, a popover, a modal body, an accordion panel). `content` is always
    * as tall as the content, and shows every row (no virtualisation). A number is a height in pixels.
    */
-  height?: 'fill' | 'content' | number;
+  height?: 'fill' | 'content' | number | undefined;
 
   /** Shows a skeleton row after the last row while more rows load. */
-  loadingMore?: boolean;
+  loadingMore?: boolean | undefined;
   /** What assistive technology hears while more rows load. */
-  loadingMoreLabel?: string;
+  loadingMoreLabel?: string | undefined;
   /** Called when the table is scrolled to its end, for loading more. */
-  onReachEnd?: () => void;
+  onReachEnd?: (() => void) | undefined;
 
   /** Renders only the rows in view. `auto`: above 200 rows, unless a column wraps. Rows must then all have the same height. */
-  virtualize?: boolean | 'auto';
+  virtualize?: boolean | 'auto' | undefined;
   /** A changed value flashes once: green up, red down (with a sign), neutral otherwise. `true` for every column with an `accessor`, or the ids of some. */
-  highlightChanges?: boolean | string[];
+  highlightChanges?: boolean | string[] | undefined;
   /** What assistive technology hears with the sign of a changed value. */
-  increasedLabel?: string;
-  decreasedLabel?: string;
+  increasedLabel?: string | undefined;
+  decreasedLabel?: string | undefined;
 
   /** Names the table. Read by assistive technology; shown above the table with `showCaption`. */
-  caption?: ReactNode;
-  showCaption?: boolean;
+  caption?: ReactNode | undefined;
+  showCaption?: boolean | undefined;
   /** Accessible name of the table. Give this, `aria-labelledby` or `caption`. */
-  'aria-label'?: string;
-  'aria-labelledby'?: string;
+  'aria-label'?: string | undefined;
+  'aria-labelledby'?: string | undefined;
 
   /** Replace or hide named pieces. */
-  parts?: {
-    header?: Part<BlockProps>;
-    headerCell?: Part<DataTableHeaderCellProps & { column: DataTableColumn<Row> }>;
-    sortIndicator?: Part<DataTableSortIndicatorProps>;
-    /** The mark in the header that says columns are hidden. `null` removes it and its column. */
-    hiddenIndicator?: Part<{ count: number; labels: string[]; children: ReactNode }>;
-    row?: Part<DataTableRowProps & { row: Row }>;
-    cell?: Part<DataTableCellProps & { row: Row; column: DataTableColumn<Row> }>;
-    groupHeader?: Part<DataTableGroupRowProps>;
-    /** The labels and values of the hidden columns, under an expanded row. */
-    detail?: Part<{ row: Row; items: KeyValueItem[] }>;
-    footer?: Part<BlockProps>;
-    /** The placeholder in one cell of a skeleton row. */
-    skeleton?: Part<{ rowIndex: number; columnId: string }>;
-    empty?: Part<{ children: ReactNode }>;
-    error?: Part<{ children: ReactNode }>;
-  };
-  className?: string;
-  style?: CSSProperties;
+  parts?:
+    | {
+        header?: Part<BlockProps> | undefined;
+        headerCell?: Part<DataTableHeaderCellProps & { column: DataTableColumn<Row> }> | undefined;
+        sortIndicator?: Part<DataTableSortIndicatorProps> | undefined;
+        /** The mark in the header that says columns are hidden. `null` removes it and its column. */
+        hiddenIndicator?: Part<{ count: number; labels: string[]; children: ReactNode }> | undefined;
+        row?: Part<DataTableRowProps & { row: Row }> | undefined;
+        cell?: Part<DataTableCellProps & { row: Row; column: DataTableColumn<Row> }> | undefined;
+        groupHeader?: Part<DataTableGroupRowProps> | undefined;
+        /** The labels and values of the hidden columns, under an expanded row. */
+        detail?: Part<{ row: Row; items: KeyValueItem[] }> | undefined;
+        footer?: Part<BlockProps> | undefined;
+        /** The placeholder in one cell of a skeleton row. */
+        skeleton?: Part<{ rowIndex: number; columnId: string }> | undefined;
+        empty?: Part<{ children: ReactNode }> | undefined;
+        error?: Part<{ children: ReactNode }> | undefined;
+      }
+    | undefined;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
 }
 
 /**
@@ -1394,7 +1402,14 @@ export function DataTable<Row>({
   const groupedModel = groupKey ? table.getGroupedRowModel().rows : null;
   type EngineRow = (typeof model)[number];
   type Item =
-    | { kind: 'group'; key: string; group: string; title: ReactNode; meta?: ReactNode; rows: EngineRow[] }
+    | {
+        kind: 'group';
+        key: string;
+        group: string;
+        title: ReactNode;
+        meta?: ReactNode | undefined;
+        rows: EngineRow[];
+      }
     | { kind: 'row'; key: string; row: EngineRow; position: number; striped: boolean }
     | { kind: 'detail'; key: string; row: EngineRow; position: number };
   const { items, leaves } = useMemo(() => {
@@ -1555,7 +1570,7 @@ export function DataTable<Row>({
     table.setRowSelection(Object.fromEntries(ids.map((id) => [id, true as const]))),
   );
   // What a Shift range runs over: the rows on screen that can be selected, in order.
-  const selectRow = (id: string, options: { range?: boolean; anchor?: boolean }) =>
+  const selectRow = (id: string, options: { range?: boolean | undefined; anchor?: boolean | undefined }) =>
     select(id, options, () =>
       items.flatMap((item) => (item.kind === 'row' && item.row.getCanSelect() ? [item.row.id] : [])),
     );
@@ -1693,7 +1708,8 @@ export function DataTable<Row>({
   };
 
   // The row of spanning headers: neighbours in the same group merge into one cell.
-  const spans: { group?: DataTableColumnGroup; first: Col<Row>; index: number; span: number }[] = [];
+  const spans: { group?: DataTableColumnGroup | undefined; first: Col<Row>; index: number; span: number }[] =
+    [];
   if (columnGroups?.length) {
     cols.forEach((c, index) => {
       const group = columnGroups.find((g) => g.columns.includes(c.id));
@@ -2098,7 +2114,8 @@ export function numberColumn<Row>(column: DataTableColumn<Row>): DataTableColumn
     numeric: true,
     width: column.cell ? 80 : 'content',
     sortDescFirst: true,
-    ...column,
+    // An explicit `undefined` keeps the default.
+    ...defined(column),
   };
 }
 
@@ -2113,14 +2130,14 @@ export function actionsColumn<Row>({
   menuLabel = () => 'More actions',
   ...column
 }: Omit<DataTableColumn<Row>, 'id' | 'cell'> & {
-  id?: string;
-  cell?: DataTableColumn<Row>['cell'];
+  id?: string | undefined;
+  cell?: DataTableColumn<Row>['cell'] | undefined;
   /** The rows of the menu for one row of the table. */
-  menu?: (row: Row) => MenuEntry[];
+  menu?: ((row: Row) => MenuEntry[]) | undefined;
   /** Called with the id of the menu row the user chose. */
-  onMenuAction?: (id: string, row: Row) => void;
+  onMenuAction?: ((id: string, row: Row) => void) | undefined;
   /** Accessible name of the "more" button. */
-  menuLabel?: (row: Row) => string;
+  menuLabel?: ((row: Row) => string) | undefined;
 }): DataTableColumn<Row> {
   return {
     id: 'actions',
@@ -2130,7 +2147,8 @@ export function actionsColumn<Row>({
     pin: 'end',
     priority: 'always',
     width: cell ? 96 : 56,
-    ...column,
+    // An explicit `undefined` keeps the default.
+    ...defined(column),
     cell: (row, context) => (
       <>
         {cell?.(row, context)}

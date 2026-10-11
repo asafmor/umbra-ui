@@ -7,25 +7,25 @@ import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './GroupHeader.module.css';
 
 interface BlockProps {
-  className?: string;
-  style?: CSSProperties;
-  children?: ReactNode;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
+  children?: ReactNode | undefined;
 }
 
 export interface GroupHeaderRootProps extends BlockProps {
   /** Sticks to the top of the scroll area while its group scrolls. The header and its rows must share a parent element. */
-  sticky?: boolean;
+  sticky?: boolean | undefined;
   /** `strip` is a full-width band (a date above its messages); `plain` has no fill (a label above a few rows). */
-  variant?: 'strip' | 'plain';
+  variant?: 'strip' | 'plain' | undefined;
   /**
    * The title may truncate. The all-in-one component turns it off until everything that can hide has
    * hidden; a header composed by hand keeps the default.
    */
-  truncate?: boolean;
+  truncate?: boolean | undefined;
   /** The element, for measuring. */
-  ref?: React.Ref<HTMLDivElement>;
+  ref?: React.Ref<HTMLDivElement> | undefined;
   /** Marks the group collapsed, for CSS. */
-  collapsed?: boolean;
+  collapsed?: boolean | undefined;
 }
 
 function Root({
@@ -56,7 +56,7 @@ function Root({
 
 export interface GroupHeaderTitleProps extends BlockProps {
   /** Heading level. */
-  headingLevel?: 2 | 3 | 4 | 5 | 6;
+  headingLevel?: 2 | 3 | 4 | 5 | 6 | undefined;
 }
 
 function Title({ headingLevel = 3, className, style, children }: GroupHeaderTitleProps) {
@@ -96,8 +96,8 @@ export interface GroupHeaderToggleProps {
   /** Accessible name. Name the group in it when a list has several ("Collapse Today"). */
   label: string;
   onPress: () => void;
-  className?: string;
-  style?: CSSProperties;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
 }
 
 function Toggle({ collapsed, label, onPress, className, style }: GroupHeaderToggleProps) {
@@ -125,37 +125,39 @@ function Toggle({ collapsed, label, onPress, className, style }: GroupHeaderTogg
 
 export interface GroupHeaderProps extends Omit<GroupHeaderRootProps, 'children' | 'truncate' | 'ref'> {
   /** The group's name. */
-  title?: ReactNode;
+  title?: ReactNode | undefined;
   /** Leading icon. */
-  icon?: ReactNode;
+  icon?: ReactNode | undefined;
   /** Number of rows in the group, shown after the title. */
-  count?: number;
+  count?: number | undefined;
   /** Trailing text, for example a total. Hides when the header is too narrow. */
-  meta?: ReactNode;
+  meta?: ReactNode | undefined;
   /** Trailing controls. They move into an overflow menu when they do not fit. */
-  actions?: ReactNode;
+  actions?: ReactNode | undefined;
   /** Accessible name of the overflow menu button. */
-  moreLabel?: string;
+  moreLabel?: string | undefined;
   /** Heading level of the title. */
-  headingLevel?: 2 | 3 | 4 | 5 | 6;
+  headingLevel?: 2 | 3 | 4 | 5 | 6 | undefined;
   /** Adds a caret button that collapses the group. The app (or `List`) hides the rows. */
-  collapsible?: boolean;
+  collapsible?: boolean | undefined;
   /** Controlled collapse state. */
-  collapsed?: boolean;
-  defaultCollapsed?: boolean;
-  onCollapsedChange?: (collapsed: boolean) => void;
+  collapsed?: boolean | undefined;
+  defaultCollapsed?: boolean | undefined;
+  onCollapsedChange?: ((collapsed: boolean) => void) | undefined;
   /** Accessible names of the caret. With a text `title`, the title is added: "Collapse Today". */
-  collapseLabel?: string;
-  expandLabel?: string;
+  collapseLabel?: string | undefined;
+  expandLabel?: string | undefined;
   /** Replace or hide named pieces. */
-  parts?: {
-    toggle?: Part<GroupHeaderToggleProps>;
-    icon?: Part<{ children: ReactNode }>;
-    title?: Part<GroupHeaderTitleProps>;
-    count?: Part<{ children: number }>;
-    meta?: Part<{ children: ReactNode }>;
-    actions?: Part<{ children: ReactNode }>;
-  };
+  parts?:
+    | {
+        toggle?: Part<GroupHeaderToggleProps> | undefined;
+        icon?: Part<{ children: ReactNode }> | undefined;
+        title?: Part<GroupHeaderTitleProps> | undefined;
+        count?: Part<{ children: number }> | undefined;
+        meta?: Part<{ children: ReactNode }> | undefined;
+        actions?: Part<{ children: ReactNode }> | undefined;
+      }
+    | undefined;
 }
 
 /** A header row for one group of rows inside a list or table. */

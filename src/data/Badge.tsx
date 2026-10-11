@@ -6,14 +6,14 @@ import { toneProps, type Tone } from './tone';
 
 export interface BadgeRootProps {
   /** What the colour means. `accent` is the fixed violet. */
-  tone?: Tone;
+  tone?: Tone | undefined;
   /** A custom colour (any CSS colour). Replaces `tone`. */
-  color?: string;
+  color?: string | undefined;
   /** Set when the root holds the element the badge is anchored to. */
-  anchored?: boolean;
-  className?: string;
-  style?: CSSProperties;
-  children?: ReactNode;
+  anchored?: boolean | undefined;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
+  children?: ReactNode | undefined;
 }
 
 function Root({ tone = 'accent', color, anchored, className, style, children }: BadgeRootProps) {
@@ -31,18 +31,18 @@ function Root({ tone = 'accent', color, anchored, className, style, children }: 
 
 export interface BadgeIndicatorProps {
   /** A dot, without text. */
-  dot?: boolean;
+  dot?: boolean | undefined;
   /** What a screen reader hears, when it differs from the visible text. */
-  label?: string;
+  label?: string | undefined;
   /**
    * Draws the text without making it text of the page, and hides the badge from assistive technology.
    * For a badge inside a control whose own name already holds the count.
    */
-  decorative?: boolean;
-  className?: string;
-  style?: CSSProperties;
+  decorative?: boolean | undefined;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
   /** The visible text. */
-  children?: ReactNode;
+  children?: ReactNode | undefined;
 }
 
 function Indicator({ dot, label, decorative, className, style, children }: BadgeIndicatorProps) {
@@ -79,27 +79,27 @@ function Indicator({ dot, label, decorative, className, style, children }: Badge
 
 export interface BadgeProps extends Omit<BadgeRootProps, 'anchored'> {
   /** The number to show. */
-  count?: number;
+  count?: number | undefined;
   /** Shows a dot instead of a number. */
-  dot?: boolean;
+  dot?: boolean | undefined;
   /** Counts above this show as "99+". */
-  max?: number;
+  max?: number | undefined;
   /** Shows the badge when `count` is 0. */
-  showZero?: boolean;
+  showZero?: boolean | undefined;
   /**
    * What a screen reader hears: a string, or a function of the count (`(n) => n + ' unread'`).
    * By default the full count is read, also above `max`. A dot is silent without it.
    */
-  label?: string | ((count: number) => string);
+  label?: string | ((count: number) => string) | undefined;
   /**
    * Draws the count without making it text of the page, and hides the badge from assistive technology.
    * For a badge inside a control whose own name already holds the count, as `IconButton` does.
    */
-  decorative?: boolean;
+  decorative?: boolean | undefined;
   /** The element the badge sits on the corner of. Without it the badge stands alone. */
-  children?: ReactNode;
+  children?: ReactNode | undefined;
   /** Replace or hide named pieces. */
-  parts?: { indicator?: Part<BadgeIndicatorProps> };
+  parts?: { indicator?: Part<BadgeIndicatorProps> | undefined } | undefined;
 }
 
 /** A count or a dot, alone or on the corner of another element. */

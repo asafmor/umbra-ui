@@ -33,30 +33,30 @@ function useBanner() {
 }
 
 interface BlockProps {
-  className?: string;
-  style?: CSSProperties;
-  children?: ReactNode;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
+  children?: ReactNode | undefined;
 }
 
 export interface BannerRootProps extends BlockProps {
   /** What the message is. Each tone has its own colour and its own default icon. */
-  tone?: BannerTone;
+  tone?: BannerTone | undefined;
   /** `subtle`: tinted fill. `solid`: filled with the tone colour. `outline`: border only. */
-  variant?: BannerVariant;
+  variant?: BannerVariant | undefined;
   /** `insight` adds a stripe on the leading edge, for a finding or recommendation about the data beside it. */
-  emphasis?: 'default' | 'insight';
+  emphasis?: 'default' | 'insight' | undefined;
   /** One line: the title and the description share it and truncate. */
-  compact?: boolean;
+  compact?: boolean | undefined;
   /**
    * How a screen reader announces the banner when it appears. `polite` is a `status`, `assertive` an
    * `alert`, `off` is not announced. Defaults to `assertive` for the `danger` tone and `polite` otherwise.
    */
-  live?: 'polite' | 'assertive' | 'off';
+  live?: 'polite' | 'assertive' | 'off' | undefined;
   /** Controlled visibility. Set it to `false` in `onDismiss`. */
-  open?: boolean;
-  defaultOpen?: boolean;
+  open?: boolean | undefined;
+  defaultOpen?: boolean | undefined;
   /** Called when the dismiss button is pressed. */
-  onDismiss?: () => void;
+  onDismiss?: (() => void) | undefined;
 }
 
 function Root({
@@ -142,7 +142,7 @@ function Title({ className, style, children }: BlockProps) {
 
 export interface BannerDescriptionProps extends BlockProps {
   /** Clamps the text to this many lines, with an ellipsis. */
-  maxLines?: number;
+  maxLines?: number | undefined;
 }
 
 function Description({ maxLines, className, style, children }: BannerDescriptionProps) {
@@ -168,9 +168,9 @@ function Actions({ className, style, children }: BlockProps) {
 
 export interface BannerDismissProps {
   /** Accessible name of the button. */
-  label?: string;
-  className?: string;
-  style?: CSSProperties;
+  label?: string | undefined;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
 }
 
 function Dismiss({ label = 'Dismiss', className, style }: BannerDismissProps) {
@@ -186,27 +186,29 @@ function Dismiss({ label = 'Dismiss', className, style }: BannerDismissProps) {
 
 export interface BannerProps extends Omit<BannerRootProps, 'children'> {
   /** The headline, in bold. */
-  title?: ReactNode;
+  title?: ReactNode | undefined;
   /** The description. */
-  children?: ReactNode;
+  children?: ReactNode | undefined;
   /** Replaces the tone's default icon. `null` hides it. */
-  icon?: ReactNode;
+  icon?: ReactNode | undefined;
   /** Trailing controls, usually one or two buttons. They move below the text when the banner is narrow. */
-  actions?: ReactNode;
+  actions?: ReactNode | undefined;
   /** Shows a dismiss button. */
-  dismissible?: boolean;
+  dismissible?: boolean | undefined;
   /** Accessible name of the dismiss button. */
-  dismissLabel?: string;
+  dismissLabel?: string | undefined;
   /** Clamps the description to this many lines. */
-  maxLines?: number;
+  maxLines?: number | undefined;
   /** Replace or hide named pieces. */
-  parts?: {
-    icon?: Part<{ children: ReactNode }>;
-    title?: Part<{ children: ReactNode }>;
-    description?: Part<BannerDescriptionProps>;
-    actions?: Part<{ children: ReactNode }>;
-    dismiss?: Part<BannerDismissProps>;
-  };
+  parts?:
+    | {
+        icon?: Part<{ children: ReactNode }> | undefined;
+        title?: Part<{ children: ReactNode }> | undefined;
+        description?: Part<BannerDescriptionProps> | undefined;
+        actions?: Part<{ children: ReactNode }> | undefined;
+        dismiss?: Part<BannerDismissProps> | undefined;
+      }
+    | undefined;
 }
 
 /** A message band inside a card or page: a notice, a warning, or an insight about the data beside it. */

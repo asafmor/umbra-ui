@@ -34,7 +34,7 @@ export interface Threshold {
   from: number;
   tone: MeterTone;
   /** Shown beside the value and read by assistive technology, for example "Low". */
-  label?: string;
+  label?: string | undefined;
 }
 
 export interface ResolvedThreshold extends Threshold {
@@ -82,7 +82,7 @@ export interface Zone {
   from: number;
   to: number;
   tone: MeterTone;
-  label?: string;
+  label?: string | undefined;
 }
 
 /** The zone that holds `value`. A value on a shared boundary belongs to the later zone. */

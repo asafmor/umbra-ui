@@ -5,26 +5,27 @@ import { cx, renderPart, type Part } from '../utils/parts';
 import { SlotDescription, SlotLabel, TextSlotsProvider, useTextSlots, type BlockProps } from './fieldParts';
 import styles from './Toggle.module.css';
 import { useFieldControl } from './useField';
+import { defined } from '../utils/defined';
 
 export interface ToggleRootProps extends BlockProps {
   /** Controlled state. */
-  checked?: boolean;
-  defaultChecked?: boolean;
-  onChange?: (checked: boolean) => void;
-  disabled?: boolean;
+  checked?: boolean | undefined;
+  defaultChecked?: boolean | undefined;
+  onChange?: ((checked: boolean) => void) | undefined;
+  disabled?: boolean | undefined;
   /** Focusable, but cannot be changed. */
-  readOnly?: boolean;
+  readOnly?: boolean | undefined;
   /** `small` is for use inside table cells and dense toolbars. Otherwise the size follows the density level. */
-  size?: 'default' | 'small';
+  size?: 'default' | 'small' | undefined;
   /** The side of the switch the label is on. */
-  labelPosition?: 'start' | 'end';
+  labelPosition?: 'start' | 'end' | undefined;
   /** Form field name. */
-  name?: string;
+  name?: string | undefined;
   /** The form value when on. */
-  value?: string;
-  id?: string;
+  value?: string | undefined;
+  id?: string | undefined;
   /** Accessible name of a toggle that has no visible label. */
-  'aria-label'?: string;
+  'aria-label'?: string | undefined;
 }
 
 function Root({
@@ -55,19 +56,23 @@ function Root({
       data-umbra="toggle"
       data-size={size}
       data-label-position={labelPosition}
-      className={cx(styles.root, className)}
-      style={style}
-      isSelected={checked}
-      defaultSelected={defaultChecked}
-      onChange={onChange}
+      {...defined({
+        className: cx(styles.root, className),
+        style,
+        isSelected: checked,
+        defaultSelected: defaultChecked,
+        onChange,
+      })}
       isDisabled={control.disabled}
-      isReadOnly={readOnly}
-      name={name}
-      value={value}
-      id={control.id}
-      aria-label={ariaLabel}
-      aria-labelledby={control.labelledBy}
-      aria-describedby={control.describedBy}
+      {...defined({
+        isReadOnly: readOnly,
+        name,
+        value,
+        id: control.id,
+        'aria-label': ariaLabel,
+        'aria-labelledby': control.labelledBy,
+        'aria-describedby': control.describedBy,
+      })}
     >
       <TextSlotsProvider value={slots}>{children}</TextSlotsProvider>
     </AriaSwitch>
@@ -95,15 +100,17 @@ function Description(props: BlockProps) {
 
 export interface ToggleProps extends Omit<ToggleRootProps, 'children'> {
   /** The label. */
-  children?: ReactNode;
+  children?: ReactNode | undefined;
   /** A second line under the label. */
-  description?: ReactNode;
+  description?: ReactNode | undefined;
   /** Replace or hide named pieces. */
-  parts?: {
-    track?: Part<BlockProps>;
-    label?: Part<{ children: ReactNode }>;
-    description?: Part<{ children: ReactNode }>;
-  };
+  parts?:
+    | {
+        track?: Part<BlockProps> | undefined;
+        label?: Part<{ children: ReactNode }> | undefined;
+        description?: Part<{ children: ReactNode }> | undefined;
+      }
+    | undefined;
 }
 
 /** A switch for a setting that takes effect at once: on or off. */

@@ -16,18 +16,18 @@ import { collapseToFit } from './collapse';
 /** Props accepted by every child of `Columns` or `Stack` (plan/layout.md). */
 export interface SlotProps {
   /** Share of the parent's space: a weight, or `"content"` to take the size of the content. Default 1. */
-  size?: number | 'content';
+  size?: number | 'content' | undefined;
   /** Which child gives way first when space runs out. Higher stays longer; ties give way from the end. Default 0. */
-  priority?: number;
+  priority?: number | undefined;
   /**
    * The width the child needs. When the children of a `Columns` cannot all have theirs, the `Columns`
    * shows one child at a time, with tabs, as it does below the minimum window.
    */
-  minWidth?: number;
+  minWidth?: number | undefined;
   /** Below this height a parent `Stack` may collapse the child to its header. */
-  minHeight?: number;
+  minHeight?: number | undefined;
   /** Tab label when a parent `Columns` shows one child at a time. */
-  label?: string;
+  label?: string | undefined;
 }
 
 interface SlotInfo {
@@ -67,11 +67,11 @@ export const slotMinHeight = (element: HTMLElement) =>
 
 interface SlotOptions {
   /** Default tab label, for example a card's title. */
-  label?: string;
+  label?: string | undefined;
   /** Overrides the minimum height, for example while a card is collapsed by the user. */
-  min?: (element: HTMLElement) => number | undefined;
+  min?: ((element: HTMLElement) => number | undefined) | undefined;
   /** Measures the header a `Stack` may collapse this child to. Omit when it cannot collapse. */
-  header?: (element: HTMLElement) => number | null;
+  header?: ((element: HTMLElement) => number | null) | undefined;
 }
 
 /**
@@ -144,10 +144,10 @@ export interface LayoutTab {
 export function useLayoutParent(
   element: RefObject<HTMLElement | null>,
   mode: {
-    collapse?: boolean;
-    tabs?: boolean;
+    collapse?: boolean | undefined;
+    tabs?: boolean | undefined;
     /** Also go to tabs when the children cannot all have their `minWidth` (layout rule 4). */
-    fit?: boolean;
+    fit?: boolean | undefined;
   },
 ) {
   const [slots] = useState(() => new Map<string, RefObject<SlotInfo | null>>());

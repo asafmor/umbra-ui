@@ -26,6 +26,7 @@ import {
   type MeterTone,
   type Threshold,
 } from './scale';
+import { defined } from '../utils/defined';
 
 /** One coloured part of a stacked bar. */
 export interface ProgressBarStackItem {
@@ -34,9 +35,9 @@ export interface ProgressBarStackItem {
   label: string;
   /** The part's amount, in the units of the scale. */
   value: number;
-  tone?: MeterTone;
+  tone?: MeterTone | undefined;
   /** Any CSS colour. Wins over `tone`. */
-  color?: string;
+  color?: string | undefined;
 }
 
 /** What `formatValue` receives besides the value. `percent` is not clamped. */
@@ -55,7 +56,7 @@ interface Fills {
 interface BarContext {
   cells: Fills[];
   valueText: ReactNode;
-  targetFraction?: number;
+  targetFraction?: number | undefined;
   hideValue: boolean;
   loading: boolean;
 }
@@ -69,49 +70,49 @@ function useBar() {
 }
 
 interface BlockProps {
-  children?: ReactNode;
-  className?: string;
-  style?: CSSProperties;
+  children?: ReactNode | undefined;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
 }
 
 export interface ProgressBarRootProps extends BlockProps {
   /** The current value. A stacked bar defaults to the sum of its parts. `null` or nothing means there is no value: the bar is empty, and says so. */
-  value?: number | null;
-  min?: number;
-  max?: number;
+  value?: number | null | undefined;
+  min?: number | undefined;
+  max?: number | undefined;
   /** `progress` for a task that advances (`role="progressbar"`), `meter` for a measured level (`role="meter"`). */
-  kind?: 'progress' | 'meter';
+  kind?: 'progress' | 'meter' | undefined;
   /** Progress of unknown length. Moves, or shows a static striped fill when motion is reduced. */
-  indeterminate?: boolean;
+  indeterminate?: boolean | undefined;
   /** Colour of the fill. A matching threshold wins over it. */
-  tone?: MeterTone;
+  tone?: MeterTone | undefined;
   /** Colours the fill by its level. `true` is thirds of the scale: danger, warning, success. Each band also has a pattern. */
-  thresholds?: boolean | Threshold[];
+  thresholds?: boolean | Threshold[] | undefined;
   /** Reverses the tones of the thresholds, for a scale where low is good. */
-  invert?: boolean;
-  size?: 'thin' | 'default' | 'thick';
+  invert?: boolean | undefined;
+  size?: 'thin' | 'default' | 'thick' | undefined;
   /** `inline` puts the label, the bar and the value on one line, for table cells and rows. */
-  layout?: 'block' | 'inline';
+  layout?: 'block' | 'inline' | undefined;
   /** Splits the bar: a number of equal segments, or the values where a segment ends. */
-  segments?: number | number[];
+  segments?: number | number[] | undefined;
   /** Several coloured parts, one after another. Replaces the single fill. */
-  stack?: ProgressBarStackItem[];
+  stack?: ProgressBarStackItem[] | undefined;
   /** Draws a tick at a goal value. */
-  target?: number;
+  target?: number | undefined;
   /** Names the target for assistive technology. */
-  targetLabel?: string;
+  targetLabel?: string | undefined;
   /** Text of a value. The default is a rounded percentage. */
-  formatValue?: (value: number, scale: ProgressBarScale) => string;
+  formatValue?: ((value: number, scale: ProgressBarScale) => string) | undefined;
   /** Shows skeletons in place of the bar and the value. */
-  loading?: boolean;
+  loading?: boolean | undefined;
   /** Shown in place of the value text when there is no value. */
-  emptyLabel?: ReactNode;
+  emptyLabel?: ReactNode | undefined;
   /** What assistive technology and the tooltip say when there is no value. */
-  noValueLabel?: string;
+  noValueLabel?: string | undefined;
   /** `false` turns off the tooltip that shows the exact value on hover. */
-  tooltip?: boolean;
+  tooltip?: boolean | undefined;
   /** Names a bar that has no visible label. */
-  'aria-label'?: string;
+  'aria-label'?: string | undefined;
 }
 
 /** True when the label, the value and (on one line) the shortest bar do not fit side by side. */
@@ -211,7 +212,6 @@ function Root({
   );
 
   const shared = {
-    ref,
     'data-umbra': 'progress-bar',
     'data-kind': kind,
     'data-size': size,
@@ -239,6 +239,7 @@ function Root({
   if (loading) {
     return (
       <div
+        ref={ref}
         {...shared}
         data-loading
         aria-busy="true"
@@ -253,13 +254,14 @@ function Root({
   return (
     <>
       {kind === 'meter' ? (
-        <AriaMeter {...shared} {...scale} value={value} valueLabel={spoken}>
+        <AriaMeter ref={ref} {...defined(shared)} {...defined(scale)} value={value} valueLabel={spoken}>
           {content}
         </AriaMeter>
       ) : (
         <AriaProgressBar
-          {...shared}
-          {...scale}
+          ref={ref}
+          {...defined(shared)}
+          {...defined(scale)}
           value={value}
           valueLabel={indeterminate ? undefined : spoken}
           isIndeterminate={indeterminate}
@@ -285,7 +287,7 @@ function Label({ children, className, style }: BlockProps) {
 
 export interface ProgressBarValueProps extends BlockProps, ChangeHighlightProps {
   /** `inside` draws the value on the bar, at the end of the fill; render it inside `ProgressBar.Track`. */
-  placement?: 'outside' | 'inside';
+  placement?: 'outside' | 'inside' | undefined;
 }
 
 /** The value as text. Hides first when the bar is narrow. `children` replaces the formatted value. */
@@ -316,16 +318,16 @@ function Value({ children, placement = 'outside', className, style, ...change }:
 export interface ProgressBarFillProps {
   /** Share of its segment that the fill covers, from 0 to 1. */
   fraction: number;
-  tone?: MeterTone;
+  tone?: MeterTone | undefined;
   /** Any CSS colour. Wins over `tone`. */
-  color?: string;
+  color?: string | undefined;
   /** Hatching drawn over the colour, so fills differ without it. */
-  pattern?: MeterPattern;
-  indeterminate?: boolean;
+  pattern?: MeterPattern | undefined;
+  indeterminate?: boolean | undefined;
   /** The id of the stacked part this fill shows. */
-  id?: string;
-  className?: string;
-  style?: CSSProperties;
+  id?: string | undefined;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
 }
 
 /** One coloured fill inside a segment of the track. */
@@ -360,9 +362,9 @@ function Fill({
 
 export interface ProgressBarTrackProps extends BlockProps {
   /** Replaces or hides every fill. A function receives the default fill's props. */
-  fill?: Part<ProgressBarFillProps>;
+  fill?: Part<ProgressBarFillProps> | undefined;
   /** Replaces the skeleton shown while loading. */
-  skeleton?: Part;
+  skeleton?: Part | undefined;
 }
 
 /** The bar: its segments and their fills. `children` are drawn over it (`ProgressBar.Target`, an inside value). */
@@ -421,22 +423,24 @@ function Target({ className, style }: Omit<BlockProps, 'children'>) {
 export interface ProgressBarProps
   extends Omit<ProgressBarRootProps, 'children'>, Omit<ChangeHighlightProps, 'changeValue'> {
   /** The name of the bar, shown beside or above it. */
-  label?: ReactNode;
+  label?: ReactNode | undefined;
   /** Replaces the formatted value. Setting it shows the value. */
-  valueLabel?: ReactNode;
+  valueLabel?: ReactNode | undefined;
   /** Shows the value as text. */
-  showValue?: boolean;
+  showValue?: boolean | undefined;
   /** `inside` draws the value on the bar; it needs `size="thick"`, and hides when the bar is too short for it. */
-  valuePlacement?: 'outside' | 'inside';
+  valuePlacement?: 'outside' | 'inside' | undefined;
   /** Replace or hide named pieces. */
-  parts?: {
-    label?: Part<{ children: ReactNode }>;
-    value?: Part<{ children: ReactNode }>;
-    track?: Part<{ children: ReactNode }>;
-    fill?: Part<ProgressBarFillProps>;
-    target?: Part;
-    skeleton?: Part;
-  };
+  parts?:
+    | {
+        label?: Part<{ children: ReactNode }> | undefined;
+        value?: Part<{ children: ReactNode }> | undefined;
+        track?: Part<{ children: ReactNode }> | undefined;
+        fill?: Part<ProgressBarFillProps> | undefined;
+        target?: Part | undefined;
+        skeleton?: Part | undefined;
+      }
+    | undefined;
 }
 
 /** A bar that fills with a value: progress of a task, or a measured level. Fills the width of its container. */

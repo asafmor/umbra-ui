@@ -31,13 +31,14 @@ import {
   type MeterTone,
   type Zone,
 } from './scale';
+import { defined } from '../utils/defined';
 
 /** One step of a named scale. */
 export interface LevelMeterLevel {
   id: string;
   label: string;
   /** Colour of the marker when it sits on this level. */
-  tone?: MeterTone;
+  tone?: MeterTone | undefined;
 }
 
 /** A position on the scale: a number, or the id of a level when `levels` is set (a number is then its index). */
@@ -46,9 +47,9 @@ export type LevelMeterValue = number | string;
 interface MeterContext {
   ticks: { at: number; lit: boolean }[];
   boundaries: number[];
-  value?: number;
-  compare?: number;
-  band?: [number, number];
+  value?: number | undefined;
+  compare?: number | undefined;
+  band?: [number, number] | undefined;
   tone: MeterTone;
   valueText: ReactNode;
   /** How far the meter has shrunk: 1 hides the end labels, 2 and 3 thin the ticks. */
@@ -65,48 +66,48 @@ function useMeter() {
 }
 
 interface BlockProps {
-  children?: ReactNode;
-  className?: string;
-  style?: CSSProperties;
+  children?: ReactNode | undefined;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
 }
 
 export interface LevelMeterRootProps extends BlockProps {
   /** Where the marker sits. Leave it out to show only a `range`. */
-  value?: LevelMeterValue | null;
-  min?: number;
-  max?: number;
+  value?: LevelMeterValue | null | undefined;
+  min?: number | undefined;
+  max?: number | undefined;
   /** Number of ticks on a numeric scale. */
-  steps?: number;
+  steps?: number | undefined;
   /** A named scale: one tick per level, and the marker sits on a level. Replaces `min`, `max` and `steps`. */
-  levels?: LevelMeterLevel[];
+  levels?: LevelMeterLevel[] | undefined;
   /** Draws a band from the first position to the second, for an estimate or an allowed span. */
-  range?: [LevelMeterValue, LevelMeterValue];
+  range?: [LevelMeterValue, LevelMeterValue] | undefined;
   /** A second, smaller marker to compare the value with. */
-  compare?: LevelMeterValue;
+  compare?: LevelMeterValue | undefined;
   /** Names the comparison marker for assistive technology. */
-  compareLabel?: string;
+  compareLabel?: string | undefined;
   /** Names the band for assistive technology. */
-  rangeLabel?: string;
+  rangeLabel?: string | undefined;
   /** Colours the marker by the zone it is in. Zone edges are drawn as taller ticks, and the zone's label is read out. */
-  zones?: Zone[];
+  zones?: Zone[] | undefined;
   /** Colour of the marker, when no zone or level sets it. */
-  tone?: MeterTone;
-  orientation?: 'horizontal' | 'vertical';
-  size?: 'small' | 'default' | 'large';
+  tone?: MeterTone | undefined;
+  orientation?: 'horizontal' | 'vertical' | undefined;
+  size?: 'small' | 'default' | 'large' | undefined;
   /** Draws the box around the ticks. */
-  boxed?: boolean;
+  boxed?: boolean | undefined;
   /** Text of a position on a numeric scale. A named scale uses the labels of its levels. */
-  formatValue?: (value: number) => string;
+  formatValue?: ((value: number) => string) | undefined;
   /** Shows skeletons in place of the ticks and the value. */
-  loading?: boolean;
+  loading?: boolean | undefined;
   /** Shown in place of the value text when there is no value, or the value names no level. */
-  emptyLabel?: ReactNode;
+  emptyLabel?: ReactNode | undefined;
   /** What assistive technology and the tooltip say when there is no value and no range. */
-  noValueLabel?: string;
+  noValueLabel?: string | undefined;
   /** `false` turns off the tooltip that shows the exact value on hover. */
-  tooltip?: boolean;
+  tooltip?: boolean | undefined;
   /** Names a meter that has no visible label. */
-  'aria-label'?: string;
+  'aria-label'?: string | undefined;
 }
 
 const strides = [1, 1, 2, 5];
@@ -199,7 +200,6 @@ function Root({
   );
 
   const shared = {
-    ref,
     'data-umbra': 'level-meter',
     'data-orientation': orientation,
     'data-size': size,
@@ -229,6 +229,7 @@ function Root({
   if (loading) {
     return (
       <div
+        ref={ref}
         {...shared}
         data-loading
         aria-busy="true"
@@ -242,13 +243,14 @@ function Root({
   return (
     <>
       <AriaMeter
-        {...shared}
+        ref={ref}
+        {...defined(shared)}
         // A meter that shows only a range still needs a value: the middle of the range.
         value={value ?? (low !== undefined && high !== undefined ? (low + high) / 2 : min)}
         minValue={min}
         maxValue={max > min ? max : min + 1}
         valueLabel={spoken}
-        aria-label={rest['aria-label']}
+        {...defined({ 'aria-label': rest['aria-label'] })}
       >
         {content}
       </AriaMeter>
@@ -286,7 +288,7 @@ const at = (fraction: number, style?: CSSProperties) => ({ '--at': fraction, ...
 
 export interface LevelMeterStripProps extends BlockProps {
   /** Replaces the skeleton shown while loading. */
-  skeleton?: Part;
+  skeleton?: Part | undefined;
 }
 
 /** The ticks. `children` are drawn over them: `LevelMeter.Band` and `LevelMeter.Marker`. */
@@ -331,7 +333,7 @@ function Band({ className, style }: Omit<BlockProps, 'children'>) {
 
 export interface LevelMeterMarkerProps extends Omit<BlockProps, 'children'> {
   /** `value` is the main marker; `compare` is the smaller comparison marker. */
-  kind?: 'value' | 'compare';
+  kind?: 'value' | 'compare' | undefined;
 }
 
 /** A marker on the strip. Renders nothing when the meter has no such position. */
@@ -365,26 +367,28 @@ function Value({ children, className, style, ...change }: LevelMeterValueProps) 
 export interface LevelMeterProps
   extends Omit<LevelMeterRootProps, 'children'>, Omit<ChangeHighlightProps, 'changeValue'> {
   /** The name of the meter, shown before it. */
-  label?: ReactNode;
+  label?: ReactNode | undefined;
   /** Captions at the two ends of the scale. */
-  minLabel?: ReactNode;
-  maxLabel?: ReactNode;
+  minLabel?: ReactNode | undefined;
+  maxLabel?: ReactNode | undefined;
   /** Replaces the formatted value. Setting it shows the value. */
-  valueLabel?: ReactNode;
+  valueLabel?: ReactNode | undefined;
   /** Shows the value as text after the meter. */
-  showValue?: boolean;
+  showValue?: boolean | undefined;
   /** Replace or hide named pieces. */
-  parts?: {
-    label?: Part<{ children: ReactNode }>;
-    minLabel?: Part<{ children: ReactNode }>;
-    maxLabel?: Part<{ children: ReactNode }>;
-    strip?: Part<{ children: ReactNode }>;
-    band?: Part;
-    marker?: Part;
-    compare?: Part;
-    value?: Part<{ children: ReactNode }>;
-    skeleton?: Part;
-  };
+  parts?:
+    | {
+        label?: Part<{ children: ReactNode }> | undefined;
+        minLabel?: Part<{ children: ReactNode }> | undefined;
+        maxLabel?: Part<{ children: ReactNode }> | undefined;
+        strip?: Part<{ children: ReactNode }> | undefined;
+        band?: Part | undefined;
+        marker?: Part | undefined;
+        compare?: Part | undefined;
+        value?: Part<{ children: ReactNode }> | undefined;
+        skeleton?: Part | undefined;
+      }
+    | undefined;
 }
 
 /** A strip of ticks with a marker that shows where a value sits on a scale. */

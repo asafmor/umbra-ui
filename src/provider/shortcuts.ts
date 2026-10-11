@@ -7,12 +7,12 @@ export interface Shortcut {
   /** Human-readable name, shown in the shortcuts sheet. */
   label: string;
   /** Called when the keys are pressed, unless a mounted component has bound the id. */
-  action?: () => void;
+  action?: (() => void) | undefined;
   /**
    * Whether the keys work while the user types in a field. By default a combination with Ctrl, Command
    * or Alt does, and a bare key does not.
    */
-  whenTyping?: boolean;
+  whenTyping?: boolean | undefined;
 }
 
 /** Keys the library reserves (plan/specs/UmbraProvider.md). */

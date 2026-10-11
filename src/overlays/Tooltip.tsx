@@ -5,46 +5,49 @@ import { useScopeAttributes, useShortcut } from '../provider/UmbraProvider';
 import { cx, renderPart, type Part } from '../utils/parts';
 import { toAriaPlacement, useOverlayLayer, type OverlayPlacement } from './shared';
 import styles from './Tooltip.module.css';
+import { defined } from '../utils/defined';
 
 export interface TooltipProps {
   /** The control the tooltip describes: any umbra-ui control, or a plain focusable element. */
   children: ReactNode;
   /** The text. Nothing is shown when it is empty (and there is no `title` or `shortcut`). */
-  content?: ReactNode;
+  content?: ReactNode | undefined;
   /** A heading above the text, for a rich tooltip. */
-  title?: ReactNode;
+  title?: ReactNode | undefined;
   /** Id of a shortcut in the provider's list: its keys are shown as a hint. */
-  shortcut?: string;
-  placement?: OverlayPlacement;
+  shortcut?: string | undefined;
+  placement?: OverlayPlacement | undefined;
   /** Milliseconds before it shows on hover. Keyboard focus shows it at once. */
-  delay?: number;
+  delay?: number | undefined;
   /**
    * Milliseconds it stays after the pointer has left the control: time to move the pointer onto the
    * tooltip, which stays while the pointer is over it.
    */
-  closeDelay?: number;
+  closeDelay?: number | undefined;
   /** Gap between the control and the tooltip, in pixels. */
-  offset?: number;
+  offset?: number | undefined;
   /** Controlled state. */
-  open?: boolean;
-  defaultOpen?: boolean;
-  onOpenChange?: (open: boolean) => void;
+  open?: boolean | undefined;
+  defaultOpen?: boolean | undefined;
+  onOpenChange?: ((open: boolean) => void) | undefined;
   /** Never shows. */
-  disabled?: boolean;
+  disabled?: boolean | undefined;
   /**
    * Puts the control in a focusable wrapper that carries the tooltip, so it also shows for a control
    * that takes no pointer or focus events. Defaults to the control's own `disabled` prop.
    */
-  wrap?: boolean;
+  wrap?: boolean | undefined;
   /** Replace or hide named pieces. */
-  parts?: {
-    title?: Part<{ children: ReactNode }>;
-    body?: Part<{ children: ReactNode }>;
-    hint?: Part<{ children: string }>;
-  };
+  parts?:
+    | {
+        title?: Part<{ children: ReactNode }> | undefined;
+        body?: Part<{ children: ReactNode }> | undefined;
+        hint?: Part<{ children: string }> | undefined;
+      }
+    | undefined;
   /** On the tooltip itself. */
-  className?: string;
-  style?: CSSProperties;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
 }
 
 /**
@@ -77,7 +80,7 @@ export function Tooltip({
   // Inside an overflow menu the control is a menu row, which shows its own label and key hint.
   if (inMenu || (empty(content) && empty(title) && !hint)) return children;
 
-  const child = isValidElement<{ disabled?: boolean }>(children) ? children : null;
+  const child = isValidElement<{ disabled?: boolean | undefined }>(children) ? children : null;
   const standIn = (wrapper: HTMLSpanElement | null) => {
     const control = wrapper?.firstElementChild;
     if (!wrapper || !(control instanceof HTMLElement)) return;
@@ -104,15 +107,13 @@ export function Tooltip({
       // Long enough to move the pointer from the control onto the tooltip, which then stays while the
       // pointer is over it (WCAG 1.4.13, hoverable).
       closeDelay={closeDelay}
-      isOpen={open}
-      defaultOpen={defaultOpen}
-      onOpenChange={onOpenChange}
+      {...defined({ isOpen: open, defaultOpen, onOpenChange })}
       isDisabled={disabled}
     >
       {trigger}
       <AriaTooltip
         {...scope}
-        {...layer}
+        {...defined(layer)}
         placement={toAriaPlacement(placement)}
         offset={offset}
         // React Aria keeps what carries this out of the inert page behind a modal.
@@ -120,7 +121,7 @@ export function Tooltip({
         data-umbra="tooltip"
         data-umbra-overlay=""
         data-rich={!empty(title) || undefined}
-        className={cx(styles.root, className)}
+        {...defined({ className: cx(styles.root, className) })}
         style={{ ...scope.style, ...style }}
       >
         {!empty(title) &&

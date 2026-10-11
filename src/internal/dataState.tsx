@@ -4,24 +4,24 @@ import { EmptyState, type EmptyStateRootProps } from '../data/EmptyState';
 
 /** The pieces of an empty or error state, when a whole node is more than is needed. */
 export interface DataStateContent {
-  title?: ReactNode;
-  description?: ReactNode;
-  icon?: ReactNode;
-  action?: ReactNode;
+  title?: ReactNode | undefined;
+  description?: ReactNode | undefined;
+  icon?: ReactNode | undefined;
+  action?: ReactNode | undefined;
 }
 
 /** The loading, empty and error props shared by every data component. */
 export interface DataStateProps {
   /** Shows skeletons in the final layout and marks the component busy. */
-  loading?: boolean;
+  loading?: boolean | undefined;
   /** Shown when there is no data: text, a node, or `{ title, description, icon, action }`. Defaults to a short English text. */
-  empty?: ReactNode | DataStateContent;
+  empty?: ReactNode | DataStateContent | undefined;
   /** Shown in place of the data when set: text, a node, `{ title, description, icon, action }`, or `true` for a default text. */
-  error?: ReactNode | DataStateContent;
+  error?: ReactNode | DataStateContent | undefined;
   /** Adds a retry button to the error state. */
-  onRetry?: () => void;
+  onRetry?: (() => void) | undefined;
   /** Label of the retry button. */
-  retryLabel?: string;
+  retryLabel?: string | undefined;
 }
 
 export const isContent = (value: unknown): value is DataStateContent =>
@@ -104,10 +104,10 @@ export function dataState(
   options: {
     isEmpty: boolean;
     /** The component's own default empty text. */
-    defaultEmpty?: DataStateContent;
-    variant?: 'block' | 'inline';
+    defaultEmpty?: DataStateContent | undefined;
+    variant?: 'block' | 'inline' | undefined;
     /** Marks the state with `data-part` (`empty` or `error`). Off for a component that wraps the state in its own part. */
-    part?: boolean;
+    part?: boolean | undefined;
   },
 ): ReactNode | null {
   const { isEmpty, defaultEmpty = { title: 'Nothing to show' }, variant, part } = options;

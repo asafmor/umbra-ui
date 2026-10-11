@@ -12,18 +12,18 @@ import { rampSteps, valueLevel, type ValueLevelOptions } from './valueLevel';
 import styles from './ValuePill.module.css';
 
 interface BlockProps {
-  className?: string;
-  style?: CSSProperties;
-  children?: ReactNode;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
+  children?: ReactNode | undefined;
 }
 
 export interface ValuePillRootProps extends BlockProps {
   /** The step of the value ramp, 1 (worst) to 5 (best). `null` is the look of "no value". */
-  level?: number | null;
+  level?: number | null | undefined;
   /** `square` for values in dense rows, `circle` for grades of one or two characters. */
-  shape?: 'pill' | 'square' | 'circle';
+  shape?: 'pill' | 'square' | 'circle' | undefined;
   /** `small` is for use inside table cells. */
-  size?: 'small' | 'default' | 'large';
+  size?: 'small' | 'default' | 'large' | undefined;
 }
 
 function Root({
@@ -64,8 +64,8 @@ export interface ValuePillLevelProps {
   level: number;
   /** What a screen reader hears. */
   label: string;
-  className?: string;
-  style?: CSSProperties;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
 }
 
 /** The level as bars, so it does not depend on colour. */
@@ -88,21 +88,23 @@ export interface ValuePillProps
   /** The value. `null` or `undefined` shows `emptyLabel` in a neutral pill. */
   value: number | null | undefined;
   /** Turns the value into what is shown: `(v) => v.toFixed(2)`, or a grade letter. */
-  formatValue?: (value: number) => ReactNode;
+  formatValue?: ((value: number) => ReactNode) | undefined;
   /** Adds a small bar marker of the level, for readers who cannot tell the colours apart. */
-  showLevel?: boolean;
+  showLevel?: boolean | undefined;
   /** What a screen reader hears for the marker. */
-  levelLabel?: (level: number, steps: number) => string;
+  levelLabel?: ((level: number, steps: number) => string) | undefined;
   /** Shown when there is no value. */
-  emptyLabel?: ReactNode;
+  emptyLabel?: ReactNode | undefined;
   /** Shows a placeholder of the pill's size. */
-  loading?: boolean;
+  loading?: boolean | undefined;
   /** Replace or hide named pieces. */
-  parts?: {
-    value?: Part<{ children: ReactNode }>;
-    level?: Part<ValuePillLevelProps>;
-    skeleton?: Part;
-  };
+  parts?:
+    | {
+        value?: Part<{ children: ReactNode }> | undefined;
+        level?: Part<ValuePillLevelProps> | undefined;
+        skeleton?: Part | undefined;
+      }
+    | undefined;
 }
 
 /** A value coloured by where it falls on a five-step ramp. */

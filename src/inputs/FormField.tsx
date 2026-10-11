@@ -18,25 +18,25 @@ export interface FormFieldRootProps extends BlockProps {
    * `stacked`: label above the control. `inline`: label and control on one line, the description
    * and error under the control. `row` and `inline` stack when the field is narrow.
    */
-  layout?: 'row' | 'stacked' | 'inline';
+  layout?: 'row' | 'stacked' | 'inline' | undefined;
   /** The width of the label column of a `row` or `inline` field: a number of pixels, or any CSS width. */
-  labelWidth?: number | string;
+  labelWidth?: number | string | undefined;
   /** Gives the field its own raised surface and padding, as the rows of a settings list have. */
-  surface?: boolean;
+  surface?: boolean | undefined;
   /** Marks the control invalid. Set by itself when the field has an error. */
-  invalid?: boolean;
+  invalid?: boolean | undefined;
   /** Marks the control required and shows the required marker. */
-  required?: boolean;
+  required?: boolean | undefined;
   /** Shows the optional marker. */
-  optional?: boolean;
+  optional?: boolean | undefined;
   /** The text of the required marker. */
-  requiredLabel?: string;
+  requiredLabel?: string | undefined;
   /** The text of the optional marker. */
-  optionalLabel?: string;
+  optionalLabel?: string | undefined;
   /** Disables the control. */
-  disabled?: boolean;
+  disabled?: boolean | undefined;
   /** The id of the control. Generated when not set. */
-  id?: string;
+  id?: string | undefined;
 }
 
 function Root({
@@ -131,7 +131,7 @@ export interface FormFieldControlBlockProps extends Omit<BlockProps, 'children'>
    * The control. An umbra-ui input picks up the field by itself. For a plain form element pass a
    * function and spread what it receives: `{(control) => <input {...control} />}`.
    */
-  children?: ReactNode | ((control: FormFieldControlProps) => ReactNode);
+  children?: ReactNode | ((control: FormFieldControlProps) => ReactNode) | undefined;
 }
 
 function Control({ className, style, children }: FormFieldControlBlockProps) {
@@ -153,20 +153,22 @@ function Control({ className, style, children }: FormFieldControlBlockProps) {
 
 export interface FormFieldProps extends Omit<FormFieldRootProps, 'children'> {
   /** The control: an umbra-ui input, or a function for a plain form element. */
-  children?: FormFieldControlBlockProps['children'];
+  children?: FormFieldControlBlockProps['children'] | undefined;
   /** The label. A click on it focuses or toggles the control. */
-  label?: ReactNode;
+  label?: ReactNode | undefined;
   /** A line that explains the setting. */
-  description?: ReactNode;
+  description?: ReactNode | undefined;
   /** An error message, shown with an icon. Setting it makes the control invalid. */
-  error?: ReactNode;
+  error?: ReactNode | undefined;
   /** Replace or hide named pieces. */
-  parts?: {
-    label?: Part<{ children: ReactNode }>;
-    description?: Part<{ children: ReactNode }>;
-    control?: Part<FormFieldControlBlockProps>;
-    error?: Part<{ children: ReactNode }>;
-  };
+  parts?:
+    | {
+        label?: Part<{ children: ReactNode }> | undefined;
+        description?: Part<{ children: ReactNode }> | undefined;
+        control?: Part<FormFieldControlBlockProps> | undefined;
+        error?: Part<{ children: ReactNode }> | undefined;
+      }
+    | undefined;
 }
 
 /** Pairs a label, a description and an error message with one control: a row of a form or settings list. */

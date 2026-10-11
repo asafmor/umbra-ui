@@ -37,20 +37,20 @@ function useHeader() {
 }
 
 interface BlockProps {
-  className?: string;
-  style?: CSSProperties;
-  children?: ReactNode;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
+  children?: ReactNode | undefined;
 }
 
 export interface PageHeaderRootProps extends BlockProps {
   /** `tinted` is a panel in the context tint. `band` fills with the brand colour, or `bandColor`. */
-  tone?: 'default' | 'tinted' | 'band';
+  tone?: 'default' | 'tinted' | 'band' | undefined;
   /** Colour of the band (hex or `rgb()`); the text colour is chosen for contrast with it. */
-  bandColor?: string;
+  bandColor?: string | undefined;
   /** `compact` is for the header of a detail pane inside a card. */
-  size?: 'default' | 'compact';
+  size?: 'default' | 'compact' | undefined;
   /** Heading level of the title. */
-  headingLevel?: 1 | 2 | 3 | 4 | 5 | 6;
+  headingLevel?: 1 | 2 | 3 | 4 | 5 | 6 | undefined;
 }
 
 function Root({
@@ -99,17 +99,17 @@ function Root({
 /** One step of the path to the current page. The last one is the current page. */
 export interface PageHeaderCrumb {
   label: ReactNode;
-  href?: string;
+  href?: string | undefined;
 }
 
 export interface PageHeaderBreadcrumbsProps {
   items: PageHeaderCrumb[];
   /** Accessible name of the landmark. */
-  label?: string;
+  label?: string | undefined;
   /** Plugs in the app's router link. Defaults to a plain `<a>`. */
-  renderLink?: (props: LinkRenderProps) => ReactNode;
-  className?: string;
-  style?: CSSProperties;
+  renderLink?: ((props: LinkRenderProps) => ReactNode) | undefined;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
 }
 
 function Breadcrumbs({
@@ -177,10 +177,10 @@ function Content({ className, style, children }: BlockProps) {
 
 export interface PageHeaderBackProps {
   /** Accessible name of the button. */
-  label?: string;
-  onBack?: () => void;
-  className?: string;
-  style?: CSSProperties;
+  label?: string | undefined;
+  onBack?: (() => void) | undefined;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
 }
 
 function Back({ label = 'Back', onBack, className, style }: PageHeaderBackProps) {
@@ -229,7 +229,7 @@ function Overline({ className, style, children }: BlockProps) {
 
 export interface PageHeaderTitleProps extends BlockProps {
   /** Tags or badges shown after the title. */
-  tags?: ReactNode;
+  tags?: ReactNode | undefined;
 }
 
 function Title({ tags, className, style, children }: PageHeaderTitleProps) {
@@ -267,7 +267,7 @@ export interface PageHeaderFact {
 
 export interface PageHeaderMetaProps extends BlockProps {
   /** Labelled facts, shown as a list with a rule between them. Or pass any nodes as children. */
-  items?: PageHeaderFact[];
+  items?: PageHeaderFact[] | undefined;
 }
 
 function Meta({ items, className, style, children }: PageHeaderMetaProps) {
@@ -288,7 +288,7 @@ function Meta({ items, className, style, children }: PageHeaderMetaProps) {
 
 export interface PageHeaderActionsProps extends BlockProps {
   /** Accessible name of the overflow menu button. */
-  moreLabel?: string;
+  moreLabel?: string | undefined;
 }
 
 /** Trailing controls. They move into an overflow menu when they do not fit beside the titles. */
@@ -317,45 +317,47 @@ function Tabs({ className, style, children }: BlockProps) {
 }
 
 export interface PageHeaderProps extends Omit<PageHeaderRootProps, 'children'> {
-  title?: ReactNode;
+  title?: ReactNode | undefined;
   /** A line under the title. */
-  subtitle?: ReactNode;
+  subtitle?: ReactNode | undefined;
   /** A small line above the title, for example the kind of thing the page shows. */
-  overline?: ReactNode;
+  overline?: ReactNode | undefined;
   /** Leading avatar, entity icon or image. */
-  media?: ReactNode;
+  media?: ReactNode | undefined;
   /** A row of facts: `{ label, value }` items, or any node. */
-  meta?: ReactNode | PageHeaderFact[];
+  meta?: ReactNode | PageHeaderFact[] | undefined;
   /** Tags or badges after the title. */
-  tags?: ReactNode;
+  tags?: ReactNode | undefined;
   /** Trailing controls. They move into an overflow menu when they do not fit. */
-  actions?: ReactNode;
+  actions?: ReactNode | undefined;
   /** Accessible name of the overflow menu button. */
-  moreLabel?: string;
+  moreLabel?: string | undefined;
   /** Shows a back button before the title. */
-  onBack?: () => void;
+  onBack?: (() => void) | undefined;
   /** Accessible name of the back button. */
-  backLabel?: string;
+  backLabel?: string | undefined;
   /** The path to this page; the last item is the current page. */
-  breadcrumbs?: PageHeaderCrumb[];
+  breadcrumbs?: PageHeaderCrumb[] | undefined;
   /** Accessible name of the breadcrumb landmark. */
-  breadcrumbsLabel?: string;
+  breadcrumbsLabel?: string | undefined;
   /** Plugs the app's router link into the breadcrumbs. Defaults to a plain `<a>`. */
-  renderLink?: (props: LinkRenderProps) => ReactNode;
+  renderLink?: ((props: LinkRenderProps) => ReactNode) | undefined;
   /** A tab list, placed along the bottom edge. */
-  tabs?: ReactNode;
+  tabs?: ReactNode | undefined;
   /** Replace or hide named pieces. */
-  parts?: {
-    breadcrumbs?: Part<PageHeaderBreadcrumbsProps>;
-    back?: Part<PageHeaderBackProps>;
-    media?: Part<{ children: ReactNode }>;
-    overline?: Part<{ children: ReactNode }>;
-    title?: Part<PageHeaderTitleProps>;
-    subtitle?: Part<{ children: ReactNode }>;
-    meta?: Part<PageHeaderMetaProps>;
-    actions?: Part<PageHeaderActionsProps>;
-    tabs?: Part<{ children: ReactNode }>;
-  };
+  parts?:
+    | {
+        breadcrumbs?: Part<PageHeaderBreadcrumbsProps> | undefined;
+        back?: Part<PageHeaderBackProps> | undefined;
+        media?: Part<{ children: ReactNode }> | undefined;
+        overline?: Part<{ children: ReactNode }> | undefined;
+        title?: Part<PageHeaderTitleProps> | undefined;
+        subtitle?: Part<{ children: ReactNode }> | undefined;
+        meta?: Part<PageHeaderMetaProps> | undefined;
+        actions?: Part<PageHeaderActionsProps> | undefined;
+        tabs?: Part<{ children: ReactNode }> | undefined;
+      }
+    | undefined;
 }
 
 const isFacts = (meta: PageHeaderProps['meta']): meta is PageHeaderFact[] =>

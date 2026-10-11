@@ -19,7 +19,7 @@ export interface RadarAxis {
   id: string;
   label: string;
   /** The value at the outer ring of this axis. Defaults to the chart's `max`. */
-  max?: number;
+  max?: number | undefined;
 }
 
 export interface RadarSeries {
@@ -28,9 +28,9 @@ export interface RadarSeries {
   /** One value per axis, in the order of `axes`. */
   values: (number | null)[];
   /** Any CSS colour. Without it the series takes the series palette, by its position. */
-  color?: string;
+  color?: string | undefined;
   /** The shape drawn on each value. By default series take the shapes in turn. */
-  marker?: PointShapeKind;
+  marker?: PointShapeKind | undefined;
 }
 
 interface RadarModel {
@@ -39,12 +39,12 @@ interface RadarModel {
   cy: number;
   radius: number;
   angles: number[];
-  labels: (PolarLabel & { value?: string })[];
+  labels: (PolarLabel & { value?: string | undefined })[];
   series: {
     id: string;
     color: string;
     shape: PointShapeKind;
-    dash?: string;
+    dash?: string | undefined;
     path: string;
     points: PointModel[];
   }[];
@@ -54,13 +54,13 @@ export interface RadarChartRootProps extends ChartCommonProps {
   axes: RadarAxis[];
   series: RadarSeries[];
   /** The value at the outer ring. Defaults to a round number above the largest value. */
-  max?: number;
+  max?: number | undefined;
   /** Where the first axis points, in degrees clockwise from 12 o'clock. */
-  startAngle?: number;
+  startAngle?: number | undefined;
   /** Replace or hide named pieces. */
-  parts?: ChartParts;
+  parts?: ChartParts | undefined;
   /** The blocks to draw, in order. */
-  children?: ReactNode;
+  children?: ReactNode | undefined;
 }
 
 const pointSize = 3.5;
@@ -159,8 +159,8 @@ function Root({ axes, series, max, startAngle = 0, children, ...common }: RadarC
 
 export interface RadarChartGridProps {
   /** Number of rings, the outer one included. */
-  rings?: number;
-  shape?: 'polygon' | 'circle';
+  rings?: number | undefined;
+  shape?: 'polygon' | 'circle' | undefined;
 }
 
 /** The rings and the spokes. */
@@ -196,7 +196,7 @@ function Grid({ rings = 3, shape = 'polygon' }: RadarChartGridProps) {
 }
 
 /** The area, outline and points of each series. */
-function Series({ filled = true }: { filled?: boolean }) {
+function Series({ filled = true }: { filled?: boolean | undefined }) {
   const frame = useFrame<RadarModel>();
   return (
     <g data-part="series">
@@ -240,11 +240,11 @@ function AxisLabels() {
 
 export interface RadarChartProps extends Omit<RadarChartRootProps, 'children'> {
   /** Number of grid rings, the outer one included. */
-  rings?: number;
+  rings?: number | undefined;
   /** Shape of the grid rings. */
-  grid?: 'polygon' | 'circle';
+  grid?: 'polygon' | 'circle' | undefined;
   /** Fills the area of each series. */
-  filled?: boolean;
+  filled?: boolean | undefined;
 }
 
 /** Compares one or more series across several axes that share a centre. */

@@ -21,9 +21,9 @@ export interface DonutSegment {
   label: string;
   value: number;
   /** Any CSS colour. Without it the segment takes the series palette, by its position. */
-  color?: string;
+  color?: string | undefined;
   /** The fill: solid, or outlined with a pattern. By default segments take them in turn. */
-  marker?: FillKind;
+  marker?: FillKind | undefined;
 }
 
 export type DonutTone = 'default' | 'success' | 'warning' | 'danger' | 'info';
@@ -52,33 +52,33 @@ interface DonutModel {
 
 export interface DonutChartRootProps extends ChartCommonProps {
   /** The single-value form: one value against `max`. */
-  value?: number;
+  value?: number | undefined;
   /** What a full ring stands for, in the single-value form. */
-  max?: number;
+  max?: number | undefined;
   /** The segment form: several values that share the ring. */
-  data?: DonutSegment[];
+  data?: DonutSegment[] | undefined;
   /** Width of the ring in pixels. By default a fifth of the radius. */
-  thickness?: number;
+  thickness?: number | undefined;
   /** Where the ring starts, in degrees clockwise from 12 o'clock. */
-  startAngle?: number;
+  startAngle?: number | undefined;
   /** Degrees the ring covers. Less than 360 leaves it open, as a gauge. */
-  sweep?: number;
+  sweep?: number | undefined;
   /** Rounds the ends of the value. On by default in the single-value form. */
-  roundedCaps?: boolean;
+  roundedCaps?: boolean | undefined;
   /** Degrees left empty between segments. */
-  gap?: number;
+  gap?: number | undefined;
   /** Colour of the single value. The number in the centre is the cue that does not depend on colour. */
-  tone?: DonutTone;
+  tone?: DonutTone | undefined;
   /** Picks the tone from the value: the last entry whose `from` the value reaches. */
-  thresholds?: { from: number; tone: DonutTone }[];
+  thresholds?: { from: number; tone: DonutTone }[] | undefined;
   /** Any CSS colour for the single value; wins over `tone`. */
-  color?: string;
+  color?: string | undefined;
   /** What the single value is called for screen readers when the chart is named by `aria-labelledby`. */
-  valueLabel?: string;
+  valueLabel?: string | undefined;
   /** Replace or hide named pieces. */
-  parts?: ChartParts;
+  parts?: ChartParts | undefined;
   /** The blocks to draw, in order. */
-  children?: ReactNode;
+  children?: ReactNode | undefined;
 }
 
 function Root({
@@ -253,9 +253,9 @@ function Labels() {
 
 export interface DonutChartCenterProps {
   /** The large line. */
-  value?: ReactNode;
+  value?: ReactNode | undefined;
   /** The caption under it. It is the first to hide as the ring shrinks. */
-  label?: ReactNode;
+  label?: ReactNode | undefined;
 }
 
 /** The content in the middle of the ring. */
@@ -283,11 +283,11 @@ function Center({ value, label }: DonutChartCenterProps) {
 
 export interface DonutChartProps extends Omit<DonutChartRootProps, 'children' | 'parts'> {
   /** The large line in the middle. In the single-value form it defaults to the percentage; `null` hides it. */
-  centerValue?: ReactNode;
+  centerValue?: ReactNode | undefined;
   /** The caption under it. */
-  centerLabel?: ReactNode;
+  centerLabel?: ReactNode | undefined;
   /** Replace or hide named pieces. */
-  parts?: ChartParts & { center?: Part<DonutChartCenterProps> };
+  parts?: (ChartParts & { center?: Part<DonutChartCenterProps> | undefined }) | undefined;
 }
 
 /** A ring that shows one value against a total, or how a total splits into segments. */

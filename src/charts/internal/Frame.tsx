@@ -52,59 +52,59 @@ export interface ChartTooltipProps {
 
 export interface ChartParts {
   /** The built-in legend. */
-  legend?: Part<LegendProps>;
-  tooltip?: Part<ChartTooltipProps>;
+  legend?: Part<LegendProps> | undefined;
+  tooltip?: Part<ChartTooltipProps> | undefined;
   /** The placeholder shown while `loading`. */
-  skeleton?: Part;
+  skeleton?: Part | undefined;
   /** The empty state: shown when there is no data, or when every series is switched off. */
-  empty?: Part<{ children: ReactNode }>;
+  empty?: Part<{ children: ReactNode }> | undefined;
   /** The error state, with its retry button when `onRetry` is set. */
-  error?: Part<{ children: ReactNode }>;
+  error?: Part<{ children: ReactNode }> | undefined;
 }
 
 /** Props every chart takes. The loading, empty and error props are the same as on every data component. */
 export interface ChartCommonProps extends DataStateProps {
   /** Accessible name of the chart. Required unless `aria-labelledby` is set. */
-  'aria-label'?: string;
+  'aria-label'?: string | undefined;
   /** Id of the element that names the chart, for example a card title. */
-  'aria-labelledby'?: string;
+  'aria-labelledby'?: string | undefined;
   /** What a screen reader hears after the name. Defaults to a generated summary of the data. */
-  description?: string;
+  description?: string | undefined;
   /**
    * The legend: `true` or a placement shows the built-in one, `false` hides it, and a node replaces it.
    * By default it is shown below the chart when there is more than one series.
    */
-  legend?: boolean | ChartLegendPlacement | ReactNode;
+  legend?: boolean | ChartLegendPlacement | ReactNode | undefined;
   /** Ids of the series that are switched off (controlled). */
-  hiddenIds?: readonly string[];
-  defaultHiddenIds?: readonly string[];
-  onHiddenChange?: (hiddenIds: string[]) => void;
+  hiddenIds?: readonly string[] | undefined;
+  defaultHiddenIds?: readonly string[] | undefined;
+  onHiddenChange?: ((hiddenIds: string[]) => void) | undefined;
   /** Draws labels on the chart itself, so it can be read without the legend or the tooltip. */
-  labels?: boolean;
+  labels?: boolean | undefined;
   /** Formats a value for labels, the tooltip and screen readers. Defaults to the provider's locale. */
-  formatValue?: (value: number) => string;
+  formatValue?: ((value: number) => string) | undefined;
   /** Called when a point is clicked, or activated with Enter or Space. */
-  onPointPress?: (point: ChartPoint) => void;
+  onPointPress?: ((point: ChartPoint) => void) | undefined;
   /** Shown in place of the plot when the legend has switched every series off. */
-  allHiddenLabel?: string;
+  allHiddenLabel?: string | undefined;
   /** Accessible name of the list of data points. */
-  pointsLabel?: string;
+  pointsLabel?: string | undefined;
   /** Accessible name of the legend. */
-  legendLabel?: string;
+  legendLabel?: string | undefined;
   /**
    * `fill` (default) takes the height of the parent, and falls back to the content's height in a parent
    * that has none (flowing content, a popover, a modal body, an accordion panel). `content` is always
    * as tall as the content: the plot is `--umbra-chart-content-height` (240px) high. A number is a height in pixels.
    */
-  height?: 'fill' | 'content' | number;
-  className?: string;
-  style?: CSSProperties;
+  height?: 'fill' | 'content' | number | undefined;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
 }
 
 export type Outline =
   | { type: 'circle'; r: number }
   | { type: 'rect'; x: number; y: number; width: number; height: number }
-  | { type: 'path'; d: string; transform?: string };
+  | { type: 'path'; d: string; transform?: string | undefined };
 
 /** A point as a chart draws it: where it is, what it says, and what the app gets back. */
 export interface PointModel {
@@ -127,8 +127,8 @@ export interface SeriesInfo {
   label: string;
   color: string;
   /** The legend marker: one of the Legend's kinds, or a drawn glyph. */
-  marker?: SeriesMarkerKind;
-  glyph?: ReactNode;
+  marker?: SeriesMarkerKind | undefined;
+  glyph?: ReactNode | undefined;
 }
 
 export interface FrameModel {
@@ -191,10 +191,10 @@ export interface FrameProps<M extends FrameModel> extends ChartCommonProps {
   /** Changes when the data does, so the marks draw in again. */
   signature: string;
   /** The arrow keys along the data are up and down (horizontal bars). */
-  vertical?: boolean;
-  parts?: ChartParts;
+  vertical?: boolean | undefined;
+  parts?: ChartParts | undefined;
   build: (input: BuildInput) => M;
-  children?: ReactNode;
+  children?: ReactNode | undefined;
 }
 
 export function Frame<M extends FrameModel>({

@@ -31,18 +31,19 @@ import { cx, renderPart, type Part } from '../utils/parts';
 import type { BlockProps } from './fieldParts';
 import styles from './SearchField.module.css';
 import { useFieldControl } from './useField';
+import { defined } from '../utils/defined';
 
 /** One row of the list under the field. */
 export interface SearchSuggestion {
   id: string;
   label: ReactNode;
   /** The label as text: it becomes the field's text when the row is chosen. Needed when `label` is not a string. */
-  textValue?: string;
+  textValue?: string | undefined;
   /** A second, quieter line. */
-  description?: ReactNode;
-  icon?: ReactNode;
+  description?: ReactNode | undefined;
+  icon?: ReactNode | undefined;
   /** The heading this row is grouped under. */
-  section?: string;
+  section?: string | undefined;
 }
 
 interface Row {
@@ -50,7 +51,7 @@ interface Row {
   text: string;
   /** A recent search, not a suggestion. */
   recent: boolean;
-  suggestion?: SearchSuggestion;
+  suggestion?: SearchSuggestion | undefined;
 }
 
 interface SearchFieldContextValue {
@@ -81,62 +82,62 @@ function useSearchField() {
 
 export interface SearchFieldRootProps extends BlockProps {
   /** Controlled text. */
-  value?: string;
-  defaultValue?: string;
+  value?: string | undefined;
+  defaultValue?: string | undefined;
   /** Called with the text as it changes, after `debounce` milliseconds without typing. */
-  onChange?: (text: string) => void;
+  onChange?: ((text: string) => void) | undefined;
   /** Called with the text when Enter is pressed, or a recent search is chosen. */
-  onSubmit?: (text: string) => void;
+  onSubmit?: ((text: string) => void) | undefined;
   /** Called when the field is emptied with its clear button or Escape. */
-  onClear?: () => void;
+  onClear?: (() => void) | undefined;
   /** Milliseconds `onChange` waits after the last keystroke. Submitting and clearing do not wait. */
-  debounce?: number;
-  placeholder?: string;
+  debounce?: number | undefined;
+  placeholder?: string | undefined;
   /** Shows a spinner in place of the search icon, and skeleton rows in an empty list. */
-  loading?: boolean;
+  loading?: boolean | undefined;
   /** What a screen reader hears while `loading`. */
-  loadingLabel?: string;
+  loadingLabel?: string | undefined;
   /** `small` is for table cells and dense toolbars. Otherwise the height follows the density level. */
-  size?: 'default' | 'small';
+  size?: 'default' | 'small' | undefined;
   /**
    * A key that focuses the field, shown at its end while it is empty: the id of a shortcut in the
    * provider's list, or the keys themselves (`/`, `Mod+F`).
    */
-  shortcut?: string;
+  shortcut?: string | undefined;
   /** Shows only the search icon until it is pressed, focused or has text; it collapses again when empty and blurred. */
-  collapsible?: boolean;
+  collapsible?: boolean | undefined;
   /**
    * How a `collapsible` field opens. `overlay`: over the space beside it, so nothing around it moves.
    * `inline`: it takes the space, and what is beside it moves.
    */
-  expandMode?: 'overlay' | 'inline';
+  expandMode?: 'overlay' | 'inline' | undefined;
   /** The direction an `overlay` field grows in. `start` suits a field at the end of a bar. */
-  expandTo?: 'start' | 'end';
+  expandTo?: 'start' | 'end' | undefined;
   /** Text beside the icon of a collapsed field. */
-  collapsedLabel?: ReactNode;
+  collapsedLabel?: ReactNode | undefined;
   /** Makes the field a `search` landmark, for the main search of a page. */
-  landmark?: boolean;
+  landmark?: boolean | undefined;
   /** Accessible name, when there is no `FormField` label. */
-  'aria-label'?: string;
+  'aria-label'?: string | undefined;
   /** @deprecated Use `aria-label`: the field shows no label of its own (decision 07). */
-  label?: string;
+  label?: string | undefined;
   /** Rows shown in a list under the field, as given: the app filters them. Pass `[]`, not nothing, while there are none. */
-  suggestions?: SearchSuggestion[];
+  suggestions?: SearchSuggestion[] | undefined;
   /** Earlier searches, shown in the list while the field is empty. */
-  recent?: string[];
+  recent?: string[] | undefined;
   /** Called with the id of the suggestion the user chose. Its text becomes the field's text. */
-  onSelect?: (id: string) => void;
+  onSelect?: ((id: string) => void) | undefined;
   /** Lets the user remove a recent search: a button on its row, or Shift+Delete. */
-  onRemoveRecent?: (text: string) => void;
-  disabled?: boolean;
+  onRemoveRecent?: ((text: string) => void) | undefined;
+  disabled?: boolean | undefined;
   /** Focusable and selectable, but cannot be changed. */
-  readOnly?: boolean;
+  readOnly?: boolean | undefined;
   /** Shows the danger border and an error icon. */
-  invalid?: boolean;
-  required?: boolean;
+  invalid?: boolean | undefined;
+  required?: boolean | undefined;
   /** Form field name. */
-  name?: string;
-  id?: string;
+  name?: string | undefined;
+  id?: string | undefined;
 }
 
 function Root({
@@ -303,7 +304,6 @@ function Root({
   };
 
   const field = {
-    ref: boxRef,
     'data-part': 'field',
     className: styles.box,
     isDisabled: control.disabled,
@@ -375,7 +375,8 @@ function Root({
       )}
       {hasList ? (
         <AriaComboBox
-          {...field}
+          ref={boxRef}
+          {...defined(field)}
           inputValue={shown}
           onInputChange={(next) => change(next)}
           value={null}
@@ -390,7 +391,7 @@ function Root({
           {content}
         </AriaComboBox>
       ) : (
-        <AriaSearchField {...field} value={shown} onChange={(next) => change(next)}>
+        <AriaSearchField ref={boxRef} {...defined(field)} value={shown} onChange={(next) => change(next)}>
           {content}
         </AriaSearchField>
       )}
@@ -430,9 +431,7 @@ function Input({ className, style }: Omit<BlockProps, 'children'>) {
         ref={inputRef}
         id={inputId}
         data-part="input"
-        placeholder={placeholder}
-        className={cx(styles.input, className)}
-        style={style}
+        {...defined({ placeholder, className: cx(styles.input, className), style })}
       />
       {invalid && (
         <span data-part="invalidIcon" className={styles.invalidIcon}>
@@ -447,9 +446,9 @@ function Input({ className, style }: Omit<BlockProps, 'children'>) {
 
 export interface SearchFieldClearProps {
   /** Accessible name of the button. */
-  label?: string;
-  className?: string;
-  style?: React.CSSProperties;
+  label?: string | undefined;
+  className?: string | undefined;
+  style?: React.CSSProperties | undefined;
 }
 
 /** The button that empties the field. It is rendered only while there is text to clear. */
@@ -502,18 +501,20 @@ export interface SearchFieldSuggestionPartProps {
 
 export interface SearchFieldSuggestionsProps extends Omit<BlockProps, 'children'> {
   /** Heading of the recent searches. */
-  recentLabel?: string;
+  recentLabel?: string | undefined;
   /** Tooltip of the button that removes a recent search. */
-  removeRecentLabel?: string;
+  removeRecentLabel?: string | undefined;
   /** Shown when there is text and no suggestion for it. */
-  noResultsLabel?: string;
+  noResultsLabel?: string | undefined;
   /** Tallest the list may be, in pixels. It is never taller than the room in the window; the rows scroll. */
-  maxHeight?: number;
+  maxHeight?: number | undefined;
   /** Replace or hide named pieces. */
-  parts?: {
-    suggestion?: Part<SearchFieldSuggestionPartProps>;
-    empty?: Part<{ children: ReactNode }>;
-  };
+  parts?:
+    | {
+        suggestion?: Part<SearchFieldSuggestionPartProps> | undefined;
+        empty?: Part<{ children: ReactNode }> | undefined;
+      }
+    | undefined;
 }
 
 /** The list under the field: recent searches and suggestions. It is rendered only when the field has either. */
@@ -545,7 +546,7 @@ function Suggestions({
       textValue={row.text}
       data-part="suggestion"
       data-recent={row.recent ? row.text : undefined}
-      className={cx(menuStyles.item, styles.suggestion)}
+      {...defined({ className: cx(menuStyles.item, styles.suggestion) })}
     >
       {renderPart(
         parts?.suggestion,
@@ -614,7 +615,7 @@ function Suggestions({
   return (
     <AriaPopover
       {...scope}
-      {...layer}
+      {...defined(layer)}
       ref={flipWhenCut}
       triggerRef={field.boxRef}
       placement="bottom start"
@@ -623,12 +624,12 @@ function Suggestions({
       data-umbra="search-field-suggestions"
       data-umbra-overlay=""
       data-part="suggestions"
-      className={cx(menuStyles.root, styles.popover, className)}
+      {...defined({ className: cx(menuStyles.root, styles.popover, className) })}
       style={{ ...scope.style, minWidth: field.width, ...style }}
     >
       <AriaListBox
         data-part="list"
-        className={menuStyles.list}
+        {...defined({ className: menuStyles.list })}
         renderEmptyState={() =>
           renderPart(parts?.empty, { children: empty }, (p) => (
             <div data-part="empty" aria-busy={field.loading || undefined} className={styles.empty}>
@@ -643,7 +644,7 @@ function Suggestions({
             section === '' ? (
               rows.map(item)
             ) : (
-              <AriaListBoxSection key={`section:${section}`} className={menuStyles.section}>
+              <AriaListBoxSection key={`section:${section}`} {...defined({ className: menuStyles.section })}>
                 <AriaHeader data-part="sectionHeader" className={menuStyles.sectionHeader}>
                   {section}
                 </AriaHeader>
@@ -661,19 +662,21 @@ export interface SearchFieldProps
     Omit<SearchFieldRootProps, 'children'>,
     Pick<SearchFieldSuggestionsProps, 'recentLabel' | 'removeRecentLabel' | 'noResultsLabel' | 'maxHeight'> {
   /** Accessible name of the clear button. */
-  clearLabel?: string;
+  clearLabel?: string | undefined;
   /** Replace or hide named pieces. */
-  parts?: {
-    icon?: Part<BlockProps>;
-    input?: Part<Omit<BlockProps, 'children'>>;
-    clear?: Part<SearchFieldClearProps>;
-    shortcut?: Part<Omit<BlockProps, 'children'>>;
-    suggestions?: Part<SearchFieldSuggestionsProps>;
-    /** The content of a row of the list. */
-    suggestion?: Part<SearchFieldSuggestionPartProps>;
-    /** What the list shows when it has no rows: the loading and "no results" states. */
-    empty?: Part<{ children: ReactNode }>;
-  };
+  parts?:
+    | {
+        icon?: Part<BlockProps> | undefined;
+        input?: Part<Omit<BlockProps, 'children'>> | undefined;
+        clear?: Part<SearchFieldClearProps> | undefined;
+        shortcut?: Part<Omit<BlockProps, 'children'>> | undefined;
+        suggestions?: Part<SearchFieldSuggestionsProps> | undefined;
+        /** The content of a row of the list. */
+        suggestion?: Part<SearchFieldSuggestionPartProps> | undefined;
+        /** What the list shows when it has no rows: the loading and "no results" states. */
+        empty?: Part<{ children: ReactNode }> | undefined;
+      }
+    | undefined;
 }
 
 /** A field for searching: always an input, or an icon that opens into one. It can list suggestions and recent searches. */

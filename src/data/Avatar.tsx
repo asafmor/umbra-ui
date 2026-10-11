@@ -17,20 +17,22 @@ export type AvatarSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 export type AvatarShape = 'circle' | 'square';
 
 /** Lets an `AvatarGroup` give its avatars one size and shape. */
-const GroupContext = createContext<{ size?: AvatarSize; shape?: AvatarShape } | null>(null);
+const GroupContext = createContext<{ size?: AvatarSize | undefined; shape?: AvatarShape | undefined } | null>(
+  null,
+);
 
 interface BlockProps {
-  className?: string;
-  style?: CSSProperties;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
 }
 
 export interface AvatarRootProps extends BlockProps {
   /** Fixed size. Without it the avatar is as tall as a control, so it follows the density level. */
-  size?: AvatarSize;
-  shape?: AvatarShape;
+  size?: AvatarSize | undefined;
+  shape?: AvatarShape | undefined;
   /** A ring around the avatar: `true` for the accent colour, or any CSS colour. */
-  ring?: boolean | string;
-  children?: ReactNode;
+  ring?: boolean | string | undefined;
+  children?: ReactNode | undefined;
 }
 
 function Root({ size, shape, ring, className, style, children }: AvatarRootProps) {
@@ -55,7 +57,7 @@ export interface AvatarImageProps extends BlockProps {
   /** What the image shows. Empty when the name is written next to the avatar. */
   alt: string;
   /** Called when the image cannot be loaded. */
-  onError?: () => void;
+  onError?: (() => void) | undefined;
 }
 
 function Image({ src, alt, onError, className, style }: AvatarImageProps) {
@@ -74,8 +76,8 @@ function Image({ src, alt, onError, className, style }: AvatarImageProps) {
 
 export interface AvatarFallbackProps extends BlockProps {
   /** Accessible name. Without it the fallback is decorative. */
-  label?: string;
-  children?: ReactNode;
+  label?: string | undefined;
+  children?: ReactNode | undefined;
 }
 
 const named = (label: string | undefined) =>
@@ -97,7 +99,7 @@ function Fallback({ label, className, style, children }: AvatarFallbackProps) {
   );
 }
 
-function Status({ className, style, children }: BlockProps & { children?: ReactNode }) {
+function Status({ className, style, children }: BlockProps & { children?: ReactNode | undefined }) {
   return (
     <span data-part="status" className={cx(styles.status, className)} style={style}>
       {children}
@@ -107,22 +109,24 @@ function Status({ className, style, children }: BlockProps & { children?: ReactN
 
 export interface AvatarProps extends Omit<AvatarRootProps, 'children'> {
   /** The image. When it is missing or fails to load, the initials or the silhouette show instead. */
-  src?: string;
+  src?: string | undefined;
   /** Accessible name. Defaults to `name`. Pass `""` when the name is written next to the avatar. */
-  alt?: string;
+  alt?: string | undefined;
   /** The person or entity. Gives the initials shown without an image. */
-  name?: string;
+  name?: string | undefined;
   /** Replaces the silhouette shown when there is no image and no name. */
-  fallbackIcon?: ReactNode;
+  fallbackIcon?: ReactNode | undefined;
   /** A small node at the corner, for example a status dot. */
-  status?: ReactNode;
+  status?: ReactNode | undefined;
   /** Replace or hide named pieces. */
-  parts?: {
-    image?: Part<AvatarImageProps>;
-    initials?: Part<AvatarFallbackProps>;
-    fallback?: Part<AvatarFallbackProps>;
-    status?: Part<{ children: ReactNode }>;
-  };
+  parts?:
+    | {
+        image?: Part<AvatarImageProps> | undefined;
+        initials?: Part<AvatarFallbackProps> | undefined;
+        fallback?: Part<AvatarFallbackProps> | undefined;
+        status?: Part<{ children: ReactNode }> | undefined;
+      }
+    | undefined;
 }
 
 /** A person or entity: its image, or its initials, or a silhouette. */
@@ -155,12 +159,12 @@ Avatar.Status = Status;
 
 export interface AvatarGroupRootProps extends BlockProps {
   /** Size and shape of every avatar in the group. */
-  size?: AvatarSize;
-  shape?: AvatarShape;
+  size?: AvatarSize | undefined;
+  shape?: AvatarShape | undefined;
   /** Names the group for assistive technology. */
-  'aria-label'?: string;
-  ref?: React.Ref<HTMLDivElement>;
-  children?: ReactNode;
+  'aria-label'?: string | undefined;
+  ref?: React.Ref<HTMLDivElement> | undefined;
+  children?: ReactNode | undefined;
 }
 
 function GroupRoot({
@@ -205,17 +209,19 @@ function Overflow({ count, label, className, style }: AvatarGroupOverflowProps) 
 
 export interface AvatarGroupProps extends Omit<AvatarGroupRootProps, 'ref'> {
   /** The avatars. */
-  children?: ReactNode;
+  children?: ReactNode | undefined;
   /** Shows at most this many avatars; the rest are counted in "+N". Fewer show when the group is narrow. */
-  max?: number;
+  max?: number | undefined;
   /** The number of members, when it is larger than the number of avatars given. */
-  total?: number;
+  total?: number | undefined;
   /** Accessible name of the "+N" counter. */
-  moreLabel?: (count: number) => string;
+  moreLabel?: ((count: number) => string) | undefined;
   /** Replace or hide named pieces. */
-  parts?: {
-    overflow?: Part<AvatarGroupOverflowProps>;
-  };
+  parts?:
+    | {
+        overflow?: Part<AvatarGroupOverflowProps> | undefined;
+      }
+    | undefined;
 }
 
 /** A row of overlapping avatars. Those that do not fit are counted in a "+N" at the end. */

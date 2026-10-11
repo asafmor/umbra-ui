@@ -4,9 +4,9 @@ import styles from './layout.module.css';
 import { useSlot, type SlotProps as SlotLayoutProps } from './useSlot';
 
 export interface SlotProps extends SlotLayoutProps {
-  className?: string;
-  style?: CSSProperties;
-  children?: ReactNode;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
+  children?: ReactNode | undefined;
 }
 
 /**

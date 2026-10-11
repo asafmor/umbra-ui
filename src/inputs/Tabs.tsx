@@ -36,36 +36,39 @@ export type TabsVariant = 'underline' | 'pill' | 'button-group';
 export interface TabsItem {
   id: string;
   label: ReactNode;
-  icon?: ReactNode;
+  icon?: ReactNode | undefined;
   /** A number shown after the label and read with it ("Orders, 12"). */
-  count?: number;
-  disabled?: boolean;
+  count?: number | undefined;
+  disabled?: boolean | undefined;
   /** With `onClose` set, `false` keeps this tab from being closed. */
-  closable?: boolean;
+  closable?: boolean | undefined;
   /** The panel shown while this tab is selected. Without it the tab has no panel. */
-  content?: ReactNode;
+  content?: ReactNode | undefined;
 }
 
 interface TabsOptions {
   /** `underline`: text with a bar. `pill`: separate rounded buttons. `button-group`: joined buttons. */
-  variant?: TabsVariant;
+  variant?: TabsVariant | undefined;
   /** `vertical` puts the tab list beside the panel. */
-  orientation?: 'horizontal' | 'vertical';
+  orientation?: 'horizontal' | 'vertical' | undefined;
   /** `small` is for dense areas. Otherwise the height follows the density level. */
-  tabSize?: 'default' | 'small';
+  tabSize?: 'default' | 'small' | undefined;
   /** The tabs share the width of the list. */
-  fullWidth?: boolean;
+  fullWidth?: boolean | undefined;
   /** `automatic`: arrow keys select. `manual`: arrow keys move focus, and Enter or Space selects. */
-  activation?: 'automatic' | 'manual';
+  activation?: 'automatic' | 'manual' | undefined;
   /** Keeps the panels that are not selected mounted and hidden, so they keep their state. */
-  keepMounted?: boolean;
+  keepMounted?: boolean | undefined;
   /** Makes tabs closable: called with the id of the tab whose close button (or Delete key) was used. */
-  onClose?: (id: string) => void;
+  onClose?: ((id: string) => void) | undefined;
   /** First word of the close button's name: "Close Orders". */
-  closeLabel?: string;
+  closeLabel?: string | undefined;
 }
 
-interface TabsContextValue extends Required<Omit<TabsOptions, 'onClose'>> {
+/** Every option, with its default filled in. */
+type Resolved<T> = { [K in keyof T]-?: Exclude<T[K], undefined> };
+
+interface TabsContextValue extends Resolved<Omit<TabsOptions, 'onClose'>> {
   value: string | null;
   select: (id: string) => void;
   tabId: (id: string) => string;
@@ -80,17 +83,17 @@ function useTabs() {
 }
 
 interface BlockProps {
-  className?: string;
-  style?: CSSProperties;
-  children?: ReactNode;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
+  children?: ReactNode | undefined;
 }
 
 export interface TabsRootProps extends TabsOptions, BlockProps, SlotProps {
   /** The selected tab. */
-  value?: string | null;
-  defaultValue?: string | null;
+  value?: string | null | undefined;
+  defaultValue?: string | null | undefined;
   /** Called with the id of the tab the user selected. */
-  onChange?: (id: string) => void;
+  onChange?: ((id: string) => void) | undefined;
 }
 
 /** Holds the state. The list and the panels can sit anywhere inside it, also apart. */
@@ -168,13 +171,13 @@ function Root({
 
 export interface TabsListProps extends BlockProps {
   /** Accessible name of the tab list. */
-  'aria-label'?: string;
+  'aria-label'?: string | undefined;
   /** Shown after the tabs and outside the tab list, for example an "add" button. */
-  end?: ReactNode;
+  end?: ReactNode | undefined;
   /** Accessible name of the button that opens the menu of tabs that do not fit. */
-  moreLabel?: string;
+  moreLabel?: string | undefined;
   /** Replace or hide named pieces. */
-  parts?: { indicator?: Part };
+  parts?: { indicator?: Part | undefined } | undefined;
 }
 
 const tabsIn = (strip: HTMLElement) => [...strip.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
@@ -351,15 +354,17 @@ function List({
 
 export interface TabsTabProps extends Omit<TabsItem, 'label' | 'content'> {
   /** Replace or hide named pieces of this tab. */
-  parts?: {
-    icon?: Part<{ children: ReactNode }>;
-    count?: Part<{ children: number }>;
-    close?: Part<{ label: string; onPress: () => void }>;
-  };
-  className?: string;
-  style?: CSSProperties;
+  parts?:
+    | {
+        icon?: Part<{ children: ReactNode }> | undefined;
+        count?: Part<{ children: number }> | undefined;
+        close?: Part<{ label: string; onPress: () => void }> | undefined;
+      }
+    | undefined;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
   /** The label. */
-  children?: ReactNode;
+  children?: ReactNode | undefined;
 }
 
 /** One tab. */
@@ -480,20 +485,22 @@ function Panel({ id, className, style, children }: TabsPanelProps) {
 
 export interface TabsProps extends TabsRootProps {
   /** The tabs and their panels. Leave out to compose `Tabs.List`, `Tabs.Tab` and `Tabs.Panel` yourself. */
-  items?: TabsItem[];
+  items?: TabsItem[] | undefined;
   /** Accessible name of the tab list. */
-  'aria-label'?: string;
+  'aria-label'?: string | undefined;
   /** Shown after the tabs, for example an "add" button. */
-  end?: ReactNode;
+  end?: ReactNode | undefined;
   /** Accessible name of the button that opens the menu of tabs that do not fit. */
-  moreLabel?: string;
+  moreLabel?: string | undefined;
   /** Replace or hide named pieces. */
-  parts?: NonNullable<TabsListProps['parts']> &
-    NonNullable<TabsTabProps['parts']> & {
-      list?: Part<TabsListProps>;
-      tab?: Part<TabsTabProps>;
-      panel?: Part<TabsPanelProps>;
-    };
+  parts?:
+    | (NonNullable<TabsListProps['parts']> &
+        NonNullable<TabsTabProps['parts']> & {
+          list?: Part<TabsListProps> | undefined;
+          tab?: Part<TabsTabProps> | undefined;
+          panel?: Part<TabsPanelProps> | undefined;
+        })
+    | undefined;
 }
 
 /** Switches between views of the same content area. The panel fills the rest of the slot. */

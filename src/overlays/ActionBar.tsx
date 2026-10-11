@@ -46,24 +46,24 @@ function useBar() {
 }
 
 interface BlockProps {
-  className?: string;
-  style?: CSSProperties;
-  children?: ReactNode;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
+  children?: ReactNode | undefined;
 }
 
 export interface ActionBarRootProps extends BlockProps {
   /** `inline`: in the flow, at the bottom of a page, card or modal. `floating`: over the bottom of its container. */
-  variant?: 'inline' | 'floating';
+  variant?: 'inline' | 'floating' | undefined;
   /** Shows a `floating` bar. Its container needs `position: relative`. */
-  open?: boolean;
+  open?: boolean | undefined;
   /** Where the actions sit. The status is always at the start. */
-  align?: 'start' | 'center' | 'end';
+  align?: 'start' | 'center' | 'end' | undefined;
   /** What the status means: the colour and icon of the status, and the colour of a `strong` bar. */
-  tone?: ActionBarTone;
+  tone?: ActionBarTone | undefined;
   /** `strong` fills the bar with the tone, for a status the user has to act on. */
-  emphasis?: 'default' | 'strong';
+  emphasis?: 'default' | 'strong' | undefined;
   /** Accessible name of the group. */
-  'aria-label'?: string;
+  'aria-label'?: string | undefined;
 }
 
 function Root({
@@ -130,7 +130,7 @@ function Root({
 
 export interface ActionBarStatusProps extends BlockProps {
   /** Replaces the icon of the bar's tone. `null` hides it. */
-  icon?: ReactNode;
+  icon?: ReactNode | undefined;
 }
 
 /** The message at the start of the bar. Changes to it are announced (`role="status"`). */
@@ -155,7 +155,7 @@ export interface ActionBarGroupProps extends BlockProps {
    * `primary` actions never hide their label. `secondary` and `tertiary` actions keep only their icon in a
    * narrow bar. `tertiary` sits at the start, after the status.
    */
-  kind?: ActionBarGroupKind;
+  kind?: ActionBarGroupKind | undefined;
 }
 
 function Group({ kind = 'secondary', className, style, children }: ActionBarGroupProps) {
@@ -178,18 +178,18 @@ function Actions({ className, style, children }: BlockProps) {
 /** One action of the structured form. */
 export interface ActionBarAction {
   label: string;
-  icon?: ReactNode;
+  icon?: ReactNode | undefined;
   /** Defaults to the group's: `primary`, `neutral` for secondary, `ghost` for tertiary. */
-  variant?: ButtonVariant;
-  onPress?: () => void;
-  href?: string;
-  disabled?: boolean;
-  loading?: boolean;
+  variant?: ButtonVariant | undefined;
+  onPress?: (() => void) | undefined;
+  href?: string | undefined;
+  disabled?: boolean | undefined;
+  loading?: boolean | undefined;
 }
 
 export interface ActionBarActionProps extends ActionBarAction {
-  className?: string;
-  style?: CSSProperties;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
 }
 
 /** A button that knows its group: outside the primary group it keeps only its icon when the bar is narrow. */
@@ -213,10 +213,10 @@ function Action({ label, icon, variant, ...rest }: ActionBarActionProps) {
 
 export interface ActionBarClearProps {
   /** Accessible name of the button. */
-  label?: string;
-  onClear?: () => void;
-  className?: string;
-  style?: CSSProperties;
+  label?: string | undefined;
+  onClear?: (() => void) | undefined;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
 }
 
 /** The button that clears the selection a floating bar acts on. */
@@ -254,33 +254,37 @@ const group = (kind: ActionBarGroupKind, actions: ActionList) => {
 
 export interface ActionBarProps extends Omit<ActionBarRootProps, 'children' | 'tone'> {
   /** The message at the start: a node, or a tone and a text. The tone adds its icon, so it is not colour alone. */
-  status?: ReactNode | { tone?: ActionBarTone; text: ReactNode };
+  status?: ReactNode | { tone?: ActionBarTone | undefined; text: ReactNode } | undefined;
   /** The actions, as nodes. Or use `primary`, `secondary` and `tertiary`. */
-  actions?: ReactNode;
+  actions?: ReactNode | undefined;
   /** The main action or actions, at the end. Their labels never hide. */
-  primary?: ReactNode | ActionBarAction | ActionBarAction[];
+  primary?: ReactNode | ActionBarAction | ActionBarAction[] | undefined;
   /** Before the primary actions. With an icon, they keep only the icon when the bar is narrow. */
-  secondary?: ReactNode | ActionBarAction | ActionBarAction[];
+  secondary?: ReactNode | ActionBarAction | ActionBarAction[] | undefined;
   /** At the start, after the status. They collapse like the secondary ones. */
-  tertiary?: ReactNode | ActionBarAction | ActionBarAction[];
+  tertiary?: ReactNode | ActionBarAction | ActionBarAction[] | undefined;
   /** Floating bar: how many things are selected. The bar is open while it is above 0, unless `open` is set. */
-  selectionCount?: number;
+  selectionCount?: number | undefined;
   /** The status text for a selection. */
-  selectionLabel?: (count: number) => string;
+  selectionLabel?: ((count: number) => string) | undefined;
   /** Shows a button that clears the selection. */
-  onClearSelection?: () => void;
+  onClearSelection?: (() => void) | undefined;
   /** Accessible name of the clear button. */
-  clearLabel?: string;
+  clearLabel?: string | undefined;
   /** Replace or hide named pieces. */
-  parts?: {
-    status?: Part<ActionBarStatusProps>;
-    clear?: Part<ActionBarClearProps>;
-    tertiary?: Part<{ children: ReactNode }>;
-    actions?: Part<{ children: ReactNode }>;
-  };
+  parts?:
+    | {
+        status?: Part<ActionBarStatusProps> | undefined;
+        clear?: Part<ActionBarClearProps> | undefined;
+        tertiary?: Part<{ children: ReactNode }> | undefined;
+        actions?: Part<{ children: ReactNode }> | undefined;
+      }
+    | undefined;
 }
 
-const isToned = (status: ActionBarProps['status']): status is { tone?: ActionBarTone; text: ReactNode } =>
+const isToned = (
+  status: ActionBarProps['status'],
+): status is { tone?: ActionBarTone | undefined; text: ReactNode } =>
   typeof status === 'object' && status !== null && !isValidElement(status) && 'text' in status;
 
 /** The bar at the bottom of a page, card or modal: a status at the start and the actions at the end. */
