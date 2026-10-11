@@ -14,7 +14,7 @@ lists each newer feature and what happens without it: `node scripts/check-browse
 | ------------------ | ---------------------------------------------------------------------------------------------- |
 | Storybook          | `npm run storybook`, then `http://localhost:6006/?path=/story/<id>` with an id from the tables |
 | Without a checkout | The published Storybook: `https://asafmor.github.io/umbra-ui/?path=/story/<id>`                |
-| Browsers           | The current Firefox and Safari, and the oldest of each you can reach (minimums: 121 and 16.2)  |
+| Browsers           | The current Firefox and Safari, and the oldest of each you can reach (minimums: 125 and 17.0)  |
 | Window             | 1280x720, then 1024x600, then narrower than 1024 for the stories with tabs                     |
 | Toolbar            | Density, context tint and direction are in the Storybook toolbar                               |
 | Compare with       | The same story in Chrome, side by side                                                         |
@@ -112,20 +112,20 @@ Turn on the system setting (macOS: Accessibility, Display, Reduce motion; Firefo
 
 ## 8. Fonts and text
 
-| Story id                                              | Look at                                                                                                                                      |
-| ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| `pages-overview--overview`                            | Figtree for text and Barlow Condensed for headings and nav, with no faux bold; numbers in columns line up                                    |
-| `data-datatable--numeric`                             | Tabular figures: digits of a column share their width                                                                                        |
-| `inputs-checkbox--states`, `inputs-textfield--states` | A checkbox sits at the middle of its first line; a multiline field has its padding (both use the `lh` unit, which Safari 16.2 and 16.3 lack) |
-| `data-emptystate--variants`                           | The block is centred in its card (Safari before 17.6 takes a fallback)                                                                       |
+| Story id                                              | Look at                                                                                                     |
+| ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `pages-overview--overview`                            | Figtree for text and Barlow Condensed for headings and nav, with no faux bold; numbers in columns line up   |
+| `data-datatable--numeric`                             | Tabular figures: digits of a column share their width                                                       |
+| `inputs-checkbox--states`, `inputs-textfield--states` | A checkbox sits at the middle of its first line; a multiline field has its padding (both use the `lh` unit) |
+| `data-emptystate--variants`                           | The block is centred in its card (Safari before 17.6 takes a fallback)                                      |
 
 ## 9. Charts
 
-| Story id                                                                   | Look at                                                                                                                                                                                                     |
-| -------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `charts-linechart--interaction`                                            | Hover and arrow keys show the tooltip beside its point, not cut by the card, in a card and in a modal                                                                                                       |
-| `layout-content-height--flowing`, `layout-content-height--panel-and-modal` | A chart in flowing content, a panel and a modal is 240px high, not collapsed. Safari before 17 has a fallback for `height="content"` only: a `fill` chart without a height around it is the case to look at |
-| `charts-linechart--short-plot`                                             | Labels thin out as the plot gets low                                                                                                                                                                        |
+| Story id                                                                   | Look at                                                                                                                                      |
+| -------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `charts-linechart--interaction`                                            | Hover and arrow keys show the tooltip beside its point, not cut by the card, in a card and in a modal                                        |
+| `layout-content-height--flowing`, `layout-content-height--panel-and-modal` | A chart in flowing content, a panel and a modal is 240px high, not collapsed (`contain-intrinsic-block-size`, which sets the minimum Safari) |
+| `charts-linechart--short-plot`                                             | Labels thin out as the plot gets low                                                                                                         |
 
-The chart tooltip uses the Popover API where the browser has it (Firefox 125, Safari 17). In an older
-one it is a fixed element: check that it is placed beside its point and is whole.
+The chart tooltip is in the top layer (the Popover API, which sets the minimum Firefox and Safari):
+check that it is placed beside its point and is whole.

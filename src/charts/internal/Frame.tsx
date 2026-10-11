@@ -379,8 +379,7 @@ export function Frame<M extends FrameModel>({
   // The tooltip is placed once it is drawn and its size is known, so that it is never cut: inside the
   // chart when it fits, outside it when the chart is too short. It is shown in the top layer (the
   // Popover API), where no card or scroll area clips it, and stays in the chart's own DOM, so it keeps
-  // the tokens, the density and the direction of its place.
-  // ponytail: without the Popover API it is only `position: fixed`, which a transformed ancestor still clips.
+  // the tokens, the density and the direction of its place. Every supported browser has the Popover API.
   const tooltipRef = useRef<HTMLDivElement>(null);
   const [, replace] = useReducer((n: number) => n + 1, 0);
   useLayoutEffect(() => {
@@ -389,7 +388,7 @@ export function Frame<M extends FrameModel>({
     try {
       if (!el.matches(':popover-open')) el.showPopover();
     } catch {
-      // No Popover API: the element is already shown.
+      // Not in the top layer (the element left the page): it is drawn where it is.
     }
     const from = plotEl.getBoundingClientRect();
     const box = el.getBoundingClientRect();

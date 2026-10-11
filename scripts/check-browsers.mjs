@@ -20,8 +20,11 @@ import { fileURLToPath } from 'node:url';
 const root = fileURLToPath(new URL('..', import.meta.url));
 const withDist = process.argv.includes('--dist');
 
-/** The minimum versions. README.md, docs/getting-started.md and `cssTarget` in vite.config.ts state the same. */
-const MINIMUM = { chrome: 117, firefox: 121, safari: 16.2 };
+/**
+ * The minimum versions (raised 2026-10-11: plan/decisions/06-docs-and-testing.md). README.md,
+ * docs/getting-started.md and `cssTarget` in vite.config.ts state the same.
+ */
+const MINIMUM = { chrome: 117, firefox: 125, safari: 17 };
 
 const no = Infinity;
 /** A CSS property at the start of a declaration (so `user-select` is not found in `-webkit-user-select`). */
@@ -88,22 +91,16 @@ const css = [
   ['contain', 'css.properties.contain', [52, 69, 15.4], prop('contain')],
   ['@layer', 'css.at-rules.layer', [99, 97, 15.4], /@layer\b/],
   ['-webkit-line-clamp', 'css.properties.line-clamp', [6, 68, 5], /-webkit-line-clamp\s*:/],
-
-  // --- Used, and newer than a minimum: each says what happens without it.
-  [
-    'lh unit',
-    'css.types.length.lh',
-    [109, 120, 16.4],
-    /[\d.]lh\b/,
-    'Safari 16.2 and 16.3 drop the declaration: a checkbox, radio or toggle sits at the top of its first line instead of its middle, a multiline TextField and a Banner lose the padding that centres one line, and a loading StatValue is not held one line high. Nothing is hidden or cut.',
-  ],
+  ['lh unit', 'css.types.length.lh', [109, 120, 16.4], /[\d.]lh\b/],
+  // With the Popover API below, what sets the minimum Safari: the height of a chart that has none to fill.
   [
     'contain-intrinsic-size',
     'css.properties.contain-intrinsic-block-size',
     [95, 107, 17],
     prop('contain-intrinsic-(?:block-size|inline-size|size|width|height)'),
-    'Safari before 17: a chart with height="content" gets its 240px from a min-height inside `@supports not (contain-intrinsic-block-size: 1px)` (Chart.module.css). A `fill` chart in a parent without a height is not covered there and has no height.',
   ],
+
+  // --- Used, and newer than a minimum: each says what happens without it.
   [
     'safe alignment',
     'css.properties.justify-content.flex_context.safe_unsafe',
@@ -123,7 +120,7 @@ const css = [
     'css.properties.scrollbar-width',
     [121, 64, 18.2],
     prop('scrollbar-width'),
-    'Chrome before 121 and Safari before 18.2 take the `::-webkit-scrollbar` rules instead; the declaration is inside `@supports not selector(::-webkit-scrollbar)`.',
+    'Chrome before 121 and Safari before 18.2 take the `::-webkit-scrollbar` rules instead; the declaration is inside `@supports not selector(::-webkit-scrollbar)`. Firefox 153 and 154 (not later) answer that `@supports` as Safari does without drawing the rules: they show their own scrollbars.',
   ],
   [
     'scrollbar-color',
@@ -131,6 +128,13 @@ const css = [
     [121, 64, 26.2],
     prop('scrollbar-color'),
     'As scrollbar-width: Chrome before 121 and Safari take the `::-webkit-scrollbar` rules.',
+  ],
+  [
+    'rx and ry as CSS properties',
+    'css.properties.rx',
+    [43, 69, 17.4],
+    prop('rx|ry'),
+    'Safari before 17.4 reads the `rx` attribute only: the bars of a BarChart keep the 2px corners of the attribute, and `--umbra-chart-bar-radius` changes nothing there (BarChart.tsx).',
   ],
   [
     'mask and mask-image without a prefix',
@@ -243,12 +247,19 @@ const js = [
   ['structuredClone', 'api.structuredClone', [98, 94, 15.4], /\bstructuredClone\(/],
   ['inert', 'api.HTMLElement.inert', [102, 112, 15.5], /\.inert\b|\binert=/],
   ['Element.getAnimations', 'api.Element.getAnimations', [84, 75, 13.1], /\.getAnimations\(/],
+  // What sets the minimum Firefox: the chart tooltip is in the top layer (charts/internal/Frame.tsx).
   [
     'Popover API',
     'api.HTMLElement.popover',
     [114, 125, 17],
     /\.(?:show|hide)Popover\(|\bpopover=["'{]|:popover-open/,
-    'The chart tooltip only (charts/internal/Frame.tsx), inside a try/catch. Firefox before 125 and Safari before 17 draw it as a fixed element instead of in the top layer: an ancestor that holds fixed elements (a transform, layout containment) can then cut or misplace it. Not seen in those browsers yet: docs/browser-checks.md, "Charts".',
+  ],
+  [
+    'Navigation API',
+    'api.Navigation',
+    [102, 147, 26.2],
+    /\bnavigation\.(?:navigate|addEventListener|currentEntry)\b|\.navigation\b/,
+    'HistoryButtons only, read as `window.navigation` when it exists. Firefox before 147 and Safari before 26.2 cannot say whether there is a page to go back or forward to: both buttons stay enabled.',
   ],
   [
     'Intl.Locale text direction',
@@ -327,12 +338,6 @@ const js = [
   ],
   ['Temporal', 'javascript.builtins.Temporal', [144, 139, no], /\bTemporal\.[A-Z]/],
   ['CloseWatcher', 'api.CloseWatcher', [126, 149, no], /\bCloseWatcher\b/],
-  [
-    'Navigation API',
-    'api.Navigation',
-    [102, 147, 26.2],
-    /\bnavigation\.(?:navigate|addEventListener|currentEntry)\b/,
-  ],
   [
     'focus({ focusVisible })',
     'api.HTMLElement.focus.options_focusVisible_parameter',

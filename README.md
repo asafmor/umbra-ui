@@ -212,14 +212,15 @@ screen-reader names and contrast on every tint.
 
 The stylesheet relies on current CSS, with no fallbacks for older browsers.
 
-| Browser         | Minimum | Set by                   |
-| --------------- | ------- | ------------------------ |
-| Chrome and Edge | 117     | subgrid                  |
-| Firefox         | 121     | `:has()`                 |
-| Safari          | 16.2    | `color-mix()` in `oklab` |
+| Browser         | Minimum | Set by                                          |
+| --------------- | ------- | ----------------------------------------------- |
+| Chrome and Edge | 117     | subgrid                                         |
+| Firefox         | 125     | The Popover API                                 |
+| Safari          | 17.0    | The Popover API, `contain-intrinsic-block-size` |
 
 - **Required**: `:has()`, `color-mix()`, container queries and the `dvh` units. Without them colours,
-  states and the rules that shed detail as space shrinks do not work.
+  states and the rules that shed detail as space shrinks do not work. Below the minimum Firefox and
+  Safari the chart tooltip can be cut by its card, and a chart with no height to fill has none.
 - **Degrade gracefully**: subgrid (the rows of a `KeyValueList` stop sharing one label column; Chrome 111
   is enough without it), `transition-behavior: allow-discrete` (a scrollbar shows while an `Accordion`
   section opens), `scrollbar-color`, and a few features newer than the minimum Firefox or Safari, each

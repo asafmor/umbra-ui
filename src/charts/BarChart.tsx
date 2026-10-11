@@ -384,6 +384,8 @@ function Bars() {
           >
             <rect
               className={`${styles.bar} ${styles.grow}`}
+              // For Safari before 17.4, which has no `rx` in CSS. The stylesheet decides everywhere else.
+              rx={2}
               data-from={b.from}
               x={b.x}
               y={b.y}
