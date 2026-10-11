@@ -16,7 +16,7 @@ export async function expectChangeHighlights(page: Page, story: string, text = t
 
   await open();
   // Nothing flashes for the first value.
-  await expect(page.locator('[data-part="change-flash"]')).toHaveCount(0);
+  await expect(page.locator('[data-part="changeFlash"]')).toHaveCount(0);
   await update.click();
   await expect(mark('up', 'flash')).toHaveAttribute('data-direction', 'up');
   await expect(mark('up', 'sign')).toHaveText('▲increased');
@@ -47,7 +47,7 @@ export async function expectChangeHighlights(page: Page, story: string, text = t
   expect(flash.name).not.toBe('none');
   expect(flash.seconds).toBeGreaterThan(0.5);
   // The sign goes away by itself.
-  await expect(page.locator('[data-part="change-sign"]')).toHaveCount(0, { timeout: 8000 });
+  await expect(page.locator('[data-part="changeSign"]')).toHaveCount(0, { timeout: 8000 });
 
   // Under reduced motion there is no flash to see; the sign still shows the direction.
   await page.emulateMedia({ reducedMotion: 'reduce' });

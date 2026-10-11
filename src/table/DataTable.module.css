@@ -570,25 +570,25 @@
 /* --- Changed values: the shared highlight (src/internal/ChangeHighlight), with the table's tokens --- */
 /* Its parts are matched by both spellings of their names (kebab-case until 2026-10-11, camelCase after). */
 
-.root :is([data-part='change-flash'], [data-part='changeFlash']) {
+.root [data-part='changeFlash'] {
   background: var(
     --umbra-table-change-neutral,
     var(--umbra-change-neutral, var(--umbra-color-base-text-primary))
   );
 }
 
-.root :is([data-part='change-flash'], [data-part='changeFlash'])[data-direction='up'] {
+.root [data-part='changeFlash'][data-direction='up'] {
   background: var(--umbra-table-change-up, var(--umbra-change-up, var(--umbra-color-semantic-success)));
 }
 
-.root :is([data-part='change-flash'], [data-part='changeFlash'])[data-direction='down'] {
+.root [data-part='changeFlash'][data-direction='down'] {
   background: var(--umbra-table-change-down, var(--umbra-change-down, var(--umbra-color-semantic-danger)));
 }
 
-.root :is([data-part='change-sign'], [data-part='changeSign'])[data-direction='up'] {
+.root [data-part='changeSign'][data-direction='up'] {
   color: var(--umbra-table-change-up, var(--umbra-change-up, var(--umbra-color-semantic-success)));
 }
 
-.root :is([data-part='change-sign'], [data-part='changeSign'])[data-direction='down'] {
+.root [data-part='changeSign'][data-direction='down'] {
   color: var(--umbra-table-change-down, var(--umbra-change-down, var(--umbra-color-semantic-danger)));
 }
