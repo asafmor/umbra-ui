@@ -1,0 +1,140 @@
+/*
+ * A definite width, so the root can be a size container: the label truncates inside it and the
+ * indicator gives way by a container query.
+ */
+.root {
+  --height: var(--umbra-stepper-height, var(--umbra-density-control-height));
+
+  container-type: inline-size;
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  row-gap: var(--umbra-space-1);
+  inline-size: var(--umbra-stepper-width, 200px);
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  color: var(--umbra-color-base-text-primary);
+  font: var(--umbra-font-body);
+}
+
+.root[data-size='small'] {
+  --height: max(24px, calc(var(--umbra-density-table-row) - 2px));
+  font: var(--umbra-font-label);
+}
+
+.button {
+  display: grid;
+  place-items: center;
+  /* Never under 24px: the smallest pointer target (WCAG 2.5.8). */
+  inline-size: max(24px, calc(var(--height) - 4px));
+  block-size: max(24px, calc(var(--height) - 4px));
+  padding: 0;
+  border: 0;
+  border-radius: var(--umbra-stepper-radius, var(--umbra-radius-control));
+  background: transparent;
+  color: var(--umbra-stepper-button-fg, var(--umbra-color-base-text-secondary));
+  cursor: pointer;
+  transition: background-color var(--umbra-motion-duration-fast);
+}
+
+.button[data-hovered] {
+  background: color-mix(in oklab, currentColor 12%, transparent);
+  color: var(--umbra-color-base-text-primary);
+}
+
+.button[data-pressed] {
+  background: color-mix(in oklab, #000 var(--umbra-state-press-darken), transparent);
+}
+
+.button[data-disabled] {
+  opacity: var(--umbra-state-disabled-opacity);
+  cursor: default;
+}
+
+/* The chevron of Previous points against the reading direction. */
+.flip {
+  display: grid;
+  scale: -1 1;
+}
+
+.value {
+  display: grid;
+  place-items: center;
+  min-inline-size: 0;
+  block-size: var(--height);
+  padding-inline: var(--umbra-space-2);
+  border-radius: var(--umbra-stepper-radius, var(--umbra-radius-control));
+  color: var(--umbra-stepper-value-fg, var(--umbra-color-base-text-primary));
+  font-weight: 600;
+  cursor: default;
+}
+
+.value[data-empty] {
+  color: var(--umbra-color-base-text-muted);
+}
+
+.text {
+  max-inline-size: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.value:focus-visible {
+  outline: var(--umbra-state-focus-ring-width) solid
+    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-fixed-focus-ring)));
+  outline-offset: calc(-1 * var(--umbra-state-focus-ring-width));
+}
+
+.root[data-invalid] .value {
+  box-shadow: inset 0 0 0 var(--umbra-border-width) var(--umbra-color-semantic-danger);
+}
+
+.indicator {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--umbra-stepper-indicator-gap, 3px);
+  block-size: 6px;
+  padding-inline: var(--umbra-space-2);
+}
+
+.indicator > span {
+  flex: 0 1 var(--umbra-stepper-segment-width, 12px);
+  min-inline-size: 2px;
+  block-size: 2px;
+  border-radius: 1px;
+  background: var(--umbra-stepper-segment-color, var(--umbra-color-base-text-muted));
+}
+
+.indicator > span[data-current] {
+  block-size: 6px;
+  border-radius: 2px;
+  background: var(--umbra-stepper-segment-current-color, var(--umbra-color-fixed-accent-text));
+}
+
+.root[data-disabled] {
+  opacity: var(--umbra-state-disabled-opacity);
+}
+
+.root[data-disabled] .button {
+  opacity: 1;
+}
+
+/* Too narrow for segments that can be told apart: the value's text and the buttons stay. */
+@container (max-width: 95px) {
+  .indicator {
+    display: none;
+  }
+}
+
+.spoken {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
