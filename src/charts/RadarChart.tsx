@@ -206,7 +206,8 @@ function Series({ filled = true }: { filled?: boolean }) {
           <path className={styles.line} d={s.path} strokeDasharray={s.dash} />
           {s.points.map((p) => (
             <g key={p.key} {...frame.pointProps(p)}>
-              <circle className={styles.hit} cx={p.x} cy={p.y} r={10} />
+              {/* 24px across: the smallest target a pointer can be asked to hit. */}
+              <circle className={styles.hit} cx={p.x} cy={p.y} r={12} />
               <g className={styles.point}>
                 <PointShape shape={s.shape} x={p.x} y={p.y} size={pointSize} />
               </g>

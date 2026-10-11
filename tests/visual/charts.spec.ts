@@ -13,6 +13,16 @@ const open = async (page: Page, id: string, width = 1280, height = 720) => {
     await document.fonts.ready;
   });
 };
+/** Axe on the charts of the page. Storybook's own accessibility panel may be running axe: wait for it. */
+const axe = async (page: Page, tries = 20): Promise<Awaited<ReturnType<AxeBuilder['analyze']>>> => {
+  try {
+    return await new AxeBuilder({ page }).include('figure').analyze();
+  } catch (error) {
+    if (tries === 0 || !String(error).includes('already running')) throw error;
+    await page.waitForTimeout(250);
+    return axe(page, tries - 1);
+  }
+};
 const tile = (page: Page, id: string) => page.locator(`[data-tile="${id}"] figure`);
 const sized = (page: Page, size: string, nth = 0) => page.locator(`[data-size="${size}"] figure`).nth(nth);
 const marks = (chart: Locator) => chart.getByRole('listbox');
@@ -317,7 +327,7 @@ test.describe('Chart accessibility and states', () => {
       await expect(chart).toHaveAttribute('data-state', 'empty');
       await expect(chart.getByRole('listbox')).toHaveCount(0);
       await expect(chart.locator('[tabindex="0"]:not(button)')).toHaveCount(0);
-      const { violations } = await new AxeBuilder({ page }).include('figure').analyze();
+      const { violations } = await axe(page);
       expect(violations.map((v) => v.id)).toEqual([]);
       // The legend is still there, so a series can be switched back on.
       await chart.getByRole('button', { name: names[0], exact: true }).click();
@@ -724,7 +734,8 @@ test.describe('tooltip', () => {
       const tip = tooltip(chart);
       let outside = 0;
       for (const name of ['Region 1, Jan 1: 30', 'Region 3, Jan 29: 17', 'Region 1, Feb 19: 58']) {
-        await chart.getByRole('option', { name }).hover();
+        // Points are close together here: the pointer goes to the point's place, whichever point is on top.
+        await chart.getByRole('option', { name }).hover({ force: true });
         await expect(tip).toBeVisible();
         const [t, c, point] = [await box(tip), await box(chart), await box(ring(chart))];
         // It is drawn in the top layer, where the chart does not clip it, and inside the window.
@@ -791,6 +802,61 @@ test.describe('tooltip', () => {
     await expect(tooltip(radar)).toContainText('Region 1');
     await expect(tooltip(radar)).toContainText('15');
     await expect(ring(radar)).not.toHaveAttribute('data-keyboard', 'true');
+  });
+});
+
+test.describe('non-text contrast and target size (C12, C13, C14)', () => {
+  /** Contrast of an element's paint against the card it sits on, as the browser resolves both colours. */
+  const contrast = (locator: Locator, property: 'stroke' | 'fill') =>
+    locator.evaluate((el, prop) => {
+      const context = document.createElement('canvas').getContext('2d', { willReadFrequently: true })!;
+      const luminance = (colour: string) => {
+        context.clearRect(0, 0, 1, 1);
+        context.fillStyle = colour;
+        context.fillRect(0, 0, 1, 1);
+        const [r, g, b] = [...context.getImageData(0, 0, 1, 1).data].map((v) => {
+          const c = v / 255;
+          return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+        });
+        return 0.2126 * r! + 0.7152 * g! + 0.0722 * b!;
+      };
+      const card = getComputedStyle(el.closest('[data-umbra="card"]')!).backgroundColor;
+      const [a, b] = [luminance(getComputedStyle(el)[prop]), luminance(card)];
+      return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+    }, property);
+
+  for (const tint of ['violet', 'teal', 'green', 'slate']) {
+    test(`on ${tint}: the donut track and an annotation band have an edge with 3:1`, async ({ page }) => {
+      await open(page, `charts-donutchart--variants&globals=context:${tint}`);
+      const track = has(tile(page, 'single'), 'track').locator('path[class*="track"]');
+      expect(await contrast(track, 'stroke')).toBeGreaterThanOrEqual(3);
+      // The edge is inside the ring: the track is no larger than it was.
+      const [ring, plot] = [
+        (await track.boundingBox())!,
+        (await tile(page, 'single').locator('svg').boundingBox())!,
+      ];
+      expect(ring.width).toBeLessThanOrEqual(plot.width);
+
+      await open(page, `charts-barchart--variants&globals=context:${tint}`);
+      const band = tile(page, 'thresholds').locator('[data-part="annotations"] [data-kind="band"]');
+      await expect(band.locator('rect')).toHaveCount(1);
+      // One line at each end of the band, across the plot.
+      await expect(band.locator('line')).toHaveCount(2);
+      for (const line of await band.locator('line').all())
+        expect(await contrast(line, 'stroke')).toBeGreaterThanOrEqual(3);
+    });
+  }
+
+  test('a point of a line or a radar is a target of at least 24 by 24 pixels', async ({ page }) => {
+    for (const [story, id] of [
+      ['charts-linechart--interaction', 'controlled'],
+      ['charts-radarchart--interaction', 'several'],
+    ] as const) {
+      await open(page, story);
+      const hit = (await tile(page, id).getByRole('option').first().locator('circle').first().boundingBox())!;
+      expect(hit.width, story).toBeGreaterThanOrEqual(24);
+      expect(hit.height, story).toBeGreaterThanOrEqual(24);
+    }
   });
 });
 

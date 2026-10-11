@@ -200,14 +200,14 @@ function Root({
 
 /** The ring behind the value. */
 function Track() {
-  const { model } = useFrame<DonutModel>();
+  const { model, uid } = useFrame<DonutModel>();
   return (
-    <path
-      data-part="track"
-      className={styles.track}
-      d={model.track}
-      transform={`translate(${model.cx} ${model.cy})`}
-    />
+    <g data-part="track" transform={`translate(${model.cx} ${model.cy})`}>
+      <clipPath id={`${uid}-track`}>
+        <path d={model.track} />
+      </clipPath>
+      <path className={styles.track} d={model.track} clipPath={`url(#${uid}-track)`} />
+    </g>
   );
 }
 

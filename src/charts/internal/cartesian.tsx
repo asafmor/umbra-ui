@@ -177,7 +177,17 @@ export function Annotations() {
         return (
           <g key={i} className={styles.annotation} style={{ color: a.color }} data-kind={a.kind}>
             {a.kind === 'band' ? (
-              <rect {...span} />
+              <>
+                <rect {...span} />
+                {/* The two edges of the band: the cue that does not depend on its tint. */}
+                {[a.from, a.to].map((at) =>
+                  a.vertical ? (
+                    <line key={at} x1={at} x2={at} y1={box.top} y2={box.bottom} />
+                  ) : (
+                    <line key={at} x1={box.left} x2={box.right} y1={at} y2={at} />
+                  ),
+                )}
+              </>
             ) : a.vertical ? (
               <line x1={a.from} x2={a.from} y1={box.top} y2={box.bottom} />
             ) : (

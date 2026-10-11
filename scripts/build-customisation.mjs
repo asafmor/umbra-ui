@@ -29,16 +29,17 @@ const typeText = (symbol, node) =>
     .typeToString(checker.getTypeOfSymbolAtLocation(symbol, node), node, ts.TypeFormatFlags.NoTruncation)
     .replace(/ \| undefined$/, '');
 
-/** CSS variables a file reads with a fallback: those are the component's own tokens. */
+/** CSS variables a file reads with a fallback, in its stylesheet or in its own code: those are the component's own tokens. */
+const reads = (text) => [...text.matchAll(/var\(\s*(--umbra-[a-z0-9-]+)\s*,/g)].map(([, name]) => name);
 function tokensOf(sourceFile, seen = new Set()) {
   if (seen.has(sourceFile.fileName)) return [];
   seen.add(sourceFile.fileName);
   const dir = dirname(sourceFile.fileName);
-  const found = [];
+  // A token can also be read in the code, for example a colour given to an SVG attribute.
+  const found = reads(sourceFile.text);
   for (const [, spec] of sourceFile.text.matchAll(/from '(\.\/[^']+)'/g)) {
     if (spec.endsWith('.module.css')) {
-      const css = readFileSync(resolve(dir, spec), 'utf8');
-      for (const [, name] of css.matchAll(/var\(\s*(--umbra-[a-z0-9-]+)\s*,/g)) found.push(name);
+      found.push(...reads(readFileSync(resolve(dir, spec), 'utf8')));
     } else if (/^\.\/[a-z]/.test(spec)) {
       // A lower-case sibling is a helper shared by components (for example nav.tsx), not a component.
       const helper = ['.tsx', '.ts'].map((ext) => resolve(dir, spec + ext)).find(existsSync);

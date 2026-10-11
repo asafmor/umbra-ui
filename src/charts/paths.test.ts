@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { expect, test } from 'vitest';
 import { annotationMarks, fitTicks } from './internal/cartesian';
 import { dash, fillKind, lineCues, pointShape, seriesColour } from './internal/cues';
@@ -162,4 +163,19 @@ test('twelve line series differ by shape and dash alone, and 24 by colour and cu
   const coloured = Array.from({ length: 24 }, (_, i) => `${seriesColour(i)}/${cue(i)}`);
   expect(new Set(coloured).size).toBe(24);
   expect(`${seriesColour(24)}/${cue(24)}`).toBe(coloured[0]);
+});
+
+test('the charts read tokens and never declare one, so a value set by the app on any ancestor wins (D10)', () => {
+  const css = readFileSync('src/charts/Chart.module.css', 'utf8');
+  expect(css.match(/^\s*--umbra-[a-z0-9-]+\s*:/gm)).toBeNull();
+  // Lines and edges that carry data have a token, with a fallback from a global token where one exists.
+  for (const token of [
+    'axis-width',
+    'grid-width',
+    'annotation-width',
+    'annotation-dash',
+    'ring-width',
+    'track-border',
+  ])
+    expect(css).toContain(`var(--umbra-chart-${token},`);
 });

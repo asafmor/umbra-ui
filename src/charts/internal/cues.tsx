@@ -100,4 +100,9 @@ export function FillPattern({ id, kind, color }: { id: string; kind: FillKind; c
 export const fillPaint = (kind: FillKind, color: string, patternId: string) =>
   kind === 'square'
     ? { fill: color }
-    : { fill: `url(#${patternId})`, stroke: color, strokeWidth: 1.5, 'data-pattern': kind };
+    : {
+        fill: `url(#${patternId})`,
+        stroke: color,
+        style: { strokeWidth: 'var(--umbra-chart-outline-width, 1.5px)' },
+        'data-pattern': kind,
+      };
