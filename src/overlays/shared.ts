@@ -116,8 +116,13 @@ export function useReturnFocusOnClose(open: boolean, inside: RefObject<Element |
  * Props for a React Aria popover or tooltip: its layer (`--umbra-layer-*`), and where it is rendered,
  * which is inside the modal it was opened from when there is one. Every overlay of the library takes
  * these, so none is left under a modal or in the inert page behind it.
+ *
+ * `spotlight` is the layer of a `Spotlight`, between the modal and the command palette. A spotlight
+ * takes its container from its target, not from here: it is not rendered inside what it points at.
+ * While one is open, the popovers and tooltips of its target are lifted above it by the base
+ * stylesheet (`[data-umbra-spotlight]`, src/styles/index.css).
  */
-export function useOverlayLayer(layer: 'popover' | 'tooltip'): {
+export function useOverlayLayer(layer: 'popover' | 'tooltip' | 'spotlight'): {
   UNSTABLE_portalContainer: HTMLElement | undefined;
   // Stated, so that the name of React Aria's attribute below is not written into the published types.
   [attribute: `data-${string}`]: string | undefined;
@@ -127,7 +132,7 @@ export function useOverlayLayer(layer: 'popover' | 'tooltip'): {
     'data-umbra-layer': layer,
     UNSTABLE_portalContainer: container ?? undefined,
     // React Aria keeps what carries this out of the inert page behind a modal. A popover is kept out by
-    // its own dialog; a tooltip has none.
-    'data-react-aria-top-layer': layer === 'tooltip' ? 'true' : undefined,
+    // its own dialog; a tooltip and a spotlight have none.
+    'data-react-aria-top-layer': layer === 'popover' ? undefined : 'true',
   };
 }

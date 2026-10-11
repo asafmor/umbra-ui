@@ -33,7 +33,7 @@ Sets all `--umbra-*` variables from `tokens.json`. Any variable can be overridde
 | `context` | preset name \| colour | `violet` | Context tint for the page background and tinted cards |
 | `density` | `compact` \| `default` \| `spacious` | `default` | Spacing, row heights, text sizes |
 | `icons` | partial icon map | default set | Overrides the built-in icons by name (see `decisions/05-packaging.md`) |
-| `shortcuts` | list of `{ id, keys, label, action?, whenTyping? }` | — | App key bindings; feeds `ShortcutsSheet`, the `CommandPalette` (`includeShortcuts`) and key hints. `keys` is written like `Mod+K` (`Mod` is Command on macOS, Ctrl elsewhere). A mounted button with `shortcut={id}` takes the key; otherwise `action` runs. While the user types in a field a bare key is ignored and a combination with Ctrl, Command or Alt works; `whenTyping` overrides that for one shortcut. |
+| `shortcuts` | list of `{ id, keys, label, action?, whenTyping?, group? }` | — | App key bindings; feeds `ShortcutsSheet`, the `CommandPalette` (`includeShortcuts`) and key hints. `group` is the heading a shortcut is listed under in the sheet. `keys` is written like `Mod+K` (`Mod` is Command on macOS, Ctrl elsewhere). A mounted button with `shortcut={id}` takes the key; otherwise `action` runs. While the user types in a field a bare key is ignored and a combination with Ctrl, Command or Alt works; `whenTyping` overrides that for one shortcut. |
 | `tokens` | partial token map | — | Overrides individual tokens. Keys are variable names without the `--umbra-` prefix: `{ 'radius-card': '12px' }`. |
 | `reducedMotion` | `system` \| `always` \| `never` | `system` | |
 | `locale` | string | see "Direction" | Number and date formatting, text direction |
@@ -111,6 +111,12 @@ One source, resolved by the provider (`src/provider/direction.ts`, unit-tested),
 - React Aria takes its direction from a locale only. In case 2, when the browser's locale has the other direction, the locale passed on gets a script subtag (`en-Arab-US`): right to left, and still formatted as English.
 
 ## Open questions
+
+Resolved 2026-10-11 (Milestone 2, `ShortcutsSheet`):
+
+- `Shortcut` gets an optional `group`: the heading it is listed under in the shortcuts sheet. A public addition; nothing else reads it.
+- The sheet and the palette's `includeShortcuts` read one list: `listShortcuts` (`src/provider/shortcuts.ts`, unit-tested: the labelled shortcuts that own their keys, each with its group and whether it is one of the library's own) through the hook `useShortcutList`. `keyCaps` gives the keys of a combination one by one, and `formatKeys` joins them.
+- The provider tells that list when a component binds or unbinds a shortcut (`useShortcut`), so "has something to run now" is current in a sheet or palette that is already open. Before, it was read once per render of the palette.
 
 Resolved 2026-10-11:
 
