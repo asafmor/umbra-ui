@@ -15,7 +15,7 @@ A vertical list of rows that scrolls inside its slot, with optional groups, sele
 
 ## Evidence
 
-Inbox with date groups, one selected message and a detail pane beside it (13–16, 25). Message lists on overview pages (1, 2, 27, 28, 30). Person lists (14). Leaderboards: grouped, three rows per group, a value on the right (24, 27, 29). The reference screen (`plan/reference/index.html`, "Inbox") is the look.
+Inbox with date groups, one selected message and a detail pane beside it (13–16, 25). Two-sided rows mirrored around a centre box, and a ring beside a title and a paragraph (24, 30, 33; 8): the catalog's "FixtureRow" and "MediaObject", which are the `pair` variant and `descriptionLines` of `ListItem`. Message lists on overview pages (1, 2, 27, 28, 30). Person lists (14). Leaderboards: grouped, three rows per group, a value on the right (24, 27, 29). The reference screen (`plan/reference/index.html`, "Inbox") is the look.
 
 ## Anatomy
 
@@ -24,8 +24,10 @@ Inbox with date groups, one selected message and a detail pane beside it (13–1
 | rows | `List.Item` (a `ListItem`) | from `items` + `renderItem`, or children |
 | groups | `List.Group`: a `GroupHeader` and its rows | from `groups`, or children |
 | `skeleton` | one skeleton row, repeated `skeletonRows` times | shown while `loading` |
-| `state` | the empty or error state (an `EmptyState`) | shown when empty or in error |
+| `state` | the empty or error state (an `EmptyState`, which carries `data-part="empty"` or `"error"`) | shown when empty or in error |
 | `loadingMore` | a skeleton row after the last row | shown when `loadingMore` |
+
+Each row element carries `data-part="row"` and each group's header row `data-part="groupHeader"`.
 
 ## Variants and states
 
@@ -44,7 +46,7 @@ States: `loading`, empty, error, `loadingMore`; per row: hover, pressed, selecte
 
 ### 1. Tokens
 
-`--umbra-list-divider-color`, `--umbra-list-stripe-bg`, `--umbra-list-number-width`, and the tokens of `ListItem` and `GroupHeader`. Row height comes from the density level (`density-list-row`).
+`--umbra-list-divider-color`, `--umbra-list-stripe-bg`, `--umbra-list-number-width`, and the tokens of `ListItem` and `GroupHeader`. Row height comes from the density level (`density-list-row`). The stripe is drawn on the row around the item, so `--umbra-list-item-bg` stays the app's: set on the list or any ancestor it reaches every item, striped or not.
 
 ### 2. Props
 
@@ -84,23 +86,36 @@ States: `loading`, empty, error, `loadingMore`; per row: hover, pressed, selecte
 |---|---|---|
 | 1 | Rows narrower than their content | Each row follows `ListItem`: text truncates; `trailing`, `description`, then `meta` hide |
 | 2 | Group header narrower than its content | It follows `GroupHeader`: `meta` hides, then the title truncates |
-| 3 | Rows taller than the slot | The list scrolls inside its slot; group headers stick |
+| 3 | Rows taller than the slot | The list scrolls inside its slot; group headers stick, and cover the rows under them (a `plain` header takes the card's surface while it is in a list with sticky headers). A row brought into view by the arrow keys stops below the stuck header (`scroll-margin-top` of one header height). |
 | 4 | Empty or error state larger than the slot | It follows `EmptyState`: the icon hides, then the description |
 
 ## Interaction and accessibility
 
 - Built on React Aria's `GridList`, which allows controls inside rows. The list is a `grid`, rows are `row`s, a group is a `rowgroup` named by its header.
-- One tab stop. Arrow up and down move between rows, `Home` and `End` go to the first and last, typing letters goes to the row whose `textValue` matches. Left and right arrows move into and out of the controls of a row.
+- Tab enters the list at one row (the selected row, or the row that last had the focus). Arrow up and down move between rows, `Home` and `End` go to the first and last, typing letters goes to the row whose `textValue` matches. Left and right arrows move into and out of the controls of a row.
+- **Group headers with controls are stops of the list.** A header that holds a caret or actions is reached with the up and down arrows, in its place between the rows: the focus lands on its first control (the caret). Left and right move between the controls of that header, following the reading direction. `Enter` and `Space` press the control; collapsing a group keeps the focus on its caret, also when the focused row was inside the group. A collapsed group's header stays a stop. `Tab` and `Shift+Tab` walk the header controls and the list's one row stop in the order they are shown, and leave the list after the last one. A header with no control is passed over, and a list without header controls is one tab stop, as before.
 - `toggle`: a click or `Space` toggles a row. `replace`: a click selects only that row, selection follows the arrow keys, `Space` selects, and `Ctrl`/`Shift` extend a multiple selection. `Ctrl+A` selects all rows in `multiple`.
 - `onAction`: `Enter`, or a double click; a single click when nothing can be selected.
-- Selected rows have `aria-selected`, the violet fill and the edge stripe. The focus ring is drawn inwards.
+- Selected rows have `aria-selected`, the violet fill and the edge stripe (the cue that is not colour; its contrast is in `ListItem.md`). The focus ring is drawn inwards. A disabled row has the default cursor.
 - `loading` sets `aria-busy` on the root and shows skeleton rows in the layout of the final rows. The error state has `role="alert"`. The `loadingMore` row is a `status` named by `loadingMoreLabel`.
-- Group headers are not rows: the arrow keys pass over them. Their caret and actions are ordinary tab stops.
+- The grid carries `aria-label` / `aria-labelledby`. While there is no grid (loading, empty, error) the root is a `group` with the same name, so the name is never lost.
+- A group is a `rowgroup` named by its title alone ("Today"), not by the whole header, whose text would start with the caret's name.
+- After Retry, and whenever an empty or error state that held the focus goes away, the focus moves to the list's row stop (plan/interaction.md, "Loading, empty, error").
 - The numbers of a `numbered` list are generated by CSS from the row order.
 
 ## Open questions
 
 None.
+
+Resolved 2026-10-11 (review fixes):
+
+- **Header controls are part of the keyboard model** (review B1). They were plain tab stops that React Aria's grid skipped, so no key reached them while a row was shown. The rule is under "Interaction and accessibility". Both ways in were asked for: the arrows, as for any stop of a composite, and Tab, because a caret is a control a keyboard user looks for with Tab. The cost is that Tab no longer leaves a list with collapsible groups in one press from a row above them; `Shift+Tab`, or Tab from the last stop, leaves it.
+- **Entering the list always lands on a row** when there is one: React Aria moves a focus that enters on a header control to the row stop. With no row shown (every group collapsed), Tab reaches the carets directly.
+- **A Shift range can shrink again** (found while testing `multiple` with `replace`, review B22). The selection is given to React Aria as an array, which dropped the row a range started from: `Shift+ArrowDown` twice and `Shift+ArrowUp` kept three rows. The list now hands back the selection object React Aria reported for as long as the app's ids match it.
+- **`single` selection: the stripe is the second cue, and it now has 3:1** (review B2; numbers in `ListItem.md`). No check mark was added: a mark at the trailing edge competes with `meta` and `trailing`, and the stripe is a shape, not a colour.
+- **The catalog's FixtureRow and MediaObject** (review B9) are `ListItem`'s `pair` variant and `descriptionLines`; see `ListItem.md`.
+- The callback stays `onSelectionChange` (plan/decisions/07-customisation.md: the callback of an ids list names the idea).
+- Sample data: the inbox titles of the stories were rewritten so none reads as adapted from the source's inbox.
 
 Resolved 2026-10-11:
 
@@ -116,6 +131,6 @@ Resolved 2026-10-10:
 - `renderItem` returns a `List.Item` element (not `ListItem` props), so a row can be anything.
 - `itemVariant` and `itemSize` were added so the skeleton rows match the rows, and rows need not repeat them.
 - `List` is not a layout child (no `size` or `priority`): it goes in a `Card` with `padding="none"`, or any element with a height.
-- In `multiple` every row shows a `Checkbox` (`size="small"`) at the start of its `leading`, before an avatar or icon, so the selection is not carried by the fill alone; the fill and the stripe stay. It is the row's selection control in React Aria's grid list: named after the row, not a tab stop of its own, toggled by a click or by `Space` on the row. A row drawn by hand (function `children`) receives it as `selectionControl`. `single` rows keep the fill and stripe only.
+- In `multiple` every row shows a `Checkbox` (`size="small"`) at the start of its `leading`, before an avatar or icon, so the selection is not carried by the fill alone; the fill and the stripe stay. It is the row's selection control in React Aria's grid list: named after the row, not a tab stop of its own, toggled by a click or by `Space` on the row. A row drawn by hand (function `children`) receives it as `selectionControl`. `single` rows keep the fill and stripe only (revisited 2026-10-11: the stripe was under 3:1 and is now a lighter violet).
 - No virtualisation: every row is rendered. To add (React Aria's `Virtualizer`) when lists pass a few thousand rows.
 - No drag and drop.
