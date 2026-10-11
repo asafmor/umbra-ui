@@ -30,7 +30,9 @@
   transition: background-color var(--umbra-motion-duration-fast);
 }
 
+/* A header whose date and "+N" mark do not fit side by side puts the mark under the date. */
 .cell[data-line='0'] {
+  flex-wrap: wrap;
   justify-content: center;
 }
 
@@ -41,6 +43,16 @@
     --umbra-week-strip-today-bg,
     color-mix(in oklab, var(--umbra-color-fixed-primary) 14%, transparent)
   );
+}
+
+/*
+ * Never under 24px: the smallest pointer target (WCAG 2.5.8). A small slot or chip is drawn lower than
+ * that (16px at the compact density) and keeps its look: the cell around it is what is pressed, and
+ * only a cell that can be pressed is made taller, so a strip that is only read stays as low as it was.
+ */
+.cell[data-action],
+.cell:has(.hiddenItems) {
+  min-height: 24px;
 }
 
 .cell[data-action] {
@@ -79,11 +91,40 @@
   min-width: 0;
 }
 
-/* The mark of a day with more items than slots. It keeps its width: the date beside it gives way. */
+/* Holds the mark and its tooltip; it has no box of its own, so the mark is laid out by the cell. */
+.hiddenHolder {
+  display: contents;
+}
+
+/*
+ * The mark of a day with more items than slots: a button that opens their list. It is 24px to press
+ * and takes the room of its line of text only (the margin gives the rest back), so the header of a day
+ * is as tall with it as without.
+ */
 .hiddenItems {
   flex: none;
+  min-width: 24px;
+  height: 24px;
+  margin: calc((1lh - 24px) / 2) 0;
   margin-inline-start: var(--umbra-space-1);
+  padding: 0;
+  border: 0;
+  border-radius: var(--umbra-radius-control);
+  outline-offset: calc(-1 * var(--umbra-state-focus-ring-width));
+  background: none;
   color: var(--umbra-week-strip-hidden-items-color, var(--umbra-color-base-text-secondary));
   font: var(--umbra-font-label);
   font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+
+.hiddenItems:hover,
+.hiddenItems[aria-expanded='true'] {
+  color: var(--umbra-color-base-text-primary);
+}
+
+.hiddenList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--umbra-space-2);
 }

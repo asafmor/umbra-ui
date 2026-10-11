@@ -4,6 +4,7 @@ import {
   useId,
   useLayoutEffect,
   useMemo,
+  useRef,
   useState,
   type CSSProperties,
   type ReactNode,
@@ -16,6 +17,7 @@ import shared from '../data/shared.module.css';
 import { Select } from '../inputs/Select';
 import { ActionsRow } from '../internal/ActionsRow';
 import { dataState, type DataStateProps } from '../internal/dataState';
+import { leaveDisabled } from '../internal/focus';
 import { heightProps, type FillHeight } from '../internal/height';
 import layout from '../layout/layout.module.css';
 import { ScrollArea } from '../layout/ScrollArea';
@@ -35,6 +37,7 @@ import {
   monthWeeks,
   shiftMonth,
   todayIso,
+  validDate,
   type IsoDate,
   type IsoMonth,
   type WeekdayFormat,
@@ -42,7 +45,7 @@ import {
 } from './dates';
 import { useDateGrid } from './grid';
 import styles from './Planner.module.css';
-import { placeItems, type ScheduleItem } from './ScheduleSlot';
+import { itemsBetween, placeItems, type ScheduleItem } from './ScheduleSlot';
 import strip from './WeekStrip.module.css';
 import { useSelectedDate } from './WeekStrip';
 import { passThrough, type RootAttributes } from '../utils/passThrough';
@@ -98,9 +101,9 @@ function Root({
   month: controlled,
   defaultMonth,
   onMonthChange,
-  minMonth,
-  maxMonth,
-  today = todayIso(),
+  minMonth: minGiven,
+  maxMonth: maxGiven,
+  today: todayGiven,
   weekStartsOn,
   height,
   'aria-label': label,
@@ -111,9 +114,15 @@ function Root({
 }: PlannerRootProps) {
   const { locale } = useLocale();
   const { ref, props } = useSlot<HTMLDivElement>(slotProps);
-  const [own, setOwn] = useState(defaultMonth ?? monthOf(today));
+  // What is not a date falls back and warns (dates.ts, `validDate`): today, the month of today, no limit.
+  const today = validDate(todayGiven, 'Planner today') ?? todayIso();
+  const minMonth = validDate(minGiven, 'Planner minMonth', 'month');
+  const maxMonth = validDate(maxGiven, 'Planner maxMonth', 'month');
+  const [own, setOwn] = useState(
+    () => validDate(defaultMonth, 'Planner defaultMonth', 'month') ?? monthOf(today),
+  );
   const [todayPresses, setTodayPresses] = useState(0);
-  const month = monthOf(controlled ?? own);
+  const month = monthOf(validDate(controlled, 'Planner month', 'month') ?? own);
   const title = formatMonth(month, locale);
   const planner = useMemo<PlannerContextValue>(
     () => ({
@@ -192,8 +201,20 @@ function Toolbar({
   );
   const previous = shiftMonth(month, -1);
   const next = shiftMonth(month, 1);
+  // "Next" at the last month and "Previous" at the first disable themselves under the focus, which
+  // then goes to the other of the two (src/internal/focus.ts).
+  const bar = useRef<HTMLDivElement>(null);
+  const pressed = useRef<Element | null>(null);
+  useLayoutEffect(() => {
+    const other = () => bar.current?.querySelector<HTMLElement>('[data-step]:not(:disabled)');
+    if (!leaveDisabled(pressed.current, other)) pressed.current = null;
+  });
+  const step = (to: IsoMonth) => () => {
+    pressed.current = document.activeElement;
+    setMonth(to);
+  };
   return (
-    <div data-part="toolbar" className={cx(styles.toolbar, className)} style={style}>
+    <div ref={bar} data-part="toolbar" className={cx(styles.toolbar, className)} style={style}>
       {monthSelect ? (
         <Select
           aria-label={monthLabel}
@@ -211,13 +232,15 @@ function Toolbar({
         icon={<Icon name="back" />}
         label={previousLabel}
         disabled={!!minMonth && previous < minMonth}
-        onPress={() => setMonth(previous)}
+        onPress={step(previous)}
+        data-step="previous"
       />
       <IconButton
         icon={<Icon name="forward" />}
         label={nextLabel}
         disabled={!!maxMonth && next > maxMonth}
-        onPress={() => setMonth(next)}
+        onPress={step(next)}
+        data-step="next"
       />
       <span className={styles.spacer} />
       {actions != null && <ActionsRow moreLabel={moreLabel}>{actions}</ActionsRow>}
@@ -328,7 +351,7 @@ function Grid({
   const weeks = useMemo(() => monthWeeks(month, locale, weekStartsOn), [month, locale, weekStartsOn]);
   const first = weeks[0]![0]!;
   const last = weeks.at(-1)![6]!;
-  const shown = items.filter((item) => item.date >= first && item.date <= last);
+  const shown = itemsBetween(items, first, last);
   const placed = placeItems(shown, weeks.flat(), slotsPerDay);
   const [selected, select] = useSelectedDate({ selectedDate, defaultSelectedDate, onSelectedDateChange });
   const dayPress =
@@ -339,12 +362,17 @@ function Grid({
         }
       : undefined;
   const home = selected?.startsWith(month) ? selected : today.startsWith(month) ? today : firstOfMonth(month);
-  const [ref, handlers, show] = useDateGrid<HTMLDivElement>({
+  const [ref, handlers, show, stand] = useDateGrid<HTMLDivElement>({
     initial: home,
     onLeave: ({ date }) => setMonth(monthOf(date)),
     onPage: (date, months) => {
-      const to = addMonths(date, months);
-      return setMonth(monthOf(to)) ? to : undefined;
+      const own = monthOf(date);
+      // From a day of the month before or after the one shown, a page its way shows that month and
+      // keeps the day: one key never moves the view two months.
+      const away = Math.abs(months) === 1 && own !== month && own < month === months < 0;
+      const to = away ? date : addMonths(date, months);
+      // A page back from such a day lands in the month shown: there is no month to change.
+      return monthOf(to) === month || setMonth(monthOf(to)) ? to : undefined;
     },
   });
 
@@ -378,7 +406,7 @@ function Grid({
 
   if (state) {
     return (
-      <div data-part="state" className={cx(styles.state, className)} style={style}>
+      <div ref={stand} tabIndex={-1} data-part="state" className={cx(styles.state, className)} style={style}>
         {renderPart(parts?.state, { children: state }, (p) => p.children)}
       </div>
     );
@@ -392,6 +420,9 @@ function Grid({
         role="grid"
         data-part="grid"
         data-aside={hasAside ? (collapsed ? 'collapsed' : 'open') : undefined}
+        // With the side column a week's first row has eight cells and its other rows seven, so every
+        // cell says its column.
+        aria-colcount={hasAside ? 8 : undefined}
         aria-label={label ? `${label}, ${title}` : title}
         aria-busy={loading || undefined}
         className={styles.grid}
@@ -401,12 +432,17 @@ function Grid({
           <div role="rowgroup" data-part="weekdays" data-sticky="" className={styles.weekdays}>
             <div role="row" className={cx(strip.week, styles.week)}>
               {hasAside && (
-                <div role="columnheader" className={styles.weekday}>
+                <div role="columnheader" aria-colindex={1} className={styles.weekday}>
                   <span className={shared.srOnly}>{weekLabel}</span>
                 </div>
               )}
-              {p.days.map((day) => (
-                <div key={day} role="columnheader" className={styles.weekday}>
+              {p.days.map((day, column) => (
+                <div
+                  key={day}
+                  role="columnheader"
+                  aria-colindex={hasAside ? column + 2 : undefined}
+                  className={styles.weekday}
+                >
                   <span aria-hidden="true">
                     <WeekdayName date={day} format={p.format} />
                   </span>
@@ -426,6 +462,11 @@ function Grid({
             collapsed,
           };
           const isEmpty = !loading && week.items.length === 0;
+          const emptyLine = isEmpty
+            ? renderPart(parts?.weekEmpty, { week, children: emptyWeekLabel }, (p) => p.children)
+            : undefined;
+          // The rows of the week: its headers, and its slots or the one line of an empty week.
+          const rows = !isEmpty ? slotsPerDay + 1 : emptyLine == null || emptyLine === false ? 1 : 2;
           const name = `${weekLabel}, ${formatDayMonthRange(days[0]!, days[6]!, locale)}`;
           const content = renderWeek?.(week);
           return (
@@ -447,23 +488,21 @@ function Grid({
                 freeLabel={freeLabel}
                 hiddenItemsLabel={hiddenItemsLabel}
                 parts={parts}
-                empty={
-                  isEmpty
-                    ? renderPart(parts?.weekEmpty, { week, children: emptyWeekLabel }, (p) => p.children)
-                    : undefined
-                }
+                empty={isEmpty ? (emptyLine ?? null) : undefined}
                 aside={
                   hasAside && (
                     <div
                       role="rowheader"
                       aria-label={name}
+                      aria-colindex={1}
+                      aria-rowspan={rows}
                       data-part="weekAside"
                       data-cell=""
                       data-week={week.start}
                       data-col="aside"
                       tabIndex={-1}
                       className={styles.aside}
-                      style={{ gridRow: `1 / span ${isEmpty ? 2 : slotsPerDay + 1}` }}
+                      style={{ gridRow: `1 / span ${rows}` }}
                     >
                       {/* ponytail: the content is mounted again when the column collapses or opens, so
                           state kept inside it (not in the app) is lost on that resize. Move the same
