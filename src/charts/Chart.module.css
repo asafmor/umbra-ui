@@ -286,10 +286,14 @@
   font: var(--umbra-chart-font, var(--umbra-font-label));
 }
 
+/* Placed by the chart in window pixels (see Frame.tsx), in the top layer where the browser has one.
+   `inset` and `margin` undo what a popover gets from the browser. */
 .tooltip {
-  position: absolute;
+  position: fixed;
+  inset: auto;
   z-index: 1;
-  max-width: 66%;
+  margin: 0;
+  max-width: min(var(--umbra-chart-tooltip-max-width, 20rem), calc(100vw - 2 * var(--umbra-space-2)));
   padding: var(--umbra-space-2) var(--umbra-space-3);
   border: var(--umbra-border-width) solid
     var(--umbra-chart-tooltip-border, var(--umbra-color-base-border-strong));
@@ -301,21 +305,6 @@
   white-space: nowrap;
   overflow: hidden;
   pointer-events: none;
-  --tx: -50%;
-  --ty: calc(-100% - 10px);
-  translate: var(--tx) var(--ty);
-}
-
-.tooltip[data-align='start'] {
-  --tx: 0%;
-}
-
-.tooltip[data-align='end'] {
-  --tx: -100%;
-}
-
-.tooltip[data-side='below'] {
-  --ty: 10px;
 }
 
 .tooltipTitle {

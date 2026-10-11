@@ -264,6 +264,25 @@ export const Shrink: Story = {
   ),
 };
 
+/** A plot shorter than its tooltip: the tooltip leaves the chart instead of being cut. */
+export const ShortPlot: Story = {
+  render: () => (
+    <Boxes>
+      <Box width={420} height={108} note="tooltip taller than the room above or below a point">
+        <LineChart aria-label="Weekly orders by region" series={weekly} legend={false} />
+      </Box>
+      <Box width={150} height={108} note="and wider than the chart">
+        <LineChart
+          aria-label="Weekly orders by region, narrow"
+          series={weekly}
+          legend={false}
+          formatValue={(v) => `${v} orders a week`}
+        />
+      </Box>
+    </Boxes>
+  ),
+};
+
 /** Hover or focus a point; arrow keys move between points; a legend item hides its series. */
 export const Interaction: Story = {
   render: function Render() {

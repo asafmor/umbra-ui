@@ -3,7 +3,10 @@
 import {
   createContext,
   useContext,
+  useEffect,
   useId,
+  useLayoutEffect,
+  useReducer,
   useRef,
   useState,
   type CSSProperties,
@@ -17,7 +20,7 @@ import { heightProps } from '../../internal/height';
 import { SeriesMarker, type SeriesMarkerKind } from '../../internal/SeriesMarker';
 import { cx, renderPart, type Part } from '../../utils/parts';
 import styles from '../Chart.module.css';
-import { levelFor, placeTooltip, type Measure } from './scales';
+import { fitTooltip, levelFor, placeTooltip, type Measure } from './scales';
 import { measurer, useChartSize } from './useChartSize';
 
 /** One data point, as the app receives it in `onPointPress`. */
@@ -372,6 +375,54 @@ export function Frame<M extends FrameModel>({
   // A tooltip part of `null` shows no tooltip at all, not an empty box.
   const tooltipNode = tooltip ? renderPart(parts?.tooltip, tooltip, (p) => <ChartTooltip {...p} />) : null;
   const place = active && placeTooltip(active.x, active.y, plot.width, plot.height);
+
+  // The tooltip is placed once it is drawn and its size is known, so that it is never cut: inside the
+  // chart when it fits, outside it when the chart is too short. It is shown in the top layer (the
+  // Popover API), where no card or scroll area clips it, and stays in the chart's own DOM, so it keeps
+  // the tokens, the density and the direction of its place.
+  // ponytail: without the Popover API it is only `position: fixed`, which a transformed ancestor still clips.
+  const tooltipRef = useRef<HTMLDivElement>(null);
+  const [, replace] = useReducer((n: number) => n + 1, 0);
+  useLayoutEffect(() => {
+    const [el, plotEl, root] = [tooltipRef.current, plotRef.current, rootRef.current];
+    if (!el || !plotEl || !root || !active || !place) return;
+    try {
+      if (!el.matches(':popover-open')) el.showPopover();
+    } catch {
+      // No Popover API: the element is already shown.
+    }
+    const from = plotEl.getBoundingClientRect();
+    const box = el.getBoundingClientRect();
+    const page = document.documentElement;
+    const fit = fitTooltip({
+      x: from.left + active.x,
+      y: from.top + active.y,
+      width: box.width,
+      height: box.height,
+      align: place.align,
+      side: place.side,
+      chart: root.getBoundingClientRect(),
+      window: { left: 0, top: 0, right: page.clientWidth, bottom: page.clientHeight },
+    });
+    el.style.left = `${fit.left}px`;
+    el.style.top = `${fit.top}px`;
+    el.dataset.side = fit.side;
+  });
+  // While a point is shown: Escape dismisses it wherever the focus is (a hover tooltip too), and the
+  // tooltip follows its point when something scrolls.
+  const shown = active !== null;
+  useEffect(() => {
+    if (!shown) return;
+    const onKey = (event: globalThis.KeyboardEvent) => {
+      if (event.key === 'Escape') setActive(null);
+    };
+    document.addEventListener('keydown', onKey);
+    window.addEventListener('scroll', replace, true);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      window.removeEventListener('scroll', replace, true);
+    };
+  }, [shown]);
   // No summary of data that is not there (it read "0: ").
   const summaryText = description ?? (isEmpty ? '' : summary);
   const descriptionId = summaryText ? `${uid}-description` : undefined;
@@ -439,12 +490,12 @@ export function Frame<M extends FrameModel>({
         )}
         {tooltipNode != null && tooltipNode !== false && place && (
           <div
+            ref={tooltipRef}
+            popover="manual"
             className={styles.tooltip}
             data-part="tooltip"
             data-align={place.align}
-            data-side={place.side}
             aria-hidden="true"
-            style={{ left: active.x, top: active.y }}
           >
             {tooltipNode}
           </div>

@@ -712,6 +712,88 @@ test.describe('labels are measured in the chart’s font, so none is cut (C2, C3
   });
 });
 
+test.describe('tooltip', () => {
+  const box = async (locator: Locator) => (await locator.boundingBox())!;
+
+  test('is never cut: in a plot too short for it, it leaves the chart, whole and beside its point (C9)', async ({
+    page,
+  }) => {
+    await open(page, 'charts-linechart--short-plot');
+    for (const size of ['420x108', '150x108']) {
+      const chart = sized(page, size);
+      const tip = tooltip(chart);
+      let outside = 0;
+      for (const name of ['Region 1, Jan 1: 30', 'Region 3, Jan 29: 17', 'Region 1, Feb 19: 58']) {
+        await chart.getByRole('option', { name }).hover();
+        await expect(tip).toBeVisible();
+        const [t, c, point] = [await box(tip), await box(chart), await box(ring(chart))];
+        // It is drawn in the top layer, where the chart does not clip it, and inside the window.
+        expect(await tip.evaluate((el) => el.matches(':popover-open'))).toBe(true);
+        if (t.y < c.y || t.y + t.height > c.y + c.height) outside += 1;
+        expect(t.x).toBeGreaterThanOrEqual(0);
+        expect(t.y).toBeGreaterThanOrEqual(0);
+        expect(t.x + t.width).toBeLessThanOrEqual(1280);
+        expect(t.y + t.height).toBeLessThanOrEqual(720);
+        // Nothing of its content is cut inside it either.
+        expect(await tip.evaluate((el) => el.scrollHeight - el.clientHeight)).toBeLessThanOrEqual(0);
+        expect(await tip.evaluate((el) => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(0);
+        // It sits above or below the point, not on it.
+        const middle = point.y + point.height / 2;
+        expect(middle < t.y || middle > t.y + t.height, `${size} ${name} off the point`).toBe(true);
+      }
+      // A point in the middle of the plot has no room for it on either side inside the chart.
+      expect(outside, size).toBeGreaterThan(0);
+    }
+    // Where it fits, it stays inside the chart.
+    await open(page, 'charts-linechart--interaction');
+    const roomy = tile(page, 'controlled');
+    await roomy.getByRole('option', { name: 'Actual, Jun: 58 orders' }).hover();
+    await inside(tooltip(roomy), roomy);
+  });
+
+  test('Escape dismisses a hover tooltip, with the focus anywhere (C10)', async ({ page }) => {
+    await open(page, 'charts-linechart--interaction');
+    const chart = tile(page, 'controlled');
+    await chart.getByRole('option', { name: 'Actual, Jun: 58 orders' }).hover();
+    await expect(tooltip(chart)).toBeVisible();
+    expect(await page.evaluate(() => document.activeElement === document.body)).toBe(true);
+    await page.keyboard.press('Escape');
+    await expect(tooltip(chart)).toHaveCount(0);
+    await expect(ring(chart)).toHaveCount(0);
+    // It comes back when the pointer reaches another point, and Escape works from another control too.
+    await chart.getByRole('option', { name: 'Actual, Dec: 90 orders' }).hover();
+    await expect(tooltip(chart)).toContainText('Dec');
+    await page.getByRole('button', { name: 'Show all' }).focus();
+    await page.keyboard.press('Escape');
+    await expect(tooltip(chart)).toHaveCount(0);
+  });
+
+  test('hovering a donut segment or a radar point shows its tooltip', async ({ page }) => {
+    await open(page, 'charts-donutchart--interaction');
+    const donut = tile(page, 'segments');
+    const segment = await box(donut.getByRole('option', { name: /^Web:/ }).locator('path').last());
+    // The middle of a segment's box is the hole of the ring; a quarter in from the right edge is on the ring.
+    await page.mouse.move(segment.x + segment.width - 6, segment.y + segment.height / 2);
+    await expect(tooltip(donut)).toContainText('Web');
+    await expect(tooltip(donut)).toContainText('48');
+    await inside(tooltip(donut), donut);
+    await page.mouse.move(2, 2);
+    await expect(tooltip(donut)).toHaveCount(0);
+
+    await open(page, 'charts-radarchart--interaction');
+    const radar = tile(page, 'several');
+    const point = await box(
+      radar.getByRole('option', { name: 'Region 2, Quality: 15' }).locator('[data-shape]'),
+    );
+    await page.mouse.move(point.x + point.width / 2, point.y + point.height / 2);
+    await expect(tooltip(radar)).toContainText('Quality');
+    // One row for each series on that axis.
+    await expect(tooltip(radar)).toContainText('Region 1');
+    await expect(tooltip(radar)).toContainText('15');
+    await expect(ring(radar)).not.toHaveAttribute('data-keyboard', 'true');
+  });
+});
+
 test('a legend glyph is drawn with the dash of its line (C5)', async ({ page }) => {
   for (const [story, id, series] of [
     ['charts-radarchart--interaction', 'several', { a: 'Region 1', b: 'Region 2', c: 'Region 3' }],
