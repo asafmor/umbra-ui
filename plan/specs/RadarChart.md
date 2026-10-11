@@ -107,6 +107,10 @@ The radius is the largest that leaves every axis label inside the slot, but neve
 
 None.
 
+Resolved 2026-10-11 (fix pass of review 2, plan/reviews/milestone-2.md):
+
+- **Invalid input, focus and `aria-describedby`.** A value that is not a finite number is a missing value and a second series of one id is left out, with a warning in development (plan/decisions/03-charts.md, "Invalid input"). The focus of the plot is kept when the app shows the skeleton or an error in its place (the shared frame). An `aria-describedby` given by the app is kept, before the chart's own summary.
+
 Resolved 2026-10-11:
 
 - The accessible name is `aria-label` (it was `label`), as on the other components: `plan/decisions/07-customisation.md`, "Prop names".

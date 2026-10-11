@@ -119,6 +119,10 @@ The marker, the band and the comparison marker always stay, at the same place on
 
 None.
 
+Resolved 2026-10-11 (fix pass of review 2, plan/reviews/milestone-2.md):
+
+- **Invalid input**: a value that is not a finite number (`NaN`, `Infinity`) is no value, as `null` is, with a warning in development (plan/decisions/03-charts.md, "Invalid input"). `Infinity` used to fill the scale. **In a `MeterList`** the meter takes the list's columns (label, bar, value) on one line. **A cut label** shows its text in a tooltip, over which the tooltip of the value gives way (plan/specs/MeterList.md). In a list the meter is horizontal and its end captions are left out.
+
 Resolved 2026-10-10:
 
 - 2026-10-11 (review B7): unlit ticks and the box border use `border-control` (they measured 1.9:1 in `border-strong`). Lit ticks are `text-secondary` and taller, and band edges keep `text-muted` through their own token, `--umbra-level-meter-boundary`.

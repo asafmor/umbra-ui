@@ -62,7 +62,7 @@ export interface HeatmapRootProps extends ChartCommonProps {
   yDomain?: [number, number] | undefined;
   /** Number of steps of the colour scale. `thresholds` replaces it. */
   steps?: number | undefined;
-  /** The range of the colour scale. Defaults to the lowest and highest value. */
+  /** The range of the colour scale. Defaults to round numbers at or beyond the lowest and the highest value. */
   valueDomain?: [number, number] | undefined;
   /**
    * Colours cells by the band of their value in place of the scale: an ascending list of

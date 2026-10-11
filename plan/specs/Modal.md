@@ -121,6 +121,10 @@ The fade of a `ScrollArea` inside blends into the panel's background, through th
 
 ## Open questions
 
+Resolved 2026-10-11 (fix pass of review 2, MC-9):
+
+- **A chart that fills beside other content in the body.** The body is as tall as its content, and a chart with `height="fill"` is 100% of that, so with a sibling the two were taller than the body and it scrolled (348px of chart for 240). A body that directly holds such a chart lays its content out as a column, in which the chart gives way to its siblings and is as tall as its content height. Only for charts: a `Planner` or a table beside other content keeps its own height and the body scrolls, as before.
+
 Resolved 2026-10-11:
 
 - **The narrow state is read from the window** (`src/internal/useNarrow.ts`, the media query `AppShell` used), not from a context that only `AppShell` set. A modal used without an `AppShell` now fills the window below the minimum and moves its navigation behind the "Sections" toggle. `Columns` and `Card` read the same hook, so tab mode no longer needs an `AppShell` either.

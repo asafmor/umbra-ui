@@ -194,8 +194,8 @@ An independent reviewer (with three sub-reviewers) checked 11 components, the pl
 |---|---|---|---|---|
 | X-1 | `Card` popover, `Popover.Content` | A layout-collapsed card inside a `Modal`: pressing its header closes the whole modal, and each collapsed card already shows an empty 2px dialog. A stand-alone `Popover.Content` reads the modal's `OverlayTriggerStateContext` (`src/overlays/Popover.tsx`) and takes the modal's open state as its own: a plain `Popover.Content anchorRef open={false}` in a modal closes the modal on mount. Stray dialogs inside a `Popover` too | A `Stack` with a height in a modal, cards that collapse; a stand-alone `Popover.Content` in a modal | open |
 | OP-1 | `Planner` | The same as T-1 of review 1 | `pages-planning--planning`: focus "Next month", Enter | open |
-| MC-1 | `Heatmap` | An `Infinity` value (or `steps={NaN}`) throws and unmounts the tree | `values:[[Infinity,1],[2,3]]` | open |
-| MC-6 | `Heatmap`, `Scatter`, `LineChart` (shared `Frame`) | Focus drops to `<body>` when the plot has focus and the chart switches to `loading` or `error` | Focus the plot, set `loading` | open |
+| MC-1 | `Heatmap` | An `Infinity` value (or `steps={NaN}`) throws and unmounts the tree | `values:[[Infinity,1],[2,3]]` | fixed: a value that is not finite is no value, a bad `steps` is the default (plan/decisions/03-charts.md, "Invalid input") |
+| MC-6 | `Heatmap`, `Scatter`, `LineChart` (shared `Frame`) | Focus drops to `<body>` when the plot has focus and the chart switches to `loading` or `error` | Focus the plot, set `loading` | fixed: the element that holds the plot's focus stays through loading and error, in the shared frame; tested on all seven charts |
 | SL-2 | `EntitySwitcher` | Picker open with focus on a row; the app sets `loading` or shortens `items`: focus goes to `<body>` with the picker still open | 3 items, ArrowDown twice, `loading: true` | open |
 | SL-7 | `HorizontalScroller` | A `next` or `previous` given as a function part loses focus to `<body>` when the end is reached (the story's "Own buttons" row) | Press the custom "next" to the end | open |
 | X-2 | `ActionsOverflow` | If the menu chunk fails to load, the "more" button toggles `aria-expanded` and shows nothing: no error, no fallback, the actions are unreachable; a retry happens only on every second press | `route.abort()` on `Menu-*.js`, `layout-card-on-demand--fits-until-the-window-shrinks` at 700px | open |
@@ -208,11 +208,11 @@ An independent reviewer (with three sub-reviewers) checked 11 components, the pl
 | SL-3 | `ContextBlock` in `TopBar` | With `live` and no `time`, the chip arrives after the bar measured and the bar never steps: a fresh load at 880px keeps both lines and the nav is cut; a 1px resize corrects it | Fresh load at 880px | open |
 | OP-2 | `Spotlight` and the shortcut registry | During a non-interactive tour, registry shortcuts still run; a modal they open lands under the dim with focus inside it | `pages-analysis--analysis`: Shift+T, then `?` | open |
 | OP-3 | Shortcut registry | `?` and every bare-key shortcut do nothing while focus is on a checkbox or a range input: `isTypingTarget` counts any `INPUT` | Focus a checkbox, press `?` | open |
-| MC-2 | `PieIndicator` | `layout="block"` with `showValue` never shows the value at any width; the baseline shows it missing | `meters-pieindicator--variants` | open |
-| MC-3 | `Heatmap` | With `thresholds`, a value below the first `from` is not drawn and is no keyboard stop | 6 values, 4 cells | open |
-| MC-4 | `Scatter`, `Heatmap` (`points`) | One `NaN` coordinate blanks the chart | One NaN point | open |
-| MC-5 | `Sparkline` | The last point is never coloured by its band: the `.marker` class fill beats the `fill` attribute | `thresholds` on a line | open |
-| MC-7 | `Scatter` | A small point under a larger bubble of a later series cannot be hovered | Two series at (5,5), sizes 1 and 100 | open |
+| MC-2 | `PieIndicator` | `layout="block"` with `showValue` never shows the value at any width; the baseline shows it missing | `meters-pieindicator--variants` | fixed: the value has its own line there and is measured against it |
+| MC-3 | `Heatmap` | With `thresholds`, a value below the first `from` is not drawn and is no keyboard stop | 6 values, 4 cells | fixed: drawn in the low colour, in no band, a keyboard stop |
+| MC-4 | `Scatter`, `Heatmap` (`points`) | One `NaN` coordinate blanks the chart | One NaN point | fixed: the point is left out and does not stretch an axis |
+| MC-5 | `Sparkline` | The last point is never coloured by its band: the `.marker` class fill beats the `fill` attribute | `thresholds` on a line | fixed: the colour is a style, which the class no longer beats |
+| MC-7 | `Scatter` | A small point under a larger bubble of a later series cannot be hovered | Two series at (5,5), sizes 1 and 100 | fixed: one draw order across the series, largest first |
 | SL-1 | `WidgetBoard` | Firefox: a board taller than about 10,000px loses its tail (120 widgets end at "Widget 50", 69 overlap); Chromium is fine | 120 widgets in Firefox | open |
 | SL-4 | `WidgetBoard` / content-sized `Card` | A caret collapse ends with one painted frame of the full-height card before the collapsed state (87 → 226 → 70px) | `layout-widgetboard--default`, press a caret | open |
 | SL-5 | `HorizontalScroller` | ArrowRight on a `Select` trigger inside an item moves to the next item and also changes the select's value | An item holding a `Select` | open |
@@ -225,7 +225,7 @@ An independent reviewer (with three sub-reviewers) checked 11 components, the pl
 | X-4 | `ActionsOverflow` | A press kept while the chunk loads cannot be taken back: Escape, Tab away or a press elsewhere, and the menu still opens on arrival and takes the focus | open |
 | X-5 | Root attributes | `SplitButton` drops `id` and `aria-describedby`; `ColorScaleEditor` drops `aria-describedby`; every chart drops `aria-describedby` in all data states | open |
 | X-6 | `ContextBlock` | A fixed `time` rendered on a server in another time zone gives a hydration mismatch; the spec should name `timeFormat.timeZone` | open |
-| X-7 | `thresholds.spec.ts` | Covers no tier 2 meter: a mutation of `PieIndicator` or `DivergingMeter` bands passes this file | open |
+| X-7 | `thresholds.spec.ts` | Covers no tier 2 meter: a mutation of `PieIndicator` or `DivergingMeter` bands passes this file | fixed: a tier 2 story of the one list, and a test of the bands, colours and labels of `PieIndicator`, `DivergingMeter`, `Sparkline` and `Heatmap` |
 | X-8 | `Card` popover | The app unmounts a collapsed card while its popover has focus: focus on `<body>` | open |
 | X-9 | `ActionsOverflow` | Menu open, row widened, Escape: focus goes to the first control of the row, not to an action that came back (matches the stated rule; noted) | open |
 | OP-4 | Analysis page | The fifth star of the "Rating" column is clipped in every row at 1920x1080 | open |
@@ -236,16 +236,16 @@ An independent reviewer (with three sub-reviewers) checked 11 components, the pl
 | OP-9 | `ShortcutsSheet` | The root carries `data-umbra="modal"`; nothing carries `shortcuts-sheet` | open |
 | OP-10 | `Spotlight` | `--umbra-spotlight-z-index` works but is missing from the generated table | open |
 | OP-11 | `ShortcutsSheet` | "arrowup" finds nothing; only "↑" does | open |
-| MC-8 | `sparklineColumn` | A `NaN` in a run breaks the sort | open |
-| MC-9 | Charts in a `Modal` | With a sibling in the body, `height="fill"` gives 348px instead of 240 and the body scrolls | open |
-| MC-10 | `Heatmap` | The cell edge measures 2.3 to 3.3:1 on fractional pixels, against the 4.1:1 the spec states | open |
-| MC-11 | `PieIndicator` | The edge of an empty 16px disc is under 3:1 (2.78 at zero, 2.31 with no value); the two states look alike | open |
-| MC-12 | `Scatter` | Points outside a narrowed domain are drawn over the tick labels; with `axes={false}` an edge point is cut in half | open |
-| MC-13 | `Heatmap` | Duplicate row or column names collapse onto one cell, silently | open |
-| MC-14 | `DivergingMeter` | `value={0.3} origin={0.1}` shows and speaks "+0.19999999999999998" | open |
-| MC-15 | Both meters | For one pixel of width the label is cut while the value still shows | open |
-| MC-16 | `Scatter`, `Heatmap` | 5,000 marks: 104 to 138ms per resize; Scatter with `labels` 357 to 458ms per resize and 143ms per arrow key | open |
-| MC-17 | Docs | The `valueDomain` doc says lowest and highest, the code rounds; `--umbra-sparkline-width` is missing from the spec's token list | open |
+| MC-8 | `sparklineColumn` | A `NaN` in a run breaks the sort | fixed: the last finite value |
+| MC-9 | Charts in a `Modal` | With a sibling in the body, `height="fill"` gives 348px instead of 240 and the body scrolls | fixed: a modal body that holds a filling chart is a column (`Modal.module.css`); charts only |
+| MC-10 | `Heatmap` | The cell edge measures 2.3 to 3.3:1 on fractional pixels, against the 4.1:1 the spec states | fixed: cells on whole pixels; each edge measured at 3:1 or more on the four tints |
+| MC-11 | `PieIndicator` | The edge of an empty 16px disc is under 3:1 (2.78 at zero, 2.31 with no value); the two states look alike | fixed: a 1.5px edge in the muted text colour (3:1 or more as drawn); no value is a hollow dashed ring with a dash |
+| MC-12 | `Scatter` | Points outside a narrowed domain are drawn over the tick labels; with `axes={false}` an edge point is cut in half | fixed: points outside a set domain are left out; without axes the scales stop a point short of the edge |
+| MC-13 | `Heatmap` | Duplicate row or column names collapse onto one cell, silently | fixed: both are drawn, the later one as "A (2)", with a warning |
+| MC-14 | `DivergingMeter` | `value={0.3} origin={0.1}` shows and speaks "+0.19999999999999998" | fixed: rounded to 12 significant digits |
+| MC-15 | Both meters | For one pixel of width the label is cut while the value still shows | fixed: the label's own text is the measure |
+| MC-16 | `Scatter`, `Heatmap` | 5,000 marks: 104 to 138ms per resize; Scatter with `labels` 357 to 458ms per resize and 143ms per arrow key | fixed: a key builds nothing again (a frame, was 143ms); labels are measured once and collisions use a grid. Open: a resize of 5,000 marks is still about 100 to 150ms, the cost of drawing 5,000 SVG nodes |
+| MC-17 | Docs | The `valueDomain` doc says lowest and highest, the code rounds; `--umbra-sparkline-width` is missing from the spec's token list | fixed: the doc comment and the spec |
 | SL-8 | `EntitySwitcher` | With a disabled current entity the steppers lose their place | open |
 | SL-9 | `EntitySwitcher` | No search field, opened while loading: when rows arrive focus stays on the dialog and arrows do nothing | open |
 | SL-10 | `EntitySwitcher` | With text in the search, the first Escape only clears it (the spec says Escape closes) | open |
@@ -276,7 +276,7 @@ Found by the owner while using the Storybook. Each is a requirement of the fix p
 | O-4 | Selected and highlighted rows | The left edge stripe is unwanted on: the selected item of a `VerticalNav`, the highlighted row of the command palette, the selected option of an open `Select` or `Menu`. It stays on list items of the inbox kind and on table rows. The second cue that is not colour must remain (a check, a weight change) | open |
 | O-5 | Inbox page, favourite button (`IconButton` toggle) | A pressed star is an outline star in an outlined box: it should be a filled, coloured star, and a pointer press should not leave a focus ring | open |
 | O-6 | Theming | Changing the brand colour changes little: everything stays purple and magenta. Brand and context should visibly drive the look. **Changes the decision "violet (selected) and magenta (primary action) are fixed"**: they become defaults derived from the brand, still overridable as tokens | open |
-| O-7 | `LevelMeter` rows (list and detail page) | Each meter starts right after its label, so the meters do not line up: labels need their own column and the meters theirs | open |
+| O-7 | `LevelMeter` rows (list and detail page) | Each meter starts right after its label, so the meters do not line up: labels need their own column and the meters theirs | fixed: `MeterList` (plan/specs/MeterList.md), used on the detail screen and in the dashboard example |
 | O-8 | Table page | The `ActionBar` of the selection is hidden under the table's summary row | open |
 | O-9 | `ContextBlock` | An optional background, slightly lighter or darker than the bar it sits in, as in the source | open |
 | O-10 | Theming | One global setting for how opaque card backgrounds are over the app background | open |

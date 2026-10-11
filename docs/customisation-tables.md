@@ -56,6 +56,7 @@ translate a component. A name followed by brackets can also be a function of wha
 | [`ListItem`](#listitem) | `unreadLabel`, `accentLabel`, `increasedLabel`, `decreasedLabel` |
 | [`MediaCard`](#mediacard) | `moreLabel` |
 | [`Menu`](#menu) | `emptyLabel` |
+| [`MeterList`](#meterlist) | `retryLabel` |
 | [`Modal`](#modal) | `navLabel`, `closeLabel` |
 | [`PageHeader`](#pageheader) | `moreLabel`, `backLabel`, `breadcrumbsLabel` |
 | [`PieIndicator`](#pieindicator) | `noValueLabel`, `increasedLabel`, `decreasedLabel` |
@@ -1520,7 +1521,7 @@ A grid of cells coloured by value: two categories against each other, or points 
 | `onRetry` | `(() => void)` | Adds a retry button to the error state. |
 | `retryLabel` | `string` | Label of the retry button. |
 | `aria-labelledby` | `string` | Id of the element that names the chart, for example a card title. |
-| `valueDomain` | `[number, number]` | The range of the colour scale. Defaults to the lowest and highest value. |
+| `valueDomain` | `[number, number]` | The range of the colour scale. Defaults to round numbers at or beyond the lowest and the highest value. |
 | `xTitle` | `string` |  |
 | `yTitle` | `string` |  |
 | `legend` | `string \| number \| bigint \| boolean \| ReactElement<unknown, string \| JSXElementConstructor<any>> \| Iterable<ReactNode> \| ReactPortal \| Promise<string \| number \| bigint \| boolean \| ReactPortal \| ReactElement<unknown, string \| JSXElementConstructor<any>> \| Iterable<ReactNode> \| null \| undefined> \| null` | The legend: `true` or a placement shows the built-in one, `false` hides it, and a node replaces it. By default it is shown below the chart when there is more than one series. |
@@ -2207,6 +2208,40 @@ A list of actions or links that opens from a control. One tab stop; arrow keys, 
 
 **Blocks**: `Menu.Item`, `Menu.Section`, `Menu.Separator`, `Menu.Sub`, `Menu.Context`.
 
+## MeterList
+
+A group of meters in aligned columns: every label in one column, every bar in the next, every value in the last. Takes any of the four meters as children.
+
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-meter-list-bar-min-width` | `calc(2 * var(--umbra-space-8))` |
+| `--umbra-meter-list-column-gap` | `--umbra-space-3` (8px) |
+| `--umbra-meter-list-gap` | `--umbra-space-3` (8px) |
+| `--umbra-meter-list-label-fg` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-meter-list-skeleton-height` | `6px` |
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `skeletonRows` | `number` | Number of skeleton rows. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `children` | `ReactNode` | The meters: `ProgressBar`, `LevelMeter`, `PieIndicator` and `DivergingMeter`, in any mix. |
+| `aria-label` | `string` | Names the group for assistive technology. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
+| `labelWidth` | `string \| number` | Width of the shared label column: pixels, or any CSS track size (`"40%"`, `"12rem"`, `"fit-content(50%)"`). Default: as wide as the longest label, as far as the bars keep their minimum. |
+| `loading` | `boolean` | Shows skeletons in the final layout and marks the component busy. |
+| `empty` | `ReactNode \| DataStateContent` | Shown when there is no data: text, a node, or `{ title, description, icon, action }`. Defaults to a short English text. |
+| `error` | `ReactNode \| DataStateContent` | Shown in place of the data when set: text, a node, `{ title, description, icon, action }`, or `true` for a default text. |
+| `onRetry` | `(() => void)` | Adds a retry button to the error state. |
+| `retryLabel` | `string` | Label of the retry button. |
+
+**Parts**: `skeleton`, `empty`, `error`.
+
+**Blocks**: `MeterList.Root`.
+
 ## Modal
 
 A panel over a dimmed page, for a focused task. Focus stays inside it and the page behind is inert until it closes. Its body scrolls inside; the page never does.
@@ -2350,7 +2385,8 @@ A small disc of wedges that fills with a value: a level gauge for table cells, r
 | `--umbra-pie-indicator-gap` | `--umbra-space-2` (4px) |
 | `--umbra-pie-indicator-size` | `16px`; `12px`; `24px` |
 | `--umbra-pie-indicator-track` | `--umbra-color-base-surface3` (#261b38) |
-| `--umbra-pie-indicator-track-border` | `--umbra-color-base-border-control` (#7a6e91) |
+| `--umbra-pie-indicator-track-border` | `--umbra-color-base-text-muted` (#948da2) |
+| `--umbra-pie-indicator-track-border-width` | `1.5px` |
 | `--umbra-pie-indicator-wedge-gap` | `0.16` |
 
 | Prop | Type | Purpose |
