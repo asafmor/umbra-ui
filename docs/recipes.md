@@ -1367,6 +1367,8 @@ export function App() {
   content.
 - There is no drag and no built-in copy and paste: they are buttons of yours in `renderWeek`, or in
   the toolbar (`parts={{ toolbar: (p) => <Planner.Toolbar {...p} actions={…} /> }}`).
+- A day draws `slotsPerDay` items and no more: a further item of that day is not shown. Set it for
+  your busiest day, or count what is left out in `renderWeek`.
 - The grid is one tab stop. Arrow keys move between days and slots, Page Up and Page Down change the
   month, Enter activates a slot or goes into the side column.
 - Slots show an icon and a label, then the icon alone when a day is too narrow (`slotDisplay`). A slot

@@ -16,11 +16,13 @@ import {
   Radio,
   RadioGroup,
   Select,
+  SplitButton,
+  Stepper,
   Tag,
   TextField,
   type DataTableColumn,
 } from 'umbra-ui';
-import { clients, money, regions, type Order } from '../data';
+import { clients, money, regions, type Order, type OrderStatus } from '../data';
 import { navigate } from '../router';
 
 const statusTone = { Open: 'info', Packed: 'warning', Sent: 'success' } as const;
@@ -41,6 +43,10 @@ export function Orders({
 }) {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [confirming, setConfirming] = useState(false);
+  const mark = (status: OrderStatus) => {
+    onChange(orders.map((o) => (selectedIds.includes(o.id) ? { ...o, status } : o)));
+    setSelectedIds([]);
+  };
   const remove = (ids: string[]) => {
     onChange(orders.filter((order) => !ids.includes(order.id)));
     setSelectedIds((selected) => selected.filter((id) => !ids.includes(id)));
@@ -147,15 +153,22 @@ export function Orders({
             variant: 'danger',
             onPress: () => setConfirming(true),
           }}
-          primary={{
-            label: 'Mark as sent',
-            icon: <Check />,
-            variant: 'accent',
-            onPress: () => {
-              onChange(orders.map((o) => (selectedIds.includes(o.id) ? { ...o, status: 'Sent' } : o)));
-              setSelectedIds([]);
-            },
-          }}
+          // The usual next step is the action; the other statuses are in its menu.
+          primary={
+            <SplitButton
+              variant="accent"
+              iconStart={<Check />}
+              onPress={() => mark('Sent')}
+              menuLabel="Mark as another status"
+              items={[
+                { id: 'Packed', label: 'Mark as packed' },
+                { id: 'Open', label: 'Mark as open' },
+              ]}
+              onAction={(id) => mark(id as OrderStatus)}
+            >
+              Mark as sent
+            </SplitButton>
+          }
         />
       </Card>
 
@@ -206,6 +219,7 @@ function OrderForm({
   const [region, setRegion] = useState<string>(order?.region ?? regions[0]);
   const [total, setTotal] = useState(String(order?.total ?? ''));
   const [priority, setPriority] = useState(order?.priority ?? false);
+  const [items, setItems] = useState(order?.items ?? 1);
   const [submitted, setSubmitted] = useState(false);
 
   const amount = Number(total);
@@ -217,7 +231,8 @@ function OrderForm({
     (client?.name ?? '') !== (order?.client ?? '') ||
     region !== (order?.region ?? regions[0]) ||
     total !== String(order?.total ?? '') ||
-    priority !== (order?.priority ?? false);
+    priority !== (order?.priority ?? false) ||
+    items !== (order?.items ?? 1);
 
   const save = () => {
     setSubmitted(true);
@@ -231,7 +246,7 @@ function OrderForm({
       status: order?.status ?? 'Open',
       owner: order?.owner ?? 'Person 1',
       due: order?.due ?? '2026-11-30',
-      items: order?.items ?? 1,
+      items,
       total: amount,
       priority,
     });
@@ -280,6 +295,9 @@ function OrderForm({
           error={submitted ? errors.total : undefined}
         >
           <TextField type="number" value={total} onChange={setTotal} suffix="cr" />
+        </FormField>
+        <FormField label="Items">
+          <Stepper value={items} onChange={setItems} min={1} max={24} />
         </FormField>
         <Checkbox checked={priority} onChange={setPriority} description="Marks the row in the table.">
           Priority handling

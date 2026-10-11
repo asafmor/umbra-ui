@@ -12,6 +12,7 @@ import {
   PageHeader,
   Slot,
   Stack,
+  StarRating,
   StatusIndicator,
   Tag,
 } from 'umbra-ui';
@@ -83,6 +84,10 @@ export function Clients({ selectedId, orders }: { selectedId: string | undefined
                   { label: 'Orders', value: own.length },
                   { label: 'Open', value: own.filter((order) => order.status === 'Open').length },
                   { label: 'Contacts', value: client.contacts.length },
+                  {
+                    label: 'Rating',
+                    value: <StarRating readOnly size="small" value={client.rating} aria-label="Rating" />,
+                  },
                 ]}
               />
             </div>
