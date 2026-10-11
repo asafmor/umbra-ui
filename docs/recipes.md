@@ -975,7 +975,7 @@ export function App() {
             <Columns>
               <Card title="Orders per week">
                 <LineChart
-                  label="Orders per week, by region"
+                  aria-label="Orders per week, by region"
                   series={perWeek}
                   yTitle="Orders"
                   legend={false}
@@ -984,7 +984,7 @@ export function App() {
               </Card>
               <Card title="Revenue, last four weeks">
                 <BarChart
-                  label="Revenue of the last four weeks, by region"
+                  aria-label="Revenue of the last four weeks, by region"
                   categories={weeks.slice(4)}
                   series={lastMonth}
                   variant="stacked"
@@ -1029,7 +1029,7 @@ import {
   TopBar,
   UmbraProvider,
   type NavItem,
-  type NavLinkProps,
+  type LinkRenderProps,
 } from 'umbra-ui';
 
 const sections: NavItem[] = [
@@ -1044,7 +1044,7 @@ const pages: Record<string, NavItem[]> = {
   ],
 };
 
-const renderLink = (props: NavLinkProps) => <Link to={props.href} {...props} />;
+const renderLink = (props: LinkRenderProps) => <Link to={props.href} {...props} />;
 
 export function App() {
   const navigate = useNavigate();

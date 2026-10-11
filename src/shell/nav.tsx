@@ -7,7 +7,6 @@ import {
   useLayoutEffect,
   useRef,
   useState,
-  type AnchorHTMLAttributes,
   type CSSProperties,
   type KeyboardEvent,
   type ReactElement,
@@ -17,6 +16,7 @@ import { useShrinkLevel } from '../internal/useShrinkLevel';
 import { Menu as UmbraMenu, type MenuEntry } from '../overlays/Menu';
 import { Icon, IconSlot } from '../provider/icons';
 import { warn } from '../utils/dev';
+import type { LinkRenderProps } from '../utils/link';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './nav.module.css';
 
@@ -31,9 +31,6 @@ export interface NavItem {
   items?: NavItem[];
   disabled?: boolean;
 }
-
-/** Props for the app's router link: spread them on it. `renderLink={(p) => <RouterLink to={p.href} {...p} />}` */
-export type NavLinkProps = AnchorHTMLAttributes<HTMLAnchorElement> & { href: string };
 
 export interface NavItemProps {
   id: string;
@@ -54,7 +51,7 @@ export interface NavRootProps {
   /** Called with the id of the item the user chose. */
   onChange?: (id: string) => void;
   /** Plugs in the app's router link. Defaults to a plain `<a>`. */
-  renderLink?: (props: NavLinkProps) => ReactNode;
+  renderLink?: (props: LinkRenderProps) => ReactNode;
   /** Label of the overflow item. */
   moreLabel?: string;
   /** Accessible name of the caret that opens an item's dropdown, from the item's label. */
@@ -69,7 +66,7 @@ export interface NavRootProps {
 interface NavContextValue {
   value: string | undefined;
   onChange: ((id: string) => void) | undefined;
-  renderLink: (props: NavLinkProps) => ReactNode;
+  renderLink: (props: LinkRenderProps) => ReactNode;
   indicator: Part | undefined;
   submenuLabel: (label: string) => string;
 }
@@ -83,7 +80,7 @@ export const NavHoldContext = createContext<{ hold: boolean; report: (exhausted:
   null,
 );
 
-const plainLink = (props: NavLinkProps) => <a {...props} />;
+const plainLink = (props: LinkRenderProps) => <a {...props} />;
 const focusTargets = (list: HTMLElement) => [...list.querySelectorAll<HTMLElement>('[data-nav-focus]')];
 
 /** The name of an item as text: its label when that is a string, or its `textValue`. */
@@ -200,7 +197,7 @@ export function Item(props: NavItemProps) {
       {menu && (
         <UmbraMenu
           items={toRows(subItems(menu), nav.value)}
-          label={textOf(props)}
+          aria-label={textOf(props)}
           anchorRef={anchor}
           open={open}
           onOpenChange={setOpen}
@@ -241,7 +238,7 @@ function More({ label, nav, children }: { label: string; nav: NavContextValue; c
       </button>
       <UmbraMenu
         items={toRows(subItems(children), nav.value)}
-        label={label}
+        aria-label={label}
         anchorRef={anchor}
         open={open}
         onOpenChange={setOpen}

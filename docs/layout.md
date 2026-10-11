@@ -164,7 +164,7 @@ const perWeek = [{ id: 'orders', label: 'Orders', data: [12, 18, 15, 22].map((y,
     ]}
   />
   <SectionTitle>Orders per week</SectionTitle>
-  <LineChart label="Orders per week" height={180} series={perWeek} />
+  <LineChart aria-label="Orders per week" height={180} series={perWeek} />
 </Card>;
 ```
 

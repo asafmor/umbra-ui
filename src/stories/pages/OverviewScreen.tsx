@@ -317,7 +317,7 @@ function StatusStack() {
         }
       >
         <RadarChart
-          label="Insights"
+          aria-label="Insights"
           axes={insightAxes.map((axis) => ({ id: axis, label: axis }))}
           max={100}
           series={[

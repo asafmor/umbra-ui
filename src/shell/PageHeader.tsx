@@ -14,7 +14,7 @@ import { ActionsOverflow } from '../overlays/Menu';
 import { textColourOn } from '../provider/contrast';
 import { Icon } from '../provider/icons';
 import { cx, renderPart, type Part } from '../utils/parts';
-import type { NavLinkProps } from './nav';
+import type { LinkRenderProps } from '../utils/link';
 import styles from './PageHeader.module.css';
 
 // What gives way as the header narrows, in this order. After the last step the title truncates.
@@ -106,7 +106,7 @@ export interface PageHeaderBreadcrumbsProps {
   /** Accessible name of the landmark. */
   label?: string;
   /** Plugs in the app's router link. Defaults to a plain `<a>`. */
-  renderLink?: (props: NavLinkProps) => ReactNode;
+  renderLink?: (props: LinkRenderProps) => ReactNode;
   className?: string;
   style?: CSSProperties;
 }
@@ -337,7 +337,7 @@ export interface PageHeaderProps extends Omit<PageHeaderRootProps, 'children'> {
   /** Accessible name of the breadcrumb landmark. */
   breadcrumbsLabel?: string;
   /** Plugs the app's router link into the breadcrumbs. Defaults to a plain `<a>`. */
-  renderLink?: (props: NavLinkProps) => ReactNode;
+  renderLink?: (props: LinkRenderProps) => ReactNode;
   /** A tab list, placed along the bottom edge. */
   tabs?: ReactNode;
   /** Replace or hide named pieces. */

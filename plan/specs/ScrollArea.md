@@ -46,7 +46,7 @@ Scrollbars are the browser's own, styled thin with a transparent track.
 | `scrollbar` | see above | `auto` | |
 | `fade` | boolean | `true` | |
 | `onReachEnd` | function | — | For loading more |
-| `label` | string | "Scrollable content" | Accessible name when the viewport itself is focusable |
+| `aria-label` | string | "Scrollable content" | Accessible name when the viewport itself is focusable |
 
 ### 3. Parts
 
@@ -70,3 +70,7 @@ Takes the size of its slot; scrolling starts when content exceeds it. Nothing el
 None.
 
 Resolved 2026-10-10: the `hidden` scrollbar option is dropped.
+
+Resolved 2026-10-11:
+
+- 2026-10-11: the accessible name is `aria-label` (it was `label`), as on the other components: `plan/decisions/07-customisation.md`, "Prop names".

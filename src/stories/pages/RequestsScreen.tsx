@@ -172,7 +172,7 @@ function Summary({ m }: { m: Message }) {
         <div style={flow}>
           <div style={{ height: 200 }}>
             <LineChart
-              label="Requests per month"
+              aria-label="Requests per month"
               area
               points
               legend={false}

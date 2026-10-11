@@ -487,7 +487,7 @@ export function OrdersScreen() {
           />
           <Card title="By stage" tone="neutral" priority={2} size={1.4} minHeight={192}>
             <DonutChart
-              label="Orders by stage"
+              aria-label="Orders by stage"
               data={byStage}
               centerValue={rows.length}
               centerLabel="orders"

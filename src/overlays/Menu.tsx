@@ -5,7 +5,6 @@ import {
   useContext,
   useRef,
   useState,
-  type AnchorHTMLAttributes,
   type CSSProperties,
   type ReactElement,
   type ReactNode,
@@ -26,6 +25,7 @@ import { OverflowMenuContext } from '../internal/contexts';
 import { Icon, IconSlot, RawIcon } from '../provider/icons';
 import { useScopeAttributes, useShortcut } from '../provider/UmbraProvider';
 import { warn } from '../utils/dev';
+import type { LinkRenderProps } from '../utils/link';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './Menu.module.css';
 import { toAriaPlacement, useFlipWhenCut, useOpenState, type OverlayPlacement } from './shared';
@@ -68,9 +68,6 @@ export interface MenuSeparatorData {
 }
 
 export type MenuEntry = MenuItemData | MenuSectionData | MenuSeparatorData;
-
-/** Props for the app's router link: spread them on it. `renderLink={(p) => <RouterLink to={p.href} {...p} />}` */
-export type MenuLinkProps = AnchorHTMLAttributes<HTMLAnchorElement> & { href: string };
 
 /** What the `item` part receives: the row's data and state. */
 export interface MenuItemPartProps {
@@ -152,7 +149,7 @@ interface Shared {
   onAction: ((id: string) => void) | undefined;
   isSelected: (item: MenuItemData) => boolean;
   select: (group: string[], ids: string[]) => void;
-  renderLink: (props: MenuLinkProps) => ReactNode;
+  renderLink: (props: LinkRenderProps) => ReactNode;
   parts: MenuParts | undefined;
   emptyLabel: string;
 }
@@ -219,7 +216,7 @@ function row(item: MenuItemData, shared: Shared, gutters: Gutters) {
       render={(dom) => {
         const props = { ...dom, 'aria-current': item.current ? ('page' as const) : undefined };
         return 'href' in props && props.href ? (
-          (shared.renderLink(props as MenuLinkProps) as ReactElement)
+          (shared.renderLink(props as LinkRenderProps) as ReactElement)
         ) : (
           <div {...(props as React.JSX.IntrinsicElements['div'])} />
         );
@@ -308,7 +305,7 @@ interface PanelProps {
   anchorRef?: RefObject<Element | null>;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
-  label?: string;
+  'aria-label'?: string;
   placement?: OverlayPlacement;
   offset?: number;
   matchAnchorWidth?: boolean;
@@ -329,7 +326,7 @@ function Surface({
   className,
   style,
   children,
-}: Omit<PanelProps, 'entries' | 'shared' | 'label'> & { children: ReactNode }) {
+}: Omit<PanelProps, 'entries' | 'shared' | 'aria-label'> & { children: ReactNode }) {
   const scope = useScopeAttributes();
   const flipWhenCut = useFlipWhenCut(maxHeight);
   return (
@@ -357,7 +354,7 @@ function Surface({
   );
 }
 
-function Panel({ entries, shared, label, onOpenChange, ...surface }: PanelProps) {
+function Panel({ entries, shared, 'aria-label': label, onOpenChange, ...surface }: PanelProps) {
   return (
     <Surface {...surface} onOpenChange={onOpenChange}>
       <AriaMenu
@@ -398,7 +395,7 @@ export interface MenuProps {
   defaultOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
   /** Accessible name. A menu with a `trigger` is named by it. */
-  label?: string;
+  'aria-label'?: string;
   /** Called with the id of the row the user chose. */
   onAction?: (id: string) => void;
   /** The checked `checkbox` and `radio` rows, in every section and submenu. */
@@ -414,7 +411,7 @@ export interface MenuProps {
   /** Tallest the menu may be, in pixels. It is never taller than the room in the window; the rows scroll. */
   maxHeight?: number;
   /** Plugs in the app's router link for rows with `href`. Defaults to a plain `<a>`. */
-  renderLink?: (props: MenuLinkProps) => ReactNode;
+  renderLink?: (props: LinkRenderProps) => ReactNode;
   /** Shown when there are no rows. */
   emptyLabel?: string;
   /** Replace or hide named pieces. */
@@ -424,7 +421,7 @@ export interface MenuProps {
   style?: CSSProperties;
 }
 
-const plainLink = (props: MenuLinkProps) => <a {...props} />;
+const plainLink = (props: LinkRenderProps) => <a {...props} />;
 
 /**
  * A list of actions or links that opens from a control. One tab stop; arrow keys, type-ahead, and

@@ -18,7 +18,7 @@ import { Tooltip } from '../overlays/Tooltip';
 import { useSlot, type SlotProps } from '../layout/useSlot';
 import { Icon, IconSlot, RawIcon } from '../provider/icons';
 import { cx, renderPart, type Part } from '../utils/parts';
-import type { NavLinkProps } from './nav';
+import type { LinkRenderProps } from '../utils/link';
 import styles from './VerticalNav.module.css';
 
 /** One entry. `items` inside an entry makes a group that opens and closes; groups do not nest. */
@@ -43,7 +43,7 @@ export interface VerticalNavSection {
 interface NavContextValue {
   value: string | undefined;
   choose: (id: string) => void;
-  renderLink: (props: NavLinkProps) => ReactNode;
+  renderLink: (props: LinkRenderProps) => ReactNode;
   expanded: string[];
   expand: (id: string, open: boolean) => void;
   /** Icon-only rail: `user` by the prop or the toggle, `auto` because the slot is narrow. */
@@ -69,7 +69,7 @@ export interface VerticalNavRootProps extends BlockProps, SlotProps {
   /** Called with the id of the item the user chose. */
   onChange?: (id: string) => void;
   /** Plugs in the app's router link. Defaults to a plain `<a>`. */
-  renderLink?: (props: NavLinkProps) => ReactNode;
+  renderLink?: (props: LinkRenderProps) => ReactNode;
   /** The open groups (controlled). */
   expandedIds?: string[];
   defaultExpandedIds?: string[];

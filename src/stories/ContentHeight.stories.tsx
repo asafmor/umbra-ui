@@ -51,11 +51,11 @@ const series = [
   { id: 'orders', label: 'Orders', data: months.slice(0, 6).map((x, i) => ({ x, y: 40 + ((i * 17) % 30) })) },
 ];
 const line = (label: string, height?: 'content' | number) => (
-  <LineChart label={label} series={series} height={height} />
+  <LineChart aria-label={label} series={series} height={height} />
 );
 const donut = (label: string) => (
   <DonutChart
-    label={label}
+    aria-label={label}
     data={regions.slice(0, 4).map((r) => ({ id: r.id, label: r.name, value: r.orders }))}
     centerValue={4}
     centerLabel="regions"

@@ -98,7 +98,7 @@ function Root({
   const single = !data;
   const format = common.formatValue ?? numberFormat(locale, { maximumFractionDigits: 2 });
   const percent = numberFormat(locale, { style: 'percent', maximumFractionDigits: 0 });
-  const name = common.label ?? 'Value';
+  const name = common['aria-label'] ?? 'Value';
   const all: (DonutSegment & { color: string; fill: FillKind })[] = single
     ? [
         {

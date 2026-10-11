@@ -21,7 +21,9 @@ export { PrimaryNav } from './shell/PrimaryNav';
 export type { PrimaryNavProps, PrimaryNavRootProps } from './shell/PrimaryNav';
 export { SubNav } from './shell/SubNav';
 export type { SubNavProps, SubNavRootProps } from './shell/SubNav';
-export type { NavItem, NavItemProps, NavLinkProps } from './shell/nav';
+export type { NavItem, NavItemProps } from './shell/nav';
+// What every `renderLink` receives: one type for the navigation, `PageHeader`, `ShortcutBar`, `Menu` and `Link`.
+export type { LinkRenderProps } from './utils/link';
 export { Page } from './layout/Page';
 export type { PageProps, PageRootProps } from './layout/Page';
 export { Columns } from './layout/Columns';
@@ -83,7 +85,7 @@ export type {
   ListEntryProps,
   ListGroupData,
   ListGroupProps,
-  ListKey,
+  ListId,
   ListProps,
   ListRootProps,
 } from './data/List';
@@ -136,7 +138,7 @@ export type { TrendArrowProps, TrendArrowRootProps, TrendDirection, TrendTone } 
 export { StatusIndicator } from './data/StatusIndicator';
 export type { Status, StatusIndicatorProps, StatusIndicatorRootProps } from './data/StatusIndicator';
 export { Link } from './data/Link';
-export type { LinkProps, LinkRenderProps, LinkRootProps } from './data/Link';
+export type { LinkProps, LinkRootProps } from './data/Link';
 export type { Tone } from './data/tone';
 export { ProgressBar } from './meters/ProgressBar';
 export type {
@@ -264,7 +266,6 @@ export type {
   MenuItemData,
   MenuItemPartProps,
   MenuItemProps,
-  MenuLinkProps,
   MenuProps,
   MenuSectionData,
   MenuSectionProps,
@@ -314,7 +315,6 @@ export type {
   ShortcutBarItemPartProps,
   ShortcutBarItemProps,
   ShortcutBarProps,
-  ShortcutLinkProps,
 } from './shell/ShortcutBar';
 export { CommandPalette } from './overlays/CommandPalette';
 export type { Command, CommandItemPartProps, CommandPaletteProps } from './overlays/CommandPalette';

@@ -250,10 +250,10 @@ would have rendered, `href` included. Spread them on your router's link:
 
 ```tsx
 import { Link as RouterLink } from 'react-router-dom';
-import { Link, PrimaryNav, type NavLinkProps } from 'umbra-ui';
+import { Link, PrimaryNav, type LinkRenderProps } from 'umbra-ui';
 
 // One function for the whole app.
-const renderLink = (props: NavLinkProps) => <RouterLink to={props.href} {...props} />;
+const renderLink = (props: LinkRenderProps) => <RouterLink to={props.href} {...props} />;
 
 export function Nav({ current }: { current: string }) {
   return (

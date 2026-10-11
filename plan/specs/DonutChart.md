@@ -63,7 +63,7 @@ Shared by the four charts: `--umbra-chart-font`, `--umbra-chart-fg` (axis and la
 | `roundedCaps` | boolean | see above | |
 | `gap` | number | `2` | Degrees between segments |
 | `tone` / `thresholds` / `color` | see above / see above / CSS colour | `default` / — / — | Colour of the single value; `color` wins |
-| `label` / `aria-labelledby` | string | — | Accessible name; one of the two is required |
+| `aria-label` / `aria-labelledby` | string | — | Accessible name; one of the two is required |
 | `description` | string | generated summary | What a screen reader hears after the name |
 | `legend` | boolean \| `top` \| `bottom` \| `start` \| `end` \| node | shown below when there is more than one series | The built-in `Legend`, its place, or the app's own node |
 | `hiddenIds` / `defaultHiddenIds` / `onHiddenChange` | string[] / string[] / function | — / `[]` / — | Controlled or uncontrolled set of switched-off series |
@@ -99,7 +99,7 @@ The caption also hides whenever there is under 72px of room inside the ring. Cen
 
 ## Interaction and accessibility
 
-- The root is a `figure` named by `label` or `aria-labelledby`, and described by a visually hidden summary (`description` replaces the generated one).
+- The root is a `figure` named by `aria-label` or `aria-labelledby`, and described by a visually hidden summary (`description` replaces the generated one).
 - The marks are one tab stop: a `listbox` named by `pointsLabel`, whose options are the points, each with a readable name ("Web: 48 (48%)", or "Budget used: 81% (81 / 100)" for one value). `aria-activedescendant` follows the arrow keys.
 - Keys: left and right move between segments. `Home` and `End` go to the first and last point of the series. `Enter` and `Space` call `onPointPress`. `Escape` clears the point (and only then takes the key, so a dialog around the chart still closes).
 - With no point chosen the focus ring is on the plot, drawn inwards; with one it is on the point. A hovered point gets a light outline instead, so hover and focus differ.
@@ -117,6 +117,7 @@ None.
 
 Resolved 2026-10-11:
 
+- The accessible name is `aria-label` (it was `label`), as on the other components: `plan/decisions/07-customisation.md`, "Prop names".
 - **`height`**, shared with `DataTable` and `List` (`src/internal/height.ts`). The chart used to be zero pixels tall in a parent without a height. The plot now has a content size of its own (`contain-intrinsic-block-size`), which only counts where there is no height to fill, so the fallback needs no measuring. Token: `--umbra-chart-content-height`.
 
 Resolved 2026-10-10:

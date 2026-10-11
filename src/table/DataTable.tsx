@@ -294,7 +294,7 @@ function Root({
         axis="both"
         fade={false}
         onReachEnd={onReachEnd}
-        label={ariaLabel}
+        aria-label={ariaLabel}
         className={cx(styles.scroll, state != null && styles.hug)}
       >
         <table

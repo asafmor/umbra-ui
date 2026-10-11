@@ -8,7 +8,7 @@ import { Columns } from '../layout/Columns';
 import { Stack } from '../layout/Stack';
 import { Log } from '../stories/placeholders';
 import { GroupHeader } from './GroupHeader';
-import { List, type ListKey } from './List';
+import { List, type ListId } from './List';
 import { ListItem } from './ListItem';
 import { Chip, days, Dot, ranking, type Message } from './samples';
 
@@ -32,7 +32,7 @@ const messageRow = (m: Message) => (
 );
 
 function InboxCard() {
-  const [selected, setSelected] = useState<ListKey[]>(['m4']);
+  const [selected, setSelected] = useState<ListId[]>(['m4']);
   const [opened, setOpened] = useState('none');
   return (
     <Card
@@ -85,7 +85,7 @@ export const Inbox: Story = {
 };
 
 function MultipleCard() {
-  const [selected, setSelected] = useState<ListKey[]>(['r2', 'r3']);
+  const [selected, setSelected] = useState<ListId[]>(['r2', 'r3']);
   return (
     <Card
       title="Multiple selection"
@@ -254,8 +254,8 @@ export const States: Story = {
 };
 
 function TasksCard() {
-  const [selected, setSelected] = useState<ListKey[]>([]);
-  const [done, setDone] = useState<ListKey[]>([]);
+  const [selected, setSelected] = useState<ListId[]>([]);
+  const [done, setDone] = useState<ListId[]>([]);
   const [reports, setReports] = useState(0);
   const open = ['a', 'b', 'c', 'd', 'e'].filter((id) => !done.includes(id));
   return (

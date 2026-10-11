@@ -179,7 +179,7 @@ export const Loading: Story = {
         <Legend items={[]} loading />
       </Example>
       <Example label="Loading, vertical, five placeholders">
-        <Legend items={[]} loading loadingCount={5} orientation="vertical" />
+        <Legend items={[]} loading skeletonRows={5} orientation="vertical" />
       </Example>
       <Example label="Loaded">
         <Legend items={series(3)} />

@@ -238,7 +238,7 @@ function More({ children, label = 'All items', content }: LegendMoreProps) {
           {children}
         </ButtonBase>
       </Popover.Trigger>
-      <Popover.Content label={label} className={styles.all}>
+      <Popover.Content aria-label={label} className={styles.all}>
         {content}
       </Popover.Content>
     </Popover.Root>
@@ -253,7 +253,7 @@ export interface LegendProps extends Omit<LegendRootProps, 'children' | 'ref'> {
   /** Shows placeholder items while the data loads. */
   loading?: boolean;
   /** Number of placeholder items while `loading`. */
-  loadingCount?: number;
+  skeletonRows?: number;
   /** Text of the button that stands for the items that did not fit. */
   moreLabel?: (count: number) => string;
   /** Accessible name of the popover with the full list. */
@@ -273,7 +273,7 @@ export interface LegendProps extends Omit<LegendRootProps, 'children' | 'ref'> {
 export function Legend({
   items,
   marker,
-  loadingCount = 3,
+  skeletonRows = 3,
   moreLabel = (count) => `+${count} more`,
   allLabel = 'All items',
   parts,
@@ -299,7 +299,7 @@ export function Legend({
     return (
       <Root {...root} interactive={false}>
         {renderPart(parts?.skeleton, {}, () =>
-          Array.from({ length: loadingCount }, (_, i) => (
+          Array.from({ length: skeletonRows }, (_, i) => (
             <li key={i} className={styles.item}>
               <Skeleton shape="circle" className={styles.skeletonMarker} />
               <Skeleton width={56 + (i % 3) * 16} />

@@ -23,14 +23,14 @@ import styles from './List.module.css';
 import { ListItem, type ListItemProps } from './ListItem';
 
 /** Identifies one row. */
-export type ListKey = string | number;
+export type ListId = string | number;
 
 interface ListContextValue {
   itemVariant: ListItemProps['variant'];
   itemSize: ListItemProps['size'];
   hasAction: boolean;
   stickyHeaders: boolean;
-  register: (key: ListKey) => () => void;
+  register: (key: ListId) => () => void;
 }
 const ListContext = createContext<ListContextValue | null>(null);
 function useList() {
@@ -45,9 +45,9 @@ export interface ListRootProps extends DataStateProps {
   /** `single` and `multiple` let the user select rows. */
   selectionMode?: 'none' | 'single' | 'multiple';
   /** Controlled selection: the keys of the selected rows. */
-  selectedIds?: ListKey[];
-  defaultSelectedIds?: ListKey[];
-  onSelectionChange?: (keys: ListKey[]) => void;
+  selectedIds?: ListId[];
+  defaultSelectedIds?: ListId[];
+  onSelectionChange?: (keys: ListId[]) => void;
   /**
    * `replace`: a click selects only that row, a double click or Enter activates it, and selection follows
    * the arrow keys. `toggle`: a click or Space toggles the row. Default: `replace` when `onAction` is set, otherwise `toggle`.
@@ -56,7 +56,7 @@ export interface ListRootProps extends DataStateProps {
   /** The user cannot deselect the last selected row. Default: on with `replace` (so a double click does not deselect), otherwise off. */
   disallowEmptySelection?: boolean;
   /** Called when a row is activated: Enter or a double click (a single click when nothing can be selected). */
-  onAction?: (key: ListKey) => void;
+  onAction?: (key: ListId) => void;
   /** A line between rows. */
   dividers?: boolean;
   /** A faint fill on every other row. */
@@ -129,14 +129,14 @@ function Root({
   const selectionBehavior = behavior ?? (onAction ? 'replace' : 'toggle');
   // The selection is always given to React Aria, so that a change can be refused (see `press`). A row
   // that leaves the list stays selected: the selection is the app's, and it does not move by itself.
-  const [ownSelection, setOwnSelection] = useState<ListKey[]>(defaultSelectedIds ?? []);
+  const [ownSelection, setOwnSelection] = useState<ListId[]>(defaultSelectedIds ?? []);
   // One press of the pointer changes the selection once, at most. Without this, selecting a row that
   // leaves the list (a filter on "unread") goes on by itself: focus falls back to the list, React Aria
   // selects the row it lands on because selection follows focus, that row leaves too, and the row that
   // slides under the pointer is selected again when the button is released.
   const press = useRef({ active: false, used: false });
   // Every row's key, so "select all" can be reported as a plain array.
-  const keys = useRef(new Set<ListKey>());
+  const keys = useRef(new Set<ListId>());
   const list = useMemo<ListContextValue>(
     () => ({
       itemVariant,
@@ -187,7 +187,7 @@ function Root({
             if (press.current.used) return;
             press.current.used = true;
           }
-          const next = selection === 'all' ? [...keys.current] : ([...selection] as ListKey[]);
+          const next = selection === 'all' ? [...keys.current] : ([...selection] as ListId[]);
           setOwnSelection(next);
           onSelectionChange?.(next);
         }}
@@ -223,7 +223,7 @@ function Root({
         document.addEventListener('pointercancel', end, { once: true, capture: true });
       }}
     >
-      <ScrollArea onReachEnd={onReachEnd} label={ariaLabel} className={styles.scroll}>
+      <ScrollArea onReachEnd={onReachEnd} aria-label={ariaLabel} className={styles.scroll}>
         <ListContext value={list}>{content}</ListContext>
       </ScrollArea>
     </div>
@@ -232,7 +232,7 @@ function Root({
 
 export interface ListEntryProps extends Omit<ListItemProps, 'selected' | 'interactive'> {
   /** The row's key: what selection and `onAction` report. Unique in the list. */
-  id: ListKey;
+  id: ListId;
   /** Plain text of the row, for type-ahead and assistive technology. Defaults to a text `title`. */
   textValue?: string;
   /** Replaces the row's content. A function receives the row's state, to pass on to `ListItem.Root`. */
@@ -337,7 +337,7 @@ function Group({ children, header, ...props }: ListGroupProps) {
 
 /** One group of a grouped `List`, as data. */
 export interface ListGroupData<T> extends Omit<ListGroupProps, 'children'> {
-  key: ListKey;
+  key: ListId;
   items: T[];
 }
 
@@ -360,7 +360,7 @@ export function List<T>({ items, groups, renderItem, children, ...root }: ListPr
   const rows = (list: T[]) =>
     list.map((item, index) => {
       const row = renderItem?.(item, index);
-      return isValidElement<{ id?: ListKey }>(row) && row.key == null
+      return isValidElement<{ id?: ListId }>(row) && row.key == null
         ? cloneElement(row, { key: row.props.id ?? index })
         : row;
     });

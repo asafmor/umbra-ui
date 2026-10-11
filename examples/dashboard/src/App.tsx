@@ -245,7 +245,7 @@ export function App() {
                   }}
                 >
                   <LineChart
-                    label="Revenue by region and month"
+                    aria-label="Revenue by region and month"
                     series={data.revenue}
                     hiddenIds={hiddenRegions}
                     legend={false}
@@ -255,7 +255,7 @@ export function App() {
                 </Card>
                 <Card title="Orders by product line" minHeight={140}>
                   <BarChart
-                    label="Orders by product line and region"
+                    aria-label="Orders by product line and region"
                     variant="stacked"
                     categories={productLines}
                     series={data.orders}
@@ -310,7 +310,7 @@ export function App() {
                 </Card>
                 <Card title="Order status" tone="neutral" priority={2} size={1.6}>
                   <DonutChart
-                    label="Orders by status"
+                    aria-label="Orders by status"
                     data={data.status}
                     centerValue={data.status.reduce((sum, segment) => sum + segment.value, 0)}
                     centerLabel="orders"

@@ -280,7 +280,7 @@ function Root({
         </LayoutProvider>
         {collapsedBy === 'layout' && (
           <Popover.Content
-            label={expandLabel}
+            aria-label={expandLabel}
             anchorRef={header}
             open={popoverOpen}
             onOpenChange={setPopoverOpen}

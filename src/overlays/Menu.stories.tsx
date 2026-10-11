@@ -250,7 +250,7 @@ function ContextMenuRegion() {
   return (
     <Columns style={{ height: '100%' }}>
       <Menu.Context
-        label="Row actions"
+        aria-label="Row actions"
         onAction={setLast}
         content={
           <>
@@ -318,7 +318,7 @@ function AnchoredMenu() {
         </Button>
       </div>
       <Menu
-        label="Regions"
+        aria-label="Regions"
         items={items}
         anchorRef={anchor}
         open={open}

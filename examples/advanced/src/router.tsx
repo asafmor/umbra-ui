@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react';
-import type { NavLinkProps } from 'umbra-ui';
+import type { LinkRenderProps } from 'umbra-ui';
 
 // A tiny hash router: the route is the part of the URL after "#". It is enough to show how umbra-ui
 // meets a router; in a real app, React Router or TanStack Router take this file's place.
@@ -23,7 +23,7 @@ export function navigate(href: string) {
 }
 
 /** The app's link. umbra-ui components render it through their `renderLink` prop. */
-export function RouterLink({ href, onClick, ...rest }: NavLinkProps) {
+export function RouterLink({ href, onClick, ...rest }: LinkRenderProps) {
   return (
     <a
       {...rest}
@@ -41,4 +41,4 @@ export function RouterLink({ href, onClick, ...rest }: NavLinkProps) {
 }
 
 /** Pass this to every `renderLink` prop. */
-export const renderLink = (props: NavLinkProps) => <RouterLink {...props} />;
+export const renderLink = (props: LinkRenderProps) => <RouterLink {...props} />;

@@ -33,11 +33,11 @@ export const Variants: Story = {
   render: () => (
     <Tiles>
       <Tile title="Grouped, with value labels" id="grouped">
-        <BarChart label="Orders, plan and actual" categories={quarters} series={planActual} labels />
+        <BarChart aria-label="Orders, plan and actual" categories={quarters} series={planActual} labels />
       </Tile>
       <Tile title="Stacked" id="stacked">
         <BarChart
-          label="Orders by channel"
+          aria-label="Orders by channel"
           categories={quarters}
           series={channels}
           variant="stacked"
@@ -47,7 +47,7 @@ export const Variants: Story = {
       </Tile>
       <Tile title="Diverging" id="diverging">
         <BarChart
-          label="Inbound and outbound by month"
+          aria-label="Inbound and outbound by month"
           categories={months}
           series={flow}
           variant="diverging"
@@ -55,7 +55,7 @@ export const Variants: Story = {
       </Tile>
       <Tile title="Horizontal" id="horizontal">
         <BarChart
-          label="Orders by region, plan and actual"
+          aria-label="Orders by region, plan and actual"
           orientation="horizontal"
           categories={regions.slice(0, 4)}
           series={planActual}
@@ -64,7 +64,7 @@ export const Variants: Story = {
       </Tile>
       <Tile title="Colour by sign, with a reference line" id="sign">
         <BarChart
-          label="Change against last year, by region"
+          aria-label="Change against last year, by region"
           categories={regions}
           series={change}
           colorBy="sign"
@@ -75,7 +75,7 @@ export const Variants: Story = {
       </Tile>
       <Tile title="Colour by threshold" id="thresholds">
         <BarChart
-          label="Completion by region"
+          aria-label="Completion by region"
           orientation="horizontal"
           categories={regions}
           series={[{ id: 'done', label: 'Completed', values: [92, 71, 48, 85, 33] }]}
@@ -101,11 +101,11 @@ export const States: Story = {
     return (
       <Tiles columns={2}>
         <Tile title="Loading">
-          <BarChart label="Orders" categories={quarters} series={planActual} loading />
+          <BarChart aria-label="Orders" categories={quarters} series={planActual} loading />
         </Tile>
         <Tile title="Loading, horizontal">
           <BarChart
-            label="Orders"
+            aria-label="Orders"
             categories={quarters}
             series={planActual}
             orientation="horizontal"
@@ -113,11 +113,11 @@ export const States: Story = {
           />
         </Tile>
         <Tile title="Empty">
-          <BarChart label="Orders" categories={[]} series={[]} empty="No orders in this period." />
+          <BarChart aria-label="Orders" categories={[]} series={[]} empty="No orders in this period." />
         </Tile>
         <Tile title="Error">
           <BarChart
-            label="Orders"
+            aria-label="Orders"
             categories={quarters}
             series={planActual}
             error={`The orders could not be loaded. Retries: ${tries}.`}
@@ -131,7 +131,7 @@ export const States: Story = {
 
 const full = (orientation?: 'horizontal') => (
   <BarChart
-    label="Orders, plan and actual"
+    aria-label="Orders, plan and actual"
     orientation={orientation}
     categories={months.slice(0, 8)}
     series={[
@@ -186,7 +186,7 @@ export const Interaction: Story = {
         <Tiles columns={2}>
           <Tile title="Vertical" id="vertical">
             <BarChart
-              label="Orders, plan and actual"
+              aria-label="Orders, plan and actual"
               categories={quarters}
               series={planActual}
               onPointPress={setPressed}
@@ -194,7 +194,7 @@ export const Interaction: Story = {
           </Tile>
           <Tile title="Horizontal" id="horizontal">
             <BarChart
-              label="Orders by channel"
+              aria-label="Orders by channel"
               orientation="horizontal"
               categories={quarters}
               series={channels}
@@ -212,11 +212,11 @@ export const PartsAndBlocks: Story = {
   render: () => (
     <Tiles>
       <Tile title="Legend on top">
-        <BarChart label="Orders by channel" categories={quarters} series={channels} legend="top" />
+        <BarChart aria-label="Orders by channel" categories={quarters} series={channels} legend="top" />
       </Tile>
       <Tile title="Legend part hidden, markers set per series">
         <BarChart
-          label="Orders, plan and actual"
+          aria-label="Orders, plan and actual"
           categories={quarters}
           series={[
             { ...planActual[0]!, marker: 'dots', color: 'var(--umbra-color-base-text-secondary)' },
@@ -227,7 +227,7 @@ export const PartsAndBlocks: Story = {
       </Tile>
       <Tile title="Tooltip part as a function" id="tooltip">
         <BarChart
-          label="Orders by channel"
+          aria-label="Orders by channel"
           categories={quarters}
           series={channels}
           variant="stacked"
@@ -236,7 +236,7 @@ export const PartsAndBlocks: Story = {
       </Tile>
       <Tile title="Blocks: bars and axes only">
         <BarChart.Root
-          label="Orders, plan and actual"
+          aria-label="Orders, plan and actual"
           categories={quarters}
           series={planActual}
           legend={false}
@@ -247,7 +247,7 @@ export const PartsAndBlocks: Story = {
       </Tile>
       <Tile title="Blocks: labels without a grid">
         <BarChart.Root
-          label="Orders by channel"
+          aria-label="Orders by channel"
           categories={quarters}
           series={channels}
           variant="stacked"
@@ -260,7 +260,7 @@ export const PartsAndBlocks: Story = {
       </Tile>
       <Tile title="Error part replaced">
         <BarChart
-          label="Orders"
+          aria-label="Orders"
           categories={quarters}
           series={planActual}
           error="Failed"

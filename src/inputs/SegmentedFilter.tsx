@@ -173,7 +173,7 @@ function Root(props: SegmentedFilterRootProps) {
           {children}
           {overflow.showMore && (
             <Menu
-              label={moreLabel}
+              aria-label={moreLabel}
               placement="bottom end"
               items={moreRows(overflow.overflowed, rows, multiple ? 'checkbox' : 'radio', (id) =>
                 keys.includes(id),

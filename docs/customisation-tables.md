@@ -202,6 +202,7 @@ Compares values across categories: grouped, stacked or diverging around zero, up
 | Prop | Type | Purpose |
 |---|---|---|
 | `parts` | `see Parts` | Replace or hide named pieces. |
+| `aria-label` | `string` | Accessible name of the chart. Required unless `aria-labelledby` is set. |
 | `className` | `string` |  |
 | `style` | `import("react").CSSProperties` |  |
 | `empty` | `ReactNode` | Shown when there is no data. |
@@ -212,7 +213,6 @@ Compares values across categories: grouped, stacked or diverging around zero, up
 | `hiddenIds` | `readonly string[]` | Ids of the series that are switched off (controlled). |
 | `defaultHiddenIds` | `readonly string[]` |  |
 | `onHiddenChange` | `((hiddenIds: string[]) => void)` |  |
-| `label` | `string` | Accessible name of the chart. Required unless `aria-labelledby` is set. |
 | `thresholds` | `BarThreshold[]` | Colours bars by value. Each threshold also has a fill, so the steps differ without colour. |
 | `formatValue` | `((value: number) => string)` | Formats a value for labels, the tooltip and screen readers. Defaults to the provider's locale. |
 | `height` | `number \| "content" \| "fill"` | `fill` (default) takes the height of the parent, and falls back to the content's height in a parent that has none (flowing content, a popover, a modal body, an accordion panel). `content` is always as tall as the content: the plot is `--umbra-chart-content-height` (240px) high. A number is a height in pixels. |
@@ -560,6 +560,7 @@ A ring that shows one value against a total, or how a total splits into segments
 | `centerLabel` | `ReactNode` | The caption under it. |
 | `parts` | `see Parts` | Replace or hide named pieces. |
 | `value` | `number` | The single-value form: one value against `max`. |
+| `aria-label` | `string` | Accessible name of the chart. Required unless `aria-labelledby` is set. |
 | `className` | `string` |  |
 | `style` | `import("react").CSSProperties` |  |
 | `empty` | `ReactNode` | Shown when there is no data. |
@@ -569,7 +570,6 @@ A ring that shows one value against a total, or how a total splits into segments
 | `hiddenIds` | `readonly string[]` | Ids of the series that are switched off (controlled). |
 | `defaultHiddenIds` | `readonly string[]` |  |
 | `onHiddenChange` | `((hiddenIds: string[]) => void)` |  |
-| `label` | `string` | Accessible name of the chart. Required unless `aria-labelledby` is set. |
 | `color` | `string` | Any CSS colour for the single value; wins over `tone`. |
 | `max` | `number` | What a full ring stands for, in the single-value form. |
 | `thresholds` | `{ from: number; tone: DonutTone; }[]` | Picks the tone from the value: the last entry whose `from` the value reaches. |
@@ -831,7 +831,7 @@ The key for a chart or any colour-coded data: one marker and label per series.
 | `items` (required) | `LegendItem[]` |  |
 | `marker` | `SeriesMarkerKind` | The marker of every item that does not set its own. Patterns (`stripes`, `dots`) do not depend on colour. |
 | `loading` | `boolean` | Shows placeholder items while the data loads. |
-| `loadingCount` | `number` | Number of placeholder items while `loading`. |
+| `skeletonRows` | `number` | Number of placeholder items while `loading`. |
 | `moreLabel` | `((count: number) => string)` | Text of the button that stands for the items that did not fit. |
 | `allLabel` | `string` | Accessible name of the popover with the full list. |
 | `parts` | `see Parts` | Replace or hide named pieces. |
@@ -902,6 +902,7 @@ One or more series over categories, numbers or time, with a numeric or an ordina
 | Prop | Type | Purpose |
 |---|---|---|
 | `parts` | `see Parts` | Replace or hide named pieces. |
+| `aria-label` | `string` | Accessible name of the chart. Required unless `aria-labelledby` is set. |
 | `className` | `string` |  |
 | `style` | `import("react").CSSProperties` |  |
 | `empty` | `ReactNode` | Shown when there is no data. |
@@ -910,7 +911,6 @@ One or more series over categories, numbers or time, with a numeric or an ordina
 | `hiddenIds` | `readonly string[]` | Ids of the series that are switched off (controlled). |
 | `defaultHiddenIds` | `readonly string[]` |  |
 | `onHiddenChange` | `((hiddenIds: string[]) => void)` |  |
-| `label` | `string` | Accessible name of the chart. Required unless `aria-labelledby` is set. |
 | `formatValue` | `((value: number) => string)` | Formats a value for labels, the tooltip and screen readers. Defaults to the provider's locale. |
 | `height` | `number \| "content" \| "fill"` | `fill` (default) takes the height of the parent, and falls back to the content's height in a parent that has none (flowing content, a popover, a modal body, an accordion panel). `content` is always as tall as the content: the plot is `--umbra-chart-content-height` (240px) high. A number is a height in pixels. |
 | `description` | `string` | What a screen reader hears after the name. Defaults to a generated summary of the data. |
@@ -977,12 +977,12 @@ A vertical list of rows that scrolls inside its slot, with optional groups, sele
 | `renderItem` | `((item: T, index: number) => ReactNode)` | Returns the `List.Item` of one row. |
 | `children` | `ReactNode` | `List.Item` and `List.Group` elements. |
 | `selectionMode` | `"none" \| "single" \| "multiple"` | `single` and `multiple` let the user select rows. |
-| `selectedIds` | `ListKey[]` | Controlled selection: the keys of the selected rows. |
-| `defaultSelectedIds` | `ListKey[]` |  |
-| `onSelectionChange` | `((keys: ListKey[]) => void)` |  |
+| `selectedIds` | `ListId[]` | Controlled selection: the keys of the selected rows. |
+| `defaultSelectedIds` | `ListId[]` |  |
+| `onSelectionChange` | `((keys: ListId[]) => void)` |  |
 | `selectionBehavior` | `"toggle" \| "replace"` | `replace`: a click selects only that row, a double click or Enter activates it, and selection follows the arrow keys. `toggle`: a click or Space toggles the row. Default: `replace` when `onAction` is set, otherwise `toggle`. |
 | `disallowEmptySelection` | `boolean` | The user cannot deselect the last selected row. Default: on with `replace` (so a double click does not deselect), otherwise off. |
-| `onAction` | `((key: ListKey) => void)` | Called when a row is activated: Enter or a double click (a single click when nothing can be selected). |
+| `onAction` | `((key: ListId) => void)` | Called when a row is activated: Enter or a double click (a single click when nothing can be selected). |
 | `dividers` | `boolean` | A line between rows. |
 | `striped` | `boolean` | A faint fill on every other row. |
 | `numbered` | `boolean` | Shows each row's position, for a ranking. |
@@ -1061,7 +1061,7 @@ A list of actions or links that opens from a control. One tab stop; arrow keys, 
 | `open` | `boolean` | Controlled state. |
 | `defaultOpen` | `boolean` |  |
 | `onOpenChange` | `((open: boolean) => void)` |  |
-| `label` | `string` | Accessible name. A menu with a `trigger` is named by it. |
+| `aria-label` | `string` | Accessible name. A menu with a `trigger` is named by it. |
 | `onAction` | `((id: string) => void)` | Called with the id of the row the user chose. |
 | `selectedIds` | `string[]` | The checked `checkbox` and `radio` rows, in every section and submenu. |
 | `defaultSelectedIds` | `string[]` |  |
@@ -1070,7 +1070,7 @@ A list of actions or links that opens from a control. One tab stop; arrow keys, 
 | `offset` | `number` | Gap between the anchor and the menu, in pixels. |
 | `matchAnchorWidth` | `boolean` | Makes the menu at least as wide as its anchor. |
 | `maxHeight` | `number` | Tallest the menu may be, in pixels. It is never taller than the room in the window; the rows scroll. |
-| `renderLink` | `((props: MenuLinkProps) => ReactNode)` | Plugs in the app's router link for rows with `href`. Defaults to a plain `<a>`. |
+| `renderLink` | `((props: LinkRenderProps) => ReactNode)` | Plugs in the app's router link for rows with `href`. Defaults to a plain `<a>`. |
 | `emptyLabel` | `string` | Shown when there are no rows. |
 | `parts` | `see Parts` | Replace or hide named pieces. |
 | `className` | `string` | On the menu's panel. |
@@ -1147,7 +1147,7 @@ The content area under the bars: applies the outer margin and the context tint.
 
 The header of a page or of a detail pane: what it shows, facts about it, and its actions.
 
-**Tokens**: `--umbra-focus-color`, `--umbra-focus-offset`, `--umbra-nav-font`, `--umbra-nav-gap`, `--umbra-nav-indicator-color`, `--umbra-page-header-bg`, `--umbra-page-header-border`, `--umbra-page-header-fg`, `--umbra-page-header-media-size`, `--umbra-page-header-media-size-small`, `--umbra-page-header-padding`, `--umbra-page-header-radius`, `--umbra-page-header-title-font`, `--umbra-subnav-indicator-color`.
+**Tokens**: `--umbra-page-header-bg`, `--umbra-page-header-border`, `--umbra-page-header-fg`, `--umbra-page-header-media-size`, `--umbra-page-header-media-size-small`, `--umbra-page-header-padding`, `--umbra-page-header-radius`, `--umbra-page-header-title-font`.
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -1163,7 +1163,7 @@ The header of a page or of a detail pane: what it shows, facts about it, and its
 | `backLabel` | `string` | Accessible name of the back button. |
 | `breadcrumbs` | `PageHeaderCrumb[]` | The path to this page; the last item is the current page. |
 | `breadcrumbsLabel` | `string` | Accessible name of the breadcrumb landmark. |
-| `renderLink` | `((props: NavLinkProps) => ReactNode)` | Plugs the app's router link into the breadcrumbs. Defaults to a plain `<a>`. |
+| `renderLink` | `((props: LinkRenderProps) => ReactNode)` | Plugs the app's router link into the breadcrumbs. Defaults to a plain `<a>`. |
 | `tabs` | `ReactNode` | A tab list, placed along the bottom edge. |
 | `parts` | `see Parts` | Replace or hide named pieces. |
 | `className` | `string` |  |
@@ -1190,12 +1190,12 @@ An anchored panel without a backdrop: the page behind it stays usable. It keeps 
 | `footer` | `ReactNode` | Status or actions fixed below the body. |
 | `children` | `ReactNode \| ((close: () => void) => ReactNode)` | The body. A function receives `close`. |
 | `parts` | `see Parts` | Replace or hide named pieces. |
+| `aria-label` | `string` | Accessible name, when there is no title. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
 | `open` | `boolean` | Controlled state. |
 | `defaultOpen` | `boolean` |  |
 | `size` | `"default" \| "large"` | `large` is a wide panel with room for a toolbar and a footer. |
-| `label` | `string` | Accessible name, when there is no title. |
 | `anchorRef` | `RefObject<Element \| null>` | The element to open against, when there is no `Popover.Trigger`. Use it with `open`. |
 | `placement` | `OverlayPlacement` | Side of the anchor and alignment along it. It flips to the other side to stay in the window. |
 | `offset` | `number` | Gap between the anchor and the panel, in pixels. |
@@ -1260,7 +1260,7 @@ The top-level sections of the app, inside the `TopBar`.
 | `parts` | `see Parts` | Replace or hide named pieces. An `item` function receives each item's props. |
 | `value` | `string` | The active item. |
 | `onChange` | `((id: string) => void)` | Called with the id of the item the user chose. |
-| `renderLink` | `((props: import("./nav").NavLinkProps) => ReactNode)` | Plugs in the app's router link. Defaults to a plain `<a>`. |
+| `renderLink` | `((props: import("..").LinkRenderProps) => ReactNode)` | Plugs in the app's router link. Defaults to a plain `<a>`. |
 | `moreLabel` | `string` | Label of the overflow item. |
 | `submenuLabel` | `((label: string) => string)` | Accessible name of the caret that opens an item's dropdown, from the item's label. |
 | `aria-label` | `string` | Accessible name of the navigation landmark. |
@@ -1324,6 +1324,7 @@ Compares one or more series across several axes that share a centre.
 | `grid` | `"circle" \| "polygon"` | Shape of the grid rings. |
 | `filled` | `boolean` | Fills the area of each series. |
 | `parts` | `see Parts` | Replace or hide named pieces. |
+| `aria-label` | `string` | Accessible name of the chart. Required unless `aria-labelledby` is set. |
 | `className` | `string` |  |
 | `style` | `import("react").CSSProperties` |  |
 | `empty` | `ReactNode` | Shown when there is no data. |
@@ -1332,7 +1333,6 @@ Compares one or more series across several axes that share a centre.
 | `hiddenIds` | `readonly string[]` | Ids of the series that are switched off (controlled). |
 | `defaultHiddenIds` | `readonly string[]` |  |
 | `onHiddenChange` | `((hiddenIds: string[]) => void)` |  |
-| `label` | `string` | Accessible name of the chart. Required unless `aria-labelledby` is set. |
 | `max` | `number` | The value at the outer ring. Defaults to a round number above the largest value. |
 | `formatValue` | `((value: number) => string)` | Formats a value for labels, the tooltip and screen readers. Defaults to the provider's locale. |
 | `height` | `number \| "content" \| "fill"` | `fill` (default) takes the height of the parent, and falls back to the content's height in a parent that has none (flowing content, a popover, a modal body, an accordion panel). `content` is always as tall as the content: the plot is `--umbra-chart-content-height` (240px) high. A number is a height in pixels. |
@@ -1421,7 +1421,7 @@ A region that scrolls inside its slot. The only place scrolling happens.
 | `scrollbar` | `"auto" \| "hover"` | `hover` shows the thumb only while the pointer or focus is inside the area. |
 | `fade` | `boolean` | A soft fade at an edge that has more content. |
 | `onReachEnd` | `(() => void)` | Called when the end is reached, for loading more. |
-| `label` | `string` | Accessible name, used when the area itself has to be focusable to be scrolled by keyboard. |
+| `aria-label` | `string` | Accessible name, used when the area itself has to be focusable to be scrolled by keyboard. |
 | `parts` | `see Parts` | Replace or hide named pieces. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
@@ -1607,7 +1607,7 @@ The user's pinned shortcuts, at the end of the `SubNav`. One tab stop; arrow key
 |---|---|---|
 | `items` | `ShortcutBarItem[]` | The shortcuts, as data. |
 | `children` | `ReactNode` | The shortcuts, as `ShortcutBar.Item` blocks. |
-| `renderLink` | `((props: ShortcutLinkProps) => ReactNode)` | Plugs in the app's router link for items with `href`. Defaults to a plain `<a>`. |
+| `renderLink` | `((props: LinkRenderProps) => ReactNode)` | Plugs in the app's router link for items with `href`. Defaults to a plain `<a>`. |
 | `mode` | `"auto" \| "labels" \| "icons"` | `labels`: icon and label. `icons`: icons only, the label is the tooltip. `auto`: labels while they fit, then icons, when every item has one. |
 | `moreLabel` | `((count: number) => string)` | The text of the overflow chip, from the number of items in its menu. |
 | `moreName` | `((count: number) => string)` | Accessible name of the overflow chip and its menu, from the same number. |
@@ -1755,7 +1755,7 @@ The second bar: the pages of the current section, and room for shortcuts at the 
 | `parts` | `see Parts` | Replace or hide named pieces. |
 | `value` | `string` | The active item. |
 | `onChange` | `((id: string) => void)` | Called with the id of the item the user chose. |
-| `renderLink` | `((props: import("./nav").NavLinkProps) => ReactNode)` | Plugs in the app's router link. Defaults to a plain `<a>`. |
+| `renderLink` | `((props: import("..").LinkRenderProps) => ReactNode)` | Plugs in the app's router link. Defaults to a plain `<a>`. |
 | `moreLabel` | `string` | Label of the overflow item. |
 | `submenuLabel` | `((label: string) => string)` | Accessible name of the caret that opens an item's dropdown, from the item's label. |
 | `aria-label` | `string` | Accessible name of the navigation landmark. |
@@ -2094,7 +2094,7 @@ A value coloured by where it falls on a five-step ramp.
 
 Side navigation for a modal, a settings screen or one column of a page.
 
-**Tokens**: `--umbra-focus-color`, `--umbra-focus-offset`, `--umbra-icon-size`, `--umbra-nav-font`, `--umbra-nav-gap`, `--umbra-nav-indicator-color`, `--umbra-subnav-indicator-color`, `--umbra-vertical-nav-bg`, `--umbra-vertical-nav-current-bg`, `--umbra-vertical-nav-current-fg`, `--umbra-vertical-nav-fg`, `--umbra-vertical-nav-gap`, `--umbra-vertical-nav-padding`, `--umbra-vertical-nav-radius`, `--umbra-vertical-nav-rail-below`, `--umbra-vertical-nav-rail-width`, `--umbra-vertical-nav-row-height`, `--umbra-vertical-nav-stripe-width`, `--umbra-vertical-nav-width`.
+**Tokens**: `--umbra-icon-size`, `--umbra-vertical-nav-bg`, `--umbra-vertical-nav-current-bg`, `--umbra-vertical-nav-current-fg`, `--umbra-vertical-nav-fg`, `--umbra-vertical-nav-gap`, `--umbra-vertical-nav-padding`, `--umbra-vertical-nav-radius`, `--umbra-vertical-nav-rail-below`, `--umbra-vertical-nav-rail-width`, `--umbra-vertical-nav-row-height`, `--umbra-vertical-nav-stripe-width`, `--umbra-vertical-nav-width`.
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -2105,7 +2105,7 @@ Side navigation for a modal, a settings screen or one column of a page.
 | `parts` | `see Parts` | Replace or hide named pieces. `item` applies to every item, also inside groups and sections. |
 | `value` | `string` | The current item. |
 | `onChange` | `((id: string) => void)` | Called with the id of the item the user chose. |
-| `renderLink` | `((props: NavLinkProps) => ReactNode)` | Plugs in the app's router link. Defaults to a plain `<a>`. |
+| `renderLink` | `((props: LinkRenderProps) => ReactNode)` | Plugs in the app's router link. Defaults to a plain `<a>`. |
 | `aria-label` | `string` | Accessible name of the navigation landmark. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |

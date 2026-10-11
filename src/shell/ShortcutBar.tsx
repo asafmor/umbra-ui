@@ -5,7 +5,6 @@ import {
   useLayoutEffect,
   useRef,
   useState,
-  type AnchorHTMLAttributes,
   type CSSProperties,
   type ReactElement,
   type ReactNode,
@@ -18,6 +17,7 @@ import { Menu } from '../overlays/Menu';
 import { Tooltip } from '../overlays/Tooltip';
 import { IconSlot } from '../provider/icons';
 import { useUmbra } from '../provider/UmbraProvider';
+import type { LinkRenderProps } from '../utils/link';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './ShortcutBar.module.css';
 
@@ -33,9 +33,6 @@ export interface ShortcutBarItem {
   badge?: number | true;
   disabled?: boolean;
 }
-
-/** Props for the app's router link: spread them on it. `renderLink={(p) => <RouterLink to={p.href} {...p} />}` */
-export type ShortcutLinkProps = AnchorHTMLAttributes<HTMLAnchorElement> & { href: string };
 
 export interface ShortcutBarItemProps extends Omit<ShortcutBarItem, 'label'> {
   /** The label, as text. */
@@ -70,7 +67,7 @@ export interface ShortcutBarProps {
   /** The shortcuts, as `ShortcutBar.Item` blocks. */
   children?: ReactNode;
   /** Plugs in the app's router link for items with `href`. Defaults to a plain `<a>`. */
-  renderLink?: (props: ShortcutLinkProps) => ReactNode;
+  renderLink?: (props: LinkRenderProps) => ReactNode;
   /**
    * `labels`: icon and label. `icons`: icons only, the label is the tooltip. `auto`: labels while they
    * fit, then icons, when every item has one.
@@ -98,7 +95,7 @@ export interface ShortcutBarProps {
   style?: CSSProperties;
 }
 
-const plainLink = (props: ShortcutLinkProps) => <a {...props} />;
+const plainLink = (props: LinkRenderProps) => <a {...props} />;
 
 /**
  * The user's pinned shortcuts, at the end of the `SubNav`. One tab stop; arrow keys move between the
@@ -192,7 +189,7 @@ export function ShortcutBar({
           <AriaLink
             {...shared}
             href={item.href}
-            render={(dom) => renderLink(dom as ShortcutLinkProps) as ReactElement}
+            render={(dom) => renderLink(dom as LinkRenderProps) as ReactElement}
           >
             {content}
           </AriaLink>

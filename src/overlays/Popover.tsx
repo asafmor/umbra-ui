@@ -94,7 +94,7 @@ export interface PopoverContentProps extends OpenProps, Omit<BlockProps, 'childr
   /** A small pointer towards the anchor. */
   arrow?: boolean;
   /** Accessible name, when there is no title. */
-  label?: string;
+  'aria-label'?: string;
   /** Closes when keyboard focus leaves the panel. Escape and a press outside always close it. */
   dismissOnBlur?: boolean;
   /** The blocks. A function receives `close`. */
@@ -114,7 +114,7 @@ function Content({
   maxHeight,
   size = 'default',
   arrow = false,
-  label,
+  'aria-label': label,
   dismissOnBlur = true,
   className,
   style,
@@ -157,7 +157,7 @@ function Content({
     // Focus moves in. React Aria returns it to where it was when the popover closes.
     if (el && !el.contains(document.activeElement)) el.focus({ preventScroll: true });
     if (!label && !document.getElementById(titleId) && !fromTrigger)
-      warn('a Popover without a title or a trigger needs a `label`.');
+      warn('a Popover without a title or a trigger needs an `aria-label`.');
 
     // The page stays usable, so nothing covers it to catch a press: listen for one instead. A press in
     // another overlay (a menu opened from inside this popover) is not outside, and while a modal overlay

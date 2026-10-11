@@ -62,7 +62,7 @@ export interface ChartParts {
 /** Props every chart takes. */
 export interface ChartCommonProps {
   /** Accessible name of the chart. Required unless `aria-labelledby` is set. */
-  label?: string;
+  'aria-label'?: string;
   /** Id of the element that names the chart, for example a card title. */
   'aria-labelledby'?: string;
   /** What a screen reader hears after the name. Defaults to a generated summary of the data. */
@@ -212,7 +212,7 @@ export function Frame<M extends FrameModel>({
   build,
   parts,
   children,
-  label,
+  'aria-label': label,
   'aria-labelledby': labelledBy,
   description,
   legend,

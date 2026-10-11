@@ -75,7 +75,7 @@ export const Keyboard: StoryObj<typeof meta> = {
   render: () => (
     <Columns style={{ height: '100%' }}>
       <Slot label="Text only">
-        <ScrollArea label="Item list">
+        <ScrollArea aria-label="Item list">
           <Rows count={60} />
         </ScrollArea>
       </Slot>

@@ -314,7 +314,7 @@ function List({
       {overflow.showMore && (
         <span ref={more} data-part="more" className={styles.more}>
           <Menu
-            label={moreLabel}
+            aria-label={moreLabel}
             placement="bottom end"
             items={moreRows(overflow.overflowed, rows, 'radio', (id) => id === tabs.value)}
             onAction={tabs.select}

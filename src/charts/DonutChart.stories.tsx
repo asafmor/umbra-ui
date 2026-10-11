@@ -32,20 +32,20 @@ export const Variants: Story = {
   render: () => (
     <Tiles>
       <Tile title="One value" id="single">
-        <DonutChart label="Budget used" value={81} centerLabel="of budget" />
+        <DonutChart aria-label="Budget used" value={81} centerLabel="of budget" />
       </Tile>
       <Tile title="Tone from thresholds" id="thresholds">
         <div style={row}>
           {[34, 58, 92].map((value) => (
             <div key={value} style={cell}>
-              <DonutChart label={`Completion ${value}%`} value={value} thresholds={thresholds} />
+              <DonutChart aria-label={`Completion ${value}%`} value={value} thresholds={thresholds} />
             </div>
           ))}
         </div>
       </Tile>
       <Tile title="Gauge, value of a total" id="gauge">
         <DonutChart
-          label="Orders shipped"
+          aria-label="Orders shipped"
           value={640}
           max={800}
           startAngle={-120}
@@ -56,18 +56,30 @@ export const Variants: Story = {
         />
       </Tile>
       <Tile title="Segments" id="segments">
-        <DonutChart label="Orders by channel" data={channels} centerValue="100" centerLabel="orders" />
+        <DonutChart aria-label="Orders by channel" data={channels} centerValue="100" centerLabel="orders" />
       </Tile>
       <Tile title="Segments with direct labels" id="labels">
-        <DonutChart label="Orders by channel" data={channels} labels legend={false} />
+        <DonutChart aria-label="Orders by channel" data={channels} labels legend={false} />
       </Tile>
       <Tile title="Thick, square ends, no gap" id="thick">
         <div style={row}>
           <div style={cell}>
-            <DonutChart label="Capacity used" value={62} thickness={22} roundedCaps={false} tone="warning" />
+            <DonutChart
+              aria-label="Capacity used"
+              value={62}
+              thickness={22}
+              roundedCaps={false}
+              tone="warning"
+            />
           </div>
           <div style={cell}>
-            <DonutChart label="Orders by channel" data={channels} thickness={30} gap={0} legend={false} />
+            <DonutChart
+              aria-label="Orders by channel"
+              data={channels}
+              thickness={30}
+              gap={0}
+              legend={false}
+            />
           </div>
         </div>
       </Tile>
@@ -82,14 +94,14 @@ export const States: Story = {
     return (
       <Tiles columns={2}>
         <Tile title="Loading">
-          <DonutChart label="Budget used" value={81} loading />
+          <DonutChart aria-label="Budget used" value={81} loading />
         </Tile>
         <Tile title="Empty">
-          <DonutChart label="Orders by channel" data={[]} />
+          <DonutChart aria-label="Orders by channel" data={[]} />
         </Tile>
         <Tile title="Error">
           <DonutChart
-            label="Budget used"
+            aria-label="Budget used"
             value={81}
             error={`The budget could not be loaded. Retries: ${tries}.`}
             onRetry={() => setTries(tries + 1)}
@@ -98,10 +110,10 @@ export const States: Story = {
         <Tile title="Zero and full">
           <div style={row}>
             <div style={cell}>
-              <DonutChart label="Nothing used" value={0} />
+              <DonutChart aria-label="Nothing used" value={0} />
             </div>
             <div style={cell}>
-              <DonutChart label="All used" value={100} tone="success" />
+              <DonutChart aria-label="All used" value={100} tone="success" />
             </div>
           </div>
         </Tile>
@@ -110,9 +122,9 @@ export const States: Story = {
   },
 };
 
-const single = <DonutChart label="Budget used" value={81} centerLabel="of budget" />;
+const single = <DonutChart aria-label="Budget used" value={81} centerLabel="of budget" />;
 const segments = (
-  <DonutChart label="Orders by channel" data={channels} labels centerValue="100" centerLabel="orders" />
+  <DonutChart aria-label="Orders by channel" data={channels} labels centerValue="100" centerLabel="orders" />
 );
 
 /** What the ring keeps as its slot shrinks: legend and labels, then the centre caption, then the value. */
@@ -156,10 +168,15 @@ export const Interaction: Story = {
         <Log>Pressed: {pressed ? `${pressed.seriesLabel}, ${pressed.value}` : 'nothing'}.</Log>
         <Tiles columns={2}>
           <Tile title="Segments" id="segments">
-            <DonutChart label="Orders by channel" data={channels} onPointPress={setPressed} legend="end" />
+            <DonutChart
+              aria-label="Orders by channel"
+              data={channels}
+              onPointPress={setPressed}
+              legend="end"
+            />
           </Tile>
           <Tile title="One value" id="single">
-            <DonutChart label="Budget used" value={81} onPointPress={setPressed} />
+            <DonutChart aria-label="Budget used" value={81} onPointPress={setPressed} />
           </Tile>
         </Tiles>
       </div>
@@ -173,7 +190,7 @@ export const PartsAndBlocks: Story = {
     <Tiles>
       <Tile title="Centre part replaced by a node">
         <DonutChart
-          label="Budget used"
+          aria-label="Budget used"
           value={81}
           parts={{
             center: (
@@ -185,32 +202,32 @@ export const PartsAndBlocks: Story = {
         />
       </Tile>
       <Tile title="Centre part hidden">
-        <DonutChart label="Budget used" value={81} parts={{ center: null }} />
+        <DonutChart aria-label="Budget used" value={81} parts={{ center: null }} />
       </Tile>
       <Tile title="Centre part as a function">
         <DonutChart
-          label="Budget used"
+          aria-label="Budget used"
           value={81}
           centerLabel="of budget"
           parts={{ center: (p) => <DonutChart.Center value={<>≈ {p.value}</>} label={p.label} /> }}
         />
       </Tile>
       <Tile title="Blocks: segments without a track">
-        <DonutChart.Root label="Orders by channel" data={channels} legend={false}>
+        <DonutChart.Root aria-label="Orders by channel" data={channels} legend={false}>
           <DonutChart.Segments />
           <DonutChart.Center value="4" label="channels" />
         </DonutChart.Root>
       </Tile>
       <Tile title="Legend part hidden, tooltip replaced" id="tooltip">
         <DonutChart
-          label="Orders by channel"
+          aria-label="Orders by channel"
           data={channels}
           parts={{ legend: null, tooltip: (p) => `${p.title}: ${p.rows[0]?.value}` }}
         />
       </Tile>
       <Tile title="Colours and fills set per segment">
         <DonutChart
-          label="Tasks by state"
+          aria-label="Tasks by state"
           data={[
             {
               id: 'done',

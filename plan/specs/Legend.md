@@ -87,7 +87,7 @@ Pairs that are not neighbours can be close (1 blue ↔ 7 violet is 0.5 for deuta
 | `onHighlight` | `(id \| null) => void` | — | The item under the pointer or with focus |
 | `maxRows` | number | `2` | Rows a horizontal legend may wrap to |
 | `loading` | boolean | `false` | Shows placeholder items |
-| `loadingCount` | number | `3` | Number of placeholders |
+| `skeletonRows` | number | `3` | Number of placeholders |
 | `moreLabel` | `(count) => string` | "+N more" | Text of the more button |
 | `allLabel` | string | "All items" | Accessible name of the popover with the full list |
 | `aria-label` | string | "Legend" | Accessible name of the legend |
@@ -126,6 +126,10 @@ A vertical legend is as tall as its items; a parent that is too short scrolls it
 ## Open questions
 
 None.
+
+Resolved 2026-10-11:
+
+- `loadingCount` is now `skeletonRows`, the name `List`, `DataTable` and `KeyValueList` use for the number of placeholder rows.
 
 Resolved 2026-10-10:
 

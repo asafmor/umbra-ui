@@ -36,14 +36,14 @@ export const Variants: Story = {
   render: () => (
     <Tiles>
       <Tile title="One series, values on the labels" id="single">
-        <RadarChart label="Site 1 scores" axes={axes} series={[site]} max={20} rings={2} labels />
+        <RadarChart aria-label="Site 1 scores" axes={axes} series={[site]} max={20} rings={2} labels />
       </Tile>
       <Tile title="Several series" id="several">
-        <RadarChart label="Team scores" axes={six} series={teams} max={20} />
+        <RadarChart aria-label="Team scores" axes={six} series={teams} max={20} />
       </Tile>
       <Tile title="Circle grid" id="circle">
         <RadarChart
-          label="Team scores"
+          aria-label="Team scores"
           axes={six}
           series={teams.slice(0, 2)}
           max={20}
@@ -52,11 +52,11 @@ export const Variants: Story = {
         />
       </Tile>
       <Tile title="Outlines only" id="outline">
-        <RadarChart label="Team scores" axes={six} series={teams.slice(0, 2)} max={20} filled={false} />
+        <RadarChart aria-label="Team scores" axes={six} series={teams.slice(0, 2)} max={20} filled={false} />
       </Tile>
       <Tile title="A maximum per axis" id="max">
         <RadarChart
-          label="Site 1 against its limits"
+          aria-label="Site 1 against its limits"
           labels
           axes={[
             { id: 'orders', label: 'Orders', max: 500 },
@@ -70,7 +70,7 @@ export const Variants: Story = {
       </Tile>
       <Tile title="Three axes, turned" id="three">
         <RadarChart
-          label="Plan and actual"
+          aria-label="Plan and actual"
           axes={axes.slice(0, 3)}
           startAngle={60}
           max={20}
@@ -91,14 +91,14 @@ export const States: Story = {
     return (
       <Tiles columns={2}>
         <Tile title="Loading">
-          <RadarChart label="Team scores" axes={six} series={teams} loading />
+          <RadarChart aria-label="Team scores" axes={six} series={teams} loading />
         </Tile>
         <Tile title="Empty">
-          <RadarChart label="Team scores" axes={six} series={[]} />
+          <RadarChart aria-label="Team scores" axes={six} series={[]} />
         </Tile>
         <Tile title="Error">
           <RadarChart
-            label="Team scores"
+            aria-label="Team scores"
             axes={six}
             series={teams}
             error={`The scores could not be loaded. Retries: ${tries}.`}
@@ -107,7 +107,7 @@ export const States: Story = {
         </Tile>
         <Tile title="Missing values sit at the centre">
           <RadarChart
-            label="Team scores"
+            aria-label="Team scores"
             axes={six}
             max={20}
             series={[{ id: 'a', label: 'Team A', values: [16, null, 9, 14, null, 15] }]}
@@ -118,7 +118,7 @@ export const States: Story = {
   },
 };
 
-const full = <RadarChart label="Site 1 scores" axes={axes} series={[site]} max={20} labels legend />;
+const full = <RadarChart aria-label="Site 1 scores" axes={axes} series={[site]} max={20} labels legend />;
 
 /** What the chart keeps as its slot shrinks: legend, then the values, then the axis labels. */
 export const Shrink: Story = {
@@ -141,7 +141,7 @@ export const Shrink: Story = {
       </Box>
       <Box width={230} height={200} note="long labels truncate">
         <RadarChart
-          label="Scores"
+          aria-label="Scores"
           axes={['Customer satisfaction', 'Delivery reliability', 'Cost per order', 'Response time'].map(
             (l) => ({
               id: l,
@@ -168,10 +168,16 @@ export const Interaction: Story = {
         </Log>
         <Tiles columns={2}>
           <Tile title="Several series" id="several">
-            <RadarChart label="Team scores" axes={six} series={teams} max={20} onPointPress={setPressed} />
+            <RadarChart
+              aria-label="Team scores"
+              axes={six}
+              series={teams}
+              max={20}
+              onPointPress={setPressed}
+            />
           </Tile>
           <Tile title="One series" id="single">
-            <RadarChart label="Site 1 scores" axes={axes} series={[site]} max={20} labels />
+            <RadarChart aria-label="Site 1 scores" axes={axes} series={[site]} max={20} labels />
           </Tile>
         </Tiles>
       </div>
@@ -184,14 +190,14 @@ export const PartsAndBlocks: Story = {
   render: () => (
     <Tiles>
       <Tile title="Legend at the side">
-        <RadarChart label="Team scores" axes={six} series={teams} max={20} legend="end" />
+        <RadarChart aria-label="Team scores" axes={six} series={teams} max={20} legend="end" />
       </Tile>
       <Tile title="Legend part hidden">
-        <RadarChart label="Team scores" axes={six} series={teams} max={20} parts={{ legend: null }} />
+        <RadarChart aria-label="Team scores" axes={six} series={teams} max={20} parts={{ legend: null }} />
       </Tile>
       <Tile title="Tooltip part as a function" id="tooltip">
         <RadarChart
-          label="Team scores"
+          aria-label="Team scores"
           axes={six}
           series={teams}
           max={20}
@@ -199,13 +205,19 @@ export const PartsAndBlocks: Story = {
         />
       </Tile>
       <Tile title="Blocks: no axis labels">
-        <RadarChart.Root label="Team scores" axes={six} series={teams.slice(0, 1)} max={20}>
+        <RadarChart.Root aria-label="Team scores" axes={six} series={teams.slice(0, 1)} max={20}>
           <RadarChart.Grid rings={5} shape="circle" />
           <RadarChart.Series />
         </RadarChart.Root>
       </Tile>
       <Tile title="Blocks: the app's own ring">
-        <RadarChart.Root label="Team scores" axes={six} series={teams.slice(0, 2)} max={20} legend={false}>
+        <RadarChart.Root
+          aria-label="Team scores"
+          axes={six}
+          series={teams.slice(0, 2)}
+          max={20}
+          legend={false}
+        >
           <RadarChart.Grid rings={1} />
           <circle cx="50%" cy="50%" r="3" fill="var(--umbra-color-fixed-accent-text)" />
           <RadarChart.Series filled={false} />
@@ -214,7 +226,7 @@ export const PartsAndBlocks: Story = {
       </Tile>
       <Tile title="Legend replaced by a node">
         <RadarChart
-          label="Team scores"
+          aria-label="Team scores"
           axes={six}
           series={teams.slice(0, 2)}
           max={20}

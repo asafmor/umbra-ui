@@ -44,7 +44,7 @@ function BasicPopovers() {
       >
         Anyone with the link can open this view. The page behind stays usable while the panel is open.
       </Popover>
-      <Popover trigger={<IconButton icon={<Settings />} label="Settings" />} label="Settings">
+      <Popover trigger={<IconButton icon={<Settings />} label="Settings" />} aria-label="Settings">
         {(close) => (
           <div style={{ display: 'grid', gap: 12 }}>
             A panel without a title is named by `label`.
@@ -82,7 +82,7 @@ export const Placements: Story = {
           <Popover
             key={placement}
             trigger={<Button>{placement}</Button>}
-            label={placement}
+            aria-label={placement}
             placement={placement}
             arrow
             defaultOpen
@@ -169,7 +169,7 @@ function AnchoredPopover() {
         anchorRef={anchor}
         open={open}
         onOpenChange={setOpen}
-        label="Details"
+        aria-label="Details"
         matchAnchorWidth
         maxHeight={180}
         padding="none"
@@ -262,7 +262,7 @@ function NestedPopover() {
       <Popover trigger={<Button>Stays on blur</Button>} title="dismissOnBlur off" dismissOnBlur={false}>
         <Button>Inside</Button>
       </Popover>
-      <Popover trigger={<Button>Flips</Button>} label="Flips" placement="top">
+      <Popover trigger={<Button>Flips</Button>} aria-label="Flips" placement="top">
         No room above
       </Popover>
       <Button>Elsewhere on the page</Button>

@@ -1,12 +1,9 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { Icon, IconSlot, RawIcon } from '../provider/icons';
-import type { NavLinkProps } from '../shell/nav';
+import type { LinkRenderProps } from '../utils/link';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './Link.module.css';
 import shared from './shared.module.css';
-
-/** Props for the app's router link: spread them on it. `renderLink={(p) => <RouterLink to={p.href} {...p} />}` */
-export type LinkRenderProps = NavLinkProps;
 
 export interface LinkRootProps {
   /** Where it goes. Without it the link is a button that calls `onPress`. */

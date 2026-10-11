@@ -34,7 +34,7 @@ A row is `{ id, label, textValue?, icon?, shortcut?, description?, disabled?, da
 | Variant | How | Notes |
 |---|---|---|
 | dropdown | `trigger` | Named by its trigger |
-| anchored | `anchorRef` with `open` | Needs `label`; starts on its first row |
+| anchored | `anchorRef` with `open` | Needs `aria-label`; starts on its first row |
 | context menu | `Menu.Context` around a region | Opens at the pointer, or at the focused element from the keyboard |
 | submenu | `items` in a row, or `Menu.Sub` | Any depth |
 
@@ -57,7 +57,7 @@ Row states: hover and keyboard highlight (one step lighter), pressed, focus ring
 | `trigger` | node | — | The control that opens it: an umbra-ui button, or a plain `<button>` |
 | `anchorRef` | ref | — | The element to open against when there is no `trigger`; used with `open` |
 | `open` / `defaultOpen` / `onOpenChange` | boolean / boolean / function | — | Controlled or uncontrolled state |
-| `label` | string | the trigger's name | Accessible name |
+| `aria-label` | string | the trigger's name | Accessible name |
 | `onAction` | function (id) | — | The row the user chose |
 | `selectedIds` / `defaultSelectedIds` / `onSelectionChange` | string[] / string[] / function (ids) | — | The checked `checkbox` and `radio` rows of every section and submenu. A row's own `checked` wins for that row |
 | `placement` | as `Popover` | `bottom start` | Flips to stay in the window |
@@ -102,6 +102,10 @@ Row states: hover and keyboard highlight (one step lighter), pressed, focus ring
 ## Open questions
 
 None.
+
+Resolved 2026-10-11:
+
+- 2026-10-11: the accessible name is `aria-label` (it was `label`), as on the other components: `plan/decisions/07-customisation.md`, "Prop names".
 
 Resolved 2026-10-10:
 

@@ -60,7 +60,7 @@ States: open, closed, entering, exiting. Data attributes on the root: `data-size
 | `closeButton` / `closeLabel` | boolean / string | `false` / "Close" | A close button in the header |
 | `toolbar` / `footer` | node | — | Fixed above and below the body |
 | `padding` | see above | `default` | |
-| `label` | string | — | Accessible name when there is no title |
+| `aria-label` | string | — | Accessible name when there is no title |
 | `dismissOnBlur` | boolean | `true` | Closes when keyboard focus leaves the panel |
 | `children` | node, or a function that receives `close` | — | The body |
 
@@ -82,7 +82,7 @@ States: open, closed, entering, exiting. Data attributes on the root: `data-size
 
 ## Interaction and accessibility
 
-- The panel is a `dialog` named by its title, else by `label`, else by its trigger. It is not modal: the page is not hidden from assistive technology and has no backdrop.
+- The panel is a `dialog` named by its title, else by `aria-label`, else by its trigger. It is not modal: the page is not hidden from assistive technology and has no backdrop.
 - The trigger carries `aria-expanded` and `aria-controls`. `Enter` and `Space` on it open the panel; pressing it again closes it.
 - Opening moves focus to the panel; closing returns it to where it was (the trigger), unless the user has already moved focus elsewhere.
 - `Escape` closes it, from inside the panel or from the page.
@@ -96,6 +96,7 @@ States: open, closed, entering, exiting. Data attributes on the root: `data-size
 
 Resolved 2026-10-11:
 
+- 2026-10-11: the accessible name is `aria-label` (it was `label`), as on the other components: `plan/decisions/07-customisation.md`, "Prop names".
 - **Flipping when the content arrives late.** React Aria picks the side from the panel's height when it opens and then caps the height at the room on that side, so content that arrived afterwards (the body of a layout-collapsed card near the bottom of the window) stayed cut on the short side. `useFlipWhenCut` (`src/overlays/shared.ts`) lifts a cap the panel has grown into, once, so the real height is measured and the panel flips. `Menu`, `Select` and the `SearchField` suggestions use the same hook; `Tooltip` needs none (its content is there when it opens). Tested at the four corners of the window in three window sizes (`Overlays/Window edges`).
 
 

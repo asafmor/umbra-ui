@@ -106,6 +106,7 @@ Resolved 2026-10-11:
 
 - **`height`**, shared with `DataTable` and the charts (`src/internal/height.ts`): the same values and the same fallback.
 
+- 2026-10-11: the type of a row's id is `ListId` (it was `ListKey`): rows are identified by `id`, and the selection props are `selectedIds`.
 - 2026-10-11: **a selected row that leaves the list stays selected.** The selection is the app's (or the list's own, when uncontrolled): it is not moved to another row and nothing is reported. With `replace`, selection follows focus in React Aria. A list that removes the selected row (a filter on "unread") lost focus to the list itself, which selected the row focus fell on; that row left too, and the row that slid under the pointer was selected again when the button was released. One press of the pointer now changes the selection once, at most (`Data/List > Removed on selection`, tested with the mouse and the keyboard). With the keyboard, focus moves to the next row and the selection does not.
 
 Resolved 2026-10-10:

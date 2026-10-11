@@ -64,7 +64,7 @@ export const Variants: Story = {
     <Tiles>
       <Tile title="Plan and actual" id="plan">
         <LineChart
-          label="Orders, plan and actual"
+          aria-label="Orders, plan and actual"
           series={planActual}
           yTitle="Orders"
           annotations={[{ type: 'line', value: 75, label: 'Target' }]}
@@ -72,7 +72,7 @@ export const Variants: Story = {
       </Tile>
       <Tile title="Step lines" id="step">
         <LineChart
-          label="Running total, two teams"
+          aria-label="Running total, two teams"
           curve="step"
           points={false}
           series={[
@@ -92,11 +92,11 @@ export const Variants: Story = {
         />
       </Tile>
       <Tile title="Ordinal levels" id="ordinal">
-        <LineChart label="Service level by year" series={history} yLevels={levels} />
+        <LineChart aria-label="Service level by year" series={history} yLevels={levels} />
       </Tile>
       <Tile title="Smooth area" id="area">
         <LineChart
-          label="Orders by month"
+          aria-label="Orders by month"
           curve="smooth"
           area
           series={[{ id: 'orders', label: 'Orders', data: over(actual) }]}
@@ -104,7 +104,7 @@ export const Variants: Story = {
       </Tile>
       <Tile title="Missing values" id="missing">
         <LineChart
-          label="Readings with gaps"
+          aria-label="Readings with gaps"
           series={[
             {
               id: 's1',
@@ -117,7 +117,7 @@ export const Variants: Story = {
       </Tile>
       <Tile title="Time axis, direct labels" id="time">
         <LineChart
-          label="Weekly orders by region"
+          aria-label="Weekly orders by region"
           series={weekly}
           labels
           legend={false}
@@ -135,14 +135,14 @@ export const States: Story = {
     return (
       <Tiles columns={2}>
         <Tile title="Loading">
-          <LineChart label="Orders" series={planActual} loading />
+          <LineChart aria-label="Orders" series={planActual} loading />
         </Tile>
         <Tile title="Empty">
-          <LineChart label="Orders" series={[]} />
+          <LineChart aria-label="Orders" series={[]} />
         </Tile>
         <Tile title="Error">
           <LineChart
-            label="Orders"
+            aria-label="Orders"
             series={planActual}
             error={`The orders could not be loaded. Retries: ${tries}.`}
             onRetry={() => setTries(tries + 1)}
@@ -150,7 +150,7 @@ export const States: Story = {
           />
         </Tile>
         <Tile title="Empty, with the app's own text">
-          <LineChart label="Orders" series={[]} empty="No orders in this period." />
+          <LineChart aria-label="Orders" series={[]} empty="No orders in this period." />
         </Tile>
       </Tiles>
     );
@@ -158,7 +158,7 @@ export const States: Story = {
 };
 
 const full = (
-  <LineChart label="Orders, plan and actual" series={planActual} labels xTitle="Month" yTitle="Orders" />
+  <LineChart aria-label="Orders, plan and actual" series={planActual} labels xTitle="Month" yTitle="Orders" />
 );
 
 /** What the chart keeps as its slot shrinks: legend, then labels, then axis titles, then the axes. */
@@ -203,7 +203,7 @@ export const Interaction: Story = {
         <Tiles columns={2}>
           <Tile title="Controlled" id="controlled">
             <LineChart
-              label="Orders, plan and actual"
+              aria-label="Orders, plan and actual"
               series={planActual}
               hiddenIds={hidden}
               onHiddenChange={setHidden}
@@ -213,7 +213,7 @@ export const Interaction: Story = {
           </Tile>
           <Tile title="Uncontrolled, one series hidden at first" id="uncontrolled">
             <LineChart
-              label="Weekly orders by region"
+              aria-label="Weekly orders by region"
               series={weekly}
               defaultHiddenIds={['r3']}
               legend="top"
@@ -231,17 +231,17 @@ export const PartsAndBlocks: Story = {
     <Tiles>
       <Tile title="Legend replaced by a node">
         <LineChart
-          label="Orders, plan and actual"
+          aria-label="Orders, plan and actual"
           series={planActual}
           legend={<span style={{ font: 'var(--umbra-font-label)' }}>Solid: plan. Dashed: actual.</span>}
         />
       </Tile>
       <Tile title="Legend at the side">
-        <LineChart label="Orders, plan and actual" series={planActual} legend="end" />
+        <LineChart aria-label="Orders, plan and actual" series={planActual} legend="end" />
       </Tile>
       <Tile title="Tooltip part as a function" id="tooltip">
         <LineChart
-          label="Orders, plan and actual"
+          aria-label="Orders, plan and actual"
           series={planActual}
           parts={{
             legend: null,
@@ -254,21 +254,21 @@ export const PartsAndBlocks: Story = {
         />
       </Tile>
       <Tile title="Blocks: lines only, with the app's own mark">
-        <LineChart.Root label="Orders, plan and actual" series={planActual} legend={false}>
+        <LineChart.Root aria-label="Orders, plan and actual" series={planActual} legend={false}>
           <LineChart.Series />
           <LineChart.Axes />
           <circle cx="50%" cy="20%" r="5" fill="var(--umbra-color-fixed-accent-text)" />
         </LineChart.Root>
       </Tile>
       <Tile title="Blocks: grid over the lines">
-        <LineChart.Root label="Orders, plan and actual" series={planActual} area legend={false}>
+        <LineChart.Root aria-label="Orders, plan and actual" series={planActual} area legend={false}>
           <LineChart.Series />
           <LineChart.Grid />
           <LineChart.Axes />
         </LineChart.Root>
       </Tile>
       <Tile title="Empty part replaced">
-        <LineChart label="Orders" series={[]} parts={{ empty: <em>Nothing to draw yet.</em> }} />
+        <LineChart aria-label="Orders" series={[]} parts={{ empty: <em>Nothing to draw yet.</em> }} />
       </Tile>
     </Tiles>
   ),

@@ -32,7 +32,7 @@ function LatePopover() {
   return (
     <Popover
       trigger={<Button>Popover</Button>}
-      label="Late content"
+      aria-label="Late content"
       open={open}
       onOpenChange={(next) => {
         setOpen(next);
@@ -67,7 +67,7 @@ export const Corners: Story = {
             <Select aria-label="Select" placeholder="Select" options={many} />
           </div>
           <div style={{ width: 150 }}>
-            <SearchField aria-label="Search" placeholder="Search" suggestions={many} />
+            <SearchField label="Search" placeholder="Search" suggestions={many} />
           </div>
           <Tooltip content="A tooltip that stays in the window">
             <Button>Tip</Button>

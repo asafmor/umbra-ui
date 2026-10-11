@@ -210,7 +210,7 @@ colour blindness and each keeps 4.8:1 against a card on every preset tint.
 ```tsx
 <UmbraScope tokens={{ 'color-series-1': '#5fb0ff', 'color-series-2': '#ff9f5a' }}>
   <LineChart
-    label="Orders per week"
+    aria-label="Orders per week"
     series={[
       {
         id: 'new',

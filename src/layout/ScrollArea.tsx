@@ -11,7 +11,7 @@ export interface ScrollAreaProps {
   /** Called when the end is reached, for loading more. */
   onReachEnd?: () => void;
   /** Accessible name, used when the area itself has to be focusable to be scrolled by keyboard. */
-  label?: string;
+  'aria-label'?: string;
   /** Replace or hide named pieces. */
   parts?: { fade?: Part<{ edge: 'start' | 'end' }> };
   className?: string;
@@ -29,7 +29,7 @@ export function ScrollArea({
   scrollbar = 'auto',
   fade = true,
   onReachEnd,
-  label = 'Scrollable content',
+  'aria-label': label = 'Scrollable content',
   parts,
   className,
   style,

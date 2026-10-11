@@ -151,7 +151,7 @@ export function HistoryButtons({
       {hasEntries && (
         <Menu
           items={entries}
-          label={entriesLabel}
+          aria-label={entriesLabel}
           open={open}
           onOpenChange={setOpen}
           onAction={onNavigate}
