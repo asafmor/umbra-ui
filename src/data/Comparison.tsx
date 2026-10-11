@@ -1,4 +1,4 @@
-import { Fragment, type CSSProperties, type ReactNode } from 'react';
+import { Fragment, useRef, type CSSProperties, type ReactNode } from 'react';
 import { Skeleton } from '../basics/Skeleton';
 import {
   ChangeHighlight,
@@ -9,7 +9,7 @@ import {
 import { dataState, type DataStateProps } from '../internal/dataState';
 import { heightProps, type FillHeight } from '../internal/height';
 import { seriesColour } from '../internal/SeriesMarker';
-import { TruncatedText } from '../internal/TruncatedText';
+import { TruncatedText, useTruncatedTip } from '../internal/TruncatedText';
 import { useSlot, type SlotProps } from '../layout/useSlot';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './Comparison.module.css';
@@ -29,7 +29,7 @@ export type ComparisonValue = number | null | undefined;
 /** One of the two things compared. */
 export interface ComparisonSide {
   name: ReactNode;
-  /** A mark beside the name: an `EntityIcon` or an `Avatar`. */
+  /** A mark beside the name: an `EntityIcon` or an `Avatar`. The name is beside it, so give it no name of its own (`alt=""`). */
   icon?: ReactNode | undefined;
   /** Any CSS colour, for the side's bars and leader mark. Default: the first two series colours. */
   color?: string | undefined;
@@ -173,7 +173,8 @@ function Side({ opposite, icon, color, role, className, style, children }: Compa
   return (
     <div
       role={role}
-      data-part={opposite ? 'opposite' : 'side'}
+      data-part="side"
+      data-side={opposite ? 'opposite' : 'side'}
       className={cx(styles.side, className)}
       style={{ ...(color && { ['--side' as string]: color }), ...style }}
     >
@@ -272,6 +273,9 @@ function Value({
   children,
   ...change
 }: ComparisonValueProps) {
+  // A value too long for its side ends in an ellipsis, and then shows all of itself in a tooltip.
+  const number = useRef<HTMLSpanElement>(null);
+  const tip = useTruncatedTip(number, children);
   return (
     <span
       role="cell"
@@ -281,10 +285,11 @@ function Value({
       className={cx(styles.value, className)}
       style={{ ...(color && { ['--side' as string]: color }), ...style }}
     >
-      <span {...changeHost(change)} className={styles.number}>
+      <span ref={number} {...changeHost(change)} className={styles.number}>
         <ChangeHighlight {...change}>{children}</ChangeHighlight>
         {children}
       </span>
+      {tip}
       {leader && (
         <span data-part="leader" className={styles.leader}>
           <span className={shared.srOnly}>{leaderLabel}</span>
@@ -458,7 +463,12 @@ export function Comparison({
 
   const state = dataState(
     { loading, empty, error, onRetry, retryLabel },
-    { part: true, isEmpty: rows.length === 0, defaultEmpty: { title: 'Nothing to compare' } },
+    {
+      part: true,
+      // A strip shows the summary, so it has something to show without a row.
+      isEmpty: rows.length === 0 && !(rest.variant === 'strip' && summary),
+      defaultEmpty: { title: 'Nothing to compare' },
+    },
   );
   if (state) {
     return (
@@ -478,7 +488,18 @@ export function Comparison({
     'aria-label': label,
   };
   const strip = renderPart(parts?.strip, stripProps, (p) => <Strip {...p} />);
-  if (root.variant === 'strip' && !loading) return <Root {...root}>{strip}</Root>;
+  if (root.variant === 'strip') {
+    if (!loading) return <Root {...root}>{strip}</Root>;
+    // The strip itself, with the two sides (they are known) around placeholders for the values.
+    const value = <Skeleton width={16} />;
+    return (
+      <Root {...root} loading>
+        {renderPart(parts?.skeleton, {}, () => (
+          <Strip {...stripProps} values={[value, value]} />
+        ))}
+      </Root>
+    );
+  }
 
   const header = renderPart(
     parts?.header,
@@ -504,10 +525,10 @@ export function Comparison({
             <div data-part="skeleton" aria-hidden="true" className={styles.body}>
               {Array.from({ length: skeletonRows }, (_, i) => (
                 <div key={i} className={styles.row}>
-                  <Skeleton width={28} />
+                  <Skeleton width={28} style={{ gridArea: '1 / 1' }} />
                   <Skeleton width={72 + (i % 3) * 24} style={{ gridArea: '1 / 2', justifySelf: 'center' }} />
                   <Skeleton width={28} style={{ gridArea: '1 / 3', justifySelf: 'end' }} />
-                  {showBars && <Skeleton shape="block" className={styles.bars} style={{ minHeight: 0 }} />}
+                  {showBars && <Skeleton shape="block" className={styles.bars} />}
                 </div>
               ))}
             </div>
