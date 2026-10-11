@@ -6,6 +6,7 @@
 //    falls back through it: `var(--umbra-icon-size, var(--icon-size, 1.25em))`.
 // 2. Every token of plan/tokens.json is read somewhere in the library: a token nothing reads is a
 //    promise the library does not keep.
+// 3. No stylesheet holds a literal duration: timings are motion tokens.
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -112,6 +113,18 @@ for (const name of names) {
 }
 for (const name of [...throughCode.keys(), ...forApps.keys()])
   if (!names.has(name)) problems.push(`check-tokens names --umbra-${name}, which is not a token.`);
+
+// --- 3. No literal duration ---
+
+// How long something moves is a token: `--umbra-motion-duration-*`, or a component token that falls
+// back to one. Allowed: `0s` (a step with a delay), and `1ms`, the length of an animation that only
+// waits for its delay (the skeleton that appears late).
+for (const { file, text } of files) {
+  if (!file.endsWith('.module.css') && file !== 'src/styles/index.css') continue;
+  for (const [, time] of text.replace(/\/\*[\s\S]*?\*\//g, '').matchAll(/(?<![\w.#-])(\d*\.?\d+m?s)\b/g))
+    if (!/^(0m?s|1ms)$/.test(time))
+      problems.push(`${file}: the duration ${time} is a literal. Read a motion token instead.`);
+}
 
 if (problems.length) {
   console.error(problems.join('\n'));
