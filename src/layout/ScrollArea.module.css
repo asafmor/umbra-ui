@@ -99,6 +99,15 @@
   background: linear-gradient(to left, var(--fade), transparent);
 }
 
+/* The start edge is on the right when the direction is right to left. */
+.root[data-axis='horizontal'] > .fade[data-edge='start']:dir(rtl) {
+  background: linear-gradient(to left, var(--fade), transparent);
+}
+
+.root[data-axis='horizontal'] > .fade[data-edge='end']:dir(rtl) {
+  background: linear-gradient(to right, var(--fade), transparent);
+}
+
 .root[data-fade-start] > .fade[data-edge='start'],
 .root[data-fade-end] > .fade[data-edge='end'] {
   opacity: 1;

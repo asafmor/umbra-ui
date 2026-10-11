@@ -375,3 +375,6 @@ function OverflowCard() {
  * a `Menu` a submenu.
  */
 export const OverflowActions: Story = { render: () => <OverflowCard /> };
+
+/** Right to left: icons lead from the right, key hints trail on the left. */
+export const RightToLeft: Story = { ...Basic, globals: { direction: 'rtl' } };

@@ -12,15 +12,20 @@ import './preview.css';
 
 const preview: Preview = {
   parameters: { layout: 'fullscreen' },
-  initialGlobals: { density: 'default', context: 'violet' },
+  initialGlobals: { density: 'default', context: 'violet', direction: 'ltr' },
   globalTypes: {
     density: { description: 'Density level', toolbar: { title: 'Density', items: [...densities] } },
     context: { description: 'Context tint', toolbar: { title: 'Context', items: [...contextPresets] } },
+    direction: { description: 'Text direction', toolbar: { title: 'Direction', items: ['ltr', 'rtl'] } },
   },
   decorators: [
     // Every story gets the whole window, like an app does. `frame: 'padded'` adds a margin around it.
     (Story, { globals, parameters }) => (
-      <UmbraProvider density={globals.density} context={globals.context}>
+      <UmbraProvider
+        density={globals.density}
+        context={globals.context}
+        locale={globals.direction === 'rtl' ? 'he-IL' : 'en-US'}
+      >
         <div className="story-frame" data-padded={parameters.frame === 'padded' || undefined}>
           <Story />
         </div>

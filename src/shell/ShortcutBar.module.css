@@ -68,6 +68,10 @@
   transform-origin: top right;
 }
 
+.chip[data-icon-only] > [data-umbra='badge']:dir(rtl) {
+  transform-origin: top left;
+}
+
 .chip:is([data-hovered], [aria-expanded='true']) {
   background: color-mix(
     in oklab,

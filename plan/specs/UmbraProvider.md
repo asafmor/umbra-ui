@@ -36,7 +36,7 @@ Sets all `--umbra-*` variables from `tokens.json`. Any variable can be overridde
 | `shortcuts` | list of `{ id, keys, label, action?, whenTyping? }` | — | App key bindings; feeds `ShortcutsSheet`, the `CommandPalette` (`includeShortcuts`) and key hints. `keys` is written like `Mod+K` (`Mod` is Command on macOS, Ctrl elsewhere). A mounted button with `shortcut={id}` takes the key; otherwise `action` runs. While the user types in a field a bare key is ignored and a combination with Ctrl, Command or Alt works; `whenTyping` overrides that for one shortcut. |
 | `tokens` | partial token map | — | Overrides individual tokens. Keys are variable names without the `--umbra-` prefix: `{ 'radius-card': '12px' }`. |
 | `reducedMotion` | `system` \| `always` \| `never` | `system` | |
-| `locale` | string | browser | Number and date formatting, text direction |
+| `locale` | string | see "Direction" | Number and date formatting, text direction |
 
 Icon names (`IconName`). Every built-in icon the library draws comes from this map, so replacing a name here replaces it everywhere. A component's own `icon` prop or part still wins for that one place.
 
@@ -95,6 +95,19 @@ Each key combination has one owner. The same combination written two ways (`Mod+
 
 Warnings are given from an effect, never during render, and once per conflict for the life of the provider, also when the app passes a new list of the same shortcuts on every render. Text direction plays no part: keys are matched as the event reports them.
 
+### Direction
+
+One source, resolved by the provider (`src/provider/direction.ts`, unit-tested), in this order:
+
+1. The `locale` prop: its language decides the direction.
+2. Else the document's `dir` (`<html dir>` or `<body dir>`) with the browser's locale as the language.
+3. Else the browser's locale.
+
+- The root element **always** carries the resolved `dir` (and `lang` when `locale` is set). So do the scope attributes that every portal repeats: popover, menu, select list, suggestions, tooltip, modal, drawer and command palette have the same `dir` as the page.
+- React Aria reads the same locale (`I18nProvider`, always rendered), and the library's own keyboard code reads React Aria's (`src/internal/direction.ts`): PrimaryNav, SubNav, Tabs and VerticalNav move with what is drawn, so Left goes to the next item when the direction is right to left.
+- CSS uses logical properties. Where CSS has none (the side of an inset stripe, the turn of a caret), `--umbra-dir` is 1 or -1, set from `dir`. Icons that point along the line (`back`, `forward`, `chevronRight`, `panelOpen`, `panelClose`) are mirrored.
+- React Aria takes its direction from a locale only. In case 2, when the browser's locale has the other direction, the locale passed on gets a script subtag (`en-Arab-US`): right to left, and still formatted as English.
+
 ## Open questions
 
 Resolved 2026-10-11:
@@ -110,5 +123,9 @@ Resolved 2026-10-10:
 - The icon map starts with the names Milestone 0 uses and grows per milestone. The default set is `lucide-react`.
 - Milestone 1, review item 17: before, the first match in the list won silently, and a reserved key with nothing mounted stopped the search for an app shortcut on the same keys. The rules above replace that.
 - Key hints write the arrow keys as arrows (`Alt+←`).
-- Integration pass: no component imports an icon directly; all 32 names are listed under Props.
+- Integration pass: no component imports an icon directly; all 31 names are listed under Props (corrected 2026-10-11: the count was given as 32).
 - Approved after Milestone 0: the shortcut shape `{ id, keys, label, action? }`; token override keys without the `--umbra-` prefix; `brand` reads hex and `rgb()` only for the contrast calculation.
+
+Resolved 2026-10-11 (review 2):
+
+- Direction has one source and the root always carries `dir` (F8, F10, F11). Before, a browser with a right-to-left locale and no `locale` prop made React Aria run right to left while the root had no `dir`, and portals other than popovers had none.

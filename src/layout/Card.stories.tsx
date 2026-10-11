@@ -355,3 +355,6 @@ export const ContentSized: Story = {
 
 /** A card the stack has collapsed opens in a popover, which repeats the header actions above the content. */
 export const CollapsedActions: Story = { render: () => <CollapsedActionsStack /> };
+
+/** Right to left: header, actions and caret mirror. */
+export const RightToLeft: Story = { ...Variants, globals: { direction: 'rtl' } };

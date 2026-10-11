@@ -278,3 +278,6 @@ export const PartsAndBlocks: Story = {
     </Columns>
   ),
 };
+
+/** Right to left: the tabs run from the right, and the indicator sits on the selected one. */
+export const RightToLeft: Story = { ...Variants, globals: { direction: 'rtl' } };

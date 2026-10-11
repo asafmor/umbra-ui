@@ -497,3 +497,6 @@ export const Placement: Story = {
     </div>
   ),
 };
+
+/** Right to left: the caret, the clear button and the invalid icon are on the left. */
+export const RightToLeft: Story = { ...States, globals: { direction: 'rtl' } };

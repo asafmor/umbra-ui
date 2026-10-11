@@ -13,6 +13,7 @@ import {
   type ReactNode,
 } from 'react';
 import { ButtonBase } from '../basics/Button';
+import { rowKeys, useDirection } from '../internal/direction';
 import { LayoutProvider, useSlot, type SlotProps } from '../layout/useSlot';
 import { Menu } from '../overlays/Menu';
 import { Icon, IconSlot } from '../provider/icons';
@@ -190,6 +191,7 @@ function List({
 }: TabsListProps) {
   const tabs = useTabs();
   const vertical = tabs.orientation === 'vertical';
+  const direction = useDirection();
   const strip = useRef<HTMLDivElement>(null);
   const owner = useRef<HTMLSpanElement>(null);
   const indicator = useRef<HTMLSpanElement>(null);
@@ -198,7 +200,11 @@ function List({
   // tab that says whether the tabs fit.
   const shrink = useStrip(strip, vertical ? 0 : 2, count, vertical, (el) => {
     const last = el.querySelector<HTMLElement>('[data-part="tab"]:last-of-type');
-    return !!last && last.offsetLeft + last.offsetWidth > el.clientWidth + 1;
+    if (!last) return false;
+    // The last tab leaves the strip at its end: the left edge when the direction is right to left.
+    return direction === 'rtl'
+      ? last.offsetLeft < -1
+      : last.offsetLeft + last.offsetWidth > el.clientWidth + 1;
   });
   // The last step of a horizontal list: the tabs that do not fit move into a menu. The selected one stays.
   const more = useRef<HTMLSpanElement>(null);
@@ -271,7 +277,7 @@ function List({
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     const enabled = tabsIn(event.currentTarget).filter((t) => !t.disabled);
     const index = enabled.indexOf(event.target as HTMLButtonElement);
-    const [back, forward] = vertical ? ['ArrowUp', 'ArrowDown'] : ['ArrowLeft', 'ArrowRight'];
+    const [back, forward] = vertical ? ['ArrowUp', 'ArrowDown'] : rowKeys(direction);
     const next = { [back]: index - 1, [forward]: index + 1, Home: 0, End: enabled.length - 1 }[event.key];
     if (index < 0 || next === undefined) return;
     event.preventDefault();

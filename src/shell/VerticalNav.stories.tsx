@@ -214,3 +214,6 @@ export const Blocks: Story = {
     </VerticalNav.Root>
   ),
 };
+
+/** Right to left: the stripe of the current item, the carets and the rail toggle mirror. */
+export const RightToLeft: Story = { ...Default, globals: { direction: 'rtl' } };

@@ -236,3 +236,6 @@ export const IconButtonOptions: Story = {
     </div>
   ),
 };
+
+/** Right to left: icons lead from the right. */
+export const RightToLeft: Story = { ...Buttons, globals: { direction: 'rtl' } };

@@ -5,14 +5,16 @@ import {
   useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
   type CSSProperties,
   type ReactNode,
 } from 'react';
-import { I18nProvider } from 'react-aria-components';
+import { I18nProvider, useLocale } from 'react-aria-components';
 import { contextPresets, densities, fixedColours, type TokenName } from '../styles/tokens.generated';
 import { warn } from '../utils/dev';
 import { cx } from '../utils/parts';
 import { focusColourOn, mutedTextOn, textColourOn } from './contrast';
+import { resolveLocale } from './direction';
 import { defaultIcons, type IconMap } from './icons';
 import {
   formatKeys,
@@ -63,6 +65,9 @@ export interface UmbraProviderProps extends UmbraScopeProps {
 
 type ScopeAttributes = {
   'data-umbra-scope': '';
+  /** The resolved text direction and the locale, so every portal carries them too. */
+  dir?: 'ltr' | 'rtl';
+  lang?: string;
   'data-umbra-density'?: Density;
   'data-umbra-context'?: ContextPreset;
   'data-umbra-reduced-motion'?: string;
@@ -163,8 +168,22 @@ export function UmbraProvider({
   children,
   ...scope
 }: UmbraProviderProps) {
-  const motion = useMemo(() => ({ 'data-umbra-reduced-motion': reducedMotion }), [reducedMotion]);
-  const attributes = useScope({ density: 'default', context: 'violet', ...scope }, motion);
+  // Direction has one source (plan/specs/UmbraProvider.md, "Direction"): the `locale` prop, else the
+  // document's `dir`, else the browser's locale. React Aria takes its direction from a locale only, so
+  // a document direction that the browser's locale does not have is given to it as a script subtag
+  // ("en-Arab" reads right to left and still formats as English).
+  const documentDir = useSyncExternalStore(
+    noSubscription,
+    () => document.documentElement.dir || document.body.dir,
+    () => '',
+  );
+  const browser = useLocale().locale;
+  const { locale: resolved, direction } = resolveLocale(locale, documentDir, browser);
+  const extra = useMemo(
+    () => ({ 'data-umbra-reduced-motion': reducedMotion, dir: direction, lang: locale }),
+    [reducedMotion, direction, locale],
+  );
+  const attributes = useScope({ density: 'default', context: 'violet', ...scope }, extra);
 
   const [bound] = useState(() => new Map<string, () => void>());
   const registry = useMemo(() => resolveShortcuts(shortcuts), [shortcuts]);
@@ -197,37 +216,25 @@ export function UmbraProvider({
     return () => document.removeEventListener('keydown', onKeyDown);
   }, [registry, bound]);
 
-  const direction = locale ? textDirection(locale) : undefined;
-  const tree = (
-    <UmbraContext value={value}>
-      <ScopeContext value={attributes}>
-        <div
-          {...attributes}
-          data-umbra-root=""
-          lang={locale}
-          dir={direction}
-          className={cx(styles.scope, className)}
-          style={{ ...attributes.style, ...style }}
-        >
-          {children}
-        </div>
-      </ScopeContext>
-    </UmbraContext>
+  return (
+    <I18nProvider locale={resolved}>
+      <UmbraContext value={value}>
+        <ScopeContext value={attributes}>
+          <div
+            {...attributes}
+            data-umbra-root=""
+            className={cx(styles.scope, className)}
+            style={{ ...attributes.style, ...style }}
+          >
+            {children}
+          </div>
+        </ScopeContext>
+      </UmbraContext>
+    </I18nProvider>
   );
-  return locale ? <I18nProvider locale={locale}>{tree}</I18nProvider> : tree;
 }
 
-function textDirection(locale: string) {
-  try {
-    const info = new Intl.Locale(locale) as Intl.Locale & {
-      getTextInfo?: () => { direction: 'ltr' | 'rtl' };
-    };
-    return info.getTextInfo?.().direction;
-  } catch {
-    warn(`locale "${locale}" is not a valid language tag.`);
-    return undefined;
-  }
-}
+const noSubscription = () => () => {};
 
 /**
  * Internal: binds a shortcut id to a handler while the component is mounted, and returns the key hint

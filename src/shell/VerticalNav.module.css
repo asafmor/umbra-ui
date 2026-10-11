@@ -111,7 +111,7 @@
 .link[aria-current] {
   background: var(--umbra-vertical-nav-current-bg, var(--umbra-color-fixed-selected));
   color: var(--umbra-vertical-nav-current-fg, var(--umbra-color-fixed-on-selected));
-  box-shadow: inset var(--umbra-vertical-nav-stripe-width, 3px) 0 0 currentColor;
+  box-shadow: inset calc(var(--umbra-dir, 1) * var(--umbra-vertical-nav-stripe-width, 3px)) 0 0 currentColor;
   font-weight: 700;
 }
 
@@ -126,7 +126,7 @@
 
 /* A closed group that holds the current item carries the stripe, so the place is not lost. */
 .item:not([data-open]) > .link[data-holds-current] {
-  box-shadow: inset var(--umbra-vertical-nav-stripe-width, 3px) 0 0 currentColor;
+  box-shadow: inset calc(var(--umbra-dir, 1) * var(--umbra-vertical-nav-stripe-width, 3px)) 0 0 currentColor;
 }
 
 .link[aria-disabled] {
@@ -161,7 +161,7 @@
 }
 
 .item:not([data-open]) > .link > .caret {
-  rotate: -90deg;
+  rotate: calc(var(--umbra-dir, 1) * -90deg);
 }
 
 /* Items of a group line up with the label of the group. */
@@ -212,6 +212,10 @@
   inset-inline-end: 0;
   scale: 0.75;
   transform-origin: top right;
+}
+
+.root[data-collapsed] .badge:dir(rtl) {
+  transform-origin: top left;
 }
 
 .root[data-collapsed] .sectionLabel {

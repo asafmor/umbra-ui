@@ -11,6 +11,11 @@
   height: 100%;
 }
 
+/* An icon that points along the reading direction (back, forward, a submenu chevron). */
+.icon[data-mirror] {
+  scale: var(--umbra-dir, 1) 1;
+}
+
 .icon[data-spin] > * {
   animation: spin 0.9s linear infinite;
 }

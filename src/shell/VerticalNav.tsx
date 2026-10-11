@@ -13,10 +13,11 @@ import {
 import { flushSync } from 'react-dom';
 import { Focusable } from 'react-aria-components';
 import { ButtonBase } from '../basics/Button';
+import { rowKeys, useDirection } from '../internal/direction';
 import { ScrollArea } from '../layout/ScrollArea';
 import { Tooltip } from '../overlays/Tooltip';
 import { useSlot, type SlotProps } from '../layout/useSlot';
-import { Icon, IconSlot, RawIcon } from '../provider/icons';
+import { Icon, IconSlot } from '../provider/icons';
 import { cx, renderPart, type Part } from '../utils/parts';
 import type { LinkRenderProps } from '../utils/link';
 import styles from './VerticalNav.module.css';
@@ -188,10 +189,11 @@ function Footer({ className, style, children }: BlockProps) {
 /**
  * The list of items. It scrolls inside the nav when it is taller than its space. Up and Down move
  * between items, Home and End go to the ends; Right opens a group or enters it, Left closes it or
- * goes back to it.
+ * goes back to it (the other way round when the direction is right to left).
  */
 function List({ className, style, children }: BlockProps) {
   const nav = useNav();
+  const direction = useDirection();
   const onKeyDown = (event: KeyboardEvent<HTMLUListElement>) => {
     const targets = focusTargets(event.currentTarget);
     const from = document.activeElement as HTMLElement;
@@ -200,10 +202,12 @@ function List({ className, style, children }: BlockProps) {
     let next = { ArrowDown: index + 1, ArrowUp: index - 1, Home: 0, End: targets.length - 1 }[event.key];
     const group = from.dataset.groupId;
     const open = from.getAttribute('aria-expanded');
-    if (event.key === 'ArrowRight' && group !== undefined) {
+    // Towards the end of the line opens a group, towards its start closes it.
+    const [closeKey, openKey] = rowKeys(direction);
+    if (event.key === openKey && group !== undefined) {
       if (open === 'true') next = index + 1;
       else if (!from.hasAttribute('aria-disabled')) nav.expand(group, true);
-    } else if (event.key === 'ArrowLeft') {
+    } else if (event.key === closeKey) {
       if (group !== undefined && open === 'true') nav.expand(group, false);
       else {
         const parent = from.closest('[data-part="group"]')?.querySelector<HTMLElement>('[data-group-id]');
@@ -393,7 +397,7 @@ function Toggle({
         expanded={!nav.rail}
         onPress={nav.toggleRail}
       >
-        <IconSlot>{nav.rail ? <RawIcon name="panelOpen" /> : <RawIcon name="panelClose" />}</IconSlot>
+        <Icon name={nav.rail ? 'panelOpen' : 'panelClose'} />
       </ButtonBase>
     </div>
   );

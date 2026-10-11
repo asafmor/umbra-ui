@@ -197,7 +197,8 @@
 }
 
 .list[data-variant='underline'][data-orientation='vertical'] {
-  box-shadow: inset calc(-1 * var(--umbra-border-width)) 0 0 var(--umbra-color-base-border-subtle);
+  box-shadow: inset calc(var(--umbra-dir, 1) * -1 * var(--umbra-border-width)) 0 0
+    var(--umbra-color-base-border-subtle);
 }
 
 .list[data-variant='underline'] .tab {
@@ -215,7 +216,7 @@
 }
 
 .list[data-variant='underline'][data-orientation='vertical'] .indicator {
-  box-shadow: inset calc(-1 * var(--umbra-space-1)) 0 0
+  box-shadow: inset calc(var(--umbra-dir, 1) * -1 * var(--umbra-space-1)) 0 0
     var(--umbra-tabs-indicator-color, var(--umbra-color-base-text-primary));
 }
 

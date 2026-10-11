@@ -120,7 +120,7 @@
 .item[data-current] {
   background: var(--umbra-color-fixed-selected);
   color: var(--umbra-color-fixed-on-selected);
-  box-shadow: inset var(--umbra-space-1) 0 0 currentColor;
+  box-shadow: inset calc(var(--umbra-dir, 1) * var(--umbra-space-1)) 0 0 currentColor;
   font-weight: 700;
 }
 

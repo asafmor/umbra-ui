@@ -202,3 +202,6 @@ export const Pattern: Story = {
     </AppShell>
   ),
 };
+
+/** Right to left (the `locale` of the provider): the bars, the navigation and the cards mirror. */
+export const RightToLeft: Story = { ...FullScreen, globals: { direction: 'rtl' } };

@@ -6,6 +6,10 @@
   scrollbar-width: none;
 }
 
+.strip:dir(rtl) {
+  --to: left;
+}
+
 .strip[data-vertical] {
   --to: bottom;
 }

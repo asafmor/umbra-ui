@@ -71,12 +71,27 @@ export const defaultIcons = {
 } satisfies Record<string, ReactNode>;
 
 export type IconName = keyof typeof defaultIcons;
+
+/** Icons that point along the reading direction: mirrored when the direction is right to left. */
+const directional: ReadonlySet<IconName> = new Set([
+  'back',
+  'forward',
+  'chevronRight',
+  'panelClose',
+  'panelOpen',
+]);
 export type IconMap = Record<IconName, ReactNode>;
 
 /** Internal: renders a built-in icon from the provider's icon map. Decorative, so hidden from screen readers. */
 export function Icon({ name, spin, part }: { name: IconName; spin?: boolean; part?: string }) {
   return (
-    <span className={styles.icon} data-part={part} data-spin={spin || undefined} aria-hidden="true">
+    <span
+      className={styles.icon}
+      data-part={part}
+      data-spin={spin || undefined}
+      data-mirror={directional.has(name) || undefined}
+      aria-hidden="true"
+    >
       {useUmbra().icons[name]}
     </span>
   );

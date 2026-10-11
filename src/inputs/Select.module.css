@@ -294,7 +294,8 @@
   );
 
   background: var(--selected-bg);
-  box-shadow: inset var(--umbra-select-option-stripe-width, 3px) 0 var(--umbra-color-fixed-selected);
+  box-shadow: inset calc(var(--umbra-dir, 1) * var(--umbra-select-option-stripe-width, 3px)) 0
+    var(--umbra-color-fixed-selected);
 }
 
 .option[data-selected]:is([data-focused], [data-hovered]) {

@@ -193,7 +193,7 @@
 }
 
 .item:not([data-open]) > .header > .chevron {
-  rotate: -90deg;
+  rotate: calc(var(--umbra-dir, 1) * -90deg);
 }
 
 /* Step 1: a narrow section drops the meta text. */

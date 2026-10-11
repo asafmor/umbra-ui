@@ -450,3 +450,6 @@ export const Blocks: Story = {
     );
   },
 };
+
+/** Right to left: the `start` drawer is on the right, and the close button on the left. */
+export const DrawerStartRightToLeft: Story = { ...DrawerStart, globals: { direction: 'rtl' } };

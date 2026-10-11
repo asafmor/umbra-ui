@@ -53,7 +53,7 @@
 
 .skip {
   position: absolute;
-  left: var(--umbra-space-3);
+  inset-inline-start: var(--umbra-space-3);
   top: -100px;
   z-index: 10;
   padding: var(--umbra-space-3) var(--umbra-space-4);

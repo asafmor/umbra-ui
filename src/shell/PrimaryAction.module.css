@@ -56,7 +56,8 @@
   justify-content: center;
   width: var(--umbra-primary-action-caret-width, var(--umbra-density-control-height));
   background: color-mix(in oklab, var(--end), #000 var(--dark));
-  box-shadow: inset var(--umbra-border-width) 0 0 color-mix(in oklab, var(--fg) 35%, transparent);
+  box-shadow: inset calc(var(--umbra-dir, 1) * var(--umbra-border-width)) 0 0
+    color-mix(in oklab, var(--fg) 35%, transparent);
 }
 
 .caret[aria-expanded='true'] {
