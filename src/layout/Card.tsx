@@ -16,6 +16,7 @@ import { createPortal, flushSync } from 'react-dom';
 import { ButtonBase } from '../basics/Button';
 import { Skeleton } from '../basics/Skeleton';
 import { ActionsOverflow } from '../internal/ActionsOverflow';
+import { OverlayContainerContext } from '../internal/contexts';
 import { dataState, isContent, type DataStateProps } from '../internal/dataState';
 import { useNarrow } from '../internal/useNarrow';
 import { useShrinkLevel } from '../internal/useShrinkLevel';
@@ -305,17 +306,19 @@ function Root({
           <CardContext value={card}>{children}</CardContext>
         </LayoutProvider>
         {collapsedBy === 'layout' && PopoverContent && (
-          <PopoverContent
-            // Named like the card: its title as text (the tab label), or the card's own name.
-            aria-label={slot.label ?? ariaLabel ?? expandLabel}
-            anchorRef={header}
-            open={popoverOpen}
-            onOpenChange={setPopoverOpen}
-            matchAnchorWidth
-            className={styles.popover}
-          >
-            <div ref={setPopover} className={styles.popoverContent} />
-          </PopoverContent>
+          <PopoverHome card={ref}>
+            <PopoverContent
+              // Named like the card: its title as text (the tab label), or the card's own name.
+              aria-label={slot.label ?? ariaLabel ?? expandLabel}
+              anchorRef={header}
+              open={popoverOpen}
+              onOpenChange={setPopoverOpen}
+              matchAnchorWidth
+              className={styles.popover}
+            >
+              <div ref={setPopover} className={styles.popoverContent} />
+            </PopoverContent>
+          </PopoverHome>
         )}
       </section>
     </HeaderRefContext>
@@ -486,11 +489,9 @@ function Header({
             !layoutCollapsed &&
             renderPart(parts?.actions, { children: actions }, (p) => (
               <Actions>
-                {gone('actions') ? (
-                  <ActionsOverflow label={moreLabel}>{p.children}</ActionsOverflow>
-                ) : (
-                  p.children
-                )}
+                <ActionsOverflow shrunk={gone('actions')} label={moreLabel}>
+                  {p.children}
+                </ActionsOverflow>
               </Actions>
             ))}
         </>
@@ -519,6 +520,21 @@ function keepScroll(node: HTMLElement) {
       el.scrollLeft = left;
     }
   };
+}
+
+/**
+ * Where the popover of a layout-collapsed card is rendered. The card's body is moved into it as it is
+ * (the same elements), and React only hears what happens in them while they are inside the element
+ * React renders the card into. Rendered into `<body>`, as overlays are, the popover would be outside
+ * that element: nothing in the moved body would answer a press or a key. So it is rendered into the
+ * provider's root element, which is inside. Inside a modal the popover goes into the modal, as every
+ * overlay does, and the modal is where the card is rendered: nothing to change there.
+ */
+function PopoverHome({ card, children }: { card: RefObject<Element | null>; children: ReactNode }) {
+  const inModal = useContext(OverlayContainerContext);
+  // Mounted when the layout collapses the card, so the card's element is there to ask.
+  const [root] = useState(() => card.current?.closest<HTMLElement>('[data-umbra-root]') ?? null);
+  return <OverlayContainerContext value={inModal ?? root}>{children}</OverlayContainerContext>;
 }
 
 /**
