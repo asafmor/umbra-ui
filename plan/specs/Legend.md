@@ -72,7 +72,7 @@ Pairs that are not neighbours can be close (1 blue ↔ 7 violet is 0.5 for deuta
 
 ### 1. Tokens
 
-`--umbra-legend-fg`, `--umbra-legend-value-fg`, `--umbra-legend-font`, `--umbra-legend-gap`, `--umbra-legend-row-height` (follows the density level), `--umbra-legend-row-gap`, `--umbra-legend-item-radius`, `--umbra-series-marker-size`. The palette is the global `--umbra-color-series-1` … `-8`.
+`--umbra-legend-fg`, `--umbra-legend-value-fg`, `--umbra-legend-font`, `--umbra-legend-gap`, `--umbra-legend-row-height` (follows the density level), `--umbra-legend-row-gap`, `--umbra-legend-item-radius`, `--umbra-legend-focus-offset` (the ring offset of the items and the more button, inwards by default because the legend clips), `--umbra-series-marker-size`. The palette is the global `--umbra-color-series-1` … `-8`.
 
 ### 2. Props
 
@@ -86,7 +86,7 @@ Pairs that are not neighbours can be close (1 blue ↔ 7 violet is 0.5 for deuta
 | `hiddenIds` / `defaultHiddenIds` / `onHiddenChange` | string[] / string[] / function | — / `[]` / — | Controlled or uncontrolled set of switched-off items |
 | `onHighlight` | `(id \| null) => void` | — | The item under the pointer or with focus |
 | `maxRows` | number | `2` | Rows a horizontal legend may wrap to |
-| `loading` | boolean | `false` | Shows placeholder items |
+| `loading` / `empty` / `error` / `onRetry` / `retryLabel` | the shared data states (`src/internal/dataState.tsx`) | empty text "No items"; `retryLabel` "Try again" | Placeholder items while loading; the empty and error states on one line (`EmptyState`, `inline`) |
 | `skeletonRows` | number | `3` | Number of placeholders |
 | `moreLabel` | `(count) => string` | "+N more" | Text of the more button |
 | `allLabel` | string | "All items" | Accessible name of the popover with the full list |
@@ -94,7 +94,7 @@ Pairs that are not neighbours can be close (1 blue ↔ 7 violet is 0.5 for deuta
 
 ### 3. Parts
 
-`item`, `marker`, `label`, `value`, `more`, `skeleton`. Each accepts a node (replace), `null` (hide) or a function receiving the default part's props.
+`item`, `marker`, `label`, `value`, `more`, `skeleton`, `state` (the empty or error state). Each accepts a node (replace), `null` (hide) or a function receiving the default part's props.
 
 ### 4. Blocks
 
@@ -106,7 +106,7 @@ Pairs that are not neighbours can be close (1 blue ↔ 7 violet is 0.5 for deuta
 |---|---|---|
 | 1 | Horizontal: the items are wider than the legend | They wrap, up to `maxRows` rows |
 | 2 | Horizontal: they need more than `maxRows` rows | Items are hidden from the end, and a "+N more" button takes their place. It opens the full list, vertical, in a popover. When the legend grows, items come back. |
-| 3 | An item is wider than the legend | Its label truncates with an ellipsis (the full text is its tooltip); the marker and the value keep their size |
+| 3 | An item is wider than the legend | Its label truncates with an ellipsis, and the whole text is shown in the library tooltip: on hover, and when its toggle button has keyboard focus (interactive). The marker and the value keep their size. |
 
 A vertical legend is as tall as its items; a parent that is too short scrolls it (a `Card` body does).
 
@@ -121,11 +121,22 @@ A vertical legend is as tall as its items; a parent that is too short scrolls it
 - Markers are decorative (`aria-hidden`); the label carries the name.
 - The more button opens a dialog named by `allLabel`; `Escape` closes it and returns focus to the button. The list in it shows and changes the same switched-off set.
 - Focus rings are drawn inwards, because the legend clips to its rows.
-- Loading sets `aria-busy`; the placeholders are hidden from assistive technology.
+- Loading sets `aria-busy`; the placeholders are hidden from assistive technology (`aria-hidden`), so the legend is announced as busy and not as a list of empty items.
+- The error state has `role="alert"`. The legend is one element through error, loading and data, so after Retry the focus stays in it (plan/interaction.md, "Loading, empty, error").
+- In a legend that is not interactive an item cannot take the focus, so a truncated label's tooltip is for the pointer only there; assistive technology reads the whole label either way.
+- In a right-to-left page the left arrow moves to the next item.
 
 ## Open questions
 
 None.
+
+Resolved 2026-10-11 (review fixes):
+
+- **Empty and error states** (review A1/B8; revisits the decision below). A legend holds a data set, so by the rule in plan/interaction.md it has all three states through the shared helper. With no items it now shows "No items" where it rendered nothing; an app that wants nothing does not render the legend. The charts are not affected: they do not draw their legend while they are empty or in error.
+- The placeholders and the states are children of the element the items will be in (the list, or the toolbar when `interactive`), so the root is never replaced.
+- The label's native `title` is replaced by the library tooltip (review B16).
+- The more button's wrapper carries `data-part="more"`, and each placeholder `data-part="skeleton"`.
+- Hover and press use the global mix steps. The callback stays `onHiddenChange` (plan/decisions/07-customisation.md).
 
 Resolved 2026-10-11:
 
@@ -141,6 +152,6 @@ Resolved 2026-10-10:
 - `value` is shown in both orientations; it is a column only when vertical.
 - `maxRows` defaults to 2. Only a horizontal legend collapses.
 - The more popover is the internal one; the public `Popover` replaces it in a later batch.
-- A `loading` state exists (a chart's legend loads with it). There is no empty or error state of its own: with no items it renders nothing, and the chart or card around it shows those states.
+- A `loading` state exists (a chart's legend loads with it). ~~There is no empty or error state of its own: with no items it renders nothing.~~ Replaced 2026-10-11, see above.
 - Labels are in the secondary text colour, never in the series colour, so they keep their contrast.
 - No built-in dimming of the other items on highlight: the app decides what a highlight means and can style items by `id`.

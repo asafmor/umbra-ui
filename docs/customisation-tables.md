@@ -166,7 +166,7 @@ A count or a dot, alone or on the corner of another element.
 
 A message band inside a card or page: a notice, a warning, or an insight about the data beside it.
 
-**Tokens**: `--umbra-banner-accent-color`, `--umbra-banner-bg`, `--umbra-banner-border`, `--umbra-banner-danger-color`, `--umbra-banner-fg`, `--umbra-banner-icon-color`, `--umbra-banner-info-color`, `--umbra-banner-neutral-color`, `--umbra-banner-padding-x`, `--umbra-banner-padding-y`, `--umbra-banner-radius`, `--umbra-banner-row-height`, `--umbra-banner-solid-fg`, `--umbra-banner-stripe-width`, `--umbra-banner-subtle-strength`, `--umbra-banner-success-color`, `--umbra-banner-warning-color`, `--umbra-icon-size`.
+**Tokens**: `--umbra-banner-accent-color`, `--umbra-banner-bg`, `--umbra-banner-border`, `--umbra-banner-danger-color`, `--umbra-banner-dismiss-size`, `--umbra-banner-fg`, `--umbra-banner-focus-color`, `--umbra-banner-focus-offset`, `--umbra-banner-icon-color`, `--umbra-banner-info-color`, `--umbra-banner-neutral-color`, `--umbra-banner-padding-x`, `--umbra-banner-padding-y`, `--umbra-banner-radius`, `--umbra-banner-row-height`, `--umbra-banner-solid-fg`, `--umbra-banner-stripe-width`, `--umbra-banner-subtle-strength`, `--umbra-banner-success-color`, `--umbra-banner-warning-color`, `--umbra-icon-size`.
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -208,8 +208,8 @@ Compares values across categories: grouped, stacked or diverging around zero, up
 | `empty` | `ReactNode \| import("../internal/dataState").DataStateContent` | Shown when there is no data: text, a node, or `{ title, description, icon, action }`. Defaults to a short English text. |
 | `error` | `ReactNode \| import("../internal/dataState").DataStateContent` | Shown in place of the data when set: text, a node, `{ title, description, icon, action }`, or `true` for a default text. |
 | `variant` | `"stacked" \| "grouped" \| "diverging"` | `grouped`: the series side by side. `stacked`: on top of each other. `diverging`: every second series is drawn on the other side of zero, with all values shown as positive. |
-| `orientation` | `"vertical" \| "horizontal"` | `horizontal` puts the categories on the left and draws the bars sideways. |
 | `loading` | `boolean` | Shows skeletons in the final layout and marks the component busy. |
+| `orientation` | `"vertical" \| "horizontal"` | `horizontal` puts the categories on the left and draws the bars sideways. |
 | `hiddenIds` | `readonly string[]` | Ids of the series that are switched off (controlled). |
 | `defaultHiddenIds` | `readonly string[]` |  |
 | `onHiddenChange` | `((hiddenIds: string[]) => void)` |  |
@@ -681,7 +681,7 @@ Pairs a label, a description and an error message with one control: a row of a f
 
 A header row for one group of rows inside a list or table.
 
-**Tokens**: `--umbra-group-header-bg`, `--umbra-group-header-color`, `--umbra-group-header-font`, `--umbra-group-header-height`, `--umbra-group-header-padding-x`.
+**Tokens**: `--umbra-group-header-bg`, `--umbra-group-header-color`, `--umbra-group-header-focus-offset`, `--umbra-group-header-font`, `--umbra-group-header-height`, `--umbra-group-header-padding-x`.
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -835,13 +835,12 @@ A group of labels with their values, in rows, columns or a grid.
 
 The key for a chart or any colour-coded data: one marker and label per series.
 
-**Tokens**: `--umbra-focus-color`, `--umbra-focus-offset`, `--umbra-legend-fg`, `--umbra-legend-font`, `--umbra-legend-gap`, `--umbra-legend-item-radius`, `--umbra-legend-row-gap`, `--umbra-legend-row-height`, `--umbra-legend-value-fg`, `--umbra-series-marker-size`.
+**Tokens**: `--umbra-focus-color`, `--umbra-focus-offset`, `--umbra-legend-fg`, `--umbra-legend-focus-offset`, `--umbra-legend-font`, `--umbra-legend-gap`, `--umbra-legend-item-radius`, `--umbra-legend-row-gap`, `--umbra-legend-row-height`, `--umbra-legend-value-fg`, `--umbra-series-marker-size`.
 
 | Prop | Type | Purpose |
 |---|---|---|
 | `items` (required) | `LegendItem[]` |  |
 | `marker` | `SeriesMarkerKind` | The marker of every item that does not set its own. Patterns (`stripes`, `dots`) do not depend on colour. |
-| `loading` | `boolean` | Shows placeholder items while the data loads. |
 | `skeletonRows` | `number` | Number of placeholder items while `loading`. |
 | `moreLabel` | `((count: number) => string)` | Text of the button that stands for the items that did not fit. |
 | `allLabel` | `string` | Accessible name of the popover with the full list. |
@@ -857,8 +856,13 @@ The key for a chart or any colour-coded data: one marker and label per series.
 | `hiddenIds` | `readonly string[]` | Ids of the items that are switched off (controlled). |
 | `defaultHiddenIds` | `readonly string[]` |  |
 | `onHiddenChange` | `((hiddenIds: string[]) => void)` |  |
+| `loading` | `boolean` | Shows skeletons in the final layout and marks the component busy. |
+| `empty` | `ReactNode \| import("../internal/dataState").DataStateContent` | Shown when there is no data: text, a node, or `{ title, description, icon, action }`. Defaults to a short English text. |
+| `error` | `ReactNode \| import("../internal/dataState").DataStateContent` | Shown in place of the data when set: text, a node, `{ title, description, icon, action }`, or `true` for a default text. |
+| `onRetry` | `(() => void)` | Adds a retry button to the error state. |
+| `retryLabel` | `string` | Label of the retry button. |
 
-**Parts**: `item`, `marker`, `label`, `value`, `more`, `skeleton`.
+**Parts**: `item`, `marker`, `label`, `value`, `more`, `skeleton`, `state`.
 
 **Blocks**: `Legend.Root`, `Legend.Item`, `Legend.Marker`, `Legend.More`.
 
@@ -881,13 +885,13 @@ A strip of ticks with a marker that shows where a value sits on a scale.
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
 | `tone` | `MeterTone` | Colour of the marker, when no zone or level sets it. |
-| `orientation` | `"vertical" \| "horizontal"` |  |
 | `loading` | `boolean` | Shows skeletons in place of the ticks and the value. |
+| `orientation` | `"vertical" \| "horizontal"` |  |
 | `size` | `"default" \| "small" \| "large"` |  |
+| `emptyLabel` | `ReactNode` | Shown in place of the value text when there is no value, or the value names no level. |
 | `min` | `number` |  |
 | `max` | `number` |  |
 | `formatValue` | `((value: number) => string)` | Text of a position on a numeric scale. A named scale uses the labels of its levels. |
-| `emptyLabel` | `ReactNode` | Shown in place of the value text when there is no value, or the value names no level. |
 | `noValueLabel` | `string` | What assistive technology and the tooltip say when there is no value and no range. |
 | `tooltip` | `boolean` | `false` turns off the tooltip that shows the exact value on hover. |
 | `steps` | `number` | Number of ticks on a numeric scale. |
@@ -982,7 +986,7 @@ A text link: inside a sentence, or on its own line as the way to a fuller view.
 
 A vertical list of rows that scrolls inside its slot, with optional groups, selection and row actions.
 
-**Tokens**: `--umbra-focus-color`, `--umbra-list-divider-color`, `--umbra-list-number-width`, `--umbra-list-stripe-bg`.
+**Tokens**: `--umbra-focus-color`, `--umbra-group-header-bg`, `--umbra-group-header-height`, `--umbra-list-divider-color`, `--umbra-list-number-width`, `--umbra-list-stripe-bg`.
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -1000,7 +1004,7 @@ A vertical list of rows that scrolls inside its slot, with optional groups, sele
 | `dividers` | `boolean` | A line between rows. |
 | `striped` | `boolean` | A faint fill on every other row. |
 | `numbered` | `boolean` | Shows each row's position, for a ranking. |
-| `itemVariant` | `"message" \| "default"` | Default `variant` of every `List.Item`, and the layout of the skeleton rows. |
+| `itemVariant` | `"message" \| "default" \| "pair"` | Default `variant` of every `List.Item`, and the layout of the skeleton rows. |
 | `itemSize` | `"compact" \| "default"` | Default `size` of every `List.Item`, and of the skeleton rows. |
 | `stickyHeaders` | `boolean` | Group headers stick to the top while their group scrolls. |
 | `skeletonRows` | `number` | Number of skeleton rows shown while `loading`. |
@@ -1027,12 +1031,15 @@ A vertical list of rows that scrolls inside its slot, with optional groups, sele
 
 The content of one row of a list: a title with optional lines, and leading and trailing pieces.
 
-**Tokens**: `--umbra-focus-color`, `--umbra-list-item-bg`, `--umbra-list-item-color`, `--umbra-list-item-gap`, `--umbra-list-item-hover-bg`, `--umbra-list-item-min-height`, `--umbra-list-item-padding-x`, `--umbra-list-item-padding-y`, `--umbra-list-item-read-color`, `--umbra-list-item-secondary-color`, `--umbra-list-item-selected-bg`, `--umbra-list-item-selected-stripe`, `--umbra-list-item-stripe-width`, `--umbra-list-item-title-font`, `--umbra-list-item-unread-color`.
+**Tokens**: `--umbra-focus-color`, `--umbra-list-item-bg`, `--umbra-list-item-center-bg`, `--umbra-list-item-color`, `--umbra-list-item-focus-offset`, `--umbra-list-item-gap`, `--umbra-list-item-hover-bg`, `--umbra-list-item-min-height`, `--umbra-list-item-padding-x`, `--umbra-list-item-padding-y`, `--umbra-list-item-read-color`, `--umbra-list-item-secondary-color`, `--umbra-list-item-selected-bg`, `--umbra-list-item-selected-stripe`, `--umbra-list-item-stripe-width`, `--umbra-list-item-title-font`, `--umbra-list-item-unread-color`.
 
 | Prop | Type | Purpose |
 |---|---|---|
 | `title` | `ReactNode` | The main line. Truncates last. |
 | `description` | `ReactNode` | A second line under the title. |
+| `descriptionLines` | `number` | The most lines the description wraps to, for a row that holds a paragraph beside an icon or image. |
+| `opposite` | `{ title: ReactNode; leading?: ReactNode; meta?: ReactNode; }` | The second side of a two-sided row: `title`, `leading` and `meta` are the first side, and these mirror them on the other side of `center`. Sets the `pair` variant. |
+| `center` | `ReactNode` | What stands between the two sides of a `pair` row: a short text or an icon. |
 | `overline` | `ReactNode` | A small line above the title, for example a sender. |
 | `leading` | `ReactNode` | Leading node: an avatar or icon. |
 | `meta` | `ReactNode` | Trailing text, for example a time or a value. |
@@ -1045,7 +1052,7 @@ The content of one row of a list: a title with optional lines, and leading and t
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
 | `accent` | `string` | A colour for an edge stripe that carries a category. Give `accentLabel` too, so it is not colour alone. |
-| `variant` | `"message" \| "default"` | `message`: sender and tag on the first line, title and time on the second. |
+| `variant` | `"message" \| "default" \| "pair"` | `message`: sender and tag on the first line, title and time on the second. `pair`: two sides that mirror each other around a centre (set by `opposite`). |
 | `interactive` | `boolean` | Shows hover and press feedback. Set by `List`, and by `href` or `onPress`. |
 | `size` | `"compact" \| "default"` | `compact` is one control high, for leaderboards and short lists. Otherwise the height follows the density level. |
 | `selected` | `boolean` | Violet fill with an edge stripe. Inside a `List`, selection sets it. |
@@ -1056,9 +1063,9 @@ The content of one row of a list: a title with optional lines, and leading and t
 | `increasedLabel` | `string` | What a screen reader hears with the sign of a value that rose or fell. |
 | `decreasedLabel` | `string` |  |
 
-**Parts**: `leading`, `overline`, `title`, `description`, `meta`, `unread`, `trailing`.
+**Parts**: `leading`, `overline`, `title`, `description`, `meta`, `opposite`, `center`, `unread`, `trailing`.
 
-**Blocks**: `ListItem.Root`, `ListItem.Leading`, `ListItem.Content`, `ListItem.Overline`, `ListItem.Title`, `ListItem.Description`, `ListItem.End`, `ListItem.Meta`, `ListItem.Unread`, `ListItem.Trailing`.
+**Blocks**: `ListItem.Root`, `ListItem.Leading`, `ListItem.Content`, `ListItem.Overline`, `ListItem.Title`, `ListItem.Description`, `ListItem.End`, `ListItem.Side`, `ListItem.Center`, `ListItem.Meta`, `ListItem.Unread`, `ListItem.Trailing`.
 
 ## Menu
 
@@ -1307,6 +1314,7 @@ A bar that fills with a value: progress of a task, or a measured level. Fills th
 | `loading` | `boolean` | Shows skeletons in place of the bar and the value. |
 | `size` | `"default" \| "thin" \| "thick"` |  |
 | `layout` | `"block" \| "inline"` | `inline` puts the label, the bar and the value on one line, for table cells and rows. |
+| `emptyLabel` | `ReactNode` | Shown in place of the value text when there is no value. |
 | `min` | `number` |  |
 | `max` | `number` |  |
 | `kind` | `"progress" \| "meter"` | `progress` for a task that advances (`role="progressbar"`), `meter` for a measured level (`role="meter"`). |
@@ -1317,7 +1325,6 @@ A bar that fills with a value: progress of a task, or a measured level. Fills th
 | `target` | `number` | Draws a tick at a goal value. |
 | `targetLabel` | `string` | Names the target for assistive technology. |
 | `formatValue` | `((value: number, scale: ProgressBarScale) => string)` | Text of a value. The default is a rounded percentage. |
-| `emptyLabel` | `ReactNode` | Shown in place of the value text when there is no value. |
 | `noValueLabel` | `string` | What assistive technology and the tooltip say when there is no value. |
 | `tooltip` | `boolean` | `false` turns off the tooltip that shows the exact value on hover. |
 | `highlightChanges` | `boolean` | A changed value flashes softly once: green when a number rose, red when it fell, neutral otherwise. A sign shows the direction without colour. No flash under reduced motion; the sign stays. The value is never counted up or down. |

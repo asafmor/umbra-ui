@@ -10,6 +10,8 @@ import { Log } from '../stories/placeholders';
 import { GroupHeader } from './GroupHeader';
 import { List, type ListId } from './List';
 import { ListItem } from './ListItem';
+import { Banner } from './Banner';
+import { Legend } from './Legend';
 import { Chip, days, Dot, ranking, type Message } from './samples';
 
 const meta = {
@@ -62,7 +64,10 @@ function InboxCard() {
   );
 }
 
-/** A grouped message list: sticky date headers, single selection, and Enter or a double click to open. */
+/**
+ * A grouped message list: sticky date headers, single selection, and Enter or a double click to open.
+ * Beside it, groups that collapse: the arrow keys and Tab reach each caret and header action.
+ */
 export const Inbox: Story = {
   render: () => (
     <Columns style={{ height: '100%' }}>
@@ -76,6 +81,7 @@ export const Inbox: Story = {
             count: day.items.length,
             collapsible: true,
             defaultCollapsed: i === 1,
+            actions: i === 2 ? <Button size="small">Archive</Button> : undefined,
           }))}
           renderItem={messageRow}
         />
@@ -147,6 +153,105 @@ function ActionsCard() {
     </Card>
   );
 }
+
+function ReplaceCard() {
+  const [selected, setSelected] = useState<ListId[]>(['r2']);
+  return (
+    <Card
+      title="Multiple, replace"
+      padding="none"
+      parts={{
+        footer: (
+          <Card.Footer>
+            <Log>Selected: {selected.join(', ') || 'none'}</Log>
+          </Card.Footer>
+        ),
+      }}
+    >
+      <List
+        aria-label="Regions to compare"
+        itemSize="compact"
+        selectionMode="multiple"
+        selectionBehavior="replace"
+        selectedIds={selected}
+        onSelectionChange={setSelected}
+      >
+        {ranking.slice(0, 6).map((r) => (
+          <List.Item key={r.id} id={r.id} title={r.name} meta={r.owner} />
+        ))}
+      </List>
+    </Card>
+  );
+}
+
+/**
+ * `multiple` with `replace`: a click or an arrow key selects one row and drops the others, as in a file
+ * manager; Shift extends the selection to a range and Ctrl (Cmd) adds or removes one row.
+ */
+export const ReplaceSelection: Story = {
+  render: () => (
+    <Columns style={{ height: '100%' }}>
+      <ReplaceCard />
+    </Columns>
+  ),
+};
+
+/**
+ * Right to left: the selection and accent stripes, the numbers and the avatars are at the leading
+ * (right) edge, a collapsed caret points left, and the arrow keys of a legend follow the reading order.
+ */
+export const RightToLeft: Story = {
+  globals: { direction: 'rtl' },
+  render: () => (
+    <Columns style={{ height: '100%' }}>
+      <Card title="Selection and accent" padding="none">
+        <List aria-label="Messages" selectionMode="single" defaultSelectedIds={['b']}>
+          <List.Group title="Today" collapsible count={3} actions={<Button size="small">Archive</Button>}>
+            <List.Item id="a" leading={<Dot />} title="Item 1" description="Not selected" meta="12:40" />
+            <List.Item id="b" leading={<Dot />} title="Item 2" description="Selected" meta="11:05" />
+            <List.Item
+              id="c"
+              title="Item 3"
+              description="A stripe that carries a category"
+              accent="var(--umbra-color-semantic-warning)"
+              accentLabel="Category: review"
+            />
+          </List.Group>
+          <List.Group title="Earlier" collapsible defaultCollapsed count={1}>
+            <List.Item id="d" title="Item 4" />
+          </List.Group>
+        </List>
+      </Card>
+      <Stack>
+        <Card title="Ranking and pair" padding="none">
+          <List aria-label="Ranking" numbered itemSize="compact">
+            <List.Item id="a" title="Region 1" meta={96} />
+            <List.Item id="b" title="Region 2" meta={89} />
+            <List.Item
+              id="c"
+              title="Region 3"
+              meta="42"
+              center="to"
+              opposite={{ title: 'Region 4', meta: '38' }}
+            />
+          </List>
+        </Card>
+        <Card title="Legend and banner">
+          <div style={{ display: 'grid', gap: 12 }}>
+            <Legend
+              aria-label="Regions"
+              interactive
+              items={[1, 2, 3].map((n) => ({ id: `s${n}`, label: `Region ${n}` }))}
+            />
+            <Banner emphasis="insight" tone="success" title="An insight" dismissible live="off">
+              The stripe is at the leading edge.
+            </Banner>
+          </div>
+        </Card>
+      </Stack>
+    </Columns>
+  ),
+};
 
 /** A numbered, striped ranking from `items`; multiple selection; and rows that hold their own controls. */
 export const Rows: Story = {

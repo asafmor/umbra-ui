@@ -31,7 +31,7 @@
   counter-increment: umbra-list-item;
 }
 
-.item:is([data-href], [data-selection-mode]) {
+.item:is([data-href], [data-selection-mode]):not([data-disabled]) {
   cursor: pointer;
 }
 
@@ -49,8 +49,9 @@
     var(--umbra-list-divider-color, var(--umbra-color-base-border-subtle));
 }
 
+/* Drawn on the row around the item, so the item's own `--umbra-list-item-bg` stays the app's to set. */
 .root[data-striped] .item:nth-child(odd) {
-  --umbra-list-item-bg: var(
+  background: var(
     --umbra-list-stripe-bg,
     color-mix(in srgb, var(--umbra-color-base-text-primary) var(--umbra-state-stripe-strength), transparent)
   );
@@ -72,4 +73,17 @@
   position: sticky;
   top: 0;
   z-index: 2;
+}
+
+/* A stuck header covers the rows that scroll under it, also a `plain` one, which has no fill of its own. */
+.groupRow[data-sticky] [data-umbra='group-header'][data-variant='plain'] {
+  background: var(--umbra-group-header-bg, var(--umbra-context-card-tint));
+}
+
+/* A row brought into view (by the arrow keys) stops below the stuck header, not under it. */
+.group:has(> .groupRow[data-sticky]) .item {
+  scroll-margin-top: var(
+    --umbra-group-header-height,
+    calc(var(--umbra-density-table-row) + var(--umbra-space-2))
+  );
 }

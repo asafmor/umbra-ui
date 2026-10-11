@@ -1,4 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
+import { contrast, pixels } from './pixels';
 
 // Banner and Legend: keyboard, focus, roles, and each step of "show less as it narrows".
 const open = async (page: Page, id: string, width = 1280, height = 720) => {
@@ -297,10 +298,187 @@ test.describe('Legend', () => {
     });
     expect(colours).toEqual(tokens);
   });
+});
 
-  test('loading marks the legend busy, and a legend without items renders nothing', async ({ page }) => {
+// --- Review fixes, 2026-10-11 -------------------------------------------------------------------------
+
+test.describe('Banner: focus, one line, steps', () => {
+  test('in a solid banner the focus ring of an action lies on the fill, with 3:1 against it', async ({
+    page,
+  }) => {
+    await open(page, 'data-banner--content');
+    const solid = page.locator('[data-umbra="banner"][data-variant="solid"]').first();
+    const action = solid.getByRole('button').first();
+    // Reached with the keyboard, so the ring shows.
+    await action.focus();
+    await page.keyboard.press('Shift+Tab');
+    await page.keyboard.press('Tab');
+    await expect(action).toBeFocused();
+    const ring = await action.evaluate((el) => {
+      const style = getComputedStyle(el);
+      const reach = parseFloat(style.outlineOffset) + parseFloat(style.outlineWidth);
+      const r = el.getBoundingClientRect();
+      const b = el.closest('[data-umbra="banner"]')!.getBoundingClientRect();
+      return {
+        inside: r.top - reach >= b.top && r.bottom + reach <= b.bottom && r.left - reach >= b.left,
+        // The middle of the ring's top edge, and the fill just inside the banner's start edge.
+        onRing: [r.left + r.width / 2, r.top - reach + 0.5] as [number, number],
+        onFill: [b.left + 4, b.top + b.height / 2] as [number, number],
+      };
+    });
+    expect(ring.inside).toBe(true);
+    const [edge, fill] = await pixels(page, [ring.onRing, ring.onFill]);
+    expect(contrast(edge!, fill!)).toBeGreaterThanOrEqual(3);
+  });
+
+  test('the ring of the dismiss button is drawn inside it, so it stays in the banner', async ({ page }) => {
+    await open(page, 'data-banner--dismissal');
+    await page.keyboard.press('Tab');
+    const dismiss = page.getByRole('button', { name: 'Dismiss', exact: true });
+    await expect(dismiss).toBeFocused();
+    expect(await dismiss.evaluate((el) => parseFloat(getComputedStyle(el).outlineOffset))).toBeLessThan(0);
+  });
+
+  test('after a dismissal the focus goes to the next control, or the one before, not to the page', async ({
+    page,
+  }) => {
+    await open(page, 'data-banner--dismissal');
+    await page.keyboard.press('Tab');
+    await page.keyboard.press('Enter');
+    await expect(banner(page, 'It hides itself')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Close the warning' })).toBeFocused();
+    // Controlled, and the app removes it: the same.
+    await page.keyboard.press('Enter');
+    await expect(banner(page, 'The app decides')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Show the controlled banner' })).toBeFocused();
+  });
+
+  test('a compact banner with actions is one line at every width', async ({ page }) => {
+    await open(page, 'data-banner--shrink');
+    const holder = page.locator('[data-width="200"]:has([data-compact])');
+    const compact = holder.locator('[data-umbra="banner"]');
+    const wide = (await box(compact)).height;
+    for (const width of [140, 110, 100, 80, 60]) {
+      await holder.evaluate((el, w) => (el.style.width = `${w}px`), width);
+      expect((await box(compact)).height, `${width}px`).toBe(wide);
+      expect(await compact.evaluate((el) => el.scrollWidth <= el.clientWidth), `${width}px`).toBe(true);
+    }
+  });
+
+  test('the steps are at 26em and 14em of the content box (416 and 224px at the default density)', async ({
+    page,
+  }) => {
+    await open(page, 'data-banner--shrink');
+    const holder = page.locator('[data-width="520"]');
+    const root = holder.locator('[data-umbra="banner"]');
+    // Padding and border on both sides: what the outer width has more than the content box.
+    const extra = await root.evaluate((el) => {
+      const s = getComputedStyle(el);
+      return (
+        parseFloat(s.paddingLeft) +
+        parseFloat(s.paddingRight) +
+        parseFloat(s.borderLeftWidth) +
+        parseFloat(s.borderRightWidth)
+      );
+    });
+    const state = async (content: number) => {
+      await holder.evaluate((el, w) => (el.style.width = `${w}px`), content + extra);
+      return {
+        below: await root
+          .locator('[data-part="actions"]')
+          .evaluate((el) => getComputedStyle(el).order === '1'),
+        icon: await root.locator('[data-part="icon"]').isVisible(),
+      };
+    };
+    expect(await state(417)).toEqual({ below: false, icon: true });
+    expect(await state(416)).toEqual({ below: true, icon: true });
+    expect(await state(225)).toEqual({ below: true, icon: true });
+    expect(await state(224)).toEqual({ below: true, icon: false });
+  });
+});
+
+test.describe('Legend: states, names, tooltip', () => {
+  test('empty and error are the shared states; loading hides its placeholders from assistive technology', async ({
+    page,
+  }) => {
     await open(page, 'data-legend--loading');
-    await expect(page.locator('[data-umbra="legend"][aria-busy="true"]')).toHaveCount(2);
-    await expect(page.locator('[data-umbra="legend"]')).toHaveCount(3);
+    const busy = page.locator('[data-umbra="legend"][aria-busy="true"]');
+    await expect(busy).toHaveCount(2);
+    await expect(busy.first().getByRole('listitem')).toHaveCount(0);
+    await expect(busy.first().locator('[data-part="skeleton"]')).toHaveCount(3);
+    await expect(busy.first().locator('[data-part="skeleton"]').first()).toHaveAttribute(
+      'aria-hidden',
+      'true',
+    );
+    // A placeholder's marker is as large as a real one, so nothing moves when the items arrive.
+    const size = (target: Locator) => target.evaluate((el) => Math.round(el.getBoundingClientRect().width));
+    expect(await size(busy.first().locator('[data-shape="circle"]').first())).toBe(
+      await size(page.locator('[data-umbra="legend"]:not([aria-busy]) [data-part="marker"]').first()),
+    );
+
+    await expect(page.locator('[data-umbra="legend"] [data-part="empty"]').first()).toHaveText('No items');
+    await expect(page.getByText('Choose a region to compare.')).toBeVisible();
+    await expect(page.getByRole('alert').first()).toHaveText('Something went wrong');
+    await expect(page.getByText('Nothing to compare yet.')).toBeVisible();
+  });
+
+  test('Retry keeps the focus in the legend through loading, and the items arrive in the same element', async ({
+    page,
+  }) => {
+    await open(page, 'data-legend--loading');
+    const legend = page.locator('[data-umbra="legend"][aria-label="Retried legend"]');
+    await expect(legend.getByRole('alert')).toContainText('The series did not load');
+    const inLegend = () =>
+      page.evaluate(() =>
+        document.activeElement?.closest('[data-umbra="legend"]')?.getAttribute('aria-label'),
+      );
+    // Keys only: the retry button is the last control before the story's own button.
+    const finish = page.getByRole('button', { name: 'Fail again' });
+    await finish.focus();
+    await page.keyboard.press('Shift+Tab');
+    await expect(legend.getByRole('button', { name: 'Try again' })).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(legend).toHaveAttribute('aria-busy', 'true');
+    await expect.poll(inLegend).toBe('Retried legend');
+    // The data arrives without a press inside the legend: it is the same element, and keeps the focus.
+    await page.getByRole('button', { name: 'Finish loading' }).dispatchEvent('click');
+    await expect(legend.getByRole('button', { name: 'Region 1' })).toBeVisible();
+    expect(await inLegend()).toBe('Retried legend');
+  });
+
+  test('a truncated label shows its whole text in the library tooltip, on hover and on keyboard focus', async ({
+    page,
+  }) => {
+    await open(page, 'data-legend--wrapping');
+    const tooltip = page.getByRole('tooltip');
+    const label = page.locator('[aria-label="Narrow"] [data-part="label"]').first();
+    await expect(label).not.toHaveAttribute('title');
+    await label.hover();
+    await expect(tooltip).toHaveText('Region 1, with a long name');
+    await page.mouse.move(0, 0);
+    await expect(tooltip).toHaveCount(0);
+
+    // Interactive: the toggle button is the tab stop, and focusing it with the keyboard shows the tip.
+    const toolbar = page.getByRole('toolbar', { name: 'Narrow, interactive' });
+    await toolbar.getByRole('button').nth(1).focus();
+    await page.keyboard.press('ArrowLeft');
+    await expect(toolbar.getByRole('button').first()).toBeFocused();
+    await expect(tooltip).toHaveText('Region 1, with a long name');
+    await page.keyboard.press('Escape');
+    await expect(tooltip).toHaveCount(0);
+    // A label that fits has no tip.
+    await page.keyboard.press('ArrowRight');
+    await page.waitForTimeout(300);
+    await expect(tooltip).toHaveCount(0);
+  });
+
+  test('the more button carries its data-part, and the focus offset has a legend token', async ({ page }) => {
+    await open(page, 'data-legend--wrapping');
+    const legend = page.locator('[data-umbra="legend"][aria-label="One row"]');
+    await expect(legend.locator('[data-part="more"]')).toHaveCount(1);
+    await legend.evaluate((el) => el.parentElement!.style.setProperty('--umbra-legend-focus-offset', '-4px'));
+    await legend.getByRole('button').first().focus();
+    await page.keyboard.press('ArrowRight');
+    expect(await page.evaluate(() => getComputedStyle(document.activeElement!).outlineOffset)).toBe('-4px');
   });
 });

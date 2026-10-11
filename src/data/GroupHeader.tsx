@@ -1,4 +1,4 @@
-import { createElement, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { createElement, useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { ButtonBase } from '../basics/Button';
 import { useShrinkLevel } from '../internal/useShrinkLevel';
 import { ActionsOverflow } from '../overlays/Menu';
@@ -17,9 +17,13 @@ export interface GroupHeaderRootProps extends BlockProps {
   sticky?: boolean;
   /** `strip` is a full-width band (a date above its messages); `plain` has no fill (a label above a few rows). */
   variant?: 'strip' | 'plain';
-  /** Set by the all-in-one component: the title may truncate (everything that can hide has hidden). */
+  /**
+   * The title may truncate. The all-in-one component turns it off until everything that can hide has
+   * hidden; a header composed by hand keeps the default.
+   */
   truncate?: boolean;
-  elementRef?: React.RefObject<HTMLDivElement | null>;
+  /** The element, for measuring. */
+  ref?: React.Ref<HTMLDivElement>;
   /** Marks the group collapsed, for CSS. */
   collapsed?: boolean;
 }
@@ -29,14 +33,14 @@ function Root({
   variant = 'strip',
   truncate = true,
   collapsed,
-  elementRef,
+  ref,
   className,
   style,
   children,
 }: GroupHeaderRootProps) {
   return (
     <div
-      ref={elementRef}
+      ref={ref}
       data-umbra="group-header"
       data-variant={variant}
       data-sticky={sticky || undefined}
@@ -92,9 +96,15 @@ export interface GroupHeaderToggleProps {
   /** Accessible name. Name the group in it when a list has several ("Collapse Today"). */
   label: string;
   onPress: () => void;
+  className?: string;
+  style?: CSSProperties;
 }
 
-function Toggle({ collapsed, label, onPress }: GroupHeaderToggleProps) {
+function Toggle({ collapsed, label, onPress, className, style }: GroupHeaderToggleProps) {
+  // The button is drawn by `ButtonBase`, which passes no `data-part`: it is set on the element. A wrapper
+  // would name the part too, but it changes how the button lies in a table cell.
+  const ref = useRef<HTMLButtonElement>(null);
+  useEffect(() => ref.current?.setAttribute('data-part', 'toggle'));
   return (
     <ButtonBase
       umbra="icon-button"
@@ -104,14 +114,16 @@ function Toggle({ collapsed, label, onPress }: GroupHeaderToggleProps) {
       label={label}
       expanded={!collapsed}
       onPress={onPress}
-      className={styles.toggle}
+      elementRef={ref}
+      className={cx(styles.toggle, className)}
+      style={style}
     >
       <Icon name="chevronDown" />
     </ButtonBase>
   );
 }
 
-export interface GroupHeaderProps extends Omit<GroupHeaderRootProps, 'children' | 'truncate' | 'elementRef'> {
+export interface GroupHeaderProps extends Omit<GroupHeaderRootProps, 'children' | 'truncate' | 'ref'> {
   /** The group's name. */
   title?: ReactNode;
   /** Leading icon. */
@@ -173,7 +185,7 @@ export function GroupHeader({
   const inMenu = !!actions && level_ === steps;
   const name = typeof title === 'string' ? ` ${title}` : '';
   return (
-    <Root {...root} elementRef={ref} collapsed={collapsed} truncate={level_ === steps}>
+    <Root {...root} ref={ref} collapsed={collapsed} truncate={level_ === steps}>
       {collapsible &&
         renderPart(
           parts?.toggle,
