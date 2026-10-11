@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { readFileSync } from 'node:fs';
 import { SourceMap } from 'node:module';
 import { devUrl } from '../../playwright.examples.config';
 
@@ -97,6 +98,8 @@ test('with the library out of the pre-bundle: the frame is a line of the .tsx so
   // The source is in the map itself: the package does not hold src/.
   expect(frame.embedded).toBe(true);
   expect(frame.text).toContain(`throw new Error('${message}')`);
-  // The line of the repository's file, so a stack can be read against GitHub too.
-  expect(frame.line).toBe(35);
+  // The line of the repository's file, so a stack can be read against GitHub too. Read from the file:
+  // a number written here broke when an import above the line was removed.
+  const lines = readFileSync('src/shell/PageHeader.tsx', 'utf8').split('\n');
+  expect(frame.line).toBe(lines.findIndex((line) => line.includes(message)) + 1);
 });
