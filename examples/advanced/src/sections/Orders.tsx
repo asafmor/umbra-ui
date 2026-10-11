@@ -1,5 +1,5 @@
 import { Check, Plus, Trash2 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   ActionBar,
   actionsColumn,
@@ -21,11 +21,34 @@ import {
   Tag,
   TextField,
   type DataTableColumn,
+  type DataTableColumnState,
 } from 'umbra-ui';
 import { clients, money, regions, type Order, type OrderStatus } from '../data';
 import { navigate } from '../router';
 
 const statusTone = { Open: 'info', Packed: 'warning', Sent: 'success' } as const;
+
+/**
+ * What the user did to the table's columns, kept in `localStorage`: the table is controlled and ships
+ * no storage (docs/recipes.md, "Remember a user's columns").
+ */
+function useSavedColumns(key: string) {
+  const [state, setState] = useState<DataTableColumnState>(() => {
+    try {
+      return JSON.parse(localStorage.getItem(key) ?? '{}') as DataTableColumnState;
+    } catch {
+      return {};
+    }
+  });
+  useEffect(() => {
+    try {
+      localStorage.setItem(key, JSON.stringify(state));
+    } catch {
+      // Storage is full or blocked: the choice lasts for this visit.
+    }
+  }, [key, state]);
+  return [state, setState] as const;
+}
 
 /**
  * A table with bulk actions and a form in a modal. The modal is a route: `#/orders/new` adds an
@@ -42,6 +65,7 @@ export function Orders({
   editing: string | undefined;
 }) {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [columnState, setColumnState] = useSavedColumns('advanced.orders.columns');
   const [confirming, setConfirming] = useState(false);
   const mark = (status: OrderStatus) => {
     onChange(orders.map((o) => (selectedIds.includes(o.id) ? { ...o, status } : o)));
@@ -138,6 +162,9 @@ export function Orders({
           highlightLabel="Priority handling"
           onRowAction={(order) => navigate(`/orders/${order.id}`)}
           expandableHidden
+          columnMenu
+          columnState={columnState}
+          onColumnStateChange={setColumnState}
           striped
           empty={{ title: 'No orders', description: 'Add an order to see it here.' }}
         />
