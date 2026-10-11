@@ -1,0 +1,292 @@
+/* The root is a size container, so the pieces can hide by the card's own width. */
+.root {
+  --bg: var(--umbra-media-card-bg, var(--umbra-context-card-tint));
+  --pad: var(--umbra-media-card-padding, var(--umbra-density-card-padding));
+  --secondary: var(--umbra-media-card-secondary-color, var(--umbra-color-base-text-secondary));
+  /* The card clips, so the rings of the controls inside it are drawn inwards. */
+  --focus-offset: var(--umbra-media-card-focus-offset, calc(-1 * var(--umbra-state-focus-ring-width)));
+
+  container: umbra-media-card / inline-size;
+  position: relative;
+  isolation: isolate;
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: var(--umbra-border-width) solid
+    var(--umbra-media-card-border, var(--umbra-color-base-border-subtle));
+  border-radius: var(--umbra-media-card-radius, var(--umbra-radius-card));
+  background: var(--bg);
+  color: var(--umbra-media-card-color, var(--umbra-color-base-text-primary));
+  transition: background-color var(--umbra-motion-duration-fast);
+}
+
+.root[data-size='content'] {
+  flex: 0 0 auto;
+}
+
+.root[hidden] {
+  display: none;
+}
+
+/* Hover lightens one step, press darkens one step (plan/interaction.md). */
+.root[data-interactive]:hover {
+  background: color-mix(in oklab, var(--bg), #fff var(--umbra-state-hover-lighten));
+}
+
+.root[data-interactive]:active {
+  background: color-mix(in oklab, var(--bg), #000 var(--umbra-state-press-darken));
+}
+
+.media {
+  flex: none;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.picture {
+  --placeholder-bg: var(
+    --umbra-media-card-placeholder-bg,
+    color-mix(in oklab, var(--umbra-context) 30%, var(--umbra-color-base-surface2))
+  );
+  --placeholder-fg: var(
+    --umbra-media-card-placeholder-fg,
+    color-mix(in oklab, var(--umbra-context) 45%, var(--umbra-color-base-surface3))
+  );
+
+  width: 100%;
+  height: 100%;
+}
+
+.picture > :is(img, svg, picture, video, canvas) {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.content {
+  flex: none;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--umbra-media-card-gap, var(--umbra-space-3));
+}
+
+.title,
+.description {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: var(--lines);
+  line-clamp: var(--lines);
+  margin: 0;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+
+.title {
+  font: var(--umbra-media-card-title-font, var(--umbra-font-body));
+  font-weight: 700;
+}
+
+.description {
+  color: var(--secondary);
+  font: var(--umbra-font-label);
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-space-3);
+  min-width: 0;
+  min-height: var(--umbra-space-7);
+}
+
+.meta {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--secondary);
+  font: var(--umbra-font-label);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.category {
+  flex: 0 1 auto;
+  min-width: 0;
+  display: flex;
+  overflow: hidden;
+}
+
+/* Controls of the card stay above the hit area of its link. */
+.actions {
+  position: relative;
+  z-index: 1;
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-space-2);
+  margin-inline-start: auto;
+}
+
+/* The whole card is the hit area of its link or button. */
+.link,
+.cover {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.link::after,
+.cover {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+
+.cover {
+  width: 100%;
+  height: 100%;
+  border-radius: var(--umbra-media-card-radius, var(--umbra-radius-card));
+}
+
+/* The focus ring goes around the card, inwards, because the card clips. */
+.link:focus-visible {
+  outline: none;
+}
+
+.link:focus-visible::after,
+.cover:focus-visible {
+  outline: var(--umbra-state-focus-ring-width) solid
+    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-fixed-focus-ring)));
+  outline-offset: calc(-1 * var(--umbra-state-focus-ring-width));
+  border-radius: var(--umbra-media-card-radius, var(--umbra-radius-card));
+}
+
+/* Compact: a small picture at the side. */
+.root[data-variant='compact'] {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: var(--umbra-space-4);
+  padding: var(--pad);
+}
+
+.root[data-variant='compact'] > .media {
+  width: var(--umbra-media-card-thumb-size, 3.5rem);
+  aspect-ratio: 1;
+  border-radius: var(--umbra-radius-control);
+}
+
+.root[data-variant='compact'] > .content {
+  flex: 1 1 0;
+  gap: var(--umbra-media-card-gap, var(--umbra-space-2));
+}
+
+/* Hero: a large picture above the text. It gives way first when the card is short. */
+.root[data-variant='hero'] > .media {
+  flex: 1 1 auto;
+  aspect-ratio: var(--umbra-media-card-image-ratio, 16 / 9);
+  min-height: var(--umbra-media-card-image-min-height, 3rem);
+}
+
+.root[data-variant='hero'] > .content {
+  padding: var(--pad);
+}
+
+.root[data-variant='hero'] .title {
+  font: var(--umbra-media-card-title-font, var(--umbra-font-title));
+}
+
+/*
+ * Hero with the picture behind: the picture fills the card and the text lies on a scrim, which keeps
+ * 4.5:1 for the text whatever the picture is. All of the text takes the primary colour for that.
+ */
+.root[data-image='behind'] {
+  --secondary: var(--umbra-media-card-color, var(--umbra-color-base-text-primary));
+}
+
+.root[data-image='behind'] .picture {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+
+.root[data-image='behind'] > .content {
+  --scrim: var(--umbra-media-card-scrim, var(--umbra-color-base-scrim));
+  --fade: var(--umbra-space-8);
+
+  padding-block-start: calc(var(--fade) + var(--umbra-space-2));
+  background: linear-gradient(to top, var(--scrim) calc(100% - var(--fade)), transparent);
+}
+
+.root[data-image='behind'][data-interactive]:hover .picture {
+  filter: brightness(1.12);
+}
+
+/* Pair: the details above the two sides. */
+.root[data-variant='pair'] .footer {
+  order: -1;
+  padding: var(--umbra-space-3) var(--pad) 0;
+}
+
+.pair {
+  min-width: 0;
+}
+
+.root[data-variant='pair'] > .content[data-part='skeleton'] {
+  padding: var(--pad);
+}
+
+.skeletonTitle {
+  font: var(--umbra-font-body);
+}
+
+/* Show less as the card gets shorter than its content: one step per level (useFitLevel). */
+.root[data-level] .description {
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+}
+
+.root[data-level]:not([data-level='1']) .description {
+  display: none;
+}
+
+.root:is([data-level='3'], [data-level='4']) .meta,
+.root:is([data-level='3'], [data-level='4']) .footer:not(:has(.category, .actions)) {
+  display: none;
+}
+
+.root[data-level='4'] > .media {
+  display: none;
+}
+
+.root[data-level='4'][data-image='behind'] > .media {
+  display: block;
+  flex: 0 0 0;
+  min-height: 0;
+  aspect-ratio: auto;
+}
+
+/* Show less as the card narrows. The title wraps and truncates last. */
+@container umbra-media-card (max-width: 220px) {
+  .root > .content > .description,
+  .root .category {
+    display: none;
+  }
+}
+
+@container umbra-media-card (max-width: 160px) {
+  .root[data-variant='compact'] > .media,
+  .root .meta {
+    display: none;
+  }
+}
