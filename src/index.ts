@@ -77,6 +77,8 @@ export { ListItem } from './data/ListItem';
 export type {
   ListItemProps,
   ListItemRootProps,
+  ListItemDescriptionProps,
+  ListItemSideProps,
   ListItemTitleProps,
   ListItemUnreadProps,
   ListItemMetaProps,
