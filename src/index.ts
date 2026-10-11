@@ -79,6 +79,7 @@ export type {
   ListItemRootProps,
   ListItemTitleProps,
   ListItemUnreadProps,
+  ListItemMetaProps,
 } from './data/ListItem';
 export { List } from './data/List';
 export type {
@@ -117,6 +118,7 @@ export type {
   KeyValueListRootProps,
   KeyValueProps,
   KeyValueRootProps,
+  KeyValueValueProps,
 } from './data/KeyValue';
 export { StatValue } from './data/StatValue';
 export type {
@@ -124,15 +126,21 @@ export type {
   StatValueProps,
   StatValueRootProps,
   StatValueTone,
+  StatValueValueProps,
 } from './data/StatValue';
 export { SummaryTile } from './data/SummaryTile';
-export type { SummaryTileProps, SummaryTileRootProps } from './data/SummaryTile';
+export type { SummaryTileProps, SummaryTileRootProps, SummaryTileValueProps } from './data/SummaryTile';
 export { Tag } from './data/Tag';
 export type { TagProps, TagRemoveProps, TagRootProps } from './data/Tag';
 export { Badge } from './data/Badge';
 export type { BadgeIndicatorProps, BadgeProps, BadgeRootProps } from './data/Badge';
 export { ValuePill } from './data/ValuePill';
-export type { ValuePillLevelProps, ValuePillProps, ValuePillRootProps } from './data/ValuePill';
+export type {
+  ValuePillLevelProps,
+  ValuePillProps,
+  ValuePillRootProps,
+  ValuePillValueProps,
+} from './data/ValuePill';
 export { TrendArrow } from './data/TrendArrow';
 export type { TrendArrowProps, TrendArrowRootProps, TrendDirection, TrendTone } from './data/TrendArrow';
 export { StatusIndicator } from './data/StatusIndicator';
@@ -159,6 +167,7 @@ export type {
   LevelMeterRootProps,
   LevelMeterStripProps,
   LevelMeterValue,
+  LevelMeterValueProps,
 } from './meters/LevelMeter';
 export type { MeterPattern, MeterTone, Threshold, Zone } from './meters/scale';
 export { Checkbox, CheckboxGroup } from './inputs/Checkbox';
