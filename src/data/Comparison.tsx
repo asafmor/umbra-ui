@@ -14,7 +14,7 @@ import { useSlot, type SlotProps } from '../layout/useSlot';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './Comparison.module.css';
 import shared from './shared.module.css';
-import { useFitLevel } from './useFitLevel';
+import { useFitLevel } from '../internal/useFitLevel';
 
 interface BlockProps {
   className?: string | undefined;

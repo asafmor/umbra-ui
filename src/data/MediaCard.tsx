@@ -16,7 +16,7 @@ import { cx, renderPart, type Part } from '../utils/parts';
 import { ListItem } from './ListItem';
 import styles from './MediaCard.module.css';
 import { Tag } from './Tag';
-import { useFitLevel } from './useFitLevel';
+import { useFitLevel } from '../internal/useFitLevel';
 
 interface BlockProps {
   className?: string | undefined;

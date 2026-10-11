@@ -2,7 +2,8 @@
 //
 // The rules are those of the table's grid (src/table/grid.ts): one tab stop, the active cell remembered
 // by what it is and not by its element, controls inside a cell out of the tab order and reached with
-// Enter, focus taken back when a render removes the focused element. The code is not shared: the table
+// Enter, focus taken back when a render removes the focused element. What a cell and its controls are is
+// shared (src/internal/gridCells.ts); the walk is not: the table
 // walks `<tr>` rows and spanning columns, this walks days, where "up" from the first line of a week is the
 // last line of the week before and a move past the last day asks for another month.
 //
@@ -10,21 +11,9 @@
 // - a day cell: `data-date`, `data-week` (the first day of its week), `data-col` (0 to 6) and
 //   `data-line` (0 is the day's header, 1 and up its slots);
 // - the side cell of a week: `data-week` and `data-col="aside"`.
-import { useEffect, useLayoutEffect, useRef } from 'react';
+import { useLayoutEffect, useRef } from 'react';
+import { CELL, SIMPLE_WIDGET, TABBABLE, useCellListeners, widgetsOf } from '../internal/gridCells';
 import { addDays, type IsoDate } from './dates';
-
-const CELL = '[data-cell]';
-const TABBABLE = 'a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])';
-const WIDGET =
-  'a[href], button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]';
-/** Widgets that have no use for the arrow keys: from them, the arrows still move through the grid. */
-const SIMPLE_WIDGET = 'a, button, input[type="checkbox"], input[type="radio"]';
-
-const widgetsOf = (cell: Element) =>
-  [...cell.querySelectorAll<HTMLElement>(WIDGET)].filter(
-    (el) =>
-      !el.matches(`${CELL}, [aria-disabled="true"], [data-disabled]`) && !el.closest('[aria-hidden="true"]'),
-  );
 
 /** Where a move lands when it is not on a rendered cell: a day, and its header (0), a slot or its last line. */
 export interface GridTarget {
@@ -136,30 +125,7 @@ export function useDateGrid<E extends HTMLElement>(options: DateGridOptions = {}
     if (hasFocus.current && cell && lost) cell.focus({ preventScroll: true });
   });
 
-  useEffect(() => {
-    const down = (event: PointerEvent) => {
-      pointer.current = true;
-      if (!root.current?.contains(event.target as Node)) hasFocus.current = false;
-    };
-    // Escape (or F2) on a control inside a cell returns to the cell. Heard on the window, on the way
-    // down: a tooltip that is open on the control takes Escape for itself at the document.
-    const key = (event: KeyboardEvent) => {
-      pointer.current = false;
-      if (event.key !== 'Escape' && event.key !== 'F2') return;
-      const target = event.target as HTMLElement;
-      const cell = target.closest?.<HTMLElement>(CELL);
-      if (!cell || cell === target || !root.current?.contains(cell)) return;
-      if (target.getAttribute('aria-expanded') === 'true') return;
-      cell.focus({ preventScroll: true });
-      event.preventDefault();
-    };
-    document.addEventListener('pointerdown', down, true);
-    window.addEventListener('keydown', key, true);
-    return () => {
-      document.removeEventListener('pointerdown', down, true);
-      window.removeEventListener('keydown', key, true);
-    };
-  }, []);
+  useCellListeners(root, pointer, hasFocus);
 
   /** Along the line: the days of the week, with the side cell before the first. */
   const moveInline = (cell: HTMLElement, step: -1 | 1) => {
