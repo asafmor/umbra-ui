@@ -90,7 +90,7 @@ export const Variants: Story = {
   ),
 };
 
-/** Loading in each layout, a picture that fails or is missing (the drawn placeholder), and no picture. */
+/** Loading in each layout, a picture that fails or is missing (the drawn placeholder), no picture, and the chosen card of a set. */
 export const States: Story = {
   render: () => (
     <Columns style={{ height: '100%' }}>
@@ -114,6 +114,7 @@ export const States: Story = {
           description="parts.image is null."
           parts={{ image: null }}
         />
+        <MediaCard size="content" selected title="The chosen card of a set" meta="selected" />
       </Stack>
     </Columns>
   ),
@@ -153,19 +154,12 @@ function Pressable() {
         onPress={() => setLast('Opened the pair')}
       />
       <MediaCard size="content" image={<Picture hue={120} />} title="Plain: nothing to press" meta="Static" />
-      <MediaCard
-        size="content"
-        selected
-        image={<Picture hue={190} />}
-        title="The chosen card"
-        meta="selected"
-      />
       <Log>Last action: {last}</Log>
     </Stack>
   );
 }
 
-/** The whole card as a link or a button, with a control inside that stays its own; and the chosen card of a set. */
+/** The whole card as a link or a button, with a control inside that stays its own. */
 export const LinksAndActions: Story = { render: () => <Pressable /> };
 
 const long = 'A long headline that wraps to a second line and then ends in an ellipsis when it must';
