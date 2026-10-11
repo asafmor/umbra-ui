@@ -612,3 +612,87 @@ test.describe('labels are measured in the chart’s font, so none is cut (C2, C3
     expect(Math.abs(label.x + label.width / 2 - line.x)).toBeLessThan(1.5);
   });
 });
+
+test.describe('right to left (C1)', () => {
+  /** Where every label of every chart sits inside its drawing, by tile. */
+  const labelPlaces = (page: Page) =>
+    page.evaluate(() =>
+      Object.fromEntries(
+        [...document.querySelectorAll('[data-tile]')].map((tile) => [
+          tile.getAttribute('data-tile'),
+          [...tile.querySelectorAll('figure svg text')].map((text) => {
+            const svg = text.closest('svg')!.getBoundingClientRect();
+            const box = text.getBoundingClientRect();
+            return `${text.textContent} ${Math.round(box.left - svg.left)},${Math.round(box.top - svg.top)}`;
+          }),
+        ]),
+      ),
+    );
+
+  for (const chart of ['barchart', 'donutchart', 'linechart', 'radarchart']) {
+    test(`${chart}: the plot is drawn as in a left-to-right page, with every label in its place`, async ({
+      page,
+    }) => {
+      await open(page, `charts-${chart}--variants`);
+      const ltr = await labelPlaces(page);
+      await open(page, `charts-${chart}--variants&globals=direction:rtl`);
+      await expect(page.locator('figure').first()).toHaveCSS('direction', 'rtl');
+      const rtl = await labelPlaces(page);
+      // A date is written in the page's language, so only tiles with the same words can be compared.
+      const words = (places: string[]) => places.map((p) => p.replace(/ -?\d+,-?\d+$/, '')).join();
+      const same = Object.keys(ltr).filter((id) => words(ltr[id]!) === words(rtl[id]!));
+      expect(same.length).toBeGreaterThanOrEqual(4);
+      for (const id of same) expect(rtl[id], id).toEqual(ltr[id]);
+    });
+  }
+
+  test('labels stay off the marks, the legend mirrors, and the arrow keys follow what is drawn', async ({
+    page,
+  }) => {
+    await open(page, 'charts-right-to-left--all-charts');
+    const overlaps = await page.evaluate(() => {
+      const hit = (a: DOMRect, b: DOMRect) =>
+        a.left < b.right - 0.5 && b.left < a.right - 0.5 && a.top < b.bottom - 0.5 && b.top < a.bottom - 0.5;
+      return [...document.querySelectorAll('figure')].flatMap((figure) => {
+        const marks = [
+          ...figure.querySelectorAll('[data-part="bars"] rect, [data-part="point"] [data-shape]'),
+        ];
+        const labels = [...figure.querySelectorAll('[data-part="axes"] text, [data-part="axisLabels"] text')];
+        return labels.flatMap((label) =>
+          marks.some((mark) => hit(label.getBoundingClientRect(), mark.getBoundingClientRect()))
+            ? [label.textContent]
+            : [],
+        );
+      });
+    });
+    expect(overlaps).toEqual([]);
+    expect(await cutLabels(page)).toEqual([]);
+
+    // Sideways bars: the categories are left of the plot and the bars grow to the right, as drawn.
+    const bar = tile(page, 'bar');
+    const category = (await has(bar, 'yTicks').locator('text').first().boundingBox())!;
+    const first = (await has(bar, 'bars').locator('rect').first().boundingBox())!;
+    expect(category.x + category.width).toBeLessThanOrEqual(first.x);
+    // A label in a right-to-left script keeps its own direction.
+    await expect(has(bar, 'yTicks').locator('text').last()).toHaveText('אזור 4');
+    // The legend is HTML: `end` is the left side of a right-to-left page.
+    const [legend, plot] = [
+      (await has(bar, 'legend').boundingBox())!,
+      (await has(bar, 'plot').boundingBox())!,
+    ];
+    expect(legend.x + legend.width).toBeLessThanOrEqual(plot.x + 1);
+
+    // ArrowRight moves to the point on the right, because the plot is not mirrored.
+    const line = tile(page, 'line');
+    await marks(line).focus();
+    await page.keyboard.press('ArrowRight');
+    expect(await current(line)).toBe('Plan, Jan: 40');
+    const x = () => ring(line).evaluate((el) => el.getBoundingClientRect().x);
+    const before = await x();
+    await page.keyboard.press('ArrowRight');
+    expect(await current(line)).toBe('Plan, Feb: 44');
+    expect(await x()).toBeGreaterThan(before);
+    await page.keyboard.press('ArrowLeft');
+    expect(await current(line)).toBe('Plan, Jan: 40');
+  });
+});

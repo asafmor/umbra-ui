@@ -83,9 +83,13 @@
   outline: none;
 }
 
+/* The plot does not mirror in a right-to-left page: values grow to the right and time runs to the
+   right. Laid out left to right, a label's anchor means the same side everywhere, so labels stay
+   beside their marks. Text in a right-to-left script is still drawn in its own direction. */
 .svg {
   display: block;
   overflow: hidden;
+  direction: ltr;
 }
 
 .svg text {
@@ -367,6 +371,8 @@
 }
 
 .skeletonBars {
+  /* Like the bars they stand for, the placeholders do not mirror. */
+  direction: ltr;
   width: 100%;
   height: 100%;
   display: flex;
