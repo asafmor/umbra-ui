@@ -134,6 +134,12 @@
   list-style: none;
 }
 
+.group[data-ungrouped] {
+  margin-block-start: var(--umbra-space-2);
+  padding-block-start: var(--umbra-space-2);
+  border-block-start: var(--umbra-border-width) solid var(--umbra-color-base-border-subtle);
+}
+
 .groupLabel {
   padding: var(--umbra-space-3) var(--umbra-space-3) var(--umbra-space-1);
   color: var(--umbra-color-base-text-secondary);
