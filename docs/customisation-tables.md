@@ -54,11 +54,12 @@ translate a component. A name followed by brackets can also be a function of wha
 | [`Link`](#link) | `externalLabel` |
 | [`List`](#list) | `loadingMoreLabel`, `retryLabel` |
 | [`ListItem`](#listitem) | `unreadLabel`, `accentLabel`, `increasedLabel`, `decreasedLabel` |
+| [`MediaCard`](#mediacard) | `moreLabel` |
 | [`Menu`](#menu) | `emptyLabel` |
 | [`Modal`](#modal) | `navLabel`, `closeLabel` |
 | [`PageHeader`](#pageheader) | `moreLabel`, `backLabel`, `breadcrumbsLabel` |
 | [`PieIndicator`](#pieindicator) | `noValueLabel`, `increasedLabel`, `decreasedLabel` |
-| [`Planner`](#planner) | `retryLabel`, `weekLabel`, `freeLabel`, `previousLabel`, `nextLabel`, `todayLabel`, `monthLabel` |
+| [`Planner`](#planner) | `retryLabel`, `weekLabel`, `freeLabel`, `hiddenItemsLabel(count)`, `moreLabel`, `previousLabel`, `nextLabel`, `todayLabel`, `monthLabel` |
 | [`Popover`](#popover) | `closeLabel` |
 | [`PrimaryAction`](#primaryaction) | `loadingLabel`, `attentionLabel`, `menuLabel` |
 | [`PrimaryNav`](#primarynav) | `moreLabel`, `submenuLabel(label)` |
@@ -77,7 +78,7 @@ translate a component. A name followed by brackets can also be a function of wha
 | [`Slider`](#slider) | `startLabel`, `endLabel` |
 | [`Sparkline`](#sparkline) | `noValueLabel` |
 | [`SplitButton`](#splitbutton) | `menuLabel`, `loadingLabel` |
-| [`Spotlight`](#spotlight) | `nextLabel`, `backLabel`, `skipLabel`, `doneLabel`, `progressLabel(current, total)` |
+| [`Spotlight`](#spotlight) | `nextLabel`, `previousLabel`, `skipLabel`, `doneLabel`, `progressLabel(current, total)` |
 | [`StarRating`](#starrating) | `emptyLabel`, `noValueLabel`, `clearLabel` |
 | [`StatValue`](#statvalue) | `increasedLabel`, `decreasedLabel` |
 | [`Stepper`](#stepper) | `emptyLabel`, `previousLabel`, `nextLabel` |
@@ -90,7 +91,7 @@ translate a component. A name followed by brackets can also be a function of wha
 | [`TrendArrow`](#trendarrow) | `upLabel`, `downLabel`, `flatLabel` |
 | [`ValuePill`](#valuepill) | `levelLabel(level, steps)`, `increasedLabel`, `decreasedLabel` |
 | [`VerticalNav`](#verticalnav) | `collapseLabel`, `expandLabel` |
-| [`WeekStrip`](#weekstrip) | `freeLabel`, `retryLabel` |
+| [`WeekStrip`](#weekstrip) | `freeLabel`, `hiddenItemsLabel(count)`, `retryLabel` |
 | [`WidgetBoard`](#widgetboard) | `collapseAllLabel`, `expandAllLabel`, `retryLabel` |
 
 ## Accordion
@@ -123,6 +124,7 @@ A stack of sections that open and close. It fills its slot; an open panel scroll
 | `minWidth` | `number` | The width the child needs. When the children of a `Columns` cannot all have theirs, the `Columns` shows one child at a time, with tabs, as it does below the minimum window. |
 | `minHeight` | `number` | Below this height a parent `Stack` may collapse the child to its header. |
 | `label` | `string` | Tab label when a parent `Columns` shows one child at a time. |
+| `id` | `string` | The `id` of the root element. |
 | `type` | `"single" \| "multiple"` | `single`: one section open at a time. `multiple`: any number. |
 | `value` | `string \| string[] \| null` | The open section (controlled). `null` for none. The open sections (controlled). |
 | `defaultValue` | `string \| string[] \| null` |  |
@@ -171,6 +173,7 @@ The bar at the bottom of a page, card or modal: a status at the start and the ac
 | `aria-label` | `string` | Accessible name of the group. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 | `variant` | `"inline" \| "floating"` | `inline`: in the flow, at the bottom of a page, card or modal. `floating`: over the bottom of its container. |
 | `emphasis` | `"default" \| "strong"` | `strong` fills the bar with the tone, for a status the user has to act on. |
 | `open` | `boolean` | Shows a `floating` bar. Its container needs `position: relative`. |
@@ -202,6 +205,7 @@ The outermost frame: exactly the size of the window, never scrolls, bars above o
 | `skipLabel` | `string` | Text of the "skip to content" link, the first focus stop. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 
 **Parts**: `topBar`, `subNav`, `main`, `background`.
 
@@ -233,6 +237,7 @@ A person or entity: its image, or its initials, or a silhouette.
 | `parts` | `see Parts` | Replace or hide named pieces. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 | `size` | `AvatarSize` | Fixed size. Without it the avatar is as tall as a control, so it follows the density level. |
 | `shape` | `AvatarShape` |  |
 | `ring` | `string \| boolean` | A ring around the avatar: `true` for the accent colour, or any CSS colour. |
@@ -262,6 +267,7 @@ A row of overlapping avatars. Those that do not fit are counted in a "+N" at the
 | `aria-label` | `string` | Names the group for assistive technology. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 | `size` | `AvatarSize` | Size and shape of every avatar in the group. |
 | `shape` | `AvatarShape` |  |
 
@@ -301,6 +307,7 @@ A count or a dot, alone or on the corner of another element.
 | `parts` | `see Parts` | Replace or hide named pieces. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 | `tone` | `Tone` | What the colour means. `accent` is the fixed violet. |
 | `color` | `string` | A custom colour (any CSS colour). Replaces `tone`. |
 
@@ -351,6 +358,7 @@ A message band inside a card or page: a notice, a warning, or an insight about t
 | `compact` | `boolean` | One line: the title and the description share it and truncate. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 | `tone` | `BannerTone` | What the message is. Each tone has its own colour and its own default icon. |
 | `variant` | `BannerVariant` | `subtle`: tinted fill. `solid`: filled with the tone colour. `outline`: border only. |
 | `emphasis` | `"default" \| "insight"` | `insight` adds a stripe on the leading edge, for a finding or recommendation about the data beside it. |
@@ -417,6 +425,7 @@ Compares values across categories: grouped, stacked or diverging around zero, up
 | `aria-label` | `string` | Accessible name of the chart. Required unless `aria-labelledby` is set. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 | `empty` | `ReactNode \| DataStateContent` | Shown when there is no data: text, a node, or `{ title, description, icon, action }`. Defaults to a short English text. |
 | `error` | `ReactNode \| DataStateContent` | Shown in place of the data when set: text, a node, `{ title, description, icon, action }`, or `true` for a default text. |
 | `variant` | `"stacked" \| "grouped" \| "diverging"` | `grouped`: the series side by side. `stacked`: on top of each other. `diverging`: every second series is drawn on the other side of zero, with all values shown as positive. |
@@ -499,6 +508,7 @@ Triggers an action. Text, with an optional icon.
 | `parts` | `see Parts` | Replace or hide named pieces. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 
 **Parts**: `iconStart`, `label`, `iconEnd`, `spinner`.
 
@@ -551,6 +561,7 @@ The container for one unit of content on a page. Fills the slot its parent gives
 | `minWidth` | `number` | The width the child needs. When the children of a `Columns` cannot all have theirs, the `Columns` shows one child at a time, with tabs, as it does below the minimum window. |
 | `minHeight` | `number` | Below this height a parent `Stack` may collapse the child to its header. |
 | `label` | `string` | Tab label when a parent `Columns` shows one child at a time. |
+| `id` | `string` | The `id` of the root element. |
 | `renderLink` | `((props: LinkRenderProps) => ReactNode)` | Plugs in the app's router link for `href`. Defaults to a plain `<a>`. |
 | `moreLabel` | `string` | Accessible name of the overflow menu button. |
 | `icon` | `ReactNode` | Leading icon or image. |
@@ -604,6 +615,7 @@ A box that is checked or not: one yes-or-no choice, or one of several in a `Chec
 | `aria-label` | `string` | Accessible name of a checkbox that has no visible label. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` |  |
 | `size` | `"default" \| "small"` | `small` is for use inside table cells. Otherwise the size follows the density level. |
 | `disabled` | `boolean` |  |
 | `checked` | `boolean` | Controlled state. |
@@ -612,7 +624,6 @@ A box that is checked or not: one yes-or-no choice, or one of several in a `Chec
 | `required` | `boolean` |  |
 | `requiredLabel` | `string` | The text of the required marker after the label. |
 | `name` | `string` | Form field name. |
-| `id` | `string` |  |
 
 **Parts**: `box`, `label`, `description`, `error`.
 
@@ -650,13 +661,13 @@ Several checkboxes that answer one question, with a shared label, description an
 | `aria-label` | `string` | Accessible name of a group that has no visible label. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` |  |
 | `orientation` | `"vertical" \| "horizontal"` | `horizontal` puts the checkboxes on one line, wrapping when they do not fit. |
 | `disabled` | `boolean` |  |
 | `readOnly` | `boolean` |  |
 | `required` | `boolean` | At least one checkbox must be checked. |
 | `requiredLabel` | `string` | The text of the required marker after the group label. |
 | `name` | `string` | Form field name of every checkbox in the group. |
-| `id` | `string` |  |
 | `defaultValue` | `string[]` |  |
 
 **Parts**: `label`, `description`, `options`, `error`.
@@ -683,13 +694,13 @@ Edits a scale of value bands and their colours: the `thresholds` that `ValuePill
 | `aria-label` | `string` | Accessible name, when no `FormField` names it. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` |  |
 | `disabled` | `boolean` |  |
 | `min` | `number` | The bottom of the scale: the `from` of the first stop. Defaults to the first stop's own `from`. |
 | `max` | `number` | The top of the scale. |
 | `formatValue` | `((value: number) => string)` | The text of a boundary. |
 | `readOnly` | `boolean` | Preview only: the row of swatches, with nothing to edit. |
 | `name` | `string` | Form field name: the value is sent as JSON. |
-| `id` | `string` |  |
 | `defaultValue` | `readonly Threshold[]` | The stops to start from, and what the reset button goes back to (in controlled use too). |
 | `step` | `number` | The distance between two boundaries. |
 | `minStops` | `number` | Fewest stops: the remove buttons are disabled at this number. |
@@ -733,6 +744,7 @@ Shares its width among its children. Below the minimum window it shows one child
 | `minWidth` | `number` | The width the child needs. When the children of a `Columns` cannot all have theirs, the `Columns` shows one child at a time, with tabs, as it does below the minimum window. |
 | `minHeight` | `number` | Below this height a parent `Stack` may collapse the child to its header. |
 | `label` | `string` | Tab label when a parent `Columns` shows one child at a time. |
+| `id` | `string` | The `id` of the root element. |
 
 **Parts**: `tabs`.
 
@@ -795,6 +807,7 @@ A search over everything the app can do or open, in a dialog near the top of the
 | `parts` | `see Parts` | Replace or hide named pieces. |
 | `className` | `string` | On the palette's panel. |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 
 **Parts**: `searchIcon`, `item`, `sectionHeader`, `empty`, `footer`.
 
@@ -837,6 +850,7 @@ Two sides compared on a list of metrics: a value on each side of every label, wi
 | `parts` | `see Parts` | Replace or hide named pieces. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 | `variant` | `"strip" \| "table"` | `strip` is one line: the two names around one pair of values. |
 | `size` | `number \| "content"` | Share of the parent's space: a weight, or `"content"` to take the size of the content. Default 1. |
 | `label` | `string` | Tab label when a parent `Columns` shows one child at a time. |
@@ -883,6 +897,7 @@ The confirm step before an action that cannot be undone. An alert dialog: it ope
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
 | `children` | `ReactNode` |  |
+| `id` | `string` | The `id` of the root element. |
 
 **Parts**: `cancel`, `confirm`.
 
@@ -907,6 +922,7 @@ The two-line status of a `TopBar`, with a short value in a chip, usually the tim
 | `aria-label` | `string` | Replaces the name a button or link takes from its lines. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 | `href` | `string` | Makes the block a link. |
 | `disabled` | `boolean` |  |
 | `onPress` | `(() => void)` | Makes the block a button. |
@@ -1019,6 +1035,7 @@ A table of rows and columns that fills its slot and scrolls inside it: sorting, 
 | `error` | `ReactNode \| DataStateContent` | Shown in place of the data when set: text, a node, `{ title, description, icon, action }`, or `true` for a default text. |
 | `onRetry` | `(() => void)` | Adds a retry button to the error state. |
 | `retryLabel` | `string` | Label of the retry button. |
+| `id` | `string` | The `id` of the root element. |
 
 **Parts**: `header`, `headerCell`, `sortIndicator`, `hiddenIndicator`, `row`, `cell`, `groupHeader`, `detail`, `footer`, `skeleton`, `empty`, `error`.
 
@@ -1053,6 +1070,7 @@ A pill with the number of a day: the header of a day in a `WeekStrip` or a `Plan
 | `parts` | `see Parts` | Replace or hide named pieces. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 | `size` | `"default" \| "small"` | `small` is for dense strips and table cells. Otherwise the height follows the density level. |
 | `selected` | `boolean` | Marks the chosen day: the violet fill and a ring. |
 | `outside` | `boolean` | A day of another month than the one shown: dimmed. |
@@ -1093,6 +1111,7 @@ A bar that fills to one side of an origin or the other: the direction and the si
 | `aria-label` | `string` | Names a meter that has no visible label. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 | `tone` | `MeterTone` | Colour of a fill above the origin. A matching threshold wins over it. |
 | `loading` | `boolean` | Shows skeletons in place of the bar and the value. |
 | `size` | `"default" \| "thin" \| "thick"` |  |
@@ -1173,6 +1192,7 @@ A ring that shows one value against a total, or how a total splits into segments
 | `aria-label` | `string` | Accessible name of the chart. Required unless `aria-labelledby` is set. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 | `empty` | `ReactNode \| DataStateContent` | Shown when there is no data: text, a node, or `{ title, description, icon, action }`. Defaults to a short English text. |
 | `error` | `ReactNode \| DataStateContent` | Shown in place of the data when set: text, a node, `{ title, description, icon, action }`, or `true` for a default text. |
 | `tone` | `DonutTone` | Colour of the single value. The number in the centre is the cue that does not depend on colour. |
@@ -1237,6 +1257,7 @@ Says that a region has nothing to show, or failed to load, and what to do about 
 | `parts` | `see Parts` | Replace or hide named pieces. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 | `tone` | `"neutral" \| "error"` | `error` marks a failure: a danger-coloured icon, the built-in one unless `icon` is given. |
 | `variant` | `"block" \| "inline"` | `block` is centred in its slot; `inline` is one line of text. |
 | `role` | `"alert" \| "status"` | `alert` announces the content when it appears (for an error); `status` announces it politely. |
@@ -1272,6 +1293,7 @@ A small mark for an entity (a logo, a flag, a category glyph), with an optional 
 | `parts` | `see Parts` | Replace or hide named pieces. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 | `size` | `EntityIconSize` | Fixed size of the mark. Without it the mark follows the size of the text around it. |
 | `shape` | `EntityIconShape` |  |
 
@@ -1306,6 +1328,7 @@ The current entity of a header, with steps to its siblings and a searchable pick
 | `aria-label` | `string` | Accessible name of the picker and of the group of steppers. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 | `open` | `boolean` | Controlled state of the picker. |
 | `defaultOpen` | `boolean` |  |
 | `loading` | `boolean` | Shows skeleton rows in the picker. |
@@ -1363,12 +1386,12 @@ Pairs a label, a description and an error message with one control: a row of a f
 | `invalid` | `boolean` | Marks the control invalid. Set by itself when the field has an error. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The id of the control. Generated when not set. |
 | `disabled` | `boolean` | Disables the control. |
 | `layout` | `"inline" \| "stacked" \| "row"` | `row`: label and description at the start, control at the end, as in a settings list. `stacked`: label above the control. `inline`: label and control on one line, the description and error under the control. `row` and `inline` stack when the field is narrow. |
 | `labelWidth` | `string \| number` | The width of the label column of a `row` or `inline` field: a number of pixels, or any CSS width. |
 | `required` | `boolean` | Marks the control required and shows the required marker. |
 | `requiredLabel` | `string` | The text of the required marker. |
-| `id` | `string` | The id of the control. Generated when not set. |
 | `surface` | `boolean` | Gives the field its own raised surface and padding, as the rows of a settings list have. |
 | `optional` | `boolean` | Shows the optional marker. |
 | `optionalLabel` | `string` | The text of the optional marker. |
@@ -1410,6 +1433,7 @@ A header row for one group of rows inside a list or table.
 | `parts` | `see Parts` | Replace or hide named pieces. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 | `variant` | `"plain" \| "strip"` | `strip` is a full-width band (a date above its messages); `plain` has no fill (a label above a few rows). |
 | `sticky` | `boolean` | Sticks to the top of the scroll area while its group scrolls. The header and its rows must share a parent element. |
 
@@ -1476,6 +1500,7 @@ A grid of cells coloured by value: two categories against each other, or points 
 | `aria-label` | `string` | Accessible name of the chart. Required unless `aria-labelledby` is set. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 | `empty` | `ReactNode \| DataStateContent` | Shown when there is no data: text, a node, or `{ title, description, icon, action }`. Defaults to a short English text. |
 | `error` | `ReactNode \| DataStateContent` | Shown in place of the data when set: text, a node, `{ title, description, icon, action }`, or `true` for a default text. |
 | `loading` | `boolean` | Shows skeletons in the final layout and marks the component busy. |
@@ -1544,6 +1569,7 @@ Back and forward. On their own they drive the browser history; with `onBack` and
 | `parts` | `see Parts` | Replace or hide named pieces. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 
 **Parts**: `backIcon`, `forwardIcon`, `entriesIcon`.
 
@@ -1590,6 +1616,7 @@ A row of cards or tiles that scrolls sideways inside itself. Each child is one i
 | `error` | `ReactNode \| DataStateContent` | Shown in place of the data when set: text, a node, `{ title, description, icon, action }`, or `true` for a default text. |
 | `onRetry` | `(() => void)` | Adds a retry button to the error state. |
 | `retryLabel` | `string` | Label of the retry button. |
+| `id` | `string` | The `id` of the root element. |
 
 **Parts**: `previous`, `next`, `skeleton`.
 
@@ -1629,6 +1656,7 @@ A button that shows only an icon. Inside an overflow menu it becomes a menu item
 | `parts` | `see Parts` | Replace or hide named pieces. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 
 **Parts**: `icon`, `badge`, `tooltip`.
 
@@ -1667,6 +1695,7 @@ One label with its value. Use it inside a `KeyValueList`, or on its own.
 | `parts` | `see Parts` | Replace or hide named pieces. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 | `orientation` | `Orientation` | `inline`: label and value side by side. `stacked`: the label above the value. |
 | `align` | `Align` | Where the value sits. Default: `end` when inline, `start` when stacked. |
 | `wrap` | `boolean` | Lets a long value wrap onto more lines. Without it the value is cut with an ellipsis. |
@@ -1695,6 +1724,7 @@ A group of labels with their values, in rows, columns or a grid.
 | `aria-label` | `string` | Names the list for assistive technology. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 | `orientation` | `Orientation` | Orientation of every item. Default: `inline` in rows, `stacked` in columns and in the grid. |
 | `align` | `Align` | Where every value sits. |
 | `wrap` | `boolean` | Lets long values wrap instead of being cut. |
@@ -1747,6 +1777,7 @@ The key for a chart or any colour-coded data: one marker and label per series.
 | `aria-label` | `string` | Accessible name of the legend. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 | `orientation` | `"vertical" \| "horizontal"` |  |
 | `align` | `"start" \| "center" \| "end"` | Where the items sit along the legend. A vertical legend with values always fills its width. |
 | `interactive` | `boolean` | Makes each item a toggle button that switches its series on and off. |
@@ -1800,6 +1831,7 @@ A strip of ticks with a marker that shows where a value sits on a scale.
 | `aria-label` | `string` | Names a meter that has no visible label. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 | `tone` | `MeterTone` | Colour of the marker, when no band or level sets it. |
 | `loading` | `boolean` | Shows skeletons in place of the ticks and the value. |
 | `orientation` | `"vertical" \| "horizontal"` |  |
@@ -1876,6 +1908,7 @@ One or more series over categories, numbers or time, with a numeric or an ordina
 | `aria-label` | `string` | Accessible name of the chart. Required unless `aria-labelledby` is set. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 | `empty` | `ReactNode \| DataStateContent` | Shown when there is no data: text, a node, or `{ title, description, icon, action }`. Defaults to a short English text. |
 | `error` | `ReactNode \| DataStateContent` | Shown in place of the data when set: text, a node, `{ title, description, icon, action }`, or `true` for a default text. |
 | `loading` | `boolean` | Shows skeletons in the final layout and marks the component busy. |
@@ -1940,6 +1973,7 @@ A text link: inside a sentence, or on its own line as the way to a fuller view.
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
 | `children` | `ReactNode` |  |
+| `id` | `string` | The `id` of the root element. |
 
 **Parts**: `label`, `externalIcon`, `chevron`.
 
@@ -1992,6 +2026,7 @@ A vertical list of rows that scrolls inside its slot, with optional groups, sele
 | `error` | `ReactNode \| DataStateContent` | Shown in place of the data when set: text, a node, `{ title, description, icon, action }`, or `true` for a default text. |
 | `onRetry` | `(() => void)` | Adds a retry button to the error state. |
 | `retryLabel` | `string` | Label of the retry button. |
+| `id` | `string` | The `id` of the root element. |
 
 **Parts**: `skeleton`, `state`, `loadingMore`.
 
@@ -2041,6 +2076,7 @@ The content of one row of a list: a title with optional lines, and leading and t
 | `parts` | `see Parts` | Replace or hide named pieces. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 | `accent` | `string` | A colour for an edge stripe that carries a category. Give `accentLabel` too, so it is not colour alone. |
 | `variant` | `"message" \| "default" \| "pair"` | `message`: sender and tag on the first line, title and time on the second. `pair`: two sides that mirror each other around a centre (set by `opposite`). |
 | `interactive` | `boolean` | Shows hover and press feedback. Set by `List`, and by `href` or `onPress`. |
@@ -2079,6 +2115,8 @@ A card for one article or item: a picture, a title, a few quiet details, and its
 | `--umbra-media-card-radius` | `--umbra-radius-card` (8px) |
 | `--umbra-media-card-scrim` | `--umbra-color-base-scrim` (rgba(5, 2, 10, 0.72)) |
 | `--umbra-media-card-secondary-color` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-media-card-selected-bg` | `--umbra-color-fixed-selected` (#6a1fd6) |
+| `--umbra-media-card-selected-edge` | `color-mix(in oklab, var(--umbra-color-fixed-selected), #fff 35%)` |
 | `--umbra-media-card-thumb-size` | `3.5rem` |
 | `--umbra-media-card-title-font` | `--umbra-font-body` or `--umbra-font-title` |
 
@@ -2095,7 +2133,8 @@ A card for one article or item: a picture, a title, a few quiet details, and its
 | `descriptionLines` | `number` | The most lines the description wraps to. |
 | `category` | `ReactNode` | A category: text becomes a `Tag`, a node is drawn as it is. |
 | `meta` | `ReactNode` | A quiet line: a time, a source. |
-| `actions` | `ReactNode` | Controls of the card: they stay separate from the card's own link. |
+| `actions` | `ReactNode` | Controls of the card: they stay separate from the card's own link. They move into a menu when they do not fit. |
+| `moreLabel` | `string` | Accessible name of that menu's button. |
 | `side` | `Omit<MediaCardSide, "title">` | `pair`: the icon and the value of the first side, whose title is `title`. |
 | `opposite` | `MediaCardSide` | `pair`: the second side. Sets the `pair` variant. |
 | `center` | `ReactNode` | `pair`: what stands between the two sides. |
@@ -2103,8 +2142,10 @@ A card for one article or item: a picture, a title, a few quiet details, and its
 | `aria-label` | `string` | Names a card that has no title. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 | `loading` | `boolean` | Marks the card busy for assistive technology. |
 | `size` | `number \| "content"` | Share of the parent's space: a weight, or `"content"` to take the size of the content. Default 1. |
+| `selected` | `boolean` | The card is the chosen one of its set: the selected fill and an edge, and `aria-current`. |
 | `label` | `string` | Tab label when a parent `Columns` shows one child at a time. |
 | `priority` | `number` | Which child gives way first when space runs out. Higher stays longer; ties give way from the end. Default 0. |
 | `minWidth` | `number` | The width the child needs. When the children of a `Columns` cannot all have theirs, the `Columns` shows one child at a time, with tabs, as it does below the minimum window. |
@@ -2160,6 +2201,7 @@ A list of actions or links that opens from a control. One tab stop; arrow keys, 
 | `parts` | `see Parts` | Replace or hide named pieces. |
 | `className` | `string` | On the menu's panel. |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 
 **Parts**: `item`, `check`, `sectionHeader`.
 
@@ -2216,6 +2258,7 @@ A panel over a dimmed page, for a focused task. Focus stays inside it and the pa
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
 | `children` | `ReactNode` |  |
+| `id` | `string` | The `id` of the root element. |
 
 **Parts**: `header`, `title`, `description`, `close`, `toolbar`, `nav`, `body`, `footer`.
 
@@ -2243,6 +2286,7 @@ The content area under the bars: applies the outer margin and the context tint.
 | `padding` | `"default" \| "none"` | `none` for edge-to-edge content. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 
 **Parts**: `header`, `content`, `footer`.
 
@@ -2284,6 +2328,7 @@ The header of a page or of a detail pane: what it shows, facts about it, and its
 | `parts` | `see Parts` | Replace or hide named pieces. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 | `tone` | `"default" \| "tinted" \| "band"` | `tinted` is a panel in the context tint. `band` fills with the brand colour, or `bandColor`. |
 | `size` | `"compact" \| "default"` | `compact` is for the header of a detail pane inside a card. |
 | `bandColor` | `string` | Colour of the band (hex or `rgb()`); the text colour is chosen for contrast with it. |
@@ -2318,6 +2363,7 @@ A small disc of wedges that fills with a value: a level gauge for table cells, r
 | `aria-label` | `string` | Names an indicator that has no visible label. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 | `tone` | `MeterTone` | Colour of the filled wedges. A matching threshold wins over it. |
 | `variant` | `"segmented" \| "continuous"` | `segmented` fills whole wedges; `continuous` fills one sector to the exact value. |
 | `loading` | `boolean` | Shows skeletons in place of the disc and the value. |
@@ -2360,6 +2406,7 @@ A month of days with a fixed number of slots each, and room beside every week fo
 | `aria-label` | `string` | Names the grid, before the month: "Schedule, October 2026". |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 | `size` | `number \| "content"` | Share of the parent's space: a weight, or `"content"` to take the size of the content. Default 1. |
 | `label` | `string` | Tab label when a parent `Columns` shows one child at a time. |
 | `priority` | `number` | Which child gives way first when space runs out. Higher stays longer; ties give way from the end. Default 0. |
@@ -2390,9 +2437,11 @@ A month of days with a fixed number of slots each, and room beside every week fo
 | `weekLabel` | `string` | Names the side column, the side cell of a week ("Week, Oct 11 – 17") and the button it collapses to. |
 | `emptyWeekLabel` | `ReactNode` | Shown under the day headers of a week that has no items. |
 | `freeLabel` | `string` | What assistive technology reads for a free slot. |
+| `hiddenItemsLabel` | `((count: number) => string)` | Names the mark of a day with more items than `slotsPerDay`: "+2" beside its date, read as "2 more" and the items. |
 | `weekdayFormat` | `"auto" \| WeekdayFormat` | The names of the weekdays above the grid. `auto` shortens them as the columns narrow. |
 | `slotSize` | `"default" \| "small"` |  |
 | `slotDisplay` | `"icon" \| "auto" \| "full"` | `auto` hides the labels of the slots, leaving their icons, when a day is too narrow for them. |
+| `moreLabel` | `string` | Accessible name of that menu's button. |
 | `previousLabel` | `string` |  |
 | `nextLabel` | `string` |  |
 | `todayLabel` | `string` |  |
@@ -2430,6 +2479,7 @@ An anchored panel without a backdrop: the page behind it stays usable. It keeps 
 | `aria-label` | `string` | Accessible name, when there is no title. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 | `open` | `boolean` | Controlled state. |
 | `defaultOpen` | `boolean` |  |
 | `size` | `"default" \| "large"` | `large` is a wide panel with room for a toolbar and a footer. |
@@ -2492,6 +2542,7 @@ The one primary action of the app, at the end of the `TopBar`. Its label follows
 | `parts` | `see Parts` | Replace or hide named pieces. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 
 **Parts**: `icon`, `label`, `description`, `badge`, `attention`, `spinner`, `menuTrigger`.
 
@@ -2523,6 +2574,7 @@ The top-level sections of the app, inside the `TopBar`.
 | `aria-label` | `string` | Accessible name of the navigation landmark. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 
 **Parts**: `indicator`, `more`, `item`.
 
@@ -2561,6 +2613,7 @@ A bar that fills with a value: progress of a task, or a measured level. Fills th
 | `aria-label` | `string` | Names a bar that has no visible label. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 | `tone` | `MeterTone` | Colour of the fill. A matching threshold wins over it. |
 | `loading` | `boolean` | Shows skeletons in place of the bar and the value. |
 | `size` | `"default" \| "thin" \| "thick"` |  |
@@ -2638,6 +2691,7 @@ Compares one or more series across several axes that share a centre.
 | `aria-label` | `string` | Accessible name of the chart. Required unless `aria-labelledby` is set. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 | `empty` | `ReactNode \| DataStateContent` | Shown when there is no data: text, a node, or `{ title, description, icon, action }`. Defaults to a short English text. |
 | `error` | `ReactNode \| DataStateContent` | Shown in place of the data when set: text, a node, `{ title, description, icon, action }`, or `true` for a default text. |
 | `loading` | `boolean` | Shows skeletons in the final layout and marks the component busy. |
@@ -2749,6 +2803,7 @@ A choice of exactly one option among a few, all visible at once.
 | `aria-label` | `string` | Accessible name of a group that has no visible label. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` |  |
 | `variant` | `RadioVariant` | `default`: a dot and a label. `card`: a bordered tile with a title, a description and an icon. |
 | `orientation` | `"vertical" \| "horizontal"` | The direction of the options, and of the arrow keys that move between them. |
 | `disabled` | `boolean` |  |
@@ -2756,7 +2811,6 @@ A choice of exactly one option among a few, all visible at once.
 | `required` | `boolean` |  |
 | `requiredLabel` | `string` | The text of the required marker after the group label. |
 | `name` | `string` | Form field name. |
-| `id` | `string` |  |
 | `defaultValue` | `string` |  |
 
 **Parts**: `label`, `description`, `options`, `error`.
@@ -2813,6 +2867,7 @@ Points by two values, in one or more series; a third value makes them bubbles.
 | `aria-label` | `string` | Accessible name of the chart. Required unless `aria-labelledby` is set. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 | `empty` | `ReactNode \| DataStateContent` | Shown when there is no data: text, a node, or `{ title, description, icon, action }`. Defaults to a short English text. |
 | `error` | `ReactNode \| DataStateContent` | Shown in place of the data when set: text, a node, `{ title, description, icon, action }`, or `true` for a default text. |
 | `loading` | `boolean` | Shows skeletons in the final layout and marks the component busy. |
@@ -2879,6 +2934,7 @@ A coloured chip for one entry of a schedule: an icon and a label, coloured by it
 | `aria-label` | `string` | Accessible name, for a slot whose content is not text. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 | `href` | `string` | Makes the slot a link. |
 | `tone` | `Tone` | What the colour means. |
 | `variant` | `"empty" \| "filled" \| "outlined"` | `filled`: tinted, with a stripe. `outlined`: the border only. `empty`: dashed and quiet, for free or rest time. |
@@ -2921,6 +2977,7 @@ A region that scrolls inside its slot. The only place scrolling happens.
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
 | `children` | `ReactNode` |  |
+| `id` | `string` | The `id` of the root element. |
 
 **Parts**: `fade`.
 
@@ -2968,6 +3025,7 @@ A field for searching: always an input, or an icon that opens into one. It can l
 | `aria-label` | `string` | Accessible name, when there is no `FormField` label. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` |  |
 | `loading` | `boolean` | Shows a spinner in place of the search icon, and skeleton rows in an empty list. |
 | `size` | `"default" \| "small"` | `small` is for table cells and dense toolbars. Otherwise the height follows the density level. |
 | `disabled` | `boolean` |  |
@@ -2975,7 +3033,6 @@ A field for searching: always an input, or an icon that opens into one. It can l
 | `readOnly` | `boolean` | Focusable and selectable, but cannot be changed. |
 | `required` | `boolean` |  |
 | `name` | `string` | Form field name. |
-| `id` | `string` |  |
 | `defaultValue` | `string` |  |
 | `placeholder` | `string` |  |
 | `loadingLabel` | `string` | What a screen reader hears while `loading`. |
@@ -3027,6 +3084,7 @@ A heading for one section of content inside a card or page, with optional contro
 | `parts` | `see Parts` | Replace or hide named pieces. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 
 **Parts**: `title`, `count`, `actions`.
 
@@ -3064,6 +3122,7 @@ A row of joined segments that filters the content below it. One or several can b
 | `aria-labelledby` | `string` | Id of the element that names the group. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 | `selectionMode` | `"single" \| "multiple"` | `single`: one segment, like radio buttons. `multiple`: any number, like toggle buttons. |
 | `value` | `string \| null` | The selected segment. `null` selects none, or the "All" segment when `all` is set. |
 | `defaultValue` | `string \| null` |  |
@@ -3121,6 +3180,7 @@ Chooses one option, or several with `multiple`, from a list that opens under a b
 | `aria-label` | `string` | Accessible name of a select that has no `FormField` label. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` |  |
 | `variant` | `"default" \| "ghost" \| "inCell"` | `ghost` has no border until hovered, for toolbars and headers. `inCell` fills a table cell and takes the `tone` or `color` of the chosen option as its fill. |
 | `open` | `boolean` | Controlled state of the list. |
 | `defaultOpen` | `boolean` |  |
@@ -3130,7 +3190,6 @@ Chooses one option, or several with `multiple`, from a list that opens under a b
 | `readOnly` | `boolean` | Focusable, but the choice cannot be changed and the list does not open. |
 | `required` | `boolean` |  |
 | `name` | `string` | Form field name: the chosen ids are sent with the form. |
-| `id` | `string` |  |
 | `defaultValue` | `string` |  |
 | `placeholder` | `string` | Shown while nothing is chosen. |
 | `onOpenChange` | `((open: boolean) => void)` |  |
@@ -3196,6 +3255,7 @@ A short ordered row of small marks, one per recent outcome: dots with a shape pe
 | `aria-label` | `string` | What assistive technology reads for the whole sequence. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 | `variant` | `"dots" \| "bars"` | `dots`: one small shape per item. `bars`: one thin bar per item, as tall as its `value`. |
 | `size` | `"sm" \| "md" \| "lg"` | `sm` fits a table cell, `md` a list row, `lg` a header. |
 | `onAction` | `((id: SequenceDotsId) => void)` | Makes each mark a button: one tab stop, arrow keys between the marks. |
@@ -3235,6 +3295,7 @@ The user's pinned shortcuts, at the end of the `SubNav`. One tab stop; arrow key
 | `parts` | `see Parts` | Replace or hide named pieces. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 
 **Parts**: `item`, `more`, `editIcon`.
 
@@ -3283,6 +3344,7 @@ The help overlay: every shortcut of the provider's registry that has a label, wi
 | `parts` | `see Parts` | Replace or hide named pieces. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 
 **Parts**: `header`, `search`, `section`, `item`, `empty`.
 
@@ -3309,6 +3371,7 @@ A grey placeholder in the shape of content that is still loading. Hidden from as
 | `animation` | `"none" \| "pulse"` | `none` is forced when reduced motion is on. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 
 **Parts**: none.
 
@@ -3351,6 +3414,7 @@ Chooses a number, or a range with two thumbs, by dragging along a track. The `sc
 | `aria-label` | `string` | Accessible name, when no `FormField` names it. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` |  |
 | `variant` | `"default" \| "scrubber"` | `scrubber`: a thin track with the value in a box before it, for a position on a timeline. |
 | `orientation` | `"vertical" \| "horizontal"` |  |
 | `size` | `"default" \| "small"` | `small` is for table cells and dense toolbars. |
@@ -3362,7 +3426,6 @@ Chooses a number, or a range with two thumbs, by dragging along a track. The `sc
 | `formatValue` | `((value: number) => string)` | The text of a value: in the output, the bubble and for a screen reader. |
 | `readOnly` | `boolean` | Focusable, but cannot be changed. |
 | `name` | `string` | Form field name. A range sends two values under it. |
-| `id` | `string` |  |
 | `defaultValue` | `T` |  |
 | `step` | `number` |  |
 | `onChangeEnd` | `((value: T) => void)` | Called once when a drag or a key press ends. |
@@ -3395,6 +3458,7 @@ Gives `size`, `priority`, `minWidth`, `minHeight` and `label` to content that is
 | `minWidth` | `number` | The width the child needs. When the children of a `Columns` cannot all have theirs, the `Columns` shows one child at a time, with tabs, as it does below the minimum window. |
 | `minHeight` | `number` | Below this height a parent `Stack` may collapse the child to its header. |
 | `label` | `string` | Tab label when a parent `Columns` shows one child at a time. |
+| `id` | `string` | The `id` of the root element. |
 
 **Parts**: none.
 
@@ -3422,6 +3486,7 @@ A tiny chart with no axes: the shape of a run of values, for a table cell, a til
 | `--umbra-sparkline-negative` | `--umbra-color-semantic-danger` (#f0455a) |
 | `--umbra-sparkline-positive` | `--umbra-color-semantic-success` (#16b877) |
 | `--umbra-sparkline-reference` | `--umbra-color-base-text-muted` (#948da2) |
+| `--umbra-sparkline-width` | `4rem` |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -3429,6 +3494,7 @@ A tiny chart with no axes: the shape of a run of values, for a table cell, a til
 | `aria-label` | `string` | Replaces the generated summary as the accessible name. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 | `tone` | `"default" \| ThresholdTone` | Colour of the marks, by meaning. |
 | `variant` | `"line" \| "bars" \| "area" \| "signed"` | `line` and `area` join the values; `bars` draws one bar per value from zero; `signed` draws equal bars above or below the middle by the sign of each value, for a run of outcomes. |
 | `loading` | `boolean` | Shows a skeleton in place of the marks. |
@@ -3477,6 +3543,7 @@ A main action with a caret beside it that opens a menu of related actions. One c
 | `aria-label` | `string` | Names the pair, when the action's own text is not enough. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 | `variant` | `ButtonVariant` | The look of both halves: the variants of `Button`. |
 | `size` | `"default" \| "small"` | `small` is for use inside table cells. Otherwise the height follows the density level. |
 | `disabled` | `boolean` | Disables the action and the menu. |
@@ -3527,13 +3594,14 @@ Dims everything but one element and explains it in a callout beside it: a coach 
 | `onFinish` | `(() => void)` | Called when the last step, or a spotlight without steps, is ended with its button. |
 | `headingLevel` | `4 \| 3 \| 1 \| 2 \| 5 \| 6` | Heading level of the title. |
 | `nextLabel` | `string` |  |
-| `backLabel` | `string` |  |
+| `previousLabel` | `string` |  |
 | `skipLabel` | `string` |  |
 | `doneLabel` | `string` | The button of the last step, and of a spotlight without steps. |
 | `progressLabel` | `((current: number, total: number) => string)` | The text that says where the tour is: "2 of 5". |
 | `parts` | `see Parts` | Replace or hide named pieces. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 | `open` | `boolean` | Controlled state. |
 | `defaultOpen` | `boolean` |  |
 | `interactive` | `boolean` | Whether the target can be used. By default nothing but the callout can: the target is shown, not offered. With `true` the target takes presses and keys, and what it opens is above the dim. |
@@ -3572,6 +3640,7 @@ Shares its height among its children.
 | `minWidth` | `number` | The width the child needs. When the children of a `Columns` cannot all have theirs, the `Columns` shows one child at a time, with tabs, as it does below the minimum window. |
 | `minHeight` | `number` | Below this height a parent `Stack` may collapse the child to its header. |
 | `label` | `string` | Tab label when a parent `Columns` shows one child at a time. |
+| `id` | `string` | The `id` of the root element. |
 
 **Parts**: none.
 
@@ -3603,6 +3672,7 @@ A rating out of a number of stars. With `readOnly` it is a picture of any value,
 | `aria-label` | `string` | Accessible name, when no `FormField` names it. In display mode the value's text is added. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` |  |
 | `icon` | `ReactNode` | Replaces the star, full and empty: any node. The full one is filled with the colour. |
 | `loading` | `boolean` | Shows placeholders in the final layout. |
 | `size` | `StarRatingSize` | `small` is for table cells, `large` for a header. |
@@ -3614,7 +3684,6 @@ A rating out of a number of stars. With `readOnly` it is a picture of any value,
 | `readOnly` | `boolean` | Display mode: a picture of the value with a text name, not a control. For tables and lists. |
 | `required` | `boolean` |  |
 | `name` | `string` | Form field name. The value is sent as a number; no rating sends nothing. |
-| `id` | `string` |  |
 | `defaultValue` | `number \| null` |  |
 | `clearable` | `boolean` | Adds "no rating" as a choice: the first stop of the arrow keys, and a press on the chosen star. |
 | `clearLabel` | `string` | The name of the "no rating" choice. |
@@ -3646,6 +3715,7 @@ A status as a dot or an icon with a label, or as a coloured label.
 | `aria-label` | `string` | Names an indicator that has no visible label. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 | `pulse` | `boolean` | Draws attention with a slow pulse around the dot. With reduced motion the dot stays still. |
 | `variant` | `"icon" \| "dot" \| "label"` | `dot`: a small shape. `icon`: the status icon. `label`: no mark, the label itself is coloured. |
 | `status` | `Status` |  |
@@ -3686,6 +3756,7 @@ A large value with its label, and optional unit, trend, caption and meter.
 | `aria-label` | `string` | Accessible name, for a stat without a label. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 | `tone` | `StatValueTone` | Colour of the value. A tone that carries meaning needs a second cue: a `trend`, an icon or the label. |
 | `align` | `"start" \| "center" \| "end"` |  |
 | `size` | `"md" \| "lg" \| "xl"` | Size of the value: `md` is the title font, `lg` the display font, `xl` larger still. |
@@ -3726,6 +3797,7 @@ Previous and next around one value, with a row of segments for the position. It 
 | `aria-label` | `string` | Accessible name, when no `FormField` names it. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` |  |
 | `size` | `"default" \| "small"` | `small` is for table cells and dense toolbars. |
 | `disabled` | `boolean` |  |
 | `wrap` | `boolean` | After the last comes the first, and the other way. Defaults to on for options and off for numbers. |
@@ -3736,7 +3808,6 @@ Previous and next around one value, with a row of segments for the position. It 
 | `readOnly` | `boolean` | Focusable, but cannot be changed. |
 | `required` | `boolean` |  |
 | `name` | `string` | Form field name: the option's `id` or the number is sent. |
-| `id` | `string` |  |
 | `defaultValue` | `T \| null` |  |
 | `options` | `readonly StepperOption[]` | Options mode: the choices, in order. The value is the `id` of one. Leave it out for numeric mode. |
 | `step` | `number` | Numeric mode: the distance between two values. |
@@ -3783,6 +3854,7 @@ The second bar: the pages of the current section, and room for shortcuts at the 
 | `aria-label` | `string` | Accessible name of the navigation landmark. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 
 **Parts**: `indicator`, `more`, `start`, `label`, `item`, `end`.
 
@@ -3823,6 +3895,7 @@ A compact tile that sums up one thing: an icon, a title and one value. The whole
 | `aria-label` | `string` | Accessible name, when the content does not name the tile. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 | `href` | `string` | Makes the whole tile one link. |
 | `size` | `number \| "content"` | Share of the parent's space: a weight, or `"content"` to take the size of the content. Default 1. |
 | `selected` | `boolean` | Marks the tile as the current one: a link gets `aria-current`, a button `aria-pressed`. |
@@ -3889,6 +3962,7 @@ Switches between views of the same content area. The panel fills the rest of the
 | `minWidth` | `number` | The width the child needs. When the children of a `Columns` cannot all have theirs, the `Columns` shows one child at a time, with tabs, as it does below the minimum window. |
 | `minHeight` | `number` | Below this height a parent `Stack` may collapse the child to its header. |
 | `label` | `string` | Tab label when a parent `Columns` shows one child at a time. |
+| `id` | `string` | The `id` of the root element. |
 
 **Parts**: `indicator`, `icon`, `count`, `close`, `list`, `tab`, `panel`.
 
@@ -3923,6 +3997,7 @@ A small label chip: a category, a status code or a value with an icon.
 | `parts` | `see Parts` | Replace or hide named pieces. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 | `tone` | `Tone` | What the colour means. |
 | `variant` | `"subtle" \| "solid" \| "outline"` | `outline`: coloured border. `subtle`: tinted fill. `solid`: filled, for short status codes. |
 | `size` | `"default" \| "small"` | `small` is for use inside table cells. |
@@ -3975,13 +4050,13 @@ A box for typing one line of text, or several with `multiline`.
 | `aria-label` | `string` | Accessible name of a field that has no `FormField` label. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` |  |
 | `size` | `"default" \| "small"` | `small` is for use inside table cells. Otherwise the height follows the density level. |
 | `disabled` | `boolean` |  |
 | `rows` | `number` | Visible lines of a `multiline` field. |
 | `readOnly` | `boolean` | Focusable and selectable, but cannot be changed. |
 | `required` | `boolean` |  |
 | `name` | `string` | Form field name. |
-| `id` | `string` |  |
 | `defaultValue` | `string` |  |
 | `multiline` | `boolean` | Several lines: a text area of `rows` lines. |
 | `type` | `"number" \| "text" \| "password" \| "email" \| "url"` |  |
@@ -4033,13 +4108,13 @@ A switch for a setting that takes effect at once: on or off.
 | `aria-label` | `string` | Accessible name of a toggle that has no visible label. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` |  |
 | `size` | `"default" \| "small"` | `small` is for use inside table cells and dense toolbars. Otherwise the size follows the density level. |
 | `disabled` | `boolean` |  |
 | `checked` | `boolean` | Controlled state. |
 | `defaultChecked` | `boolean` |  |
 | `readOnly` | `boolean` | Focusable, but cannot be changed. |
 | `name` | `string` | Form field name. |
-| `id` | `string` |  |
 | `labelPosition` | `"start" \| "end"` | The side of the switch the label is on. |
 
 **Parts**: `track`, `label`, `description`.
@@ -4078,6 +4153,7 @@ A short description of a control, shown on hover and on keyboard focus. Text onl
 | `parts` | `see Parts` | Replace or hide named pieces. |
 | `className` | `string` | On the tooltip itself. |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 
 **Parts**: `title`, `body`, `hint`.
 
@@ -4124,6 +4200,7 @@ The brand-coloured bar at the top: where the user is, the main sections, and the
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
 | `children` | `ReactNode` |  |
+| `id` | `string` | The `id` of the root element. |
 
 **Parts**: `start`, `logo`, `nav`, `actions`, `search`, `context`, `primaryAction`.
 
@@ -4154,6 +4231,7 @@ The direction of a change: up, down or flat.
 | `parts` | `see Parts` | Replace or hide named pieces. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 | `tone` | `TrendTone` | The colour of the arrow. |
 | `direction` (required) | `TrendDirection` |  |
 
@@ -4184,6 +4262,7 @@ Wraps the app once. Supplies the theme, density, icon map and shortcut registry 
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
 | `children` | `ReactNode` |  |
+| `id` | `string` | The `id` of the root element. |
 
 **Parts**: none.
 
@@ -4208,6 +4287,7 @@ The same `context`, `density`, `brand` and `tokens` as the provider, for one sub
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
 | `children` | `ReactNode` |  |
+| `id` | `string` | The `id` of the root element. |
 
 **Parts**: none.
 
@@ -4240,6 +4320,7 @@ A value coloured by where it falls on a five-step ramp.
 | `parts` | `see Parts` | Replace or hide named pieces. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 | `size` | `"default" \| "small" \| "large"` | `small` is for use inside table cells. |
 | `shape` | `"square" \| "circle" \| "pill"` | `square` for values in dense rows, `circle` for grades of one or two characters. |
 | `min` | `number` | The bottom and top of the scale, split into five equal bands. |
@@ -4288,6 +4369,7 @@ Side navigation for a modal, a settings screen or one column of a page.
 | `aria-label` | `string` | Accessible name of the navigation landmark. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 | `collapsed` | `boolean` | Icon-only rail (controlled). Each label stays as the accessible name of its item. |
 | `size` | `number \| "content"` | Share of the parent's space: a weight, or `"content"` to take the size of the content. Default 1. |
 | `label` | `string` | Tab label when a parent `Columns` shows one child at a time. |
@@ -4315,6 +4397,7 @@ Seven days side by side, each with its slots: a week at a glance, small enough f
 | Token | Default |
 |---|---|
 | `--umbra-week-strip-gap` | `--umbra-space-2` (4px) |
+| `--umbra-week-strip-hidden-items-color` | `--umbra-color-base-text-secondary` (#b3adbf) |
 | `--umbra-week-strip-today-bg` | `color-mix(in oklab, var(--umbra-color-fixed-primary) 14%, transparent)` |
 
 | Prop | Type | Purpose |
@@ -4335,6 +4418,7 @@ Seven days side by side, each with its slots: a week at a glance, small enough f
 | `onAction` | `((id: string) => void)` | Called with the id of an item when it is activated: a click, Enter or Space. |
 | `onDayAction` | `((date: IsoDate) => void)` | Called with the day when its header or one of its free slots is activated. |
 | `freeLabel` | `string` | What assistive technology reads for a free slot. |
+| `hiddenItemsLabel` | `((count: number) => string)` | Names the mark of a day with more items than `slotsPerDay`: "+2" beside its date, read as "2 more" and the items. |
 | `parts` | `see Parts` | Replace or hide named pieces. |
 | `loading` | `boolean` | Shows skeletons in the final layout and marks the component busy. |
 | `empty` | `ReactNode \| DataStateContent` | Shown when there is no data: text, a node, or `{ title, description, icon, action }`. Defaults to a short English text. |
@@ -4344,6 +4428,7 @@ Seven days side by side, each with its slots: a week at a glance, small enough f
 | `aria-label` | `string` | Accessible name of the grid. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 | `aria-labelledby` | `string` |  |
 
 **Parts**: `day`, `slot`, `placeholder`, `skeleton`, `state`.
@@ -4370,6 +4455,7 @@ A packed board of collapsible cards of different heights. It scrolls inside itse
 | `children` | `ReactNode` | `WidgetBoard.Widget` and `WidgetBoard.Item` elements. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
 | `size` | `number \| "content"` | Share of the parent's space: a weight, or `"content"` to take the size of the content. Default 1. |
 | `label` | `string` | Tab label when a parent `Columns` shows one child at a time. |
 | `priority` | `number` | Which child gives way first when space runs out. Higher stays longer; ties give way from the end. Default 0. |
