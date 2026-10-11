@@ -43,7 +43,7 @@ States per item: current, hover, pressed, focus, disabled. Per group: open, clos
 
 ### 1. Tokens
 
-`--umbra-vertical-nav-width` (240px), `--umbra-vertical-nav-rail-width`, `--umbra-vertical-nav-rail-below` (160px, in px: narrower than this the nav becomes a rail), `--umbra-vertical-nav-bg`, `--umbra-vertical-nav-fg`, `--umbra-vertical-nav-current-bg`, `--umbra-vertical-nav-current-fg`, `--umbra-vertical-nav-stripe-width`, `--umbra-vertical-nav-row-height`, `--umbra-vertical-nav-radius`, `--umbra-vertical-nav-padding`, `--umbra-vertical-nav-gap`.
+`--umbra-vertical-nav-width` (240px as a column of the page; elsewhere the nav fills its container unless this is set), `--umbra-vertical-nav-rail-width`, `--umbra-vertical-nav-rail-below` (160px, in px: narrower than this the nav becomes a rail), `--umbra-vertical-nav-bg`, `--umbra-vertical-nav-fg`, `--umbra-vertical-nav-current-bg`, `--umbra-vertical-nav-current-fg`, `--umbra-vertical-nav-stripe-width`, `--umbra-vertical-nav-row-height`, `--umbra-vertical-nav-radius`, `--umbra-vertical-nav-padding`, `--umbra-vertical-nav-gap`.
 
 ### 2. Props
 
@@ -104,3 +104,7 @@ Resolved 2026-10-10:
 - Opening a group is not size-animated; the technique of `Accordion` can be applied later.
 - The list has no fade at its scroll edges, because the nav has no background of its own to fade into.
 - No loading, empty or error state: the nav is structure.
+
+Changed 2026-10-11 (owner's feedback O-3):
+
+- **The nav fills the width of what holds it.** In a card, a modal's side or any other box, its items span the box: the selected fill and the hover area reach both sides, and a badge sits at the end. Before, the nav was 240px wide wherever it was, and in a wider card the items hugged the start. Its own width (`--umbra-vertical-nav-width`, 240px) is for the one place where nothing else gives it one: as a child of `Columns`, a column of the page. With a `size` weight the slot decides, as before.
