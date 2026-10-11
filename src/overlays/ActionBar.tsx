@@ -2,12 +2,14 @@ import {
   createContext,
   isValidElement,
   useContext,
+  useLayoutEffect,
   useRef,
   useState,
   type CSSProperties,
   type ReactNode,
 } from 'react';
 import { Button, ButtonBase, type ButtonVariant } from '../basics/Button';
+import { focusableIn, focusLost } from '../internal/focus';
 import { useShrinkLevel } from '../internal/useShrinkLevel';
 import { Icon, IconSlot, RawIcon } from '../provider/icons';
 import { cx, renderPart, type Part } from '../utils/parts';
@@ -80,6 +82,20 @@ function Root({
   const level = useShrinkLevel(ref, 2);
   const compact = level >= 1;
   const shown = variant === 'inline' || open;
+  // A floating bar that closes while the focus is in it ("Clear selection" empties the selection) gives
+  // the focus back to where it came from, or to the first control beside the bar.
+  const cameFrom = useRef<HTMLElement | null>(null);
+  const inside = useRef(false);
+  useLayoutEffect(() => {
+    const bar = ref.current;
+    if (shown || !inside.current || !bar) return;
+    inside.current = false;
+    if (!focusLost() && !bar.contains(document.activeElement)) return;
+    const target = cameFrom.current?.isConnected
+      ? cameFrom.current
+      : focusableIn(bar.parentElement ?? document).find((el) => el.tabIndex >= 0 && !bar.contains(el));
+    target?.focus({ preventScroll: true });
+  }, [shown]);
   return (
     <div
       ref={ref}
@@ -87,6 +103,15 @@ function Root({
       aria-label={ariaLabel}
       // A closed floating bar stays in the page for its exit transition; nothing in it can be reached.
       inert={!shown}
+      onFocus={(event) => {
+        const from = event.relatedTarget;
+        inside.current = true;
+        if (from instanceof HTMLElement && !event.currentTarget.contains(from)) cameFrom.current = from;
+      }}
+      onBlur={(event) => {
+        // Focus that goes to another control has left; focus that goes nowhere is what closing does.
+        if (event.relatedTarget && !event.currentTarget.contains(event.relatedTarget)) inside.current = false;
+      }}
       data-umbra="action-bar"
       data-variant={variant}
       data-open={shown || undefined}

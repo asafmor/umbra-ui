@@ -519,7 +519,14 @@ function useBodyBlock<E extends HTMLElement>() {
     const node = ref.current;
     if (!node || collapsedBy !== 'layout') return;
     const scroll = keepScroll(node);
+    // Moving or hiding an element drops the focus it holds; it is put back, or given to the header.
+    const focused = () => {
+      const active = document.activeElement;
+      return active instanceof HTMLElement && node.contains(active) ? active : null;
+    };
     if (!popover) {
+      // The resize that collapsed the card (or closed its popover) must not leave focus on nothing.
+      if (focused()) node.parentElement?.querySelector<HTMLElement>('[data-part="header"] button')?.focus();
       node.hidden = true;
       node.inert = true;
       return () => {
@@ -535,8 +542,10 @@ function useBodyBlock<E extends HTMLElement>() {
     scroll();
     return () => {
       const back = keepScroll(node);
+      const active = focused();
       marker.replaceWith(node);
       back();
+      active?.focus({ preventScroll: true });
     };
   }, [collapsedBy, popover]);
   return { ref, rendered: collapsedBy !== 'user' || card.closing };

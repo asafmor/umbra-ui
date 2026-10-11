@@ -12,6 +12,7 @@ import {
   type ReactElement,
   type ReactNode,
 } from 'react';
+import { rowKeys, useDirection } from '../internal/direction';
 import { isOverflowing, useShrinkLevel } from '../internal/useShrinkLevel';
 import { Menu as UmbraMenu, type MenuEntry } from '../overlays/Menu';
 import { Icon, IconSlot } from '../provider/icons';
@@ -117,6 +118,36 @@ function toRows(items: ReactElement<NavItemProps>[], value: string | undefined):
   });
 }
 
+/** True when `value` is one of the sub-pages of the item, at any depth. */
+const holdsValue = (props: NavItemProps, value: string | undefined): boolean =>
+  value !== undefined &&
+  subItems(props.menu).some((sub) => sub.props.id === value || holdsValue(sub.props, value));
+
+/**
+ * Keys for a button that opens a menu. Enter and Space open it here, on the key going down, and not
+ * through the click the browser makes of them: after such a click React Aria takes the press for a
+ * virtual one and leaves the focus on the menu itself, where Enter does nothing. Opened by a key, the
+ * menu starts on its first row.
+ */
+function openKeys(open: boolean, show: () => void) {
+  const isPopup = (event: KeyboardEvent) =>
+    (event.target as Element).getAttribute('aria-haspopup') === 'menu' &&
+    (event.target as Element).getAttribute('aria-disabled') !== 'true';
+  return {
+    onKeyDown: (event: KeyboardEvent) => {
+      const opens =
+        event.key === 'ArrowDown' || ((event.key === 'Enter' || event.key === ' ') && isPopup(event));
+      if (!opens || open) return;
+      event.preventDefault();
+      show();
+    },
+    // Space presses a button when the key comes up.
+    onKeyUp: (event: KeyboardEvent) => {
+      if (event.key === ' ' && isPopup(event)) event.preventDefault();
+    },
+  };
+}
+
 /** One navigation item: a link, or a button when it only opens a dropdown. */
 export function Item(props: NavItemProps) {
   const { id, href, icon, disabled = false, menu, children } = props;
@@ -125,6 +156,8 @@ export function Item(props: NavItemProps) {
   const [open, setOpen] = useState(false);
   const anchor = useRef<HTMLDivElement>(null);
   const active = nav.value === id;
+  // A sub-page is the current one: this item is the current section.
+  const holds = !active && holdsValue(props, nav.value);
   const choose = () => {
     if (!disabled) nav.onChange?.(id);
   };
@@ -136,7 +169,7 @@ export function Item(props: NavItemProps) {
   );
   const common = {
     className: styles.link,
-    'aria-current': active ? ('page' as const) : undefined,
+    'aria-current': active ? ('page' as const) : holds ? ('true' as const) : undefined,
     'aria-disabled': disabled || undefined,
     'data-nav-focus': '',
     tabIndex: -1,
@@ -146,21 +179,17 @@ export function Item(props: NavItemProps) {
   const popupProps = { 'aria-haspopup': 'menu' as const, 'aria-expanded': open };
   // Source behaviour: the label navigates and a separate caret opens the dropdown. An item without
   // `href` opens the dropdown from anywhere on it.
-  const onKeyDown = (event: KeyboardEvent) => {
-    if (menu && !disabled && !open && event.key === 'ArrowDown') {
-      event.preventDefault();
-      setOpen(true);
-    }
-  };
+  const keys = openKeys(open, () => setOpen(true));
   return (
     <div
       ref={anchor}
       data-part="item"
-      data-active={active || undefined}
+      data-active={active || holds || undefined}
+      data-section={holds || undefined}
       data-open={open || undefined}
       data-disabled={disabled || undefined}
       className={styles.item}
-      onKeyDown={onKeyDown}
+      {...(menu && !disabled && keys)}
     >
       {href && !disabled ? (
         nav.renderLink({ ...common, href, onClick: choose, children: content })
@@ -192,7 +221,7 @@ export function Item(props: NavItemProps) {
           <Icon name="chevronDown" />
         </button>
       )}
-      {active &&
+      {(active || holds) &&
         renderPart(nav.indicator, {}, () => <span data-part="indicator" className={styles.indicator} />)}
       {menu && (
         <UmbraMenu
@@ -201,7 +230,11 @@ export function Item(props: NavItemProps) {
           anchorRef={anchor}
           open={open}
           onOpenChange={setOpen}
-          onAction={nav.onChange}
+          // Closed here, not left to the menu: choosing a sub-page re-renders the bar, and with it the menu.
+          onAction={(chosen) => {
+            setOpen(false);
+            nav.onChange?.(chosen);
+          }}
           renderLink={nav.renderLink}
         />
       )}
@@ -227,11 +260,7 @@ function More({ label, nav, children }: { label: string; nav: NavContextValue; c
         data-nav-focus=""
         tabIndex={-1}
         onClick={() => setOpen((o) => !o)}
-        onKeyDown={(event) => {
-          if (open || event.key !== 'ArrowDown') return;
-          event.preventDefault();
-          setOpen(true);
-        }}
+        {...openKeys(open, () => setOpen(true))}
       >
         <span className={styles.label}>{label}</span>
         <Icon name="chevronDown" />
@@ -242,7 +271,10 @@ function More({ label, nav, children }: { label: string; nav: NavContextValue; c
         anchorRef={anchor}
         open={open}
         onOpenChange={setOpen}
-        onAction={nav.onChange}
+        onAction={(chosen) => {
+          setOpen(false);
+          nav.onChange?.(chosen);
+        }}
         renderLink={nav.renderLink}
       />
     </div>
@@ -273,9 +305,11 @@ export function NavList({
   children,
 }: NavListProps) {
   const list = useRef<HTMLDivElement>(null);
+  const direction = useDirection();
   const held = useContext(NavHoldContext);
   const items = Children.toArray(children).filter(isValidElement) as ReactElement<NavItemProps>[];
-  const activeIndex = items.findIndex((item) => item.props.id === value);
+  // The current item, or the item whose sub-page is current: it never moves into "More".
+  const activeIndex = items.findIndex((item) => item.props.id === value || holdsValue(item.props, value));
   const movable = items.length - (activeIndex >= 0 ? 1 : 0);
   const max = held?.hold ? 0 : movable + extraSteps;
   const level = useShrinkLevel(list, max, items.length, {
@@ -315,7 +349,8 @@ export function NavList({
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     const targets = focusTargets(event.currentTarget);
     const index = targets.indexOf(document.activeElement as HTMLElement);
-    const next = { ArrowRight: index + 1, ArrowLeft: index - 1, Home: 0, End: targets.length - 1 }[event.key];
+    const [back, forward] = rowKeys(direction);
+    const next = { [forward]: index + 1, [back]: index - 1, Home: 0, End: targets.length - 1 }[event.key];
     if (index < 0 || next === undefined) return;
     event.preventDefault();
     const target = targets[(next + targets.length) % targets.length]!;

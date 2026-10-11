@@ -25,11 +25,18 @@ import {
 import { ButtonBase } from '../basics/Button';
 import { ScrollArea, type ScrollAreaProps } from '../layout/ScrollArea';
 import { Icon } from '../provider/icons';
+import { focusableIn } from '../internal/focus';
 import { useScopeAttributes } from '../provider/UmbraProvider';
 import { warn } from '../utils/dev';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './Popover.module.css';
-import { toAriaPlacement, useFlipWhenCut, useOpenState, type OverlayPlacement } from './shared';
+import {
+  toAriaPlacement,
+  useFlipWhenCut,
+  useOpenState,
+  useOverlayLayer,
+  type OverlayPlacement,
+} from './shared';
 
 interface PopoverContextValue {
   titleId: string;
@@ -121,6 +128,7 @@ function Content({
   children,
 }: PopoverContentProps) {
   const scope = useScopeAttributes();
+  const layer = useOverlayLayer('popover');
   // Under a `Popover.Root` the state is the root's; alone (with `anchorRef`) the content keeps its own.
   const root = useContext(OverlayTriggerStateContext);
   const fromTrigger = useSlottedContext(AriaPopoverContext);
@@ -147,9 +155,9 @@ function Content({
   // True from the start of a pointer press to its click. Focus that moves because of a press is the
   // press's business (see below), not a reason of its own to close.
   const pressing = useRef(false);
-  const latest = useRef({ setOpen, anchor });
+  const latest = useRef({ setOpen, anchor, dismissOnBlur });
   useEffect(() => {
-    latest.current = { setOpen, anchor };
+    latest.current = { setOpen, anchor, dismissOnBlur };
   });
   useEffect(() => {
     if (!isOpen) return;
@@ -187,6 +195,36 @@ function Content({
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && !event.defaultPrevented && !covered()) latest.current.setOpen(false);
     };
+    // The panel is rendered at the end of the page, but in the tab order it sits right after its
+    // trigger: Shift+Tab from its start goes to the trigger, Tab from its end to what follows the
+    // trigger.
+    const onTab = (event: KeyboardEvent) => {
+      const panelEl = panel.current;
+      const trigger = latest.current.anchor?.current;
+      if (event.key !== 'Tab' || event.defaultPrevented || !(trigger instanceof HTMLElement)) return;
+      if (!panelEl || !(event.target instanceof Node) || !panelEl.contains(event.target)) return;
+      const stops = focusableIn(panelEl).filter((stop) => stop.tabIndex >= 0);
+      const active = document.activeElement;
+      const atEdge = event.shiftKey
+        ? active === panelEl || active === stops[0]
+        : active === panelEl
+          ? stops.length === 0
+          : active === stops.at(-1);
+      if (!atEdge) return;
+      const page = focusableIn(document).filter((stop) => stop.tabIndex >= 0 && !panelEl.contains(stop));
+      const own = page.find((stop) => trigger === stop || trigger.contains(stop)) ?? trigger;
+      const after = page.find(
+        (stop) =>
+          !trigger.contains(stop) && trigger.compareDocumentPosition(stop) & Node.DOCUMENT_POSITION_FOLLOWING,
+      );
+      event.preventDefault();
+      event.stopPropagation();
+      (event.shiftKey ? own : (after ?? own)).focus();
+      if (latest.current.dismissOnBlur) latest.current.setOpen(false);
+    };
+    // On the window, as the key is caught, so before React Aria's own handler on the document: that one
+    // sends Shift+Tab to the control before the trigger, and to nothing when the trigger is the first.
+    window.addEventListener('keydown', onTab, true);
     document.addEventListener('pointerdown', onPointerDown, true);
     document.addEventListener('pointerup', onPointerEnd, true);
     document.addEventListener('pointercancel', onPointerEnd, true);
@@ -195,6 +233,7 @@ function Content({
     return () => {
       window.clearTimeout(timer);
       pressing.current = false;
+      window.removeEventListener('keydown', onTab, true);
       document.removeEventListener('pointerdown', onPointerDown, true);
       document.removeEventListener('pointerup', onPointerEnd, true);
       document.removeEventListener('pointercancel', onPointerEnd, true);
@@ -208,6 +247,7 @@ function Content({
   return (
     <AriaPopover
       {...scope}
+      {...layer}
       ref={setPanel}
       triggerRef={anchor}
       isOpen={isOpen}

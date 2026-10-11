@@ -39,7 +39,7 @@ Item states: default, hover, active (current section), open (menu shown), focus,
 | Prop | Type | Default | Purpose |
 |---|---|---|---|
 | `items` | list of `{ id, label, textValue?, icon?, href?, items?, disabled? }` | — | `items` inside an item makes a dropdown. `textValue` is the label as text, required when `label` is not a string |
-| `value` | id | — | The active item |
+| `value` | id | — | The current page: a top-level item, or a sub-page (its parent item is then marked as the current section) |
 | `onChange` | function | — | |
 | `renderLink` | function | plain `<a>` | Plugs in the app's router link. It receives anchor props to spread: `renderLink={(p) => <RouterLink to={p.href} {...p} />}` |
 | `aria-label` | string | "Main" | Name of the navigation landmark |
@@ -77,3 +77,10 @@ Resolved 2026-10-10:
 - An item with a dropdown does both, as in the source. Its label navigates and a separate caret button opens the menu. An item without `href` opens the menu from anywhere on the item.
 - Approved after Milestone 0: `renderLink` receives anchor props to spread on the app's router link.
 - 2026-10-10 (review items 4 and 7): dropdowns moved to the public `Menu`; the caret is named and has a 24px target. `renderLink` also renders the link rows of the menus.
+
+Resolved 2026-10-11 (review 2):
+
+- **`value` when a sub-page is current.** `value` is the id of the current page, at any depth. When it is the id of a sub-page (a row of an item's dropdown), the top-level item that holds it is marked as the current section: `aria-current="true"` on its link or button, `data-active` and `data-section` on the item, and the same indicator as a current item. The sub-page's row in the dropdown has `aria-current="page"`. Exactly one top-level item is marked. That item never moves into "More". Before, nothing in the bar was marked (F4).
+- **Opening a dropdown or "More" by key.** `Enter`, `Space` and `ArrowDown` on the caret (or on an item that only opens a menu) open it with focus on its first row; `Enter` there chooses the row, `Escape` closes and returns focus. Before, `Enter` and `Space` left focus on the menu itself, where `Enter` did nothing (F3). The keys are handled on key-down; the browser's click from them is not used.
+- **Arrow keys follow the direction**: Left goes to the next item when the direction is right to left (F10).
+- **The menu closes when a row is chosen**, including a row of a submenu inside "More" whose choice moves its parent out of "More".

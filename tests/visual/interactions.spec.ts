@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { expectFocusKept, pressKeys } from './helpers';
 
 // Behaviour the static captures cannot show: popovers, tab mode keys, overflow menus.
 // The overlays themselves (Popover, Tooltip, Menu) are tested in overlays.spec.ts.
@@ -171,6 +172,85 @@ test('nav: one tab stop, arrow keys, a caret that opens the dropdown, and choosi
   await expect(nav.getByRole('link', { name: 'Planning' })).toHaveAttribute('aria-current', 'page');
 });
 
+for (const key of ['Enter', 'Space', 'ArrowDown'] as const) {
+  test(`nav: ${key} on a caret opens its menu on the first row, and Enter there chooses it`, async ({
+    page,
+  }) => {
+    // Enter and Space used to leave the focus on the menu itself: the first row had a ring, a second
+    // Enter did nothing and ArrowDown skipped to the second row.
+    for (const story of ['shell-primarynav--items', 'shell-subnav--slots']) {
+      await open(page, story);
+      const caret = page.locator('[data-nav-focus][aria-haspopup="menu"]').first();
+      await caret.focus();
+      await pressKeys(page, key);
+      const menu = page.getByRole('menu');
+      await expect(menu).toBeVisible();
+      const first = menu.getByRole('menuitem').first();
+      await expect(first).toBeFocused();
+      const name = (await first.textContent())!;
+      await pressKeys(page, 'ArrowDown');
+      await expect(menu.getByRole('menuitem').nth(1)).toBeFocused();
+      await pressKeys(page, 'ArrowUp');
+      await expect(first).toBeFocused();
+      await page.keyboard.press('Enter');
+      await expect(menu).toHaveCount(0);
+      await expectFocusKept(page);
+      // The row was chosen: it is the current page, inside the menu, when the menu opens again.
+      await caret.focus();
+      await pressKeys(page, key);
+      await expect(page.getByRole('menuitem', { name, exact: true }).first()).toHaveAttribute(
+        'aria-current',
+        'page',
+      );
+      await pressKeys(page, 'Escape');
+      await expect(caret).toBeFocused();
+    }
+  });
+}
+
+test('nav: "More" opens by Enter on its first row', async ({ page }) => {
+  await open(page, 'shell-primarynav--overflow');
+  const more = page.getByRole('button', { name: 'More' }).first();
+  await more.focus();
+  await pressKeys(page, 'Enter');
+  await expect(page.getByRole('menu').getByRole('menuitem').first()).toBeFocused();
+  await pressKeys(page, 'Escape');
+  await expect(more).toBeFocused();
+});
+
+test('nav: when a sub-page is current, its top-level item is marked as the current section', async ({
+  page,
+}) => {
+  for (const [story, label] of [
+    ['shell-primarynav--items', 'Main'],
+    ['shell-subnav--slots', 'Section'],
+  ] as const) {
+    await open(page, story);
+    const nav = page.getByRole('navigation', { name: label }).first();
+    const caret = nav.locator('[data-nav-focus][aria-haspopup="menu"]').first();
+    await caret.click();
+    const row = page.getByRole('menu').getByRole('menuitem').last();
+    const name = (await row.textContent())!;
+    await row.click();
+    await expect(page.getByRole('menu')).toHaveCount(0);
+    // Exactly one top-level item is marked: the parent, as the section, with the bar under it.
+    const item = nav.locator('[data-part="item"][data-section]');
+    await expect(item).toHaveAttribute('data-active', 'true');
+    await expect(item).toHaveAttribute('data-section', 'true');
+    await expect(item.locator('[data-part="indicator"]')).toBeVisible();
+    await expect(item.locator('[data-nav-focus]').first()).toHaveAttribute('aria-current', 'true');
+    await expect(nav.locator('[data-part="item"][data-active]')).toHaveCount(1);
+    await expect(nav.locator('[aria-current="page"]')).toHaveCount(0);
+    // The sub-page itself is the current page, in the menu.
+    await caret.click();
+    await expect(page.getByRole('menuitem', { name, exact: true }).last()).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+    await page.keyboard.press('Escape');
+  }
+});
+
 test('top bar: as it narrows, items move into "More" and the active item stays', async ({ page }) => {
   await open(page, 'shell-app-shell--full-screen', 1920, 1080);
   const bar = page.locator('[data-umbra="top-bar"]');
@@ -225,6 +305,31 @@ test('top bar without a nav still shrinks, down to the icon of the primary actio
   for (const bar of await bars.all()) {
     expect(await bar.evaluate((el) => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(1);
   }
+});
+
+test('a resize that closes the popover of a card keeps the focus: it stays on the control it was on', async ({
+  page,
+}) => {
+  await open(page, 'layout-page-layouts--three-columns', 1280, 600, 'spacious');
+  const card = page.locator('[data-umbra="card"][data-collapsed="layout"]').last();
+  await card.getByRole('button').first().click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  // Give the content a control, and put the focus on it.
+  await dialog.locator('[data-part="viewport"]').evaluate((view) => {
+    const button = document.createElement('button');
+    button.textContent = 'Inside the card';
+    view.prepend(button);
+    button.focus();
+  });
+  await page.setViewportSize({ width: 1280, height: 1000 });
+  await expect(dialog).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Inside the card' })).toBeFocused();
+  // Collapsed again by the next resize, the control is hidden: the focus goes to the card's header.
+  await page.setViewportSize({ width: 1280, height: 600 });
+  await expect(page.getByRole('button', { name: 'Inside the card' })).toBeHidden();
+  await expectFocusKept(page);
+  expect(await page.evaluate(() => !!document.activeElement?.closest('[data-part="header"]'))).toBe(true);
 });
 
 test('a card popover closes when its card opens again or the window enters tab mode', async ({ page }) => {

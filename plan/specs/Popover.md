@@ -109,5 +109,10 @@ Resolved 2026-10-10:
 - A press outside closes on the click, after the page's own handler, so a separate button that toggles a controlled popover does not reopen it.
 - Without `trigger`, the app owns the state: `anchorRef` with `open` and `onOpenChange` (or `defaultOpen`).
 - A close button is opt-in (`closeButton`); the source shows none.
-- `Tab` from the last control of the panel leaves the page's tab order at the end of the document (the panel is rendered at the end of the body). It is not moved back to the trigger.
+- (Replaced 2026-10-11, see below.) `Tab` from the last control of the panel was said to leave the page's tab order.
 - A `Popover` trigger placed among actions that move into an overflow menu is not supported; give such actions a `Menu`.
+
+Resolved 2026-10-11 (review 2):
+
+- **Tab order.** The panel is rendered at the end of the page, but in the tab order it sits right after its trigger. `Shift+Tab` from the panel, or from its first control, goes to the trigger; `Tab` from its last control goes to the control that follows the trigger on the page. Either closes the popover (it stays with `dismissOnBlur={false}`). Before, `Shift+Tab` dropped the focus to `<body>` with the popover still open (F5).
+- Inside a modal the panel renders into the modal's layer (`plan/specs/Modal.md`, stacking); it carries the page's `dir`.

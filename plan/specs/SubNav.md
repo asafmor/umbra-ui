@@ -70,3 +70,11 @@ Same as `PrimaryNav`, including the dropdowns and "More" as a `Menu`, the named 
 ## Open questions
 
 None.
+
+Resolved 2026-10-11 (review 2):
+
+- **`value` when a sub-page is current.** `value` is the id of the current page, at any depth. When it is the id of a sub-page (a row of an item's dropdown), the top-level item that holds it is marked as the current section: `aria-current="true"` on its link or button, `data-active` and `data-section` on the item, and the same indicator as a current item. The sub-page's row in the dropdown has `aria-current="page"`. Exactly one top-level item is marked. That item never moves into "More". Before, nothing in the bar was marked (F4).
+- **Opening a dropdown or "More" by key.** `Enter`, `Space` and `ArrowDown` on the caret (or on an item that only opens a menu) open it with focus on its first row; `Enter` there chooses the row, `Escape` closes and returns focus. Before, `Enter` and `Space` left focus on the menu itself, where `Enter` did nothing (F3). The keys are handled on key-down; the browser's click from them is not used.
+- **Arrow keys follow the direction**: Left goes to the next item when the direction is right to left (F10).
+- **The menu closes when a row is chosen**, including a row of a submenu inside "More" whose choice moves its parent out of "More".
+- **Order with a `ShortcutBar` in the end slot**: the shortcuts give way first (labels, then chips into "+N"); pages move into "More" only when the shortcuts have nothing left to give, and no chip comes back while a page is in "More". What the bar shows is a function of its width alone: the same narrowing, widening and on a fresh load (F28).

@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { expectFocusKept } from './helpers';
 
 // Modal and ConfirmDialog: opening and closing, focus, the close guard, stacking, scrolling, the
 // inert page behind, and the full-window form below the minimum window.
@@ -318,6 +319,14 @@ test.describe('size and scrolling', () => {
     await expect(toggle).toHaveAttribute('aria-expanded', 'false');
     await expect(modal.getByText('Display: display name')).toBeVisible();
     expect(await overflow(page)).toEqual({ x: 0, y: 0 });
+    // The chosen control is hidden with the list: the focus is on the toggle, by pointer and by key.
+    await expect(toggle).toBeFocused();
+    await page.keyboard.press('Enter');
+    await page.keyboard.press('Tab');
+    await page.keyboard.press('Enter');
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await expect(toggle).toBeFocused();
+    await expectFocusKept(page);
   });
 });
 

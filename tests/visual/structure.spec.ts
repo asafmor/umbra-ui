@@ -1,4 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
+import { expectFocusKept } from './helpers';
 
 // PageHeader, ActionBar, VerticalNav and Accordion: keyboard, focus, semantics, motion, and each step of
 // "show less as it narrows".
@@ -710,6 +711,34 @@ test.describe('ActionBar', () => {
     expect(leaving.at(-1)).toMatchObject({ opacity: 0, visible: false });
     await expect(page.getByText('Selected: 0. Archived: 1.')).toBeVisible();
     await expect(page.getByRole('checkbox', { checked: true })).toHaveCount(0);
+  });
+
+  test('"Clear selection" closes a floating bar and hands the focus back', async ({ page }) => {
+    // The bar becomes inert as it closes; the focus used to fall to <body>.
+    await open(page, 'overlays-actionbar--floating');
+    const box = page.getByRole('checkbox', { name: 'Item 2' });
+    await box.focus();
+    await page.keyboard.press('Space');
+    const bar = page.locator('[data-umbra="action-bar"]');
+    await expect(bar).toBeVisible();
+    // From the checkbox into the bar, to its clear button.
+    const clear = bar.getByRole('button', { name: /clear/i });
+    for (let i = 0; i < 12 && !(await clear.evaluate((el) => el === document.activeElement)); i++) {
+      await page.keyboard.press('Tab');
+    }
+    await expect(clear).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(bar).toHaveAttribute('inert');
+    await expectFocusKept(page);
+    expect(await page.evaluate(() => !document.activeElement!.closest('[data-umbra="action-bar"]'))).toBe(
+      true,
+    );
+    // Reached by a pointer press on the bar, with nothing remembered, it goes to a control beside it.
+    await page.getByRole('checkbox', { name: 'Item 3' }).click();
+    await expect(bar).toBeVisible();
+    await clear.focus();
+    await page.keyboard.press('Enter');
+    await expectFocusKept(page);
   });
 
   test('with reduced motion a floating bar fades without moving', async ({ page }) => {

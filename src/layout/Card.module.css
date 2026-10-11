@@ -181,6 +181,11 @@
   background: color-mix(in oklab, currentColor 6%, var(--header-bg));
 }
 
+/* Pressed: one step darker (plan/interaction.md). */
+.root[data-collapsed='layout'] > .header:active {
+  background: color-mix(in oklab, #000 12%, var(--header-bg));
+}
+
 .subtitle {
   font: var(--umbra-font-label);
   color: var(--umbra-color-base-text-secondary);
@@ -223,7 +228,7 @@
 }
 
 .root[data-collapsed='user'] .caret > * {
-  rotate: -90deg;
+  rotate: calc(var(--umbra-dir, 1) * -90deg);
 }
 
 .toolbar {
