@@ -39,7 +39,7 @@ States: `collapsed`, `sticky`.
 
 ### 1. Tokens
 
-`--umbra-group-header-bg`, `--umbra-group-header-color`, `--umbra-group-header-font`, `--umbra-group-header-height`, `--umbra-group-header-padding-x`. The height follows the density level.
+`--umbra-group-header-bg`, `--umbra-group-header-color`, `--umbra-group-header-font`, `--umbra-group-header-height`, `--umbra-group-header-padding-x`, `--umbra-group-header-focus-offset` (the ring offset of the controls in the header, inwards by default because the row clips). The height follows the density level.
 
 ### 2. Props
 
@@ -66,6 +66,8 @@ States: `collapsed`, `sticky`.
 
 `GroupHeader.Root`, `GroupHeader.Toggle`, `GroupHeader.Title`, `GroupHeader.Count`, `GroupHeader.Meta`, `GroupHeader.Actions`.
 
+`GroupHeader.Root` has two props the all-in-one component does not: `ref` (the element, for measuring) and `truncate` (default `true`: the title may truncate; the all-in-one component turns it off until `meta` has hidden and the actions are in the menu).
+
 ## Behaviour as space shrinks
 
 | Step | Trigger | Result |
@@ -77,15 +79,21 @@ States: `collapsed`, `sticky`.
 ## Interaction and accessibility
 
 - The title is a heading (`headingLevel`).
-- The caret is a button with `aria-expanded`; `Enter` and `Space` toggle it. Its name includes a text title, so several carets in one list are told apart.
+- The caret is a button with `aria-expanded`; `Enter` and `Space` toggle it. Its name includes a text title, so several carets in one list are told apart. Collapsed, it points at the title: right in a left-to-right page, left in a right-to-left one.
 - The header only reports the collapse; the owner of the rows hides them. `List.Group` does this by itself.
 - `sticky` needs the header and its rows to share a parent element, so the header leaves with its group.
 - The caret rotates in 180ms; the rows appear and disappear at once.
-- Inside a `List`, the header is the row header of its group, and the group is named by it.
+- Inside a `List`, the header is the row header of its group, and the group is named by its title. Its caret and actions are stops of the list's keyboard model: reached with the arrow keys and with Tab (`List.md`).
 
 ## Open questions
 
 None.
+
+Resolved 2026-10-11 (review fixes):
+
+- The caret button carries `data-part="toggle"` (it had none), and `GroupHeader.Toggle` takes `className` and `style`. The attribute is set on the element after it mounts, because the internal button passes none; a wrapper element was tried and moved the button by a pixel in a `DataTable` cell.
+- `GroupHeader.Root`'s `elementRef` is now `ref`, as on `Legend.Root`; `ref` and `truncate` are public and documented above (review B23).
+- A `plain` header in a `List` with sticky headers is opaque (review B4): the list sticks the row around the header, so the header's own `sticky` rule never applied.
 
 Resolved 2026-10-10:
 

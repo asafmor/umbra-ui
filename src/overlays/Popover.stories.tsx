@@ -104,7 +104,7 @@ function LargePopover() {
     <Popover
       trigger={<Button>Advice</Button>}
       size="large"
-      title="Team advice"
+      title="Review notes"
       subtitle="Person A, coordinator"
       actions={<Button onPress={() => setDone([1, 2, 3])}>Apply all actions</Button>}
       toolbar={['Actions (3)', 'Observations (2)'].map((label) => (

@@ -22,8 +22,9 @@ import {
   SubmenuTrigger,
 } from 'react-aria-components';
 import { OverflowMenuContext } from '../internal/contexts';
-import { Icon, IconSlot, RawIcon } from '../provider/icons';
-import { useScopeAttributes, useShortcut } from '../provider/UmbraProvider';
+import { CheckMark, Hint } from '../internal/menuRow';
+import { Icon, IconSlot } from '../provider/icons';
+import { useScopeAttributes } from '../provider/UmbraProvider';
 import { warn } from '../utils/dev';
 import type { LinkRenderProps } from '../utils/link';
 import { cx, renderPart, type Part } from '../utils/parts';
@@ -160,24 +161,8 @@ interface Shared {
   emptyLabel: string;
 }
 
-/** Internal: the keys of a shortcut, at the end of a row. */
-export function Hint({ id }: { id: string }) {
-  const keys = useShortcut(id, undefined);
-  return keys ? (
-    <kbd data-part="hint" className={styles.hint}>
-      {keys}
-    </kbd>
-  ) : null;
-}
-
-/** Internal: the mark of a checked row. Also used by buttons shown as rows of an overflow menu. */
-export function CheckMark({ shown, part }: { shown: boolean; part?: Part }) {
-  return (
-    <span data-part="check" className={styles.check} aria-hidden="true">
-      {shown && renderPart(part, {}, () => <RawIcon name="check" />)}
-    </span>
-  );
-}
+// In their own module, so that `Button` can draw them without importing the menu.
+export { CheckMark, Hint };
 
 /** Which leading columns a level reserves, so its labels line up: one for checks, one for icons. */
 interface Gutters {

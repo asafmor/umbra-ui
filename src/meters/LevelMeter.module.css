@@ -64,8 +64,12 @@
 }
 
 .root[data-boxed] .strip:not(.skeleton) {
-  border-color: var(--umbra-level-meter-border, var(--umbra-color-base-border-strong));
+  border-color: var(--umbra-level-meter-border, var(--umbra-color-base-border-control));
   background: var(--umbra-level-meter-track, var(--umbra-color-base-surface1));
+}
+
+.skeletonPart {
+  display: contents;
 }
 
 /* While loading, a skeleton of the strip's size stands in for it. */
@@ -76,7 +80,7 @@
   border: 0;
 }
 
-.root[data-orientation='vertical'] > .strip.skeleton[data-umbra] {
+.root[data-orientation='vertical'] .strip.skeleton[data-umbra] {
   inline-size: var(--h);
   block-size: auto;
 }
@@ -96,20 +100,22 @@
   border-radius: 1px;
 }
 
+/* An unlit tick has 3:1 against the strip. A lit one is brighter and taller, so the two differ without colour. */
 .plot > [data-part='tick'] {
-  inset-block: 20%;
-  background: var(--umbra-level-meter-tick, var(--umbra-color-base-border-strong));
+  inset-block: 30%;
+  background: var(--umbra-level-meter-tick, var(--umbra-color-base-border-control));
 }
 
 .plot > [data-part='tick'][data-lit] {
-  background: var(--umbra-level-meter-tick-lit, var(--umbra-color-base-text-muted));
+  inset-block: 15%;
+  background: var(--umbra-level-meter-tick-lit, var(--umbra-color-base-text-secondary));
 }
 
 /* A zone edge: thinner and taller than a tick. */
 .plot > [data-part='boundary'] {
   --tick: var(--umbra-border-width);
 
-  background: var(--umbra-level-meter-tick-lit, var(--umbra-color-base-text-muted));
+  background: var(--umbra-level-meter-boundary, var(--umbra-color-base-text-muted));
 }
 
 .plot > [data-part='band'] {
@@ -204,7 +210,7 @@
   order: 1;
 }
 
-.root[data-orientation='vertical'] > .strip {
+.root[data-orientation='vertical'] .strip {
   order: 2;
   block-size: auto;
   inline-size: var(--h);
@@ -233,7 +239,11 @@
 }
 
 .root[data-orientation='vertical'] .plot > [data-part='tick'] {
-  inset-inline: 20%;
+  inset-inline: 30%;
+}
+
+.root[data-orientation='vertical'] .plot > [data-part='tick'][data-lit] {
+  inset-inline: 15%;
 }
 
 .root[data-orientation='vertical'] .plot > [data-part='band'] {

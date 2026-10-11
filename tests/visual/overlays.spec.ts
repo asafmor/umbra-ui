@@ -206,7 +206,7 @@ for (const [width, height] of [
     page,
   }) => {
     await open(page, 'overlays-popover--large', width, height);
-    const dialog = page.getByRole('dialog', { name: 'Team advice' });
+    const dialog = page.getByRole('dialog', { name: 'Review notes' });
     const panel = await box(dialog);
     expect(panel.y + panel.height).toBeLessThanOrEqual(height);
     expect(panel.x + panel.width).toBeLessThanOrEqual(width);

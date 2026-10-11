@@ -14,9 +14,9 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 const spending: ProgressBarStackItem[] = [
-  { id: 'a', label: 'Team A', value: 40 },
-  { id: 'b', label: 'Team B', value: 25 },
-  { id: 'c', label: 'Team C', value: 10 },
+  { id: 'a', label: 'Region 1', value: 40 },
+  { id: 'b', label: 'Region 2', value: 25 },
+  { id: 'c', label: 'Region 3', value: 10 },
 ];
 
 const bands: Threshold[] = [
@@ -145,10 +145,10 @@ export const Thresholds: Story = {
   ),
 };
 
-/** Zero, full, values outside the scale, a scale that does not start at zero, loading and unknown length. */
+/** Zero, full, values outside the scale, a scale that does not start at zero, no value, loading and unknown length. */
 export const EdgeValues: Story = {
   render: () => (
-    <Board>
+    <Board columns={4}>
       <Panel title="Zero and full">
         <ProgressBar label="Zero" value={0} showValue />
         <ProgressBar label="Full" value={100} showValue />
@@ -179,6 +179,11 @@ export const EdgeValues: Story = {
           showValue
         />
       </Panel>
+      <Panel title="No value">
+        <ProgressBar label="Not measured" kind="meter" value={null} showValue />
+        <ProgressBar label="Not started" showValue emptyLabel="n/a" noValueLabel="Not available" />
+        <ProgressBar label="Capacity" kind="meter" value={null} layout="inline" showValue target={80} />
+      </Panel>
       <Panel title="Loading">
         <ProgressBar label="Budget used" value={64} showValue loading />
         <ProgressBar aria-label="Capacity" value={64} size="thick" loading />
@@ -192,6 +197,30 @@ export const EdgeValues: Story = {
         <Panel title="Indeterminate, reduced motion">
           <ProgressBar label="Syncing" indeterminate />
           <ProgressBar label="Syncing" indeterminate size="thick" tone="info" />
+        </Panel>
+      </UmbraScope>
+    </Board>
+  ),
+};
+
+/** Right to left: the bar fills from the right, and its gradient, its target and its stacked parts mirror with it. */
+export const RightToLeft: Story = {
+  globals: { direction: 'rtl' },
+  render: () => (
+    <Board>
+      <Panel title="Fill and target">
+        <ProgressBar label="Budget used" value={30} showValue target={80} />
+        <ProgressBar label="Storage" kind="meter" value={64} showValue size="thick" valuePlacement="inside" />
+        <ProgressBar label="Capacity" value={45} layout="inline" showValue />
+      </Panel>
+      <Panel title="Segmented and stacked">
+        <ProgressBar label="Steps done" value={2} max={5} segments={5} tone="warning" showValue />
+        <ProgressBar label="Budget used" kind="meter" stack={spending} showValue />
+        <ProgressBar label="Score" kind="meter" value={20} thresholds={bands} showValue />
+      </Panel>
+      <UmbraScope tokens={{ 'motion-scale': 0 }}>
+        <Panel title="Unknown length">
+          <ProgressBar label="Syncing" indeterminate />
         </Panel>
       </UmbraScope>
     </Board>

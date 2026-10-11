@@ -18,6 +18,8 @@ Rules:
 - **Parts**: each component publishes a fixed list of part names. A part accepts a node (replace), `null` (hide), or a function that receives the default part's props (wrap or adjust).
 - **Blocks**: the all-in-one component is itself built from its public blocks, so anything it does can be rebuilt by hand. Exceptions, each recorded in its spec (2026-10-11): a component that is a single control with fixed inner parts (`PrimaryAction`), or whose value is the wiring between existing public components (`HistoryButtons`), publishes no blocks; its pieces are reached through `parts`, and a hand-built version is composed from the public components it uses.
 - Every component also accepts `className` and `style` on its root, and exposes its state as `data-` attributes for CSS.
+- **`data-part`** (added 2026-10-11): every piece named in a spec's anatomy carries `data-part="<name>"`, whether or not it can be replaced, and so do the placeholders shown while loading (`skeleton`) and the empty and error states (`empty`, `error`). The value is the part's name exactly as it is written in `parts` and in the spec: camelCase (`externalIcon`, `sortIndicator`), never kebab-case. A replaced part is the app's node, so it carries the attribute only if the app adds it.
+- **Blocks** take `className` and `style` like the root does, and pass them to their element.
 - **Each component's spec lists all four layers**: its tokens, props, part names and blocks. The per-component customisation table in the docs is generated from the source, so it cannot go out of date.
 
 **Rejected**: props only (prop bloat; unusual cases stay impossible). Building blocks only (simple cases need too much code).
@@ -31,7 +33,7 @@ The same idea has the same name in every component. New components follow this l
 | A press | `onPress`. A row or point chosen from a collection: `onAction(id)`. Never `onClick`. |
 | State flags | `disabled`, `readOnly`, `invalid`, `required`, `loading`, `selected`, `checked`, `pressed`, `open`, `collapsed`. No `is` prefix. |
 | A changing value | `value` / `defaultValue` / `onChange`. Other state: `<name>` / `default<Name>` / `on<Name>Change` (`collapsed`, `open`). |
-| Lists of ids | `<what>Ids`: `selectedIds`, `hiddenIds`, `expandedIds`. Items are identified by `id`; the type of one is `<Component>Id` (`ListId`). |
+| Lists of ids | `<what>Ids`: `selectedIds`, `hiddenIds`, `expandedIds`. Items are identified by `id`; the type of one is `<Component>Id` (`ListId`). The change callback names the idea, not the prop: `onSelectionChange`, `onHiddenChange`, `onExpandedChange` (recorded 2026-10-11; `List`, `Menu`, `DataTable`, `Legend`, the charts and `VerticalNav` already agree). |
 | Heading level | `headingLevel` |
 | A built-in string | `<what>Label` with an English default: `moreLabel`, `closeLabel`, `emptyLabel`, `retryLabel` |
 | Text of a number | `formatValue` |

@@ -177,7 +177,7 @@ Notes on the source material: screenshots 11-16 and 18 are full-window captures 
 | ShortcutBar | Badges "9+" on two pills (Transfer Activity, Messages); "Calendar" pill added | Right | Badge overflow format "9+"; pill labels truncated under the badge |
 | DateTimeBlock | "Club I Tomorrow", time 16:45 | TopBar | - |
 | MessageListItem | Two-line wrapped titles; blue speech-bubble icon variant; Introduction tinted rows; selected row | Left | Tags: Competition, Transfers, Media, Match, Introduction, Scouting |
-| EntityBanner (player) | Avatar + name + flag + "ENG" + descriptor; Tag "Bid"; CrestIcon + club + league; kit/role swatch + positions + role; Transfer Value chip; Wages + contract | Reader | - |
+| EntityBanner (player) | Avatar + name + flag + "CTA" + descriptor; Tag "Bid"; CrestIcon + club + league; kit/role swatch + positions + role; Transfer Value chip; Wages + contract | Reader | - |
 | Tag | Green "Bid" with a lighter right edge stripe | Banner | - |
 | DataTable | Tall two-line rows, 3 header groups: Club, Clauses & Options, Status & Fees | Reader | Row: large CrestIcon + club + "Loan"; two-line clause text; status cell; fee cell; chevron; 3 action buttons. The status+fee cells sit on a lighter grey inset block |
 | CrestIcon | Large (~50px) circular/shield crests | Table rows | - |

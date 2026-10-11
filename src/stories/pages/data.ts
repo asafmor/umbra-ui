@@ -81,7 +81,7 @@ export const attributes = ['Accuracy', 'Speed', 'Coverage', 'Cost', 'Quality'];
 
 export const updates = [
   { id: 'u1', title: 'Unclear outcome at Site 7', age: '3d' },
-  { id: 'u2', title: 'Team 3 has work to do after a slow start', age: '2d' },
+  { id: 'u2', title: 'Team 3 is behind on its first reviews', age: '2d' },
   { id: 'u3', title: 'Region 4 closes its backlog', age: '1d' },
 ];
 
@@ -109,27 +109,28 @@ export interface Region {
   pos: number;
   name: string;
   orders: number;
-  won: number;
+  done: number;
   open: number;
-  lost: number;
-  points: number;
+  late: number;
+  /** Billed amount, in thousands. */
+  value: number;
 }
 
 export const regions: Region[] = Array.from({ length: 19 }, (_, i) => {
-  const won = Math.max(0, 3 - Math.floor(i / 4) - (i % 4 === 3 ? 1 : 0));
+  const done = Math.max(0, 3 - Math.floor(i / 4) - (i % 4 === 3 ? 1 : 0));
   const open = i % 5 === 2 ? 1 : 0;
   return {
     id: `r${i + 1}`,
     pos: i + 1,
     name: `Region ${i + 1}`,
     orders: 3,
-    won,
+    done,
     open,
-    lost: Math.max(0, 3 - won - open),
-    points: won * 3 + open,
+    late: Math.max(0, 3 - done - open),
+    value: done * 40 + open * 15,
   };
 })
-  .sort((a, b) => b.points - a.points)
+  .sort((a, b) => b.value - a.value)
   .map((region, i) => ({ ...region, pos: i + 1 }));
 
 /** The row the user owns in the ranking. */

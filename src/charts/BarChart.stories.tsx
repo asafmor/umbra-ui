@@ -70,7 +70,7 @@ export const Variants: Story = {
           colorBy="sign"
           labels
           formatValue={(v) => `${v > 0 ? '+' : ''}${v}%`}
-          annotations={[{ type: 'line', value: 10, label: 'Goal' }]}
+          annotations={[{ type: 'line', value: 10, label: 'Target' }]}
         />
       </Tile>
       <Tile title="Colour by threshold" id="thresholds">
@@ -112,8 +112,13 @@ export const States: Story = {
             loading
           />
         </Tile>
-        <Tile title="Empty">
-          <BarChart aria-label="Orders" categories={[]} series={[]} empty="No orders in this period." />
+        <Tile title="Empty, with a description">
+          <BarChart
+            aria-label="Orders"
+            categories={[]}
+            series={[]}
+            empty={{ title: 'No orders in this period', description: 'Choose a longer period to see more.' }}
+          />
         </Tile>
         <Tile title="Error">
           <BarChart
@@ -258,13 +263,15 @@ export const PartsAndBlocks: Story = {
           <BarChart.ValueLabels />
         </BarChart.Root>
       </Tile>
-      <Tile title="Error part replaced">
+      <Tile title="Error part wrapped by a function">
         <BarChart
           aria-label="Orders"
           categories={quarters}
           series={planActual}
-          error="Failed"
-          parts={{ error: (p) => <strong role="alert">Could not load: {p.children}</strong> }}
+          error="The orders could not be loaded."
+          parts={{
+            error: (p) => <div style={{ position: 'absolute', inset: 0, opacity: 0.8 }}>{p.children}</div>,
+          }}
         />
       </Tile>
     </Tiles>

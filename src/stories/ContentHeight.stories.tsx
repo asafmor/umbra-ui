@@ -29,7 +29,7 @@ type Story = StoryObj<typeof meta>;
 const columns: DataTableColumn<Region>[] = [
   { id: 'name', header: 'Region', accessor: 'name', priority: 'always' },
   { id: 'orders', header: 'Orders', accessor: 'orders' },
-  { id: 'points', header: 'Points', accessor: 'points' },
+  { id: 'revenue', header: 'Revenue', accessor: 'revenue' },
 ];
 const table = (label: string, count: number, height?: 'content' | number) => (
   <DataTable
@@ -43,7 +43,7 @@ const table = (label: string, count: number, height?: 'content' | number) => (
 const list = (label: string, count: number, height?: 'content' | number) => (
   <List aria-label={label} itemSize="compact" height={height}>
     {regions.slice(0, count).map((r) => (
-      <List.Item key={r.id} id={r.id} title={r.name} meta={r.points} />
+      <List.Item key={r.id} id={r.id} title={r.name} meta={r.revenue} />
     ))}
   </List>
 );

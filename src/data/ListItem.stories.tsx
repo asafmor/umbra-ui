@@ -71,6 +71,92 @@ export const Default: Story = {
   ),
 };
 
+/**
+ * Two layouts beyond a title and a value. A `pair` row sets two things against each other around a
+ * centre: each side takes half of the row, so the centres line up down the list. A media row holds a
+ * paragraph beside an icon or image: `descriptionLines` lets the description wrap.
+ */
+export const PairAndMedia: Story = {
+  render: () => (
+    <Columns style={{ height: '100%' }}>
+      <Card title="Pair" padding="none">
+        <ListItem
+          size="compact"
+          title="Region 1"
+          leading={<Dot size={20} />}
+          meta="42"
+          center="to"
+          opposite={{
+            title: 'Region 2',
+            leading: <Dot size={20} color="var(--umbra-color-series-2)" />,
+            meta: '38',
+          }}
+        />
+        <ListItem
+          size="compact"
+          title="A region with a long name that truncates"
+          leading={<Dot size={20} />}
+          meta="7"
+          center="to"
+          opposite={{
+            title: 'Region 4',
+            leading: <Dot size={20} color="var(--umbra-color-series-3)" />,
+            meta: '112',
+          }}
+        />
+        <ListItem
+          size="compact"
+          title="Plan"
+          center="09:30"
+          opposite={{ title: 'Actual' }}
+          accent="var(--umbra-color-semantic-warning)"
+          accentLabel="Category: review"
+        />
+        <ListItem
+          size="compact"
+          title="Region 5"
+          meta="16"
+          center="to"
+          opposite={{ title: 'Not set yet' }}
+          selected
+        />
+      </Card>
+      <Card title="Media" padding="none">
+        <ListItem
+          leading={<Dot size={48} />}
+          title="Stock is in good shape"
+          description="Nine of ten sites hold more than two weeks of stock, and no site is below its reorder level."
+          descriptionLines={3}
+        />
+        <ListItem
+          leading={<Dot size={48} color="var(--umbra-color-semantic-warning)" />}
+          title="Two deliveries are late"
+          description="Both left the depot on time. The delay is on the last stretch, where one road is closed until Friday, so the next deliveries on that route will be late as well."
+          descriptionLines={2}
+        />
+        <ListItem
+          leading={<Dot size={48} />}
+          title="One line by default"
+          description="Without descriptionLines a description stays on one line and ends in an ellipsis when it is too long for the row."
+        />
+      </Card>
+      <Card title="Pair, from blocks" padding="none">
+        <ListItem.Root variant="pair" size="compact">
+          <ListItem.Side>
+            <ListItem.Title>Depot A</ListItem.Title>
+            <ListItem.Meta>12</ListItem.Meta>
+          </ListItem.Side>
+          <ListItem.Center>→</ListItem.Center>
+          <ListItem.Side opposite>
+            <ListItem.Meta>9</ListItem.Meta>
+            <ListItem.Title>Depot B</ListItem.Title>
+          </ListItem.Side>
+        </ListItem.Root>
+      </Card>
+    </Columns>
+  ),
+};
+
 /** The message variant: sender and tag on the first line, title and time on the second. */
 export const Message: Story = {
   render: () => (

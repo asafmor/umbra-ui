@@ -19,7 +19,7 @@ test('the root always carries the resolved direction, and React Aria agrees with
   await rtl(page, 'inputs-segmentedfilter--variants');
   const root = page.locator('[data-umbra-root]').first();
   await expect(root).toHaveAttribute('dir', 'rtl');
-  await expect(root).toHaveAttribute('lang', 'he-IL');
+  await expect(root).toHaveAttribute('lang', 'he');
   // A React Aria composite: Left moves to the next item, which is drawn to the left.
   const first = page.getByRole('radio').first();
   await first.focus();

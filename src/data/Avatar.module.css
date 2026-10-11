@@ -65,20 +65,26 @@
 }
 
 .status {
+  --status: var(--umbra-avatar-status-size, max(8px, calc(var(--size) * 0.28)));
+
   position: absolute;
-  inset-block-end: 0;
-  inset-inline-end: 0;
+  /*
+   * A quarter of the slot hangs over the trailing bottom corner of a square. Logical insets, not a
+   * translate, so the slot mirrors in right-to-left.
+   */
+  inset-block-end: calc(var(--status) * -0.25);
+  inset-inline-end: calc(var(--status) * -0.25);
   display: grid;
   place-items: center;
-  /* The slot has a size, so a status node can simply fill it; centred on the corner of a square. */
-  width: var(--umbra-avatar-status-size, max(8px, calc(var(--size) * 0.28)));
-  height: var(--umbra-avatar-status-size, max(8px, calc(var(--size) * 0.28)));
-  translate: 25% 25%;
+  /* The slot has a size, so a status node can simply fill it. */
+  width: var(--status);
+  height: var(--status);
 }
 
 .root[data-shape='circle'] > .status {
   /* On a circle the corner of the box is outside the shape; unmoved, the slot is centred on the edge. */
-  translate: 0 0;
+  inset-block-end: 0;
+  inset-inline-end: 0;
 }
 
 /*

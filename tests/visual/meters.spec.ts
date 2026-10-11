@@ -46,7 +46,7 @@ test.describe('ProgressBar', () => {
     // The parts of a stacked bar and the target are read out, since they are only drawn.
     await expect(page.getByRole('meter', { name: 'Budget used' }).first()).toHaveAttribute(
       'aria-valuetext',
-      '75%, Team A 40%, Team B 25%, Team C 10%',
+      '75%, Region 1 40%, Region 2 25%, Region 3 10%',
     );
     await expect(page.getByRole('meter', { name: 'Past the goal' })).toHaveAttribute(
       'aria-valuetext',
@@ -61,7 +61,7 @@ test.describe('ProgressBar', () => {
     await expect(tooltip).toHaveText('320 GB');
     // The tooltip says everything the bar only draws: the parts of a stack, the target.
     await page.getByRole('meter', { name: 'Budget used' }).first().hover();
-    await expect(tooltip).toHaveText('75%, Team A 40%, Team B 25%, Team C 10%');
+    await expect(tooltip).toHaveText('75%, Region 1 40%, Region 2 25%, Region 3 10%');
     await page.keyboard.press('Escape');
     await expect(tooltip).toHaveCount(0);
     await page.getByRole('meter', { name: 'Past the goal' }).hover();
@@ -133,12 +133,35 @@ test.describe('ProgressBar', () => {
     expect((await box(negative.locator('[data-part="fill"]'))).width).toBe(0);
   });
 
+  test('a bar with no value is empty and says so, instead of reading as zero', async ({ page }) => {
+    await open(page, 'meters-progressbar--edge-values');
+    const none = page.getByRole('meter', { name: 'Not measured' });
+    await expect(none).toHaveAttribute('data-empty', 'true');
+    await expect(none).toHaveAttribute('aria-valuetext', 'No value');
+    await expect(none.locator('[data-part="value"]')).toHaveText('—');
+    expect((await box(none.locator('[data-part="fill"]'))).width).toBe(0);
+    await expect(none).not.toHaveAttribute('data-out-of-range');
+
+    const custom = page.getByRole('progressbar', { name: 'Not started' });
+    await expect(custom).toHaveAttribute('aria-valuetext', 'Not available');
+    await expect(custom.locator('[data-part="value"]')).toHaveText('n/a');
+    // The target is still read out.
+    await expect(page.getByRole('meter', { name: 'Capacity' })).toHaveAttribute(
+      'aria-valuetext',
+      'No value, Target: 80%',
+    );
+    // Zero stays zero.
+    await expect(page.getByRole('progressbar', { name: 'Zero' })).toHaveAttribute('aria-valuetext', '0%');
+  });
+
   test('loading shows skeletons in the same layout and no value', async ({ page }) => {
     await open(page, 'meters-progressbar--edge-values');
     const loading = page.locator('[data-umbra="progress-bar"][data-loading]').first();
     await expect(loading).toHaveAttribute('aria-busy', 'true');
     await expect(loading).toContainText('Budget used');
-    await expect(loading.locator('[data-part="track"] [data-umbra="skeleton"]')).toBeVisible();
+    await expect(
+      loading.locator('[data-part="track"] > [data-part="skeleton"] > [data-umbra="skeleton"]'),
+    ).toBeVisible();
     await expect(loading.locator('[data-part="fill"]')).toHaveCount(0);
     await expect(loading.getByRole('progressbar')).toHaveCount(0);
     const [loaded, skeleton] = [
@@ -325,7 +348,7 @@ test.describe('LevelMeter', () => {
   }) => {
     await open(page, 'meters-levelmeter--variants');
     const parts = (meter: Locator) => ({
-      plot: meter.locator('[data-part="strip"] > div'),
+      plot: meter.locator('[data-part="plot"]'),
       part: (name: string) => meter.locator(`[data-part="${name}"]`),
     });
 
@@ -365,29 +388,38 @@ test.describe('LevelMeter', () => {
     const over = page.getByRole('meter', { name: 'Over' });
     await expect(over).toHaveAttribute('data-out-of-range', 'over');
     await expect(over).toHaveAttribute('aria-valuetext', '140');
-    expect(
-      await along(over.locator('[data-part="marker"]'), over.locator('[data-part="strip"] > div')),
-    ).toBeCloseTo(1, 2);
+    expect(await along(over.locator('[data-part="marker"]'), over.locator('[data-part="plot"]'))).toBeCloseTo(
+      1,
+      2,
+    );
     const negative = page.getByRole('meter', { name: 'Negative' });
     await expect(negative).toHaveAttribute('data-out-of-range', 'under');
     expect(
-      await along(negative.locator('[data-part="marker"]'), negative.locator('[data-part="strip"] > div')),
+      await along(negative.locator('[data-part="marker"]'), negative.locator('[data-part="plot"]')),
     ).toBeCloseTo(0, 2);
 
     const balance = page.getByRole('meter', { name: 'Balance' }).first();
     await expect(balance).toHaveAttribute('aria-valuemin', '-50');
     expect(
-      await along(balance.locator('[data-part="marker"]'), balance.locator('[data-part="strip"] > div')),
+      await along(balance.locator('[data-part="marker"]'), balance.locator('[data-part="plot"]')),
     ).toBeCloseTo(0.3, 2);
 
+    // No value is not zero (B6): no marker, no lit tick, a dash for the eye and words for the ear.
     for (const name of ['No value', 'Unknown level']) {
       const meter = page.getByRole('meter', { name });
+      await expect(meter).toHaveAttribute('data-empty', 'true');
       await expect(meter.locator('[data-part="marker"]')).toHaveCount(0);
       await expect(meter.locator('[data-part="tick"][data-lit]')).toHaveCount(0);
+      await expect(meter).toHaveAttribute('aria-valuetext', 'No value');
+      await expect(meter.locator('[data-part="value"]')).toHaveText('—');
     }
+    const custom = page.getByRole('meter', { name: 'Not rated' });
+    await expect(custom).toHaveAttribute('aria-valuetext', 'Not rated yet');
+    await expect(custom.locator('[data-part="value"]')).toHaveText('n/a');
 
     const loading = page.locator('[data-umbra="level-meter"][data-loading]').first();
     await expect(loading).toHaveAttribute('aria-busy', 'true');
+    await expect(loading.locator('[data-part="skeleton"] > [data-umbra="skeleton"]')).toBeVisible();
     await expect(loading.locator('[data-umbra="skeleton"]').first()).toBeVisible();
     await expect(loading.locator('[data-part="tick"]')).toHaveCount(0);
     expect((await box(loading.locator('[data-umbra="skeleton"]').first())).height).toBe(
@@ -408,7 +440,7 @@ test.describe('LevelMeter', () => {
       await expect(meter.locator('[data-part="band"]')).toBeVisible();
       expect(await meter.evaluate((el) => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
       expect(
-        await along(meter.locator('[data-part="marker"]'), meter.locator('[data-part="strip"] > div')),
+        await along(meter.locator('[data-part="marker"]'), meter.locator('[data-part="plot"]')),
       ).toBeCloseTo(0.6, 1);
     };
 
@@ -449,7 +481,7 @@ test.describe('LevelMeter', () => {
   test('a vertical meter runs from the bottom up, and shows less as its height shrinks', async ({ page }) => {
     await open(page, 'meters-levelmeter--vertical');
     const tall = page.getByRole('meter', { name: 'Capacity' }).first();
-    const plot = tall.locator('[data-part="strip"] > div');
+    const plot = tall.locator('[data-part="plot"]');
     expect(await along(tall.locator('[data-part="marker"]'), plot, 'y')).toBeCloseTo(0.35, 1);
     const [strip, max, min] = [
       await box(tall.locator('[data-part="strip"]')),
@@ -477,7 +509,7 @@ test.describe('LevelMeter', () => {
     await expect(ticks).toHaveCount(21);
     await expect(ends).toHaveCount(2);
     expect(
-      await along(short.locator('[data-part="marker"]'), short.locator('[data-part="strip"] > div'), 'y'),
+      await along(short.locator('[data-part="marker"]'), short.locator('[data-part="plot"]'), 'y'),
     ).toBeCloseTo(0.7, 1);
   });
 
@@ -525,5 +557,142 @@ test.describe('highlightChanges', () => {
   });
   test('LevelMeter: a changed value flashes once with a sign for its direction', async ({ page }) => {
     await expectChangeHighlights(page, 'meters-levelmeter--live-updates', false);
+  });
+});
+
+// Non-text contrast (B7, B15): the unfilled scale and the hatch are information, so they need 3:1
+// against what is behind them, on every tint. Colours are resolved by the browser and compared.
+test.describe('contrast', () => {
+  const ratio = (page: Page, a: string, b: string) =>
+    page.evaluate(
+      ([a, b]) => {
+        const ctx = Object.assign(document.createElement('canvas'), { width: 1, height: 1 }).getContext(
+          '2d',
+        )!;
+        const rgb = (css: string, under?: number[]) => {
+          ctx.clearRect(0, 0, 1, 1);
+          if (under) {
+            ctx.fillStyle = `rgb(${under.join(',')})`;
+            ctx.fillRect(0, 0, 1, 1);
+          }
+          ctx.fillStyle = css;
+          ctx.fillRect(0, 0, 1, 1);
+          return [...ctx.getImageData(0, 0, 1, 1).data].slice(0, 3);
+        };
+        const lum = (c: number[]) => {
+          const [r, g, b] = c.map((v) => ((v /= 255) <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
+          return 0.2126 * r! + 0.7152 * g! + 0.0722 * b!;
+        };
+        const under = rgb(b!);
+        const [hi, lo] = [lum(rgb(a!, under)), lum(under)].sort((x, y) => y - x);
+        return (hi! + 0.05) / (lo! + 0.05);
+      },
+      [a, b],
+    );
+  /** A computed colour of an element: a property, or the colour of its first box shadow. */
+  const colour = (locator: Locator, property: 'backgroundColor' | 'borderTopColor' | 'boxShadow') =>
+    locator.evaluate((el, property) => {
+      const value = getComputedStyle(el)[property];
+      return property === 'boxShadow' ? value.slice(0, value.indexOf(')') + 1) : value;
+    }, property);
+  /** A private colour variable of a fill (`--ink` is the hatch, `--paint` the colour under it), resolved. */
+  const variable = (fill: Locator, name: string) =>
+    fill.evaluate((el, name) => {
+      const probe = el.appendChild(document.createElement('i'));
+      probe.style.background = `var(${name})`;
+      const value = getComputedStyle(probe).backgroundColor;
+      probe.remove();
+      return value;
+    }, name);
+
+  for (const tint of ['violet', 'teal', 'green', 'slate']) {
+    test(`the track outline, the unlit ticks, the meter box and the hatch have 3:1 on ${tint}`, async ({
+      page,
+    }) => {
+      await page.goto(
+        `/iframe.html?id=meters-progressbar--thresholds&viewMode=story&globals=context:${tint}`,
+      );
+      await page.locator('[data-umbra="progress-bar"]').first().waitFor();
+      const panel = await colour(page.locator('section').first(), 'backgroundColor');
+      const bar = page.locator('[data-umbra="progress-bar"]').first();
+      const outline = await colour(bar.locator('[data-part="cells"] > div').first(), 'boxShadow');
+      expect(await ratio(page, outline, panel)).toBeGreaterThanOrEqual(3);
+      // Every hatched fill in the story, against its own colour.
+      const fills = page.locator('[data-part="fill"]:not([data-pattern="none"])');
+      expect(await fills.count()).toBeGreaterThan(0);
+      for (const fill of await fills.all()) {
+        const ink = await variable(fill, '--ink');
+        const paint = await variable(fill, '--paint');
+        expect(
+          await ratio(page, ink, paint),
+          `${await fill.getAttribute('data-tone')} hatch`,
+        ).toBeGreaterThanOrEqual(3);
+      }
+
+      await page.goto(`/iframe.html?id=meters-levelmeter--variants&viewMode=story&globals=context:${tint}`);
+      const meter = page.locator('[data-umbra="level-meter"][data-boxed]').first();
+      await meter.waitFor();
+      const strip = meter.locator('[data-part="strip"]');
+      const [surface, border] = [
+        await colour(strip, 'backgroundColor'),
+        await colour(strip, 'borderTopColor'),
+      ];
+      const card = await colour(page.locator('section').first(), 'backgroundColor');
+      expect(await ratio(page, border, card)).toBeGreaterThanOrEqual(3);
+      const unlit = await colour(
+        meter.locator('[data-part="tick"]:not([data-lit])').first(),
+        'backgroundColor',
+      );
+      expect(await ratio(page, unlit, surface)).toBeGreaterThanOrEqual(3);
+    });
+  }
+});
+
+test.describe('right to left', () => {
+  const rtl = async (page: Page, id: string) => {
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await page.goto(`/iframe.html?id=${id}&viewMode=story`);
+    await page.locator('#storybook-root > *').first().waitFor();
+  };
+
+  test('ProgressBar: the fill, the target and the gradient start from the right (B14)', async ({ page }) => {
+    await rtl(page, 'meters-progressbar--right-to-left');
+    const bar = page.getByRole('progressbar', { name: 'Budget used' });
+    await expect(bar).toHaveCSS('direction', 'rtl');
+    const [fill, track, target] = [
+      await box(bar.locator('[data-part="fill"]')),
+      await box(bar.locator('[data-part="track"]')),
+      await box(bar.locator('[data-part="target"]')),
+    ];
+    // 30% filled: the fill ends at the right edge of the track; the 80% target is in the left part.
+    expect(fill.x + fill.width).toBeCloseTo(track.x + track.width, 0);
+    expect(fill.width / track.width).toBeCloseTo(0.3, 1);
+    expect((track.x + track.width - (target.x + target.width / 2)) / track.width).toBeCloseTo(0.8, 1);
+    // The gradient runs from the start (right) to the end (left): 270deg.
+    const image = await bar
+      .locator('[data-part="fill"]')
+      .evaluate((el) => getComputedStyle(el).backgroundImage);
+    expect(image).toContain('270deg');
+
+    // The travelling fill moves towards the left: its keyframes are multiplied by -1.
+    const travel = await page
+      .getByRole('progressbar', { name: 'Syncing' })
+      .evaluate((el) => getComputedStyle(el).getPropertyValue('--travel').trim());
+    expect(travel).toBe('-1');
+  });
+
+  test('LevelMeter: the scale, the marker and the end labels mirror', async ({ page }) => {
+    await rtl(page, 'meters-levelmeter--right-to-left');
+    const meter = page.getByRole('meter', { name: 'Skill level' }).first();
+    const [marker, plot, low, high] = [
+      await box(meter.locator('[data-part="marker"]')),
+      await box(meter.locator('[data-part="plot"]')),
+      await box(meter.locator('[data-part="minLabel"]')),
+      await box(meter.locator('[data-part="maxLabel"]')),
+    ];
+    // A value of 20 sits 20% from the right end.
+    expect((plot.x + plot.width - (marker.x + marker.width / 2)) / plot.width).toBeCloseTo(0.2, 1);
+    expect(low.x).toBeGreaterThan(plot.x + plot.width);
+    expect(high.x + high.width).toBeLessThan(plot.x);
   });
 });

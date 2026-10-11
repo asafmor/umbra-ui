@@ -62,6 +62,12 @@ export const Variants: Story = {
           <Tag loading />
           <Tag loading />
         </Row>
+        <Row label="No label">
+          <Tag>{null}</Tag>
+          <Tag tone="info" variant="subtle" emptyLabel="None">
+            {undefined}
+          </Tag>
+        </Row>
       </Card>
     </Columns>
   ),
@@ -70,6 +76,7 @@ export const Variants: Story = {
 function Removable() {
   const [items, setItems] = useState(['Region 1', 'Region 2', 'Orders over 500', 'Person A']);
   const [last, setLast] = useState('none');
+  const [filter, setFilter] = useState(true);
   return (
     <Card title="Removable">
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
@@ -86,9 +93,19 @@ function Removable() {
             {item}
           </Tag>
         ))}
-        <Tag variant="solid" tone="warning" onRemove={() => setLast('Filter')} removeLabel="Clear">
-          Filter
-        </Tag>
+        {filter && (
+          <Tag
+            variant="solid"
+            tone="warning"
+            onRemove={() => {
+              setFilter(false);
+              setLast('Filter');
+            }}
+            removeLabel="Clear"
+          >
+            Filter
+          </Tag>
+        )}
       </div>
       <Log>Last removed: {last}</Log>
     </Card>
@@ -137,7 +154,7 @@ export const BehaviourAndParts: Story = {
         </Row>
         <Row label="Blocks">
           <Tag.Root tone="accent" variant="subtle">
-            <Tag.Icon>
+            <Tag.Icon className="by-hand" style={{ opacity: 1 }}>
               <Globe />
             </Tag.Icon>
             <Tag.Label>By hand</Tag.Label>

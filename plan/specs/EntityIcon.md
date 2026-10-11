@@ -79,6 +79,10 @@ States: image failed (falls back to the icon, then to the generated mark).
 
 None.
 
+Resolved 2026-10-11 (review fix pass):
+
+- No loading, empty or error state: the mark is decorative and falls back to generated letters (plan/interaction.md). Every block passes `className` and `style` to its element, and every part carries `data-part` with its name as written here (plan/decisions/07-customisation.md).
+
 Resolved 2026-10-10:
 
 - The colour is a hash of the lower-cased name (FNV-1a with a final mixing step, so names that differ in one character, the last one too, get unrelated hues; unit-tested with "Client A" to "Client Z") mapped to a hue at 60% saturation; the lightness starts at 42% and is lowered until white text reaches 4.5:1. It does not use the context tint, so an entity keeps its colour on every page.

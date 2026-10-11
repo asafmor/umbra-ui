@@ -115,7 +115,7 @@ export function ValuePill({
   formatValue,
   showLevel = false,
   levelLabel = (level, steps) => `Level ${level} of ${steps}`,
-  emptyLabel = '–',
+  emptyLabel = '—',
   loading = false,
   parts,
   ...rest
@@ -125,6 +125,7 @@ export function ValuePill({
     return renderPart(parts?.skeleton, {}, () => (
       <span
         data-umbra="value-pill"
+        data-part="skeleton"
         data-loading=""
         className={cx(shared.skeleton, styles.skeleton, root.className)}
         style={root.style}

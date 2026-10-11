@@ -11,7 +11,10 @@
   color: var(--umbra-group-header-color, var(--umbra-color-base-text-secondary));
   font: var(--umbra-group-header-font, var(--umbra-font-label));
   /* The row clips its content, so the rings of its controls are drawn inside them. */
-  --umbra-focus-offset: calc(-1 * var(--umbra-state-focus-ring-width));
+  --umbra-focus-offset: var(
+    --umbra-group-header-focus-offset,
+    calc(-1 * var(--umbra-state-focus-ring-width))
+  );
 }
 
 /* `plain` has no band: the surface behind it shows, which a sticky header still has to cover. */
@@ -85,6 +88,11 @@
     var(--umbra-motion-easing-enter);
 }
 
+/* Collapsed, the caret points at the title: towards the end of the line. */
 .toggle[aria-expanded='false'] > * {
   rotate: -90deg;
+}
+
+.toggle[aria-expanded='false']:dir(rtl) > * {
+  rotate: 90deg;
 }

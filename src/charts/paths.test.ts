@@ -1,6 +1,7 @@
+import { readFileSync } from 'node:fs';
 import { expect, test } from 'vitest';
 import { annotationMarks, fitTicks } from './internal/cartesian';
-import { dash, fillKind, pointShape } from './internal/cues';
+import { dash, fillKind, lineCues, pointShape, seriesColour } from './internal/cues';
 import { donutArcs, donutThickness, ringArc, toneFor } from './internal/donut';
 import { areaPath, isIsolated, linePath, spread } from './internal/line';
 import { polygonPath, radarAngles, radarPoints, radarRing } from './internal/radar';
@@ -150,4 +151,31 @@ test('neighbouring series never share a cue', () => {
   expect(new Set(lines).size).toBe(12);
   for (let i = 0; i < 23; i++) expect(fillKind(i)).not.toBe(fillKind(i + 1));
   expect([0, 1, 2, 3].map(fillKind)).toEqual(['square', 'stripes', 'dots', 'square']);
+});
+
+test('twelve line series differ by shape and dash alone, and 24 by colour and cue (C5)', () => {
+  const cue = (i: number) => `${pointShape(i)}/${dash(i) ?? 'solid'}`;
+  const twelve = Array.from({ length: lineCues }, (_, i) => cue(i));
+  expect(lineCues).toBe(12);
+  expect(new Set(twelve).size).toBe(12);
+  // The thirteenth series looks like the first, apart from its colour.
+  expect(cue(12)).toBe(cue(0));
+  const coloured = Array.from({ length: 24 }, (_, i) => `${seriesColour(i)}/${cue(i)}`);
+  expect(new Set(coloured).size).toBe(24);
+  expect(`${seriesColour(24)}/${cue(24)}`).toBe(coloured[0]);
+});
+
+test('the charts read tokens and never declare one, so a value set by the app on any ancestor wins (D10)', () => {
+  const css = readFileSync('src/charts/Chart.module.css', 'utf8');
+  expect(css.match(/^\s*--umbra-[a-z0-9-]+\s*:/gm)).toBeNull();
+  // Lines and edges that carry data have a token, with a fallback from a global token where one exists.
+  for (const token of [
+    'axis-width',
+    'grid-width',
+    'annotation-width',
+    'annotation-dash',
+    'ring-width',
+    'track-border',
+  ])
+    expect(css).toContain(`var(--umbra-chart-${token},`);
 });

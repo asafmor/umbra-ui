@@ -73,6 +73,8 @@ export interface DonutChartRootProps extends ChartCommonProps {
   thresholds?: { from: number; tone: DonutTone }[];
   /** Any CSS colour for the single value; wins over `tone`. */
   color?: string;
+  /** What the single value is called for screen readers when the chart is named by `aria-labelledby`. */
+  valueLabel?: string;
   /** Replace or hide named pieces. */
   parts?: ChartParts;
   /** The blocks to draw, in order. */
@@ -91,6 +93,7 @@ function Root({
   tone = 'default',
   thresholds,
   color,
+  valueLabel = 'Value',
   children,
   ...common
 }: DonutChartRootProps) {
@@ -98,7 +101,7 @@ function Root({
   const single = !data;
   const format = common.formatValue ?? numberFormat(locale, { maximumFractionDigits: 2 });
   const percent = numberFormat(locale, { style: 'percent', maximumFractionDigits: 0 });
-  const name = common['aria-label'] ?? 'Value';
+  const name = common['aria-label'] ?? valueLabel;
   const all: (DonutSegment & { color: string; fill: FillKind })[] = single
     ? [
         {
@@ -117,7 +120,7 @@ function Root({
       : `${format(d.value)} (${percent(total ? d.value / total : 0)})`;
   const fullTotal = single ? max : sum(all);
 
-  const build = ({ width, height, fontSize, level, hidden }: BuildInput): DonutModel => {
+  const build = ({ width, height, fontSize, measure, level, hidden }: BuildInput): DonutModel => {
     const shown = all.filter((d) => !hidden.includes(d.id));
     const total = single ? max : sum(shown);
     // First the angles, to know where labels go; then the radius that leaves room for them.
@@ -133,7 +136,7 @@ function Root({
             : [],
         )
       : [];
-    const layout = polarLayout(width, height, wanted, fontSize);
+    const layout = polarLayout(width, height, wanted, fontSize, measure);
     const outer = Math.max(layout.radius - (labelled ? 0 : 1), 0);
     const inner = Math.max(outer - (thickness ?? donutThickness(outer)), 0);
     const arcs = donutArcs(
@@ -197,14 +200,14 @@ function Root({
 
 /** The ring behind the value. */
 function Track() {
-  const { model } = useFrame<DonutModel>();
+  const { model, uid } = useFrame<DonutModel>();
   return (
-    <path
-      data-part="track"
-      className={styles.track}
-      d={model.track}
-      transform={`translate(${model.cx} ${model.cy})`}
-    />
+    <g data-part="track" transform={`translate(${model.cx} ${model.cy})`}>
+      <clipPath id={`${uid}-track`}>
+        <path d={model.track} />
+      </clipPath>
+      <path className={styles.track} d={model.track} clipPath={`url(#${uid}-track)`} />
+    </g>
   );
 }
 
@@ -214,14 +217,22 @@ function Segments() {
   const { model, uid } = frame;
   return (
     <g data-part="segments" transform={`translate(${model.cx} ${model.cy})`}>
-      {model.segments.map((s) => (
-        <g key={s.id} className={styles.series} {...seriesProps(frame, s.id)} {...frame.pointProps(s.point)}>
-          <defs>
-            <FillPattern id={`${uid}-fill-${s.id}`} kind={s.fill} color={s.color} />
-          </defs>
-          <path d={s.d} {...fillPaint(s.fill, s.color, `${uid}-fill-${s.id}`)} />
-        </g>
-      ))}
+      {/* A value of zero has no arc to draw or to point at. */}
+      {model.segments
+        .filter((s) => s.d)
+        .map((s) => (
+          <g
+            key={s.id}
+            className={styles.series}
+            {...seriesProps(frame, s.id)}
+            {...frame.pointProps(s.point)}
+          >
+            <defs>
+              <FillPattern id={`${uid}-fill-${s.id}`} kind={s.fill} color={s.color} />
+            </defs>
+            <path d={s.d} {...fillPaint(s.fill, s.color, `${uid}-fill-${s.id}`)} />
+          </g>
+        ))}
     </g>
   );
 }
@@ -256,12 +267,12 @@ function Center({ value, label }: DonutChartCenterProps) {
     <foreignObject x={model.cx - side / 2} y={model.cy - side / 2} width={side} height={side}>
       <div data-part="center" className={styles.center} style={{ ['--inner' as string]: `${side}px` }}>
         {value != null && (
-          <span data-part="center-value" className={styles.centerValue}>
+          <span data-part="centerValue" className={styles.centerValue}>
             {value}
           </span>
         )}
         {label != null && level < 2 && side >= 72 && (
-          <span data-part="center-label" className={styles.centerLabel}>
+          <span data-part="centerLabel" className={styles.centerLabel}>
             {label}
           </span>
         )}

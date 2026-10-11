@@ -46,7 +46,7 @@ Clustered from the four inventory files in `plan/inventory/` (40 screenshots).
 | Component | Absorbs | Seen in | Tier |
 |---|---|---|---|
 | DataTable | cell widgets, RowAccent, GroupHeader, highlighted row, column menu, saved views | ~30 screens | 1 |
-| List | leaderboard, person list, MediaObject, FixtureRow | ~20 screens | 1 |
+| List | leaderboard, person list, MediaObject (a `ListItem` with a large `leading` and `descriptionLines`), FixtureRow (the `pair` variant of `ListItem`: two sides mirrored around a centre) | ~20 screens | 1 |
 | ListItem (message) | MessageListItem: sender, title, tags, time, unread dot, category tint | 1, 2, 13–16, 25, 27, 28 | 1 |
 | GroupHeader | DateGroupHeader, OfferGroupHeader | 1, 2, 7, 13–16, 31 | 1 |
 | KeyValue | KeyValueRow, FactItem, AttributeList; `KeyValueList` for a group of rows | 5–7, 9, 32, 33, 37, 40 | 1 |

@@ -22,10 +22,11 @@ About 30 of the 40 screenshots. Best: 18 and 9 (dense rows with tags, pills, bar
 
 | Part | Content | Default |
 |---|---|---|
-| `caption` | the table's name | read by assistive technology; shown with `showCaption` |
+| `caption` | the table's name | read by assistive technology; shown with `showCaption`. Set by the `caption` prop, which takes any node: it is not in `parts`, because it is the table's accessible name and must not be hidden |
 | `header` | the header rows: an optional row of spanning headers (`columnGroups`), then one `headerCell` per column | shown; sticks to the top |
 | `headerCell` | label, and in a sortable column a button with the `sortIndicator` | |
-| `row` | one `cell` per column; with selection a checkbox cell first; with hidden columns a disclosure cell | |
+| `row` | one `cell` per column; with selection a cell first that holds a checkbox (`multiple`) or a radio (`single`); with hidden columns and `expandableHidden` a disclosure cell | |
+| `hiddenIndicator` | the mark in the last header that says how many columns are hidden ("+3"), in a narrow column of its own | while columns are hidden, without `expandableHidden` |
 | `groupHeader` | a group's caret, title, count, `meta` and aggregate cells | with `groupBy`; sticks below the header |
 | `detail` | the labels and values of the hidden columns, under an expanded row (a `KeyValueList`) | with `expandableHidden` |
 | `footer` | one summary cell per column | when a column has a `footer`; sticks to the bottom |
@@ -36,7 +37,7 @@ About 30 of the 40 screenshots. Best: 18 and 9 (dense rows with tags, pills, bar
 
 | Variant | Values | Notes |
 |---|---|---|
-| `selectionMode` | `none`, `single`, `multiple` | adds the checkbox column; `multiple` adds the header checkbox |
+| `selectionMode` | `none`, `single`, `multiple` | adds the selection column: a radio per row in `single`, a checkbox per row and one in the header in `multiple` |
 | `striped` | boolean | a faint fill on every other row (counted inside each group) |
 | `dividers` | boolean | a line under every row (default on) |
 | `virtualize` | `auto`, `true`, `false` | `auto`: above 200 rows, unless a column wraps |
@@ -50,7 +51,9 @@ States: `loading`, empty, error, `loadingMore`; per row: hover, pressed, selecte
 
 ### 1. Tokens
 
-`--umbra-table-row-height`, `--umbra-table-header-height`, `--umbra-table-cell-padding-x`, `--umbra-table-edge-padding-x`, `--umbra-table-font`, `--umbra-table-color`, `--umbra-table-row-bg`, `--umbra-table-stripe-bg`, `--umbra-table-hover-bg`, `--umbra-table-selected-bg`, `--umbra-table-highlight-bg`, `--umbra-table-highlight-marker`, `--umbra-table-stripe-width`, `--umbra-table-border-color`, `--umbra-table-pin-border-color`, `--umbra-table-header-bg`, `--umbra-table-header-color`, `--umbra-table-header-active-color`, `--umbra-table-header-group-color`, `--umbra-table-header-font`, `--umbra-table-header-border-color`, `--umbra-table-footer-bg`, `--umbra-table-detail-bg`, `--umbra-table-caption-color`, `--umbra-table-change-up`, `--umbra-table-change-down`, `--umbra-table-change-neutral`. Group header rows read the tokens of `GroupHeader` (`--umbra-group-header-bg`, `-color`, `-font`, `-height`). The row height follows the density level (`density-table-row`: 22 / 26 / 32px).
+`--umbra-table-row-height`, `--umbra-table-header-height`, `--umbra-table-cell-padding-x`, `--umbra-table-edge-padding-x`, `--umbra-table-font`, `--umbra-table-color`, `--umbra-table-row-bg`, `--umbra-table-stripe-bg`, `--umbra-table-hover-bg`, `--umbra-table-selected-bg`, `--umbra-table-highlight-bg`, `--umbra-table-highlight-marker`, `--umbra-table-stripe-width`, `--umbra-table-border-color`, `--umbra-table-pin-border-color`, `--umbra-table-header-bg`, `--umbra-table-header-color`, `--umbra-table-header-active-color`, `--umbra-table-header-group-color`, `--umbra-table-header-font`, `--umbra-table-header-border-color`, `--umbra-table-footer-bg`, `--umbra-table-detail-bg`, `--umbra-table-caption-color`, `--umbra-table-change-up`, `--umbra-table-change-down`, `--umbra-table-change-neutral`, `--umbra-table-focus-offset`, `--umbra-table-control-size`. The radio of `single` selection reads the tokens of `Radio` (`--umbra-radio-selected-bg`, `-border`, `-border-width`, `-bg`, `-mark-color`) and the size of the small checkbox (`--umbra-checkbox-small-size`). Group header rows read the tokens of `GroupHeader` (`--umbra-group-header-bg`, `-color`, `-font`, `-height`). The row height follows the density level (`density-table-row`: 22 / 26 / 32px).
+
+The table gives two tokens of other components its own default for what is inside it: `--umbra-focus-offset` (inwards, because the table clips) and `--umbra-icon-button-size` (two pixels less than the row). A custom property cannot fall back to the value it would have inherited, so an app changes them through `--umbra-table-focus-offset` and `--umbra-table-control-size`, from any ancestor; the components' own tokens still work when set on the table element itself or on a cell.
 
 Every fill is opaque, mixed into the surface below (`--umbra-table-row-bg`, by default the card's own fill), because pinned cells and the sticky header must cover what scrolls under them.
 
@@ -67,10 +70,10 @@ Every fill is opaque, mixed into the surface below (`--umbra-table-row-bg`, by d
 | `manualSorting` | boolean | `false` | The rows arrive sorted; the table reports the sort and does not reorder |
 | `selectionMode` | see above | `none` | |
 | `selectedIds` / `defaultSelectedIds` / `onSelectionChange` | `string[]` | `[]` | Controlled or uncontrolled selection, as plain arrays of ids |
-| `selectRowLabel` / `selectAllLabel` | function / string | English text | Names of the checkboxes |
+| `selectRowLabel` / `selectAllLabel` | function / string | English text | Names of the checkboxes or radios, and of the selection column |
 | `highlightedRowIds` / `rowHighlight` | `string[]` / `(row) => boolean` | — | Rows with a stronger fill, bold text and an edge marker |
 | `highlightLabel` | string | "Highlighted" | What assistive technology hears for such a row |
-| `rowAccent` | `(row) => { color, label }` | — | A coloured edge stripe; `label` is required, so it is never colour alone |
+| `rowAccent` | `(row) => { color, label }` | — | A coloured edge stripe; `label` is required, so it is never colour alone: it is read before the row's first cell and shown in that cell's tooltip |
 | `striped` / `dividers` | boolean | `false` / `true` | |
 | `onRowAction` | `(row) => void` | — | Enter, a double click, or a single click when rows cannot be selected |
 | `rowHref` | `(row) => string` | — | The row's header cell holds a real link; activating the row follows it |
@@ -82,6 +85,7 @@ Every fill is opaque, mixed into the surface below (`--umbra-table-row-bg`, by d
 | `stickyGroups` | boolean | `true` | Group rows stick below the header |
 | `onHiddenColumnsChange` | `(ids) => void` | — | The columns hidden for lack of width |
 | `expandableHidden` | boolean | `false` | Each row can show its hidden columns under it |
+| `hiddenColumnsLabel` | `(count) => string` | "3 columns hidden" | Accessible name of the mark for hidden columns |
 | `loading` / `empty` / `error` / `onRetry` / `retryLabel` | the shared data states | empty text "No rows" | |
 | `skeletonRows` | number | 8 | |
 | `height` | `fill`, `content`, number | `fill` | `fill` takes the height of the parent and falls back to the content's height where the parent has none (flowing content, a popover, a modal body, an accordion panel). `content` is always as tall as the content. A number is pixels. A content-sized table renders every row (no virtualisation) and its header scrolls away with the page around it. |
@@ -119,18 +123,18 @@ Helpers: `numberColumn(column)` (end-aligned, tabular, 80px, largest first) and 
 
 ### 3. Parts
 
-`header`, `headerCell`, `sortIndicator`, `row`, `cell`, `groupHeader`, `detail`, `footer`, `skeleton`, `empty`, `error`. Each accepts a node, `null` or a function receiving the default part's props. `row` and `cell` also receive the data `row` (and `column`).
+`header`, `headerCell`, `sortIndicator`, `hiddenIndicator`, `row`, `cell`, `groupHeader`, `detail`, `footer`, `skeleton`, `empty`, `error`. Each accepts a node, `null` or a function receiving the default part's props. `row` and `cell` also receive the data `row` (and `column`). `hiddenIndicator` receives `count`, `labels` and the default `children`; `null` removes the mark and the column it stands in. Every part carries `data-part` with its name as written here (`headerCell`, `sortIndicator`, `groupHeader`); so do the pieces that cannot be replaced: `caption`, `body`, `headerLabel`, `rowLink`, `radio`, `title`, `meta`, `state`, `fontProbe`.
 
 ### 4. Blocks
 
-`DataTable.Root`, `DataTable.Header`, `DataTable.HeaderCell`, `DataTable.SortIndicator`, `DataTable.Body`, `DataTable.Row`, `DataTable.Cell`, `DataTable.GroupRow`, `DataTable.Footer`. A table composed from them is a grid with the same keyboard; sorting, selection and widths are then the app's (`Row` takes `onAction` and `onSelect`; `Root` takes `width` and a `<colgroup>`).
+`DataTable.Root`, `DataTable.Header`, `DataTable.HeaderCell`, `DataTable.SortIndicator`, `DataTable.Body`, `DataTable.Row`, `DataTable.Cell`, `DataTable.GroupRow`, `DataTable.Footer`. A table composed from them is a grid with the same keyboard; sorting, selection and widths are then the app's (`Row` takes `onAction` and `onSelect`; `Root` takes `width`, a `<colgroup>` and `onSelectAll` for Ctrl+A; `Cell` takes `title`, shown while its text is cut, and `tooltip`, shown always).
 
 ## Behaviour as space shrinks
 
 | Step | Trigger | Result |
 |---|---|---|
 | 1 | A column narrower than its content | Text is cut with an ellipsis; while it is cut, hover or keyboard focus shows the full text in a tooltip. Widgets follow their own rules |
-| 2 | The columns do not fit at their minimum widths | Columns hide one at a time: lowest `priority` first, equal priorities from the end of the source order. They return, in reverse, when there is room. With `expandableHidden` a disclosure column appears and each row can show its hidden columns under it |
+| 2 | The columns do not fit at their minimum widths | Columns hide one at a time: lowest `priority` first, equal priorities from the end of the source order. They return, in reverse, when there is room. While any is hidden, one narrow column (40px) is added, so the user is told: by default a mark in its header, "+3", named "3 columns hidden", whose tooltip lists them on hover and keyboard focus; with `expandableHidden` a disclosure column instead, and each row can show its hidden columns under it. `parts={{ hiddenIndicator: null }}` gives the 40px back |
 | 3 | Only `always` columns are left and still do not fit | The table scrolls sideways inside its slot; pinned columns stay in view |
 | 4 | Rows taller than the slot | The body scrolls; header, group rows and footer stick |
 | 5 | Empty or error state larger than the slot | It follows `EmptyState` |
@@ -139,38 +143,61 @@ How step 2 is decided: the width of the scroll area is measured (a `ResizeObserv
 
 ## Interaction and accessibility
 
-Markup: a real `<table>` with `role="grid"`, `<th scope="col">` headers (`columnheader`, with `aria-sort`), `<th scope="row">` for `rowHeader` columns, `aria-rowcount`, `aria-colcount`, `aria-rowindex` and `aria-colindex`. A table, not a grid of `div`s: virtualisation only needs spacer rows, and sticky cells work on table cells.
+Markup: a real `<table>` with `role="grid"`, `<th scope="col">` headers (`columnheader`, with `aria-sort`), `<th scope="row">` for `rowHeader` columns, `aria-rowcount`, `aria-colcount`, `aria-rowindex` and `aria-colindex`. `aria-colcount` counts every column, the hidden ones too, and `aria-colindex` is a column's place among all of them, so assistive technology hears that columns are missing. A table, not a grid of `div`s: virtualisation only needs spacer rows, and sticky cells work on table cells.
 
 Keyboard (the decided model):
 
 - **One tab stop.** The focused cell is the tab stop; controls inside cells are not in the tab order. Leaving and returning lands on the same cell.
-- **Arrow keys** move the focused cell, through header rows, group rows, detail rows and the footer. **Home / End**: first / last cell of the row. **Ctrl or Cmd + Home / End**: first / last cell of the table. **PageUp / PageDown**: one page of rows.
+- **Arrow keys** move the focused cell, through header rows, group rows, detail rows and the footer. **Home / End**: first / last cell of the row. **Ctrl or Cmd + Home / End**: first / last cell of the table (in the header and the footer, which stick), and the body scrolls to its start or end with it. **PageUp / PageDown**: one page of rows.
 - **Headers**: Enter or Space on a sortable header cycles its sort (ascending, descending, unsorted; a `sortDescFirst` column starts descending). Shift+Enter adds it to a multiple sort.
 - **Body cells**: Space toggles the row's selection. Enter is the row action; in a cell with exactly one control, Enter (and Space, when rows cannot be selected) is forwarded to it; in a cell with several, Enter or F2 moves focus to the first, Tab and Shift+Tab move among them, and Escape (or F2) returns to the cell. From a button, link or checkbox focused by a click, the arrow keys still move through the grid.
-- **Shift + Arrow Up / Down** extends the selection from the row where it started. **Shift+click** selects a range from the last row toggled.
+- **Shift + Arrow Up / Down** extends the selection from the row that had the focus at the first Shift+Arrow, for as long as Shift+Arrow keys follow each other (coming back shrinks it); what was selected before stays. Any other move of the focus ends the range. **Shift+click** and **Shift+Space** select a range from the last row toggled.
+- **Ctrl or Cmd + A** selects every row that can be selected, where `selectionMode` is `multiple`, and the page's text is then not selected. In `single` and `none` the key is not the table's: it is left to the browser, like every key the table has no use for.
+- **A control with a list or menu of its own** (a `Select`, a menu button): Enter opens it from the cell; while it is open (`aria-haspopup` with `aria-expanded="true"`) every key is its own. Escape closes it, and Escape again returns to the cell. What a control hides from assistive technology (the native `<select>` a `Select` keeps for forms) is not a control of the cell.
 - **Group rows**: Enter or Space works the caret, a button with `aria-expanded` (in a grid, unlike a tree grid, a row cannot carry it).
 - **Right to left**: Left and Right follow what is seen.
 - No type-ahead.
 
 Focus: the ring is drawn inside the cell (never violet). The focused cell is scrolled into view clear of the sticky header, group row, footer and pinned columns. It is remembered as row id and column id, so it follows its row through a sort and through virtualised scrolling; when its column hides it moves to the nearest column of the same row; when the focused element is removed by a render, focus returns to the cell instead of being lost.
 
+Disabled rows: no hover or press response and the default cursor; their content is at the disabled opacity (40%). The fill stays opaque for the pinned cells, so bare text is mixed into the fill at that share and elements take the opacity itself; nothing is dimmed twice.
+
 Mouse: a click on a row selects it (toggle; Shift for a range), or activates it when rows cannot be selected; a double click activates a selectable row. Clicks on controls inside the row, and a click that ends a text selection, are not the row's.
 
-Selection: rows have `aria-selected`; the grid has `aria-multiselectable`. Selected rows show the violet fill and the checked box. The header checkbox is "some" (indeterminate) between none and all.
+Selection: rows have `aria-selected`; the grid has `aria-multiselectable` in `multiple`. Selected rows show the violet fill and, as the cue that is not colour, the checked box or the filled radio. In `single` the control is a native radio named by `selectRowLabel`; pressing the chosen one again clears the selection. The header checkbox is "some" (indeterminate) between none and all.
 
-Not colour alone: the sort direction is the arrow's shape; a highlighted row is also bold, has an edge marker and a hidden `highlightLabel`; an accent stripe has its required `label` as hidden text (pair it with a `Legend` for sighted users); a changed value shows ▲ or ▼ with hidden text.
+Not colour alone: the sort direction is the arrow's shape; a highlighted row is also bold, has an edge marker and a hidden `highlightLabel`; an accent stripe has its required `label` as hidden text before the row's first cell, and that cell shows it in a tooltip on hover and keyboard focus ("Ahead of plan · Region 4"), so sighted users can find out too; where the stripe is the main message, also show it in a column or a `Legend`; a changed value shows ▲ or ▼ with hidden text.
 
-Tooltips: one tooltip serves the whole table, in the look of `Tooltip`. It shows a header's `tooltip`, and the full text of a plain-text cell while that text is cut; after 500ms of hover, at once on keyboard focus, and it goes on scroll, press or blur. Nothing is mounted per cell.
+Tooltips: one tooltip serves the whole table, in the look of `Tooltip`. It shows a header's `tooltip`, the label of a row's accent on its first cell, the names of the hidden columns on their mark, and the full text of a plain-text cell while that text is cut; after 500ms of hover, at once on keyboard focus, and it goes on scroll, press or blur. Nothing is mounted per cell.
 
 Data states: `loading` sets `aria-busy` and shows skeleton rows in the real columns, hidden from assistive technology. The error state is an `alert`. `loadingMore` is announced through a `status` region.
 
-Virtualisation: only the rows in view (plus 8 on each side) are rendered, between two spacer rows; row heights are read from the rendered rows, so density and tokens are followed, and all rows are assumed equally tall (detail rows are measured one by one). The row that holds the tab stop and the header of the group at the top stay rendered outside the window.
+Virtualisation: only the rows in view are rendered, plus 8 behind them and one more screen of rows ahead of them in the direction of travel, between two spacer rows. The window moves in steps of four rows, and in a scroll event it is rendered before the frame is painted, so no empty band shows however fast the table is scrolled. What is rendered for a row is kept while nothing it is made from changes, so a scroll step renders only the rows that enter the window. Row heights are read from the rendered rows, so density and tokens are followed, and all rows are assumed equally tall (detail rows are measured one by one). The row that holds the tab stop and the header of the group at the top stay rendered outside the window.
 
 `highlightChanges`: when a cell's value changes for the same row id, the cell flashes once (1.2s, fading): green with ▲ for a larger number, red with ▼ for a smaller one, neutral without a sign otherwise. The sign stays 4s. With reduced motion there is no flash, only the sign. Numbers are never counted up.
 
 ## Open questions
 
 None.
+
+Resolved 2026-10-11 (review fixes):
+
+- **A Shift+Arrow run has its own start** (review D3): the row that has the focus at the first Shift+Arrow, not the last row toggled. The run goes on while the focus is on the row the last Shift+Arrow moved to; any other move ends it. `DataTable.Row` reports it as `onSelect({ range: true, anchor: true })`; the rule is `selectStep` in `src/table/logic.ts`, unit-tested.
+- **Hidden columns are announced** (review, spec gap). Before, nothing told a user that columns were hidden unless `expandableHidden` was on, and `aria-colcount` counted only the shown ones. Now a mark in the header says how many (anatomy, step 2), and the column count and positions are those of the whole table. The mark costs 40px while columns are hidden, the same as the disclosure column; at a threshold that hides one column more than before.
+- **A radio in `single` selection**, not a checkbox (revisits the decision of 2026-10-10 below; the evidence shows a radio). It is drawn by the table with the tokens of `Radio` on a native input: the rows of a table cannot sit inside the element of a `RadioGroup`, and the chosen row can be pressed again to clear the selection, which a radio group does not allow.
+- **Ctrl or Cmd + A** selects all rows in `multiple` only; elsewhere the key stays the browser's (the rule for every key a component has no use for, `plan/interaction.md`, reserved keys).
+- **Ctrl + Home / End scroll the body too** (revisits the decision below): the focus goes to the first or last cell of the table as before, and the body follows to its start or end, also when virtualised.
+- **Accent stripes**: the label was hidden text only, and the spec handed sighted users to the app. The row's first cell now shows the label in its tooltip, which costs nothing per row. A 3px stripe cannot carry a shape or a pattern, so a column or a `Legend` is still advised where the stripe matters.
+- **`caption` is a prop, not a part**; the anatomy says so.
+- **Disabled rows** (review D5, D6) did answer to hover, and their text was mixed at 55%: see "Disabled rows".
+- **A `Select` in a cell** (review D8) could not be opened from the keyboard: the native `<select>` it hides counted as a second control of the cell, so Enter moved the focus to it. Controls hidden from assistive technology no longer count, and an open list or menu keeps its keys.
+- **Wrapping rows, `virtualize` by hand, `stickyGroups={false}`, virtualised groups and detail rows** (review D7, D8) have stories and tests; no code changed for them.
+- **`data-part` names are camelCase**, as in `parts` (`plan/decisions/07-customisation.md`): `headerCell`, `headerLabel`, `sortIndicator`, `groupHeader`, `rowLink`, `fontProbe` were kebab-case. `row`, `skeleton`, `empty` and `error` now carry the attribute.
+- **Foreign tokens** (review D10): `--umbra-focus-offset` and `--umbra-icon-button-size` were set on the root with no way in for an app on an ancestor; each now reads a table token first (Tokens).
+- **Classic scrollbars** are tested in a browser launched with scrollbars shown: the columns are fitted to the width beside the scrollbar, and the end-pinned column sits against it.
+- **Sample data** (review D12): the ranking story's regions were a league table in all but name (won, lost, points as three times the wins plus the draws). They are regions with orders, shipped, pending, returned and revenue.
+- **Scrolling 10,000 rows** (review D1, D2). Three causes, three fixes. (1) The sort order, the selection and the hidden columns were handed to the engine as new objects on every render, so its memo never held and every scroll step sorted all the rows again: each is now memoised on its own input. (2) Every scroll step rendered every row in the window, the header (whose "all selected" check walks all rows) and the footer total: what is rendered for each is now cached until one of its inputs changes, so React skips the rows that stay. (3) The window was renewed after the frame was painted, with 8 rows of overscan, so a fast wheel showed an empty band: it is now renewed inside the scroll event, with one screen of rows ahead. Measured with headless Chromium on 2026-10-11 (script time from the browser's own counter, median of 3 runs, 26px a frame for 180 frames): 2,183ms and 90 renders before, 217ms and 45 renders after (sorted: 2,177ms and 179 sorts of the 10,000 rows before, 205ms and no sort after); 300 Arrow Down presses 2.39s before, 0.86s after; wheel at 400px an event: an empty band of up to 505px and 41 frames over 33ms before, none of either after. `tests/visual/table.spec.ts` holds a guard: no sort while scrolling, fewer than 90 rows in the page, no empty band, and a ceiling on script time.
+- **The app keeps `data`, `columns`, `sort` and `selectedIds` stable** (state or a memo). A new `data` array is sorted again; new inline callbacks (`getRowId`, `rowAccent`, a `parts` object) only cost a render of the rows in the window when the app itself renders, not on a scroll step.
 
 Resolved 2026-10-11:
 
@@ -191,7 +218,7 @@ Resolved 2026-10-10:
 - **`rowAccent` returns `{ color, label }`** instead of a separate `accentLabel` prop, so the label cannot be forgotten.
 - **Accent wins the edge**: a highlighted row with an accent shows the accent stripe; the highlight keeps its fill, bold text and label.
 - **A single click activates a row only when rows cannot be selected** (as in `List`); otherwise a click selects, and Enter or a double click activates.
-- **The checkbox column is always shown when selection is on**, in `single` too (without the header checkbox). `selectionColumn` was not needed as a helper.
+- **The selection column is always shown when selection is on**, in `single` too (without the header checkbox; a radio per row since 2026-10-11). `selectionColumn` was not needed as a helper.
 - **`groups` lists titles and order; `groupBy` assigns rows.** Aggregates are per column (`aggregate`); the first column holds the group's title and cannot have one.
 - **Group rows do not push each other out**: each sticks below the header and is covered by the next.
 - **Expanded detail rows are uncontrolled** (no prop for which rows are open).
@@ -199,7 +226,7 @@ Resolved 2026-10-10:
 - **Escape returns from a control to its cell even when a tooltip is open on it**; a control with `aria-expanded="true"` keeps Escape for itself. A menu opened from a cell closes first, focus returns to its button, and the next Escape returns to the cell.
 - **One shared tooltip, not a `Tooltip` per cell**: `Tooltip` needs an element with a widget role as its trigger (a header cell or row header is not one) and one trigger per cell would cost thousands of components. The table opens React Aria's tooltip against the cell itself and reuses the styles of `Tooltip`.
 - **Focus is taken back only when it is nowhere** (the focused element was removed): focus that moved to a menu or dialog opened from a cell is left alone.
-- **Ctrl+Home goes to the first header cell** and does not scroll the body; the next Arrow Down goes to the first row.
+- **Ctrl+Home goes to the first header cell**; the next Arrow Down goes to the first row. (It did not scroll the body until 2026-10-11.)
 - **`wrap` only**; there is no separate `truncate` option (truncation is the default).
 - **Not a layout child** (no `size` or `priority` of its own): it goes in a `Card` with `padding="none"`, or any element with a height.
-- **The visual tests run with overlay scrollbars**; the layout was also checked with classic scrollbars that take room.
+- **The visual tests run with hidden scrollbars**, which take no room; two tests run with scrollbars shown (2026-10-11).

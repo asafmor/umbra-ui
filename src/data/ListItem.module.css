@@ -5,13 +5,37 @@
   min-width: 0;
   background: var(--umbra-list-item-bg, transparent);
   color: var(--umbra-list-item-color, var(--umbra-color-base-text-primary));
-  /* Two edge stripes, drawn inside: selection first, then the category accent. */
+  /* Two stripes at the leading edge: selection first, then the category accent. */
   --selected-stripe: 0px;
   --accent-stripe: 0px;
-  box-shadow:
-    inset var(--selected-stripe) 0 var(--umbra-list-item-selected-stripe, var(--umbra-color-fixed-selected)),
-    inset calc(var(--selected-stripe) + var(--accent-stripe)) 0 var(--accent, transparent);
   transition: background-color var(--umbra-motion-duration-fast);
+}
+
+.root::before,
+.root::after {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  pointer-events: none;
+}
+
+/*
+ * The selection stripe is a lighter violet than the fill: it has to stand out from the selected fill
+ * beside it and from the unselected rows above and below (3:1 against both, on every tint).
+ */
+.root::before {
+  inset-inline-start: 0;
+  width: var(--selected-stripe);
+  background: var(
+    --umbra-list-item-selected-stripe,
+    color-mix(in oklab, var(--umbra-color-fixed-selected), #fff 35%)
+  );
+}
+
+.root::after {
+  inset-inline-start: var(--selected-stripe);
+  width: var(--accent-stripe);
+  background: var(--accent, transparent);
 }
 
 .root[data-accent] {
@@ -20,11 +44,14 @@
 
 /* Hover lightens one step, press darkens one step (plan/interaction.md). */
 .root[data-interactive]:hover {
-  background: var(--umbra-list-item-hover-bg, color-mix(in oklab, currentColor 7%, transparent));
+  background: var(
+    --umbra-list-item-hover-bg,
+    color-mix(in oklab, currentColor var(--umbra-state-hover-lighten), transparent)
+  );
 }
 
 .root[data-interactive]:active {
-  background: color-mix(in oklab, #000 18%, transparent);
+  background: color-mix(in oklab, #000 var(--umbra-state-press-darken), transparent);
 }
 
 /* Selected: violet, plus the edge stripe as the cue that is not colour. */
@@ -38,7 +65,7 @@
 }
 
 .root[data-selected][data-interactive]:hover {
-  background: color-mix(in oklab, #fff 6%, var(--selected-bg));
+  background: color-mix(in oklab, #fff var(--umbra-state-hover-lighten), var(--selected-bg));
 }
 
 .root[data-disabled] {
@@ -87,6 +114,16 @@
 
 .title {
   font: var(--umbra-list-item-title-font, var(--umbra-font-body));
+}
+
+/* A description of several lines wraps, and ends in an ellipsis on its last line. */
+.description[data-lines] {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: var(--lines);
+  line-clamp: var(--lines);
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .overline,
@@ -143,7 +180,7 @@
   overflow: hidden;
   white-space: nowrap;
   /* It clips, so the rings of its controls are drawn inside them. */
-  --umbra-focus-offset: calc(-1 * var(--umbra-state-focus-ring-width));
+  --umbra-focus-offset: var(--umbra-list-item-focus-offset, calc(-1 * var(--umbra-state-focus-ring-width)));
 }
 
 /*
@@ -178,6 +215,61 @@
 
 .root[data-variant='message'] .title {
   font-size: calc(var(--umbra-density-body-size) + 1px);
+}
+
+/*
+ * Pair: two sides that mirror each other around a centre. Each side takes half of the row, so the centre
+ * stays in the middle whatever the two names are; a long name truncates.
+ */
+.root[data-variant='pair'] > .layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+}
+
+/* In a numbered list the number shares the first side's cell, at its start. */
+.root[data-variant='pair'] > .layout::before {
+  grid-area: 1 / 1;
+  justify-self: start;
+}
+
+.side {
+  grid-area: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--umbra-space-3);
+  min-width: 0;
+}
+
+.side[data-part='opposite'] {
+  grid-area: 1 / 3;
+  justify-content: flex-start;
+}
+
+.side > .title {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.side > .meta {
+  color: var(--umbra-list-item-color, var(--umbra-color-base-text-primary));
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.center {
+  grid-area: 1 / 2;
+  min-width: 2.5em;
+  padding: var(--umbra-space-1) var(--umbra-space-3);
+  border-radius: var(--umbra-radius-control);
+  background: var(
+    --umbra-list-item-center-bg,
+    color-mix(in oklab, #000 var(--umbra-state-press-darken-strong), transparent)
+  );
+  color: var(--umbra-list-item-secondary-color, var(--umbra-color-base-text-secondary));
+  font: var(--umbra-font-label);
+  text-align: center;
+  white-space: nowrap;
 }
 
 /* The whole row is the hit area of its link or button; trailing controls stay above it. */
@@ -230,7 +322,8 @@
 }
 
 @container umbra-list-item (max-width: 200px) {
-  .root [data-part='description'] {
+  .root [data-part='description'],
+  .root .side > [data-part='leading'] {
     display: none;
   }
 }

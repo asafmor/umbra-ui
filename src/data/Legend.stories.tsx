@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState, type CSSProperties, type ReactNode } from 'react';
+import { Button } from '../basics/Button';
 import { seriesPatterns, seriesShapes } from '../internal/SeriesMarker';
 import { Card } from '../layout/Card';
 import { Log } from '../stories/placeholders';
@@ -163,6 +164,17 @@ export const Wrapping: Story = {
           items={series(12, (i) => (i === 0 ? { label: 'Region 1, with a long name' } : {}))}
         />
       </Example>
+      <Example
+        label="140px, interactive: a truncated label shows its text when its button has focus"
+        width={140}
+      >
+        <Legend
+          aria-label="Narrow, interactive"
+          interactive
+          maxRows={3}
+          items={series(3, (i) => (i === 0 ? { label: 'Region 1, with a long name' } : {}))}
+        />
+      </Example>
       <Example label="A translated label" width={300}>
         <Legend items={twelve} maxRows={1} moreLabel={(n) => `${n} weitere`} allLabel="Alle Einträge" />
       </Example>
@@ -170,7 +182,31 @@ export const Wrapping: Story = {
   ),
 };
 
-/** Loading shows placeholder items in the final layout. A legend without items renders nothing. */
+function Retrying() {
+  const [state, setState] = useState<'error' | 'loading' | 'data'>('error');
+  return (
+    <>
+      <Legend
+        aria-label="Retried legend"
+        interactive
+        items={state === 'data' ? series(3) : []}
+        loading={state === 'loading'}
+        error={state === 'error' && 'The series did not load'}
+        onRetry={() => setState('loading')}
+      />
+      <div>
+        <Button size="small" onPress={() => setState(state === 'loading' ? 'data' : 'error')}>
+          {state === 'loading' ? 'Finish loading' : 'Fail again'}
+        </Button>
+      </div>
+    </>
+  );
+}
+
+/**
+ * Loading shows placeholder items in the final layout. Empty and error are the shared data states, on
+ * one line: text, a node or `{ title, description, icon, action }`, and a retry button with `onRetry`.
+ */
 export const Loading: Story = {
   args: { items: [] },
   render: () => (
@@ -184,8 +220,20 @@ export const Loading: Story = {
       <Example label="Loaded">
         <Legend items={series(3)} />
       </Example>
-      <Example label="No items: nothing is rendered">
+      <Example label="Empty, default text">
         <Legend items={[]} />
+      </Example>
+      <Example label="Empty, custom">
+        <Legend items={[]} empty={{ title: 'No series', description: 'Choose a region to compare.' }} />
+      </Example>
+      <Example label="Error, default text">
+        <Legend items={[]} error />
+      </Example>
+      <Example label="Error with retry, then loading, then the items">
+        <Retrying />
+      </Example>
+      <Example label="Part: the state replaced by a node">
+        <Legend items={[]} parts={{ state: <em>Nothing to compare yet.</em> }} />
       </Example>
     </div>
   ),

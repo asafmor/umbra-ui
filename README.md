@@ -1,5 +1,7 @@
 # umbra-ui
 
+[![CI](https://github.com/asafmor/umbra-ui/actions/workflows/ci.yml/badge.svg)](https://github.com/asafmor/umbra-ui/actions/workflows/ci.yml)
+
 React components for full-window, data-dense applications: dashboards, consoles, back-office tools.
 
 - **The page never scrolls.** The app fills the window; only regions inside cards scroll.
@@ -8,19 +10,22 @@ React components for full-window, data-dense applications: dashboards, consoles,
 - **Three density levels**, set once.
 - **Customisable in four layers**, the same for every component: tokens, props, parts, blocks.
 
-> **Status: pre-release.** Milestone 1 (core) is built: the layout system, the shell, data display,
-> inputs, overlays, the table, meters and charts, with five guides and three example apps. It is not on
-> npm yet. See [`plan/roadmap.md`](plan/roadmap.md).
-
 ## Install
 
-Until the first release, install from GitHub (this builds the package on install):
-
 ```sh
-npm install github:asafmor/umbra-ui
+npm install umbra-ui
 ```
 
-It needs React 19 or later. The fonts are loaded by your app, not shipped by the library:
+<!-- pre-release: remove at 0.1.0 -->
+
+> **Not on npm yet.** Until `0.1.0` is published, install from GitHub instead:
+> `npm install github:asafmor/umbra-ui`. That downloads the whole repository and builds the package on your
+> machine, so it is slow; it is meant for trying the library before the release only.
+
+<!-- /pre-release -->
+
+It needs React 19 or later ([browser support](#browser-support)). The fonts are loaded by your app, not
+shipped by the library:
 
 ```sh
 npm install @fontsource/figtree @fontsource/barlow-condensed
@@ -85,11 +90,13 @@ stack's `label`.
 | [Customisation](docs/customisation.md)               | The four layers, router links, translating built-in strings             |
 | [Recipes](docs/recipes.md)                           | Thirteen whole screens, from a first page to a table with bulk actions  |
 | [Customisation tables](docs/customisation-tables.md) | Every component's tokens, props, parts and blocks (generated)           |
+| [Changelog](CHANGELOG.md)                            | What each release changed                                               |
 | Storybook                                            | `npm run storybook`: every component, variant and state, and the guides |
 
 ## Examples
 
-Three small apps that import the built package. Copy one as a starting point.
+Three small apps that import the built package. Each is a complete Vite app: copy one out as a starting
+template (its README says how).
 
 | App                                        | Shows                                                                                                                                                                              |
 | ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -98,8 +105,9 @@ Three small apps that import the built package. Copy one as a starting point.
 | [`examples/advanced`](examples/advanced)   | A back-office app on a small hash router: list and detail, a table with bulk actions and a modal form, settings, shortcuts, a theme per section, and a component built from blocks |
 
 ```sh
-npm install && npm run build
-npm run dev -w examples/dashboard
+npm install && npm run build         # the library
+npm run examples -- dashboard        # installs the example against that build
+npm run dev --prefix examples/dashboard
 ```
 
 ## Components
@@ -176,6 +184,8 @@ npm run dev -w examples/dashboard
 | --------------------------- | ---------------------------------------------------------- |
 | `Button`, `IconButton`      | Triggers an action                                         |
 | `TextField`                 | One line of text, or several                               |
+| `SearchField`               | A search box, with suggestions and recent searches         |
+| `Select`                    | One option, or several, from a list that opens             |
 | `Checkbox`, `CheckboxGroup` | One yes-or-no choice, or several                           |
 | `RadioGroup`, `Radio`       | One option among a few, all visible                        |
 | `Toggle`                    | A switch for a setting that takes effect at once           |
@@ -198,6 +208,38 @@ npm run dev -w examples/dashboard
 Every data component has `loading`, `empty` and `error` states. Every one is checked for keyboard use,
 screen-reader names and contrast on every tint.
 
+## Browser support
+
+The stylesheet relies on current CSS, with no fallbacks for older browsers.
+
+| Browser         | Minimum | Set by                   |
+| --------------- | ------- | ------------------------ |
+| Chrome and Edge | 117     | subgrid                  |
+| Firefox         | 121     | `:has()`                 |
+| Safari          | 16.2    | `color-mix()` in `oklab` |
+
+- **Required**: `:has()`, `color-mix()`, container queries and the `dvh` units. Without them colours,
+  states and the rules that shed detail as space shrinks do not work.
+- **Degrade gracefully**: subgrid (the rows of a `KeyValueList` stop sharing one label column; Chrome 111
+  is enough without it), `transition-behavior: allow-discrete` (a scrollbar shows while an `Accordion`
+  section opens) and `scrollbar-color`.
+- **Tested** in Chromium only, by the automated tests. Firefox and Safari are expected to work from the
+  versions above and are not tested yet; please report what you find.
+- **React** 19.0 or later. **Node** 20 or later to render on the server; the package is ESM only.
+- **Server rendering**: every component renders with `renderToString` and hydrates without warnings.
+  They are client components (they use state, effects and context): with React Server Components, as in
+  the Next.js App Router, import them from a file that starts with `'use client'`.
+
+## Status and roadmap
+
+- **Now**: the core is complete (layout, shell, data, inputs, overlays, table, meters, charts), with
+  five guides and three example apps. Versions below `1.0` may change props between minor releases; the
+  [changelog](CHANGELOG.md) says what changed.
+- **Next**: the extended set (tier 2): planner and schedule views, sparklines and heatmaps, sliders and
+  steppers, a widget board and more. The order follows demand:
+  [open an issue](https://github.com/asafmor/umbra-ui/issues) for what you need.
+- The plan and the design decisions are in [`plan/roadmap.md`](plan/roadmap.md).
+
 ## Develop
 
 ```sh
@@ -211,8 +253,9 @@ npm run build
 
 `npm run lint` also typechecks every code sample in this file and in `docs/` (`npm run docs:check`).
 
+[`CONTRIBUTING.md`](CONTRIBUTING.md) says how to set up and what a change needs.
 [`AGENTS.md`](AGENTS.md) describes the project for contributors and coding agents; the design decisions
-are in [`plan/`](plan).
+are in [`plan/`](plan). Security reports: [`SECURITY.md`](SECURITY.md).
 
 ## Licence
 

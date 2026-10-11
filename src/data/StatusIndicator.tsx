@@ -1,6 +1,7 @@
 import type { CSSProperties, ReactNode } from 'react';
-import { IconSlot, RawIcon } from '../provider/icons';
+import { RawIcon } from '../provider/icons';
 import { cx, renderPart, type Part } from '../utils/parts';
+import { IconPart } from './IconPart';
 import shared from './shared.module.css';
 import styles from './StatusIndicator.module.css';
 import { toneProps } from './tone';
@@ -63,7 +64,9 @@ function Root({
 /** The mark: a dot in the shape of the status, or an icon when it has children. */
 function Indicator({ className, style, children }: BlockProps) {
   return children ? (
-    <IconSlot part="indicator">{children}</IconSlot>
+    <IconPart part="indicator" className={className} style={style}>
+      {children}
+    </IconPart>
   ) : (
     <span data-part="indicator" aria-hidden="true" className={cx(styles.dot, className)} style={style} />
   );

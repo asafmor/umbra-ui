@@ -6,6 +6,7 @@ import {
   offsetsOf,
   orderGroups,
   rangeIds,
+  selectStep,
   windowRange,
   type ColumnSize,
 } from './logic';
@@ -102,6 +103,9 @@ describe('windowRange', () => {
     expect(offsets[1000]).toBe(20000);
     expect(windowRange(offsets, 0, 100, 2)).toEqual({ start: 0, end: 8 });
     expect(windowRange(offsets, 1000, 100, 2)).toEqual({ start: 48, end: 58 });
+    // More rows in the direction of travel.
+    expect(windowRange(offsets, 1000, 100, 2, 10)).toEqual({ start: 48, end: 66 });
+    expect(windowRange(offsets, 1000, 100, 10, 2)).toEqual({ start: 40, end: 58 });
   });
 
   it('is clamped at both ends', () => {
@@ -165,4 +169,39 @@ it('a content width is the character count in the cell font, plus the padding', 
   expect(resolveWidth('content', metrics, 6, 18)).toEqual({ min: 79, max: 79, flex: 0 });
   // The same six characters need more room in a larger font.
   expect(resolveWidth('content', { fontSize: 14, ch: 8.1, padding: 16 }, 6).min).toBe(65);
+});
+
+describe('selectStep', () => {
+  const order = () => ['a', 'b', 'c', 'd', 'f', 'g']; // 'e' is disabled and not in the order
+  it('a Shift+Arrow run starts where the focus is, not at the last row toggled (D3)', () => {
+    // B and C are selected; A is toggled on and off, then the focus moves to F and Shift+Down is pressed.
+    let state = { ids: ['b', 'c'], memo: { anchor: null as string | null, base: [] as string[] } };
+    const step = (id: string, options: { range?: boolean; anchor?: boolean } = {}) => {
+      state = selectStep('multiple', state.ids, state.memo, id, options, order);
+    };
+    step('a');
+    step('a');
+    expect(state.ids).toEqual(['b', 'c']);
+    step('f', { range: true, anchor: true });
+    step('g', { range: true });
+    expect(state.ids).toEqual(['b', 'c', 'f', 'g']);
+    // Coming back shrinks the range; it never drops what was selected before it.
+    step('f', { range: true });
+    expect(state.ids).toEqual(['b', 'c', 'f']);
+    step('d', { range: true });
+    expect(state.ids).toEqual(['b', 'c', 'd', 'f']);
+  });
+  it('a Shift+click runs from the last row toggled', () => {
+    const toggled = selectStep('multiple', [], { anchor: null, base: [] }, 'b', {}, order);
+    expect(selectStep('multiple', toggled.ids, toggled.memo, 'd', { range: true }, order).ids).toEqual([
+      'b',
+      'c',
+      'd',
+    ]);
+  });
+  it('single selection keeps one row, and a second press clears it', () => {
+    const memo = { anchor: null, base: [] };
+    expect(selectStep('single', ['a'], memo, 'b', {}, order).ids).toEqual(['b']);
+    expect(selectStep('single', ['b'], memo, 'b', {}, order).ids).toEqual([]);
+  });
 });

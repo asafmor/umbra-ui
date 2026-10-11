@@ -1,5 +1,6 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { expectChangeHighlights } from './live';
+import { contrast, pixels } from './pixels';
 
 // EmptyState, GroupHeader, ListItem and List: keyboard, focus, selection, data states and every shrink step.
 const open = async (page: Page, id: string, width = 1280, height = 720) => {
@@ -278,7 +279,7 @@ test.describe('List', () => {
     const group = card(page, 'Inbox');
     const rows = group.getByRole('row');
     await expect(group.getByText('Selected: m4 · Opened: none')).toBeVisible();
-    await group.getByRole('row', { name: /Training review/ }).click();
+    await group.getByRole('row', { name: /Quarterly review/ }).click();
     await expect(group.getByText('Selected: m1 · Opened: none')).toBeVisible();
     await page.keyboard.press('Enter');
     await expect(group.getByText('Selected: m1 · Opened: m1')).toBeVisible();
@@ -286,9 +287,9 @@ test.describe('List', () => {
     await expect(group.getByText('Selected: m6 · Opened: m6')).toBeVisible();
 
     // Arrow keys pass over group headers, and the selection follows them.
-    await group.getByRole('row', { name: /Selection advice/ }).click();
+    await group.getByRole('row', { name: /Supplier advice/ }).click();
     await page.keyboard.press('ArrowDown');
-    await expect(group.getByRole('row', { name: /Trainee catches the eye/ })).toBeFocused();
+    await expect(group.getByRole('row', { name: /Audit finds a labelling gap/ })).toBeFocused();
     await expect(group.getByText('Selected: m5')).toBeVisible();
     expect(await rows.count()).toBe(13);
   });
@@ -311,7 +312,7 @@ test.describe('List', () => {
     await groups.getByRole('button', { name: 'Expand Thu 8 Oct' }).click();
     await expect(groups.getByText('Site 20 report')).toBeVisible();
     await groups.getByRole('button', { name: 'Collapse Fri 9 Oct' }).click();
-    await expect(groups.getByText('Training review')).toHaveCount(0);
+    await expect(groups.getByText('Quarterly review')).toHaveCount(0);
   });
 
   test('a control inside a row is reached with the arrow keys and keeps its own press', async ({ page }) => {
@@ -463,5 +464,365 @@ test.describe('List selection when the selected row leaves', () => {
 test.describe('highlightChanges', () => {
   test('ListItem meta: a changed value flashes once with a sign for its direction', async ({ page }) => {
     await expectChangeHighlights(page, 'data-listitem--live-updates');
+  });
+});
+
+// --- Review fixes, 2026-10-11 -------------------------------------------------------------------------
+
+const activeName = (page: Page) =>
+  page.evaluate(() => {
+    const el = document.activeElement;
+    return (el?.getAttribute('aria-label') ?? el?.textContent ?? '').trim();
+  });
+const press = async (page: Page, ...keys: string[]) => {
+  for (const key of keys) await page.keyboard.press(key);
+};
+/** The middle of the row's leading edge, of its trailing edge, and a point of its fill. */
+const edges = (row: Locator) =>
+  row.evaluate((el) => {
+    const r = el.getBoundingClientRect();
+    const y = r.top + r.height / 2;
+    return {
+      left: [r.left + 1, y],
+      right: [r.right - 2, y],
+      fill: [r.left + r.width / 2, r.top + 4],
+    } as Record<'left' | 'right' | 'fill', [number, number]>;
+  });
+
+test.describe('List group headers and the keyboard', () => {
+  test('the arrow keys and Tab reach every caret and header action, with keys only', async ({ page }) => {
+    await open(page, 'data-list--inbox');
+    const groups = card(page, 'Collapsible groups');
+    // Tab enters each list at a row, as before.
+    await press(page, 'Tab', 'Tab');
+    await expect(groups.getByRole('row', { name: /Quarterly review/ })).toBeFocused();
+
+    // Up from the first row: the caret of its group. Enter and Space toggle it, and the focus stays.
+    await press(page, 'ArrowUp');
+    await expect(groups.getByRole('button', { name: 'Collapse Fri 9 Oct' })).toBeFocused();
+    await press(page, 'Enter');
+    await expect(groups.getByRole('button', { name: 'Expand Fri 9 Oct' })).toBeFocused();
+    await expect(groups.getByText('Quarterly review')).toHaveCount(0);
+    // React Aria moves the focus when the focused row goes away; it must not take it from the caret.
+    await page.waitForTimeout(200);
+    await expect(groups.getByRole('button', { name: 'Expand Fri 9 Oct' })).toBeFocused();
+    await press(page, 'Space');
+    await expect(groups.getByRole('button', { name: 'Collapse Fri 9 Oct' })).toBeFocused();
+    await expect(groups.getByText('Quarterly review')).toBeVisible();
+
+    // Down from a header: the first row under it. Up from a row under a header: that header.
+    await press(page, 'ArrowDown');
+    await expect(groups.getByRole('row', { name: /Quarterly review/ })).toBeFocused();
+    await press(page, 'End', 'ArrowUp', 'ArrowUp');
+    expect(await activeName(page)).toBe('Collapse Wed 7 Oct');
+    // Left and right move between the controls of one header.
+    await press(page, 'ArrowRight');
+    expect(await activeName(page)).toBe('Archive');
+    await press(page, 'ArrowRight');
+    expect(await activeName(page)).toBe('Archive');
+    await press(page, 'ArrowLeft');
+    expect(await activeName(page)).toBe('Collapse Wed 7 Oct');
+    // A collapsed group is still a stop; above it is the last row of the group before.
+    await press(page, 'ArrowUp');
+    expect(await activeName(page)).toBe('Expand Thu 8 Oct');
+    await press(page, 'ArrowUp');
+    await expect(groups.getByRole('row', { name: /Supplier advice/ })).toBeFocused();
+
+    // Tab walks the header controls and the list's one row stop, in the order they are shown.
+    await press(page, 'Shift+Tab');
+    expect(await activeName(page)).toBe('Collapse Fri 9 Oct');
+    await press(page, 'Tab');
+    await expect(groups.getByRole('row', { name: /Supplier advice/ })).toBeFocused();
+    await press(page, 'Tab');
+    expect(await activeName(page)).toBe('Expand Thu 8 Oct');
+    await press(page, 'Tab', 'Tab');
+    expect(await activeName(page)).toBe('Archive');
+    // After the last stop Tab leaves the list.
+    await press(page, 'Tab');
+    expect(await page.evaluate(() => !!document.activeElement?.closest('[data-umbra="list"]'))).toBe(false);
+  });
+
+  test('a list without header controls keeps one tab stop, and its headers are passed over', async ({
+    page,
+  }) => {
+    await open(page, 'data-list--inbox');
+    const inbox = card(page, 'Inbox');
+    await press(page, 'Tab');
+    await expect(inbox.getByRole('row', { name: /Supplier advice/ })).toBeFocused();
+    await press(page, 'ArrowDown');
+    await expect(inbox.getByRole('row', { name: /Audit finds a labelling gap/ })).toBeFocused();
+    await press(page, 'Tab');
+    expect(await page.evaluate(() => !!document.activeElement?.closest('[aria-label="Inbox"]'))).toBe(false);
+  });
+
+  test('a group is named by its title alone, not by its caret', async ({ page }) => {
+    await open(page, 'data-list--inbox');
+    const groups = card(page, 'Collapsible groups');
+    await expect(groups.getByRole('rowgroup', { name: 'Fri 9 Oct', exact: true })).toBeVisible();
+    await expect(groups.getByRole('rowgroup', { name: 'Wed 7 Oct', exact: true })).toBeVisible();
+  });
+
+  test('a row brought into view by the arrow keys is not left under the stuck header', async ({ page }) => {
+    await open(page, 'data-list--inbox', 1280, 600);
+    await press(page, 'Tab', 'End');
+    for (let i = 0; i < 9; i++) {
+      await press(page, 'ArrowUp');
+      // Nothing but the row itself is drawn over the top of the focused row.
+      const covered = () =>
+        page.evaluate(() => {
+          const row = document.activeElement!;
+          const r = row.getBoundingClientRect();
+          const top = document.elementFromPoint(r.left + r.width / 2, r.top + 2);
+          return !row.contains(top);
+        });
+      await expect.poll(covered, `after ${i + 1} presses`).toBe(false);
+    }
+  });
+
+  test('a plain header that is stuck in a list covers the rows under it', async ({ page }) => {
+    await open(page, 'data-list--parts-and-blocks');
+    const plain = card(page, 'Blocks').locator('[data-umbra="group-header"][data-variant="plain"]');
+    const alpha = await plain.evaluate((el) => {
+      const probe = document.createElement('canvas').getContext('2d')!;
+      probe.fillStyle = getComputedStyle(el).backgroundColor;
+      probe.fillRect(0, 0, 1, 1);
+      return probe.getImageData(0, 0, 1, 1).data[3];
+    });
+    expect(alpha).toBe(255);
+  });
+});
+
+test.describe('List rows: disabled, names, tokens', () => {
+  test('a disabled row has the default cursor', async ({ page }) => {
+    await open(page, 'data-list--rows');
+    const disabled = card(page, 'Multiple selection').locator('[role="row"][aria-disabled="true"]');
+    await expect(disabled).toHaveCSS('cursor', 'default');
+    await expect(disabled.locator('[data-umbra="list-item"]')).toHaveCSS('cursor', 'default');
+    await expect(card(page, 'Multiple selection').getByRole('row').first()).toHaveCSS('cursor', 'pointer');
+  });
+
+  test('the list keeps its name while it is loading, empty or in error', async ({ page }) => {
+    await open(page, 'data-list--states');
+    await expect(page.getByRole('group', { name: 'Loading list' })).toHaveAttribute('aria-busy', 'true');
+    await expect(page.getByRole('group', { name: 'Empty list' })).toContainText('No items');
+    await expect(page.getByRole('group', { name: 'Failed list' }).getByRole('alert')).toBeVisible();
+    // With rows the grid carries the name, once.
+    await expect(page.getByRole('group', { name: 'Orders, page by page' })).toHaveCount(0);
+    await expect(page.getByRole('grid', { name: 'Orders, page by page' })).toBeVisible();
+  });
+
+  test('after Retry the focus moves into the list instead of falling to the page', async ({ page }) => {
+    await open(page, 'data-list--states');
+    const failed = card(page, 'Error, with retry');
+    await failed.getByRole('button', { name: 'Try again' }).focus();
+    await press(page, 'Enter');
+    await expect(failed.getByRole('row')).toHaveCount(2);
+    await expect
+      .poll(() => page.evaluate(() => !!document.activeElement?.closest('[data-umbra="list"]')))
+      .toBe(true);
+  });
+
+  test("a striped list leaves the item's own background token to the app", async ({ page }) => {
+    await open(page, 'data-list--rows');
+    const list = card(page, 'Ranking').locator('[data-umbra="list"]');
+    const items = list.locator('[data-umbra="list-item"]');
+    // The stripe is on the row around the item.
+    await expect(items.nth(0)).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+    expect(
+      await list
+        .getByRole('row')
+        .first()
+        .evaluate((el) => getComputedStyle(el).backgroundColor),
+    ).not.toBe('rgba(0, 0, 0, 0)');
+    // Set on an ancestor, the app's value reaches every item, striped or not.
+    await list.evaluate((el) => el.parentElement!.style.setProperty('--umbra-list-item-bg', 'rgb(1, 2, 3)'));
+    await expect(items.nth(0)).toHaveCSS('background-color', 'rgb(1, 2, 3)');
+    await expect(items.nth(1)).toHaveCSS('background-color', 'rgb(1, 2, 3)');
+  });
+
+  test('every piece carries its data-part', async ({ page }) => {
+    await open(page, 'data-list--states');
+    await expect(card(page, 'Loading').locator('[data-part="skeleton"]')).toHaveCount(3);
+    await expect(card(page, 'Empty, default text').locator('[data-part="empty"]')).toBeVisible();
+    await expect(card(page, 'Error, default text').locator('[data-part="error"]')).toBeVisible();
+    await expect(card(page, 'Loading more').locator('[data-part="loadingMore"]')).toBeAttached();
+    await open(page, 'data-list--inbox');
+    const groups = card(page, 'Collapsible groups');
+    await expect(groups.locator('[data-part="groupHeader"]')).toHaveCount(3);
+    await expect(groups.locator('[data-part="row"]')).toHaveCount(6);
+    await expect(groups.locator('[data-umbra="list"] [data-part="toggle"]')).toHaveCount(3);
+  });
+});
+
+test.describe('List: multiple selection with replace', () => {
+  test('a click or an arrow key selects one row; Shift extends and Ctrl adds', async ({ page }) => {
+    await open(page, 'data-list--replace-selection');
+    const group = card(page, 'Multiple, replace');
+    const rows = group.getByRole('row');
+    const log = (text: string) => expect(group.getByText(text, { exact: true })).toBeVisible();
+    await log('Selected: r2');
+    // No checkboxes: the rows are selected like files, not ticked.
+    await press(page, 'Tab');
+    await expect(rows.nth(1)).toBeFocused();
+    // Selection follows the arrow keys and drops the rest.
+    await press(page, 'ArrowDown');
+    await log('Selected: r3');
+    // Shift extends it to a range, from the row where the run started.
+    await press(page, 'Shift+ArrowDown', 'Shift+ArrowDown');
+    await log('Selected: r3, r4, r5');
+    await press(page, 'Shift+ArrowUp');
+    await log('Selected: r3, r4');
+    // A click replaces the selection; Ctrl+click adds a row and takes one away.
+    await rows.nth(0).click();
+    await log('Selected: r1');
+    await rows.nth(5).click({ modifiers: ['ControlOrMeta'] });
+    await log('Selected: r1, r6');
+    await rows.nth(0).click({ modifiers: ['ControlOrMeta'] });
+    await log('Selected: r6');
+    // The last selected row cannot be deselected (`disallowEmptySelection` is on with `replace`).
+    await rows.nth(5).click({ modifiers: ['ControlOrMeta'] });
+    await log('Selected: r6');
+    await press(page, 'Control+a');
+    await log('Selected: r1, r2, r3, r4, r5, r6');
+  });
+});
+
+test.describe('ListItem: selection stripe, pair and media rows', () => {
+  for (const tint of ['violet', 'teal', 'green', 'slate']) {
+    test(`the selection stripe has 3:1 against the fill and against the rows beside it (${tint})`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: 1280, height: 720 });
+      await page.goto(`/iframe.html?id=data-list--inbox&viewMode=story&globals=context:${tint}`);
+      const inbox = card(page, 'Inbox');
+      const at = await edges(inbox.locator('[data-umbra="list-item"][data-selected]'));
+      const other = await edges(inbox.locator('[data-umbra="list-item"]:not([data-selected])').first());
+      const [stripe, fill, row] = await pixels(page, [at.left, at.fill, other.fill]);
+      expect(contrast(stripe!, fill!)).toBeGreaterThanOrEqual(3);
+      expect(contrast(stripe!, row!)).toBeGreaterThanOrEqual(3);
+    });
+  }
+
+  test('the centres of pair rows line up, and a long name truncates on its own side', async ({ page }) => {
+    await open(page, 'data-listitem--pair-and-media');
+    const rows = card(page, 'Pair').locator('[data-umbra="list-item"]');
+    await expect(rows).toHaveCount(4);
+    const centres = await rows.locator('[data-part="center"]').evaluateAll((all) =>
+      all.map((el) => {
+        const r = el.getBoundingClientRect();
+        return Math.round(r.left + r.width / 2);
+      }),
+    );
+    expect(Math.max(...centres) - Math.min(...centres)).toBeLessThanOrEqual(1);
+    // The centre is in the middle of the row.
+    const row = (await rows.first().boundingBox())!;
+    expect(Math.abs(centres[0]! - (row.x + row.width / 2))).toBeLessThanOrEqual(2);
+    // First side: name, then icon, then value, towards the centre. The other side mirrors it.
+    const order = (side: Locator) =>
+      side.locator('> [data-part]').evaluateAll((all) =>
+        all
+          .map((el) => ({ part: el.getAttribute('data-part'), x: el.getBoundingClientRect().left }))
+          .sort((a, b) => a.x - b.x)
+          .map((p) => p.part),
+      );
+    expect(await order(rows.first().locator('[data-part="side"]'))).toEqual(['title', 'leading', 'meta']);
+    expect(await order(rows.first().locator('[data-part="opposite"]'))).toEqual(['meta', 'leading', 'title']);
+    expect(await truncated(rows.nth(1).locator('[data-part="side"] [data-part="title"]'))).toBe(true);
+    expect(await rows.nth(1).evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
+    // A pair row is selected and striped like any other.
+    await expect(rows.nth(3)).toHaveAttribute('data-selected', 'true');
+    // The blocks build the same row.
+    const blocks = card(page, 'Pair, from blocks');
+    await expect(blocks.locator('[data-variant="pair"] [data-part="center"]')).toHaveText('→');
+  });
+
+  test('as a pair row narrows the icons of its sides hide, then the values', async ({ page }) => {
+    await open(page, 'data-listitem--pair-and-media');
+    const row = card(page, 'Pair').locator('[data-umbra="list-item"]').first();
+    await expect(row.locator('[data-part="leading"]').first()).toBeVisible();
+    await row.evaluate((el) => (el.style.width = '190px'));
+    await expect(row.locator('[data-part="leading"]').first()).toBeHidden();
+    await expect(row.locator('[data-part="meta"]').first()).toBeVisible();
+    await row.evaluate((el) => (el.style.width = '130px'));
+    await expect(row.locator('[data-part="meta"]').first()).toBeHidden();
+    await expect(row.locator('[data-part="center"]')).toBeVisible();
+  });
+
+  test('`descriptionLines` lets the description wrap, and clamps it', async ({ page }) => {
+    await open(page, 'data-listitem--pair-and-media');
+    const descriptions = card(page, 'Media').locator('[data-part="description"]');
+    const lines = (index: number) =>
+      descriptions
+        .nth(index)
+        .evaluate((el) =>
+          Math.round(el.getBoundingClientRect().height / parseFloat(getComputedStyle(el).lineHeight)),
+        );
+    expect(await lines(0)).toBeGreaterThan(1);
+    expect(await lines(0)).toBeLessThanOrEqual(3);
+    expect(await lines(1)).toBe(2);
+    expect(await descriptions.nth(1).evaluate((el) => el.scrollHeight > el.clientHeight)).toBe(true);
+    expect(await lines(2)).toBe(1);
+  });
+});
+
+test.describe('Right to left', () => {
+  const story = 'data-list--right-to-left';
+
+  test('the selection and accent stripes are at the leading edge, on the right', async ({ page }) => {
+    await open(page, story);
+    await expect(page.locator('[data-umbra-scope]').first()).toHaveAttribute('dir', 'rtl');
+    const group = card(page, 'Selection and accent');
+    const selected = await edges(group.locator('[data-umbra="list-item"][data-selected]'));
+    const accent = await edges(group.locator('[data-umbra="list-item"][data-accent]'));
+    const [stripe, fill, far, mark, plain] = await pixels(page, [
+      selected.right,
+      selected.fill,
+      selected.left,
+      accent.right,
+      accent.left,
+    ]);
+    expect(contrast(stripe!, fill!)).toBeGreaterThanOrEqual(3);
+    expect(far).toEqual(fill);
+    expect(contrast(mark!, plain!)).toBeGreaterThanOrEqual(3);
+  });
+
+  test('the numbers and the pair row mirror, and a collapsed caret points left', async ({ page }) => {
+    await open(page, story);
+    const ranking = card(page, 'Ranking and pair');
+    const first = ranking.locator('[data-umbra="list-item"]').first();
+    const title = (await first.locator('[data-part="title"]').boundingBox())!;
+    const meta = (await first.locator('[data-part="meta"]').boundingBox())!;
+    expect(title.x).toBeGreaterThan(meta.x);
+    const pair = ranking.locator('[data-variant="pair"]');
+    const side = (await pair.locator('[data-part="side"]').boundingBox())!;
+    const opposite = (await pair.locator('[data-part="opposite"]').boundingBox())!;
+    expect(side.x).toBeGreaterThan(opposite.x);
+
+    const carets = card(page, 'Selection and accent').locator('[data-part="toggle"] > *');
+    expect(await carets.nth(1).evaluate((el) => getComputedStyle(el).rotate)).toBe('90deg');
+    expect(await carets.nth(0).evaluate((el) => getComputedStyle(el).rotate)).toBe('none');
+  });
+
+  test('the arrow keys follow the reading order: in a group header and in a legend', async ({ page }) => {
+    await open(page, story);
+    const group = card(page, 'Selection and accent');
+    await press(page, 'Tab');
+    await expect(group.getByRole('row', { name: /Item 2/ })).toBeFocused();
+    await press(page, 'ArrowUp', 'ArrowUp');
+    expect(await activeName(page)).toBe('Collapse Today');
+    // The action is to the left of the caret, and the left arrow goes to it.
+    await press(page, 'ArrowLeft');
+    expect(await activeName(page)).toBe('Archive');
+    await press(page, 'ArrowRight');
+    expect(await activeName(page)).toBe('Collapse Today');
+
+    const legend = page.getByRole('toolbar', { name: 'Regions' });
+    const items = legend.getByRole('button');
+    await items.first().focus();
+    await press(page, 'ArrowLeft');
+    await expect(items.nth(1)).toBeFocused();
+    expect((await items.nth(1).boundingBox())!.x).toBeLessThan((await items.nth(0).boundingBox())!.x);
+    await press(page, 'ArrowRight');
+    await expect(items.nth(0)).toBeFocused();
   });
 });

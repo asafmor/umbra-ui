@@ -57,7 +57,7 @@ Text contrast, computed for the ten card surfaces (default and tinted card on ea
 
 ### 1. Tokens
 
-`--umbra-banner-<tone>-color` (six), `--umbra-banner-bg`, `--umbra-banner-fg`, `--umbra-banner-solid-fg`, `--umbra-banner-border`, `--umbra-banner-icon-color`, `--umbra-banner-subtle-strength` (share of the tone colour in the subtle fill, 16%), `--umbra-banner-radius`, `--umbra-banner-padding-x`, `--umbra-banner-padding-y`, `--umbra-banner-row-height` (follows the density level), `--umbra-banner-stripe-width`.
+`--umbra-banner-<tone>-color` (six), `--umbra-banner-bg`, `--umbra-banner-fg`, `--umbra-banner-solid-fg`, `--umbra-banner-border`, `--umbra-banner-icon-color`, `--umbra-banner-subtle-strength` (share of the tone colour in the subtle fill, 16%), `--umbra-banner-radius`, `--umbra-banner-padding-x`, `--umbra-banner-padding-y`, `--umbra-banner-row-height` (follows the density level), `--umbra-banner-stripe-width`, `--umbra-banner-focus-color` and `--umbra-banner-focus-offset` (the ring of controls inside a `solid` banner), `--umbra-banner-dismiss-size`.
 
 ### 2. Props
 
@@ -88,28 +88,37 @@ Text contrast, computed for the ten card surfaces (default and tinted card on ea
 
 ## Behaviour as space shrinks
 
-The banner takes the full width of its container, also as a child of a row (a `Slot`, a card footer). It measures its own width (a container query), in units of its font size, so the steps follow the density level.
+The banner takes the full width of its container, also as a child of a row (a `Slot`, a card footer). It measures its own content box (a container query: the width inside its padding and border), in units of its font size, so the steps follow the density level. With the default padding (12px a side) and border (1px), the outer width is 26px more.
 
 | Step | Trigger | Result |
 |---|---|---|
 | 0 | Any width | Title and description wrap; the description clamps to `maxLines` with an ellipsis when set. The banner never overflows. |
-| 1 | Narrower than 26em (416px at the default density) | `actions` move below the text, in line with it. The dismiss button stays on the first row. |
-| 2 | Narrower than 14em (224px) | The `icon` hides |
+| 1 | Content box of 26em or less (416px at the default density; 442px of outer width) | `actions` move below the text, in line with it. The dismiss button stays on the first row. |
+| 2 | Content box of 14em or less (224px; 250px outer) | The `icon` hides |
 
-`compact` stays on one line at every width: the description truncates first, then the title; the actions stay on the row; the icon hides at step 2.
+`compact` stays on one line at every width: the description truncates first, then the title; the actions stay on the row and never wrap to a second one; the icon hides at step 2. Below the width of its actions (about 110px with one small button and a dismiss button) the actions are cut off at the banner's edge.
 
 ## Interaction and accessibility
 
 - The role follows `live`: `status` (announced politely) by default, `alert` for the `danger` tone, none with `live="off"`. Use `live="off"` for a banner that is part of the page from the start and is not news.
 - The tone is never colour alone: each tone has its own icon, and the text says what happened. When the icon is hidden (`icon={null}`, or step 2), the text and the role carry it.
 - The dismiss button is an icon button named by `dismissLabel`; `Enter` and `Space` activate it. Actions and the dismiss button are in the tab order, in that order.
-- After a dismissal the banner is removed and focus is not moved. An app that needs focus somewhere specific sets it in `onDismiss`.
-- Inside a `solid` banner, focus rings take the banner's text colour, because the pink ring has too little contrast on a filled band.
+- After a dismissal the banner is removed, and the focus it held goes where Tab would have gone: to the next control after the banner, or to the one before it when the banner was the last. Only when the banner really went away and nothing else took the focus, so an app that sets the focus in `onDismiss` wins.
+- Inside a `solid` banner, focus rings take the banner's text colour, because the pink ring has too little contrast on a filled band. They are drawn 1px from their control, so the whole ring lies on the fill: the padding and the border leave 3px, and a ring at the usual 2px reached 1px onto the page, where the dark ring had 1.02:1. On the fill it has at least 5.44:1 (the text's ratio, on `danger`).
+- The ring of the dismiss button is drawn inside it, in every variant: the button reaches the banner's edge.
 - The title is not a heading, so a banner does not change the page outline.
 
 ## Open questions
 
 None.
+
+Resolved 2026-10-11 (review fixes):
+
+- **Focus after a dismissal** (revisited): it fell to the page, and the next Tab started from the top. It now moves to the next control (rule above). The banner looks for plain controls in document order; it does not follow positive `tabindex` values.
+- **The focus ring in a `solid` banner stays on the fill** (review B5), and has its own tokens.
+- **A compact banner never takes a second line** (review B11): it wrapped below 110px when it had actions.
+- **The steps are stated for the content box** (review B12). The code was right and the spec quoted the same numbers as outer widths.
+- `--umbra-icon-button-size` and `--umbra-focus-offset` are still set inside the banner for the controls it holds, each through a banner token an app can set.
 
 Resolved 2026-10-10:
 

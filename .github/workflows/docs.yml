@@ -1,0 +1,36 @@
+name: Docs
+
+# Builds Storybook (the workshop and the guides) and publishes it to GitHub Pages.
+# It runs only when started by hand (Actions > Docs > Run workflow), so it cannot fail before Pages is
+# enabled for the repository. docs/releasing.md says how to enable it.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run build-storybook -- --quiet
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: storybook-static
+      - id: deployment
+        uses: actions/deploy-pages@v4

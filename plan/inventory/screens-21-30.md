@@ -95,7 +95,7 @@ All ten images were viewed. Proportions are estimates from the pixels; hex value
 | Badge | Purple count "2" on ShortcutBar chip "Transfer Activity" | Row 2 right | Small circle overlapping chip corner |
 | Card | Themed header variants: dark purple (league), red (Cup A), black (Competition C), green (Cup B) | 4 columns | Header tint also bleeds into the key-value rows; 1px border takes the theme colour faintly |
 | CrestIcon | Competition logos ~32px; club crests ~14px in rows | Headers, tables | |
-| Tag | Flag + country chip ("England", "Europe"), grey fill | Header | |
+| Tag | Flag + country chip ("Country A", "Region A"), grey fill | Header | |
 | KeyValue rows | Label left bold, value right; value may include leading icon (trophy "5th", green check-circle + status text) | Under header | Status text truncated in card 3 |
 | DataTable | League table: Pos, Team, Pld, W, D, L, GD, Pts, Form; zebra; coloured left position bars (blue = Competition A, orange = Competition B, red = relegation); own team name in orange; movement dash column | Card 1 | 20 rows, dense ~14px row pitch; Form column empty |
 | Legend | Bar markers "Competition A / Competition B / Rel." | Under table | |

@@ -30,6 +30,8 @@ A bordered box of about ten ticks with one taller, coloured tick, orange, yellow
 | `value` | the value as text | hidden; shown by `showValue` or `valueLabel` |
 | `skeleton` | stands in for the strip while loading | shown when `loading` |
 
+Every part carries `data-part` with its name. Inside the strip, `plot`, each `tick` and each zone `boundary` carry one too; they cannot be replaced.
+
 ## Variants and states
 
 | Variant | Values | Notes |
@@ -42,19 +44,21 @@ A bordered box of about ten ticks with one taller, coloured tick, orange, yellow
 | `size` | `small` (14px), `default` (20px), `large` (28px) | `small` is for table cells |
 | `boxed` | boolean | The border and surface around the ticks |
 
-States: `loading`, out of range (`data-out-of-range`), shrink level (`data-shrink="1"` to `"3"`).
+States: `loading`, no value (`data-empty`), out of range (`data-out-of-range`), shrink level (`data-shrink="1"` to `"3"`).
 
 ## Customisation
 
 ### 1. Tokens
 
-`--umbra-level-meter-track`, `--umbra-level-meter-border`, `--umbra-level-meter-tick`, `--umbra-level-meter-tick-lit`, `--umbra-level-meter-tick-width`, `--umbra-level-meter-marker`, `--umbra-level-meter-marker-width`, `--umbra-level-meter-band`, `--umbra-level-meter-compare`, `--umbra-level-meter-height`, `--umbra-level-meter-radius`, `--umbra-level-meter-pitch` (the least room one tick needs), `--umbra-level-meter-length` (the longest the strip grows; none by default).
+`--umbra-level-meter-track`, `--umbra-level-meter-border`, `--umbra-level-meter-tick`, `--umbra-level-meter-tick-lit`, `--umbra-level-meter-boundary`, `--umbra-level-meter-tick-width`, `--umbra-level-meter-marker`, `--umbra-level-meter-marker-width`, `--umbra-level-meter-band`, `--umbra-level-meter-compare`, `--umbra-level-meter-height`, `--umbra-level-meter-radius`, `--umbra-level-meter-pitch` (the least room one tick needs), `--umbra-level-meter-length` (the longest the strip grows; none by default).
 
 ### 2. Props
 
 | Prop | Type | Default | Purpose |
 |---|---|---|---|
-| `value` | number \| level id | — | Where the marker sits. On a named scale a number is the level's index. |
+| `value` | number \| level id \| `null` | — | Where the marker sits. On a named scale a number is the level's index. |
+| `emptyLabel` | node | "—" | Shown in place of the value text when there is no value, or it names no level |
+| `noValueLabel` | string | "No value" | What `aria-valuetext` and the tooltip say when there is no value and no range |
 | `min` / `max` | number | 0 / 100 | |
 | `steps` | number | 10 | Number of ticks on a numeric scale |
 | `levels` | `{ id, label, tone? }[]` | — | A named scale; replaces `min`, `max` and `steps` |
@@ -93,8 +97,7 @@ The strip takes the room left by the labels, and needs `--umbra-level-meter-pitc
 |---|---|
 | 1 | The end labels hide |
 | 2 | Every 2nd tick stays |
-| 3 | Every 5th tick stays (and the last one) |
-| 4 | The label truncates |
+| 3 | Every 5th tick stays (and the last one), and the label may truncate |
 
 The marker, the band and the comparison marker always stay, at the same place on the scale. Everything returns when the container grows.
 
@@ -106,6 +109,9 @@ The marker, the band and the comparison marker always stay, at the same place on
 - On a named scale `aria-valuenow` is the index of the level. A meter that shows only a range reports the middle of the range.
 - Colour is never the only cue: the marker is taller and wider than a tick, the comparison has its own shape, zone edges are taller ticks, and the zone's label is in the text.
 - A value outside the scale clamps the marker; the text keeps the real value.
+- **No value** (`value` is `null`, missing or names no level, and there is no `range`): no marker and no lit tick are drawn, the value text is `emptyLabel` ("—"), and `aria-valuetext` and the tooltip say `noValueLabel` ("No value"), followed by the comparison when there is one. `aria-valuenow` stays at `min` because the role requires it; the text is what is read. The root carries `data-empty`. There is no error state (plan/interaction.md, "Which states a component has").
+- **Right to left**: the scale runs from the right; the marker, the band, the comparison and the end labels mirror. A vertical meter does not change.
+- **Non-text contrast**, measured on violet / teal / green / slate: the box against the card 4.16 / 4.12 / 4.11 / 4.15; an unlit tick against the strip 4.26 on every tint; a lit tick 9.2. Lit and unlit ticks also differ in height (70% and 40% of the strip), so the difference does not depend on colour.
 - While loading, the root is not a meter; it sets `aria-busy`.
 - Hovering the meter shows the same text as `aria-valuetext` (value, zone, range, comparison) in a tooltip (500ms delay, Escape closes it). `tooltip={false}` turns it off. The meter is still not a tab stop; if the app makes it or a control around it focusable, keyboard focus shows the tooltip too.
 
@@ -114,6 +120,10 @@ The marker, the band and the comparison marker always stay, at the same place on
 None.
 
 Resolved 2026-10-10:
+
+- 2026-10-11 (review B7): unlit ticks and the box border use `border-control` (they measured 1.9:1 in `border-strong`). Lit ticks are `text-secondary` and taller, and zone edges keep `text-muted` through their own token, `--umbra-level-meter-boundary`.
+- 2026-10-11 (review B6, B8): a missing value is announced as "No value", not as 0%. No error and no empty state. `value` accepts `null`.
+- 2026-10-11: the shrink steps are three, as the code has them; the label truncates at the third.
 
 - 2026-10-11: `highlightChanges` (plan/interaction.md, "Live updates"), the same as on `DataTable` and from the same code: `src/internal/useChangeHighlight.ts` and `ChangeHighlight.tsx`. The number itself is compared. Tokens: `--umbra-change-up`, `--umbra-change-down`, `--umbra-change-neutral`.
 - The marker sits at the exact value, not on the nearest tick; ticks up to it are lit, as in the source.

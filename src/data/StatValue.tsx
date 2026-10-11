@@ -147,8 +147,10 @@ function Meter({ className, style, children }: BlockProps) {
 }
 
 export interface StatValueProps extends Omit<StatValueRootProps, 'children'>, ChangeHighlightProps {
-  /** The value. It never hides. */
+  /** The value. It never hides. `null`, `undefined` or an empty text shows `emptyLabel`, without unit or trend. */
   value?: ReactNode;
+  /** Shown when there is no value. */
+  emptyLabel?: ReactNode;
   /** What the value is. */
   label?: ReactNode;
   /** Shown before the label. */
@@ -181,6 +183,7 @@ const has = (node: ReactNode) => node != null && node !== false;
 /** A large value with its label, and optional unit, trend, caption and meter. */
 export function StatValue({
   value,
+  emptyLabel = '—',
   label,
   icon,
   unit,
@@ -192,6 +195,8 @@ export function StatValue({
 }: StatValueProps) {
   const [change, root] = splitChange(rest);
   const { loading } = root;
+  // No value: a dash, and no unit or trend, which would read as a value of nothing.
+  const missing = value == null || value === '';
   const iconNode =
     has(icon) &&
     renderPart(parts?.icon, { children: icon }, (p) => <IconSlot part="icon">{p.children}</IconSlot>);
@@ -201,20 +206,26 @@ export function StatValue({
       <Figure>
         {loading ? (
           renderPart(parts?.skeleton, {}, () => (
-            <Skeleton
-              shape="block"
-              width="4em"
-              height="0.7em"
-              style={{ alignSelf: 'center', minHeight: 0 }}
-            />
+            <span data-part="skeleton" style={{ display: 'contents' }}>
+              <Skeleton
+                shape="block"
+                width="4em"
+                height="0.7em"
+                style={{ alignSelf: 'center', minHeight: 0 }}
+              />
+            </span>
           ))
         ) : (
           <>
-            {renderPart(parts?.value, { children: value }, (p) => (
+            {renderPart(parts?.value, { children: missing ? emptyLabel : value }, (p) => (
               <Value {...change}>{p.children}</Value>
             ))}
-            {has(unit) && renderPart(parts?.unit, { children: unit }, (p) => <Unit>{p.children}</Unit>)}
-            {has(trend) && renderPart(parts?.trend, { children: trend }, (p) => <Trend>{p.children}</Trend>)}
+            {!missing &&
+              has(unit) &&
+              renderPart(parts?.unit, { children: unit }, (p) => <Unit>{p.children}</Unit>)}
+            {!missing &&
+              has(trend) &&
+              renderPart(parts?.trend, { children: trend }, (p) => <Trend>{p.children}</Trend>)}
           </>
         )}
       </Figure>

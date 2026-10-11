@@ -67,7 +67,7 @@ All ten images were viewed. Hex values are estimated by eye from the screenshots
 | DataTable row | Highlighted: red/orange text ("Home Club") | League A card | Marks the user's club |
 | SectionTitle | Plain condensed uppercase ("TOP PERFORMERS") | Tall card bottom | Not a link |
 | List | Avatar + two-line text + trailing value | Top Performers | Label ("Highest Average Rating"), name with icon, right-aligned RatingPill (green 8.02) or plain number |
-| SectionTitle | Plain bold sentence-case | League H card ("League H Eastern Conference League Table") | Wraps to 2 lines |
+| SectionTitle | Plain bold sentence-case | League H card ("League H Division A League Table") | Wraps to 2 lines |
 | CrestIcon / Avatar | 12-14px inline | Tables, key-value rows | |
 
 - **Scroll / truncation evidence**: Each card's table has its own thin scrollbar (10 of ~20 rows visible). Team names ellipsised heavily ("Club U...", "Club V...", "Club W..."). Bottom-row cards and the Top Performers list are clipped by the window. Legends wrap or clip at card bottoms.
@@ -199,7 +199,7 @@ All ten images were viewed. Hex values are estimated by eye from the screenshots
 | Calendar | Month grid, week rows, 7 day columns + a leading control column | Main | Each week row: left control cell (label "Schedule Focus", Select, "Intensity" + ProgressBar, Copy/Paste/Clear) then 7 day cells. Each day cell: date pill header + 3 stacked ScheduleSlots |
 | DateChip (new) | Default (dark pill, white number), today (purple pill, and the whole day column cell is purple-tinted), month-boundary ("1 Nov") | Day headers | |
 | ScheduleSlot | Colour by category: green (team tactical/attacking sessions), blue (defensive/pressing unit sessions), magenta (individual development), red (recovery / conditioning), grey (rest, travel); dimmed for past days | Day cells | Icon + label in a bordered, tinted rounded rect; label truncates without ellipsis ("Individual Developme") |
-| ScheduleSlot | Match variant | e.g. "Club AC League A A", "Club AD Competition C A", "Club AE Cup B H" | Opponent crest + code, competition icon + code, divider, H/A. Fill follows competition (purple league, black European, green cup) |
+| ScheduleSlot | Match variant | e.g. "Club AC League A A", "Club AD Competition C A", "Club AE Cup B H" | Opponent crest + code, competition icon + code, divider, H/A. Fill follows competition (purple league, black continental, green cup) |
 | ProgressBar | Thin, green, ~45-55% | "Intensity" | Rounded track, no label or value |
 | KeyValueRow | Stacked label/value | Next Opposition Report ("Form", "Most Used Formation") | |
 | FormIndicator | 5 small marks, pink/red | Next Opposition Report | Dots and blocks, tiny |

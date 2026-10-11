@@ -36,12 +36,12 @@ function Mark({
       <span
         key={stamp}
         aria-hidden="true"
-        data-part="change-flash"
+        data-part="changeFlash"
         data-direction={direction}
         className={styles.flash}
       />
       {direction !== 'neutral' && (
-        <span data-part="change-sign" data-direction={direction} className={styles.sign}>
+        <span data-part="changeSign" data-direction={direction} className={styles.sign}>
           <span aria-hidden="true">{direction === 'up' ? '▲' : '▼'}</span>
           <span className={styles.srOnly}>{direction === 'up' ? increasedLabel : decreasedLabel}</span>
         </span>

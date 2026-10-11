@@ -294,11 +294,11 @@ test.describe('Overview', () => {
   }) => {
     await open(page, overview.id, 1920, 1080);
     const ranking = page.getByRole('grid', { name: 'Regional ranking' });
-    await expect(ranking.getByRole('columnheader', { name: 'Lost' })).toBeVisible();
+    await expect(ranking.getByRole('columnheader', { name: 'Late' })).toBeVisible();
     await expect(ranking.locator('tr[data-highlighted]')).toContainText('Region 5');
     await page.setViewportSize({ width: 1024, height: 600 });
-    await expect(ranking.getByRole('columnheader', { name: 'Lost' })).toHaveCount(0);
-    await expect(ranking.getByRole('columnheader', { name: 'Pts' })).toBeVisible();
+    await expect(ranking.getByRole('columnheader', { name: 'Late' })).toHaveCount(0);
+    await expect(ranking.getByRole('columnheader', { name: 'Val' })).toBeVisible();
   });
 });
 

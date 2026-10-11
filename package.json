@@ -8,12 +8,30 @@
     "type": "git",
     "url": "git+https://github.com/asafmor/umbra-ui.git"
   },
+  "homepage": "https://github.com/asafmor/umbra-ui#readme",
+  "bugs": "https://github.com/asafmor/umbra-ui/issues",
+  "keywords": [
+    "react",
+    "components",
+    "ui",
+    "design-system",
+    "dashboard",
+    "data-table",
+    "charts",
+    "layout",
+    "dark-theme",
+    "typescript"
+  ],
   "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
   "sideEffects": [
     "**/*.css"
   ],
   "files": [
-    "dist"
+    "dist",
+    "CHANGELOG.md"
   ],
   "exports": {
     ".": {
@@ -26,12 +44,9 @@
     },
     "./styles.css": "./dist/styles.css"
   },
-  "workspaces": [
-    "examples/*"
-  ],
   "scripts": {
     "tokens": "node scripts/build-tokens.mjs",
-    "build": "npm run tokens && vite build && tsc -p tsconfig.build.json",
+    "build": "npm run tokens && vite build && tsc -p tsconfig.build.json && node scripts/fix-types.mjs",
     "typecheck": "npm run tokens && tsc --noEmit",
     "lint": "eslint . && prettier --check . && node scripts/build-customisation.mjs --check && npm run docs:check",
     "format": "prettier --write .",
@@ -41,12 +56,16 @@
     "test:visual": "npm run build-storybook -- --quiet && playwright test",
     "test:visual:update": "npm run build-storybook -- --quiet && playwright test --update-snapshots",
     "changeset": "changeset",
-    "version": "changeset version",
-    "release": "npm run lint && npm run typecheck && npm test && npm run build && changeset publish",
+    "version": "changeset version && npm install --package-lock-only --ignore-scripts",
+    "release": "npm run lint && npm run typecheck && npm test && npm run build && node scripts/check-release.mjs --final && changeset publish",
     "prepare": "npm run build",
+    "check:package": "node scripts/check-treeshake.mjs",
     "docs:tables": "npm run tokens && node scripts/build-customisation.mjs",
     "docs:check": "npm run tokens && node scripts/check-docs.mjs",
-    "test:examples": "npm run build && npm run build --workspaces --if-present && playwright test -c playwright.examples.config.ts"
+    "test:examples": "npm run build && node scripts/examples.mjs && playwright test -c playwright.examples.config.ts",
+    "release:check": "node scripts/check-release.mjs",
+    "examples": "node scripts/examples.mjs",
+    "examples:standalone": "node scripts/check-examples-standalone.mjs"
   },
   "peerDependencies": {
     "react": ">=19",
@@ -75,6 +94,7 @@
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.2",
+    "esbuild": "^0.28.2",
     "eslint": "^10.12.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-storybook": "^10.6.1",

@@ -80,6 +80,12 @@ export const Stats: Story = {
           />
         </div>
       </Section>
+      <Section label="No value: emptyLabel, and no unit or trend" width={300}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          <StatValue label="Orders" value={null} unit="/ year" trend={<TrendStandIn>12</TrendStandIn>} />
+          <StatValue label="Last sync" value={undefined} emptyLabel="Never" size="lg" />
+        </div>
+      </Section>
       <Section label="No label: named for assistive technology">
         <StatValue aria-label="Open orders" value="12" size="xl" tone="accent" />
       </Section>

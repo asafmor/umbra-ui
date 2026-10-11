@@ -5,10 +5,12 @@ import {
   isValidElement,
   useContext,
   useEffect,
+  useId,
   useMemo,
   useRef,
   useState,
   type CSSProperties,
+  type KeyboardEvent,
   type ReactNode,
 } from 'react';
 import { GridList, GridListHeader, GridListItem, GridListSection } from 'react-aria-components';
@@ -21,6 +23,57 @@ import { cx, renderPart, type Part } from '../utils/parts';
 import { GroupHeader, type GroupHeaderProps } from './GroupHeader';
 import styles from './List.module.css';
 import { ListItem, type ListItemProps } from './ListItem';
+
+/** The controls of a group header that the keyboard can reach. */
+const HEADER_CONTROL = 'button:not(:disabled), a[href]';
+const HEADER = '[data-part="groupHeader"]';
+const ROW = '[data-part="row"]';
+
+/**
+ * Group headers are not rows of React Aria's grid, so it passes over them. A header that holds controls
+ * (its caret, its actions) is made a stop of the list here: the up and down arrows land on its first
+ * control, left and right move between its controls, and Tab walks the header controls and the list's
+ * one row stop in the order they are shown. Everything else is left to React Aria.
+ */
+function headerKeys(event: KeyboardEvent<HTMLElement>) {
+  const { key } = event;
+  if (event.altKey || event.ctrlKey || event.metaKey) return;
+  const target = event.target as HTMLElement;
+  const root = event.currentTarget;
+  const header = target.closest<HTMLElement>(HEADER);
+  const row = target.closest<HTMLElement>(ROW);
+  const controls = (el: Element) => [...el.querySelectorAll<HTMLElement>(HEADER_CONTROL)];
+  const take = (el?: HTMLElement) => {
+    event.preventDefault();
+    event.stopPropagation();
+    el?.focus();
+  };
+
+  if (key === 'ArrowUp' || key === 'ArrowDown') {
+    // From a control inside a row, the arrows are the row's own.
+    if (!header && target !== row && target.getAttribute('role') !== 'grid') return;
+    const stops = [
+      ...root.querySelectorAll<HTMLElement>(`${ROW}:not([aria-disabled="true"]), ${HEADER}`),
+    ].filter((el) => !el.matches(HEADER) || controls(el).length > 0);
+    const at = stops.indexOf((header ?? row)!);
+    const next = key === 'ArrowDown' ? stops[at + 1] : stops[at - 1];
+    if (next?.matches(HEADER)) take(controls(next)[0]);
+    // From a header the list moves the focus itself; from a row to a row React Aria does.
+    else if (header) take(next);
+  } else if (header && (key === 'ArrowLeft' || key === 'ArrowRight')) {
+    const all = controls(header);
+    const forward = (key === 'ArrowRight') === (getComputedStyle(header).direction !== 'rtl');
+    take(all[all.indexOf(target.closest<HTMLElement>(HEADER_CONTROL)!) + (forward ? 1 : -1)]);
+  } else if (key === 'Tab') {
+    const stops = [
+      ...root.querySelectorAll<HTMLElement>(`${HEADER} :is(${HEADER_CONTROL}), ${ROW}[tabindex="0"]`),
+    ];
+    const at = stops.indexOf((header ? target.closest<HTMLElement>(HEADER_CONTROL) : row)!);
+    const next = stops[at + (event.shiftKey ? -1 : 1)];
+    // With no stop left in that direction React Aria leaves the list.
+    if (at >= 0 && next) take(next);
+  }
+}
 
 /** Identifies one row. */
 export type ListId = string | number;
@@ -137,6 +190,12 @@ function Root({
   const press = useRef({ active: false, used: false });
   // Every row's key, so "select all" can be reported as a plain array.
   const keys = useRef(new Set<ListId>());
+  // React Aria keeps the row a Shift range started from on the selection object it reports. The app
+  // gets and gives plain arrays, so the object is kept here and handed back while the ids still match:
+  // otherwise a range could grow with Shift+Arrow but never shrink again.
+  const [reported, setReported] = useState<Set<ListId> | null>(null);
+  const ids = selectedIds ?? ownSelection;
+  const selectedKeys = reported?.size === ids.length && ids.every((id) => reported.has(id)) ? reported : ids;
   const list = useMemo<ListContextValue>(
     () => ({
       itemVariant,
@@ -162,6 +221,7 @@ function Root({
     />
   );
   const state = dataState(data, {
+    part: true,
     isEmpty: Children.toArray(children).length === 0,
     defaultEmpty: { title: 'No items' },
   });
@@ -169,7 +229,7 @@ function Root({
     renderPart(parts?.state, { children: state }, (p) => p.children)
   ) : data.loading ? (
     Array.from({ length: skeletonRows }, (_, index) => (
-      <div key={index} className={styles.item}>
+      <div key={index} data-part="skeleton" className={styles.item}>
         {renderPart(parts?.skeleton, { index }, (p) => skeleton(p.index))}
       </div>
     ))
@@ -181,13 +241,14 @@ function Root({
         selectionMode={selectionMode}
         selectionBehavior={selectionBehavior}
         disallowEmptySelection={disallowEmptySelection ?? selectionBehavior === 'replace'}
-        selectedKeys={selectedIds ?? ownSelection}
+        selectedKeys={selectedKeys}
         onSelectionChange={(selection) => {
           if (press.current.active) {
             if (press.current.used) return;
             press.current.used = true;
           }
           const next = selection === 'all' ? [...keys.current] : ([...selection] as ListId[]);
+          setReported(selection === 'all' ? null : (selection as Set<ListId>));
           setOwnSelection(next);
           onSelectionChange?.(next);
         }}
@@ -198,7 +259,7 @@ function Root({
       </GridList>
       {loadingMore &&
         renderPart(parts?.loadingMore, { label: loadingMoreLabel }, (p) => (
-          <div role="status" aria-label={p.label} data-part="loading-more" className={styles.item}>
+          <div role="status" aria-label={p.label} data-part="loadingMore" className={styles.item}>
             {skeleton(0, false)}
           </div>
         ))}
@@ -213,6 +274,12 @@ function Root({
       data-loading={data.loading || undefined}
       data-height={heightProps(height)['data-height']}
       aria-busy={data.loading || undefined}
+      // The grid carries the name; while it is not shown (loading, empty, error) the list itself does.
+      {...((state || data.loading) && {
+        role: 'group',
+        'aria-label': ariaLabel,
+        'aria-labelledby': ariaLabelledby,
+      })}
       className={cx(styles.root, className)}
       style={{ ...heightProps(height).style, ...style }}
       onPointerDownCapture={() => {
@@ -223,8 +290,9 @@ function Root({
         document.addEventListener('pointercancel', end, { once: true, capture: true });
       }}
       // A key is never part of the press: it may arrive before the timer above has run.
-      onKeyDownCapture={() => {
+      onKeyDownCapture={(event) => {
         press.current.active = false;
+        headerKeys(event);
       }}
     >
       <ScrollArea onReachEnd={onReachEnd} aria-label={ariaLabel} className={styles.scroll}>
@@ -263,6 +331,7 @@ function Item({ id, textValue, href, onPress, disabled, children, ...item }: Lis
       href={href}
       onAction={onPress}
       isDisabled={disabled}
+      data-part="row"
       className={styles.item}
     >
       {({ isSelected, isDisabled, selectionMode }) => {
@@ -316,9 +385,20 @@ function Group({ children, header, ...props }: ListGroupProps) {
   const list = useList();
   const [uncontrolled, setUncontrolled] = useState(props.defaultCollapsed ?? false);
   const collapsed = !!props.collapsible && (props.collapsed ?? uncontrolled);
+  // React Aria names the group by its whole header, which reads the caret's name before the title
+  // ("Collapse Today Today"). The group is named by the title alone. This component renders into React
+  // Aria's collection, not into the page, so the element is only reachable through its ref.
+  const titleId = useId();
+  const name = (section: HTMLDivElement | null) => {
+    const title = section?.querySelector(`${HEADER} [data-part="title"]`);
+    if (!title) return;
+    title.id ||= titleId;
+    section!.setAttribute('aria-labelledby', title.id);
+  };
   return (
-    <GridListSection className={styles.group}>
+    <GridListSection ref={name} className={styles.group}>
       <GridListHeader
+        data-part="groupHeader"
         className={styles.groupRow}
         data-sticky={(props.sticky ?? list.stickyHeaders) || undefined}
       >
@@ -328,6 +408,15 @@ function Group({ children, header, ...props }: ListGroupProps) {
             sticky={false}
             collapsed={collapsed}
             onCollapsedChange={(next) => {
+              // When the focused row is hidden by the collapse, React Aria moves the focus to another
+              // row. The focus stays on the control that was pressed.
+              const pressed = document.activeElement as HTMLElement | null;
+              const grid = pressed?.closest(HEADER)?.closest('[role="grid"]');
+              if (pressed && grid) {
+                const back = () => pressed.isConnected && pressed.focus({ preventScroll: true });
+                grid.addEventListener('focusin', back, { once: true });
+                setTimeout(() => grid.removeEventListener('focusin', back), 100);
+              }
               setUncontrolled(next);
               props.onCollapsedChange?.(next);
             }}

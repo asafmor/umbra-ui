@@ -23,28 +23,30 @@ An independent check of Milestone 0 against the plan: the checks, the "done when
 
 ## Open
 
-| # | Finding | Severity | Planned in |
-|---|---|---|---|
-| 1 | Hover lightens filled buttons below 4.5:1 (`primary` 4.07, `danger` 3.90) | should fix | owner decision, then 1a |
-| 2 | The fixed focus ring is 1.29:1 on a light brand bar | should fix | owner decision |
-| 3 | Inactive `PrimaryNav` items are dimmed to 80%, which is 4.12:1 on a mid-tone brand | should fix | owner decision |
-| 4 | Selected is shown by colour only: column tabs, the current row of a nav dropdown, a toggled `IconButton` | should fix | 1b (`Tabs`, `Menu`), owner decision for the toggle |
-| 5 | A loading button is exposed like a disabled one; it needs a named progress element (`loadingLabel`) | should fix | owner decision, then 1a |
-| 6 | The popover of a layout-collapsed card renders the children a second time (state not shared, ids repeated) | should fix | 1c (`Popover`) |
-| 7 | Nav caret: same name as its link, no name for a non-text label, 12 to 18px target | should fix | 1c (`Menu`) |
-| 8 | `TopBar` is not built only from public blocks (context, logo and primary-action wrappers are private) | should fix | 1f; fixed: `TopBar.Logo`, `TopBar.Context`, `TopBar.PrimaryAction`, `TopBar.Search` |
-| 9 | `SubNav` end slot clips its controls, which stay focusable | should fix | 1f (`ShortcutBar`); fixed: the slot clips nothing |
-| 10 | The primary action is flat; the reference draws a gradient to `primaryEnd` | should fix | 1f (`PrimaryAction`); fixed |
-| 11 | "ResizeObserver loop completed with undelivered notifications" fires on some resizes that change the collapsed set. No visible effect. | should fix | before 1a |
-| 12 | Stories and tests missing for: `Page` loading, footer and `padding="none"`; `narrow="keep"`, `overflow="keep"`, `gap`, nested `Columns`; `AppShell` `subNav` prop and blocks; `ScrollArea` `onReachEnd`; `SectionTitle` `onOpen` and `level`; card `bandColor`, controlled collapse and parts; provider `icons`, `shortcuts`, `reducedMotion`, `locale`; any use of `parts` or blocks in shell and basics; nav `ArrowDown`, `Escape`, `Home`, `End`; `TopBar` shrink step 1; `SubNav` label hiding; button keys, loading and `shortcut` | should fix | before 1a |
-| 13 | No automated accessibility check runs against the stories, and the visual tests use the default tint only | should fix | before 1a |
-| 14 | Scroll thumb is 1.7 to 1.9:1 against its background; skeleton 1.1 to 1.2:1 | minor | owner decision |
-| 15 | Other components' tokens are declared on `TopBar` and `SubNav` parts, so an ancestor cannot override them there | minor | 1f; fixed: the bars have their own tokens |
-| 16 | Generated tables list some tokens under the wrong component and have no defaults column | minor | with the customisation guide |
-| 17 | Shortcut conflicts: the first match wins silently, and a reserved key with nothing mounted swallows the app's binding | minor | 1c (`CommandPalette`); fixed: rules in `specs/UmbraProvider.md` |
-| 18 | `ScrollArea`: `axis="both"` only tracks the vertical axis; `onReachEnd` never fires when content does not overflow | minor | 1a (`List`) |
-| 19 | Commit `88f6b37` fails lint (the script arrived one commit before its config) | minor | recorded in AGENTS.md |
-| 20 | Hard-coded values without a token: logo size, badge sizes, popover minimum widths, hover and press mix steps, two durations | minor | with the theming guide |
+The last column was filled in on 2026-10-11 from the code and the specs: three items are still open (16, 18 and part of 20).
+
+| # | Finding | Severity | Planned in | Status on 2026-10-11 |
+|---|---|---|---|---|
+| 1 | Hover lightens filled buttons below 4.5:1 (`primary` 4.07, `danger` 3.90) | should fix | owner decision, then 1a | fixed before 1a: primary, accent and danger darken on hover |
+| 2 | The fixed focus ring is 1.29:1 on a light brand bar | should fix | owner decision | fixed before 1a: the ring colour is computed from the brand (`focusColourOn`) |
+| 3 | Inactive `PrimaryNav` items are dimmed to 80%, which is 4.12:1 on a mid-tone brand | should fix | owner decision | fixed before 1a: the resting colour is computed from the brand |
+| 4 | Selected is shown by colour only: column tabs, the current row of a nav dropdown, a toggled `IconButton` | should fix | 1b (`Tabs`, `Menu`), owner decision for the toggle | fixed: tabs and the current dropdown row in 1b; a toggled button is outlined |
+| 5 | A loading button is exposed like a disabled one; it needs a named progress element (`loadingLabel`) | should fix | owner decision, then 1a | fixed before 1a: `loadingLabel` |
+| 6 | The popover of a layout-collapsed card renders the children a second time (state not shared, ids repeated) | should fix | 1c (`Popover`) | fixed in 1c: the body renders once, through a portal into the popover |
+| 7 | Nav caret: same name as its link, no name for a non-text label, 12 to 18px target | should fix | 1c (`Menu`) | fixed in 1c: `submenuLabel(label)` names it; the target is at least 24px |
+| 8 | `TopBar` is not built only from public blocks (context, logo and primary-action wrappers are private) | should fix | 1f; fixed: `TopBar.Logo`, `TopBar.Context`, `TopBar.PrimaryAction`, `TopBar.Search` | fixed in 1f |
+| 9 | `SubNav` end slot clips its controls, which stay focusable | should fix | 1f (`ShortcutBar`); fixed: the slot clips nothing | fixed in 1f |
+| 10 | The primary action is flat; the reference draws a gradient to `primaryEnd` | should fix | 1f (`PrimaryAction`); fixed | fixed in 1f |
+| 11 | "ResizeObserver loop completed with undelivered notifications" fires on some resizes that change the collapsed set. No visible effect. | should fix | before 1a | closed: the error comes from Storybook (see the note under the decisions) |
+| 12 | Stories and tests missing for: `Page` loading, footer and `padding="none"`; `narrow="keep"`, `overflow="keep"`, `gap`, nested `Columns`; `AppShell` `subNav` prop and blocks; `ScrollArea` `onReachEnd`; `SectionTitle` `onOpen` and `level`; card `bandColor`, controlled collapse and parts; provider `icons`, `shortcuts`, `reducedMotion`, `locale`; any use of `parts` or blocks in shell and basics; nav `ArrowDown`, `Escape`, `Home`, `End`; `TopBar` shrink step 1; `SubNav` label hiding; button keys, loading and `shortcut` | should fix | before 1a | done before 1a (spot-checked 2026-10-11: stories exist for `padding="none"`, `narrow="keep"`, `onReachEnd`, `bandColor` and the provider props; not re-checked item by item) |
+| 13 | No automated accessibility check runs against the stories, and the visual tests use the default tint only | should fix | before 1a | fixed before 1a: `a11y.spec.ts` on every tint; captures on each other tint |
+| 14 | Scroll thumb is 1.7 to 1.9:1 against its background; skeleton 1.1 to 1.2:1 | minor | owner decision | thumb fixed before 1a; the skeleton stays decorative (owner) |
+| 15 | Other components' tokens are declared on `TopBar` and `SubNav` parts, so an ancestor cannot override them there | minor | 1f; fixed: the bars have their own tokens | fixed in 1f |
+| 16 | Generated tables list some tokens under the wrong component and have no defaults column | minor | with the customisation guide | **open**: the tables still have no defaults column |
+| 17 | Shortcut conflicts: the first match wins silently, and a reserved key with nothing mounted swallows the app's binding | minor | 1c (`CommandPalette`); fixed: rules in `specs/UmbraProvider.md` | fixed in 1c |
+| 18 | `ScrollArea`: `axis="both"` only tracks the vertical axis; `onReachEnd` never fires when content does not overflow | minor | 1a (`List`) | **open**: `axis="both"` still tracks the vertical axis only, and `onReachEnd` needs overflow |
+| 19 | Commit `88f6b37` fails lint (the script arrived one commit before its config) | minor | recorded in AGENTS.md | recorded in AGENTS.md |
+| 20 | Hard-coded values without a token: logo size, badge sizes, popover minimum widths, hover and press mix steps, two durations | minor | with the theming guide | mostly fixed: logo, badge and popover sizes are component tokens. **Open**: three literal durations (Skeleton 1.6s, ProgressBar 1.4s, the spinner 0.9s) |
 
 ## Not verified
 

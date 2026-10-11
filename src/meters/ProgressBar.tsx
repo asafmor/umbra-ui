@@ -54,7 +54,7 @@ interface Fills {
 
 interface BarContext {
   cells: Fills[];
-  valueText: string;
+  valueText: ReactNode;
   targetFraction?: number;
   hideValue: boolean;
   loading: boolean;
@@ -75,8 +75,8 @@ interface BlockProps {
 }
 
 export interface ProgressBarRootProps extends BlockProps {
-  /** The current value. A stacked bar defaults to the sum of its parts. */
-  value?: number;
+  /** The current value. A stacked bar defaults to the sum of its parts. `null` or nothing means there is no value: the bar is empty, and says so. */
+  value?: number | null;
   min?: number;
   max?: number;
   /** `progress` for a task that advances (`role="progressbar"`), `meter` for a measured level (`role="meter"`). */
@@ -104,6 +104,10 @@ export interface ProgressBarRootProps extends BlockProps {
   formatValue?: (value: number, scale: ProgressBarScale) => string;
   /** Shows skeletons in place of the bar and the value. */
   loading?: boolean;
+  /** Shown in place of the value text when there is no value. */
+  emptyLabel?: ReactNode;
+  /** What assistive technology and the tooltip say when there is no value. */
+  noValueLabel?: string;
   /** `false` turns off the tooltip that shows the exact value on hover. */
   tooltip?: boolean;
   /** Names a bar that has no visible label. */
@@ -143,6 +147,8 @@ function Root({
   targetLabel = 'Target',
   formatValue,
   loading = false,
+  emptyLabel = '—',
+  noValueLabel = 'No value',
   tooltip = true,
   className,
   style,
@@ -152,13 +158,16 @@ function Root({
   const hideValue = useShrinkLevel(ref, 1, undefined, { overflowing: tooNarrow }) === 1;
 
   const range = max > min ? max - min : 0;
-  const value = valueProp ?? stack?.reduce((sum, item) => sum + item.value, 0) ?? 0;
+  // No value is not zero: the bar is drawn empty and the text says that the value is missing.
+  const missing =
+    !stack && !indeterminate && (valueProp === undefined || valueProp === null || Number.isNaN(valueProp));
+  const value = valueProp ?? stack?.reduce((sum, item) => sum + item.value, 0) ?? min;
   const percentOf = (amount: number) => (range ? (amount / range) * 100 : 0);
   const format = (v: number, percent = percentOf(v - min)) =>
     formatValue ? formatValue(v, { min, max, percent }) : `${Math.round(percent)}%`;
 
   const band =
-    thresholds && !stack
+    thresholds && !stack && !missing
       ? thresholdFor(value, thresholds === true ? defaultThresholds(min, max) : thresholds, invert)
       : undefined;
   const fillTone = band?.tone ?? tone;
@@ -193,9 +202,9 @@ function Root({
   }
 
   const formatted = format(value);
-  const valueText = band?.label ? `${formatted} · ${band.label}` : formatted;
+  const valueText = missing ? emptyLabel : band?.label ? `${formatted} · ${band.label}` : formatted;
   const spoken = describe(
-    formatted,
+    missing ? noValueLabel : formatted,
     band?.label,
     ...(stack ?? []).map((item) => `${item.label} ${format(item.value, percentOf(item.value))}`),
     target !== undefined && `${targetLabel}: ${format(target)}`,
@@ -210,7 +219,8 @@ function Root({
     'data-variant': stack ? 'stacked' : cells.length > 1 ? 'segmented' : 'plain',
     'data-tone': stack ? undefined : fillTone,
     'data-indeterminate': indeterminate || undefined,
-    'data-out-of-range': indeterminate || !range ? undefined : outOfRange(value, min, max),
+    'data-empty': missing || undefined,
+    'data-out-of-range': indeterminate || missing || !range ? undefined : outOfRange(value, min, max),
     'data-value-hidden': hideValue || undefined,
     className: cx(styles.root, className),
     style,
@@ -286,7 +296,7 @@ function Value({ children, placement = 'outside', className, style, ...change }:
     if (bar.loading) return null;
     const fraction = bar.cells.length === 1 ? bar.cells[0]!.fills.reduce((sum, f) => sum + f.fraction, 0) : 1;
     return (
-      <div className={styles.inside} style={{ inlineSize: `${fraction * 100}%` }}>
+      <div data-part="inside" className={styles.inside} style={{ inlineSize: `${fraction * 100}%` }}>
         <span data-part="value" {...changeHost(change)} className={cx(styles.value, className)} style={style}>
           {mark}
           {children ?? bar.valueText}
@@ -361,10 +371,14 @@ function Track({ children, fill, skeleton, className, style }: ProgressBarTrackP
   return (
     <div data-part="track" className={cx(styles.track, className)} style={style}>
       {bar.loading ? (
-        renderPart(skeleton, {}, () => <Skeleton shape="block" className={styles.skeleton} />)
+        <span data-part="skeleton" className={styles.skeletonPart}>
+          {renderPart(skeleton, {}, () => (
+            <Skeleton shape="block" className={styles.skeleton} />
+          ))}
+        </span>
       ) : (
         <>
-          <div className={styles.cells}>
+          <div data-part="cells" className={styles.cells}>
             {bar.cells.map((cell) => (
               <div key={cell.from} className={styles.cell} style={{ flexGrow: cell.to - cell.from }}>
                 {cell.fills.map((props, i) => (

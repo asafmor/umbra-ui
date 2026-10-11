@@ -11,11 +11,34 @@ import { contextPresets, densities } from '../src/styles/tokens.generated';
 import './preview.css';
 
 const preview: Preview = {
-  parameters: { layout: 'fullscreen' },
+  parameters: {
+    layout: 'fullscreen',
+    options: {
+      // The sidebar reads top to bottom: the welcome page, the guides in reading order, then the components.
+      storySort: {
+        order: [
+          'Welcome',
+          'Guides',
+          ['Getting started', 'Layout', 'Theming', 'Customisation', 'Recipes', 'Customisation tables'],
+          'Pages',
+          'Foundation',
+          'Layout',
+          'Shell',
+          'Basics',
+          'Data',
+          'Inputs',
+          'Overlays',
+          'Meters',
+          'Charts',
+        ],
+      },
+    },
+  },
   initialGlobals: { density: 'default', context: 'violet', direction: 'ltr' },
   globalTypes: {
     density: { description: 'Density level', toolbar: { title: 'Density', items: [...densities] } },
     context: { description: 'Context tint', toolbar: { title: 'Context', items: [...contextPresets] } },
+    // `rtl` sets a right-to-left locale on the provider, so the layout and the arrow keys both mirror.
     direction: { description: 'Text direction', toolbar: { title: 'Direction', items: ['ltr', 'rtl'] } },
   },
   decorators: [
@@ -24,7 +47,7 @@ const preview: Preview = {
       <UmbraProvider
         density={globals.density}
         context={globals.context}
-        locale={globals.direction === 'rtl' ? 'he-IL' : 'en-US'}
+        locale={globals.direction === 'rtl' ? 'he' : undefined}
       >
         <div className="story-frame" data-padded={parameters.frame === 'padded' || undefined}>
           <Story />

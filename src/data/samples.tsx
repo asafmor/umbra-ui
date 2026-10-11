@@ -94,19 +94,19 @@ export const days: { key: string; title: string; items: Message[] }[] = [
     key: 'fri',
     title: 'Fri 9 Oct',
     items: [
-      message(1, 'Person A', 'Training review', 'Training', '20:49', true),
-      message(2, 'Person A', 'Planning advice', 'Staff advice', '19:49', true),
-      message(3, 'Person B', 'Junior schedule clash', 'Scheduling', '08:43'),
-      message(4, 'Person A', 'Selection advice: Site 20', 'Planning', '07:50'),
+      message(1, 'Person A', 'Quarterly review', 'Review', '20:49', true),
+      message(2, 'Person A', 'Planning advice', 'Advice', '19:49', true),
+      message(3, 'Person B', 'Schedule clash on Tuesday', 'Scheduling', '08:43'),
+      message(4, 'Person A', 'Supplier advice: Site 20', 'Planning', '07:50'),
     ],
   },
   {
     key: 'thu',
     title: 'Thu 8 Oct',
     items: [
-      message(5, 'Person C', 'Trainee catches the eye in audit', 'Review', '21:34', true),
+      message(5, 'Person C', 'Audit finds a labelling gap', 'Review', '21:34', true),
       message(6, 'Person D', 'Site 20 report', 'Research', '10:50'),
-      message(7, 'Person E', 'Staffing advice', 'Staff advice', '08:55'),
+      message(7, 'Person E', 'Rota advice', 'Advice', '08:55'),
       message(8, 'Person F', 'Vendor research report', 'Research', '08:48'),
     ],
   },
@@ -115,7 +115,7 @@ export const days: { key: string; title: string; items: Message[] }[] = [
     title: 'Wed 7 Oct',
     items: [
       message(9, 'Person A', 'Review preparation: Site 20', 'Planning', '21:57'),
-      message(10, 'Person G', 'Client praises on-time delivery', 'Media', '21:31'),
+      message(10, 'Person G', 'Client praises on-time delivery', 'Feedback', '21:31'),
     ],
   },
 ];

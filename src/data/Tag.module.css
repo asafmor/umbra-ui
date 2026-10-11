@@ -30,11 +30,9 @@
   --ink: color-mix(in oklab, var(--tone) 35%, var(--umbra-color-base-text-primary));
 }
 
-/* Pink has too little contrast on some fills, so the focus ring takes the text colour. */
 .tag[data-variant='solid'] {
   --fill: var(--tone);
   --ink: var(--on-tone);
-  --umbra-focus-color: var(--on-tone);
 
   font-weight: 700;
 }
@@ -71,10 +69,18 @@
   transition: background-color var(--umbra-motion-duration-fast);
 }
 
+/*
+ * Pink has too little contrast on some fills, so on a solid tag the ring takes the text colour. Set on
+ * the button's own outline, not through the global focus token, so an app's value is not overridden.
+ */
+.tag[data-variant='solid'] > .remove:focus-visible {
+  outline-color: var(--umbra-tag-focus-color, var(--on-tone));
+}
+
 .remove:hover {
-  background: color-mix(in oklab, currentColor 18%, transparent);
+  background: color-mix(in oklab, currentColor var(--umbra-state-hover-darken), transparent);
 }
 
 .remove:active {
-  background: color-mix(in oklab, currentColor 8%, transparent);
+  background: color-mix(in oklab, currentColor var(--umbra-state-press-darken), transparent);
 }

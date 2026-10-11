@@ -41,19 +41,20 @@ States: `loading`; on the remove button: hover, pressed, focus.
 
 ### 1. Tokens
 
-`--umbra-tag-bg`, `--umbra-tag-fg`, `--umbra-tag-border`, `--umbra-tag-radius`, `--umbra-tag-padding`, `--umbra-tag-gap`, `--umbra-tag-font`, `--umbra-tag-stripe-width`.
+`--umbra-tag-bg`, `--umbra-tag-fg`, `--umbra-tag-border`, `--umbra-tag-radius`, `--umbra-tag-padding`, `--umbra-tag-gap`, `--umbra-tag-font`, `--umbra-tag-stripe-width`, `--umbra-tag-focus-color` (the ring of the remove button on a `solid` tag; default: the tag's text colour).
 
 ### 2. Props
 
 | Prop | Type | Default | Purpose |
 |---|---|---|---|
-| `children` | node | — | The label |
+| `children` | node | — | The label. `null`, `undefined` or an empty text shows `emptyLabel` |
+| `emptyLabel` | node | "—" | Shown when there is no label |
 | `tone` | see above | `neutral` | |
 | `color` | CSS colour | — | Custom colour; replaces `tone` |
 | `variant` | see above | `outline` | |
 | `size` | `default` \| `small` | `default` | |
 | `stripe` | tone name \| CSS colour | — | Edge stripe |
-| `stripeLabel` | string | — | What the stripe means: read by screen readers, shown as a tooltip |
+| `stripeLabel` | string | — | What the stripe means: read by screen readers, and shown in the library tooltip on hover and while the remove button has keyboard focus |
 | `icon` | node | — | Leading icon |
 | `onRemove` | function, no arguments | — | Shows the remove button |
 | `removeLabel` | string | "Remove" | Name of the remove button; a text label is added ("Remove Region 2") |
@@ -77,6 +78,7 @@ States: `loading`; on the remove button: hover, pressed, focus.
 
 - A tag is text; it is not focusable. Only the remove button is a tab stop; `Enter` and `Space` press it.
 - The remove button is named `removeLabel` plus the label when the label is a string.
+- When the app removes the tag, the focus moves to the remove button of the next tag beside it, else of the previous one, else to the element that holds the tags (which gets `tabindex="-1"`). It never falls to the page.
 - The focus ring of the remove button is drawn inside it, and takes the text colour on a `solid` tag, where pink can fall under 3:1.
 - Text contrast is at least 4.5:1 in every tone and variant: `outline` uses the primary text colour, `subtle` a light mix of the tone, `solid` dark text on the semantic colours and white on violet. For a custom `color`, the text of a `solid` tag is chosen (light or dark) for contrast when the colour is hex or `rgb()`.
 - The tone is never the only cue: the label says what the tag means. A `stripe` is colour only, so give `stripeLabel` when it carries meaning.
@@ -84,6 +86,15 @@ States: `loading`; on the remove button: hover, pressed, focus.
 ## Open questions
 
 None.
+
+Resolved 2026-10-11 (review fix pass):
+
+- **Focus after removal.** `Tag.Remove` looks at its sibling tags before it calls `onPress`, and moves the focus one frame later, only if its tag is gone and the focus fell to the page. No wrapper component is needed. Limits: it looks at sibling tags only (tags wrapped one by one fall back to their holder), and a tag removed later than the next frame (after a server answer) is the app's to handle.
+- **The stripe label is the library tooltip**, not the native `title`, which the keyboard cannot reach. It shows on hover, and while the remove button has keyboard focus; `Escape` dismisses it. A tag without a remove button is not focusable, so there the text for screen readers (always present, in brackets after the label) is the keyboard user's equivalent. While the label is truncated its own tooltip shows instead, so two never overlap.
+- **No value.** A tag is a single-value component (plan/interaction.md): it has `loading`, and a tag without a label shows `emptyLabel` ("—") instead of an empty chip. No error state.
+- On a `solid` tag the ring of the remove button takes the text colour through the button's own outline (`--umbra-tag-focus-color`). The tag no longer declares the global `--umbra-focus-color` on itself, which overrode a value an app had set on an ancestor.
+- The hover and press tints of the remove button use the shared steps `--umbra-state-hover-darken` and `--umbra-state-press-darken`.
+- Every block passes `className` and `style` to its element, and every part carries `data-part` with its name as written here (plan/decisions/07-customisation.md). `Tag.Icon` dropped them before. The placeholder shown while `loading` carries `data-part="skeleton"`.
 
 Resolved 2026-10-10:
 

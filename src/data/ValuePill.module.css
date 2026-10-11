@@ -121,6 +121,6 @@
 }
 
 /* `highlightChanges`: on the coloured fill the sign takes the pill's text colour, which has the contrast. */
-.pill [data-part='change-sign'][data-direction] {
+.pill [data-part='changeSign'][data-direction] {
   color: inherit;
 }

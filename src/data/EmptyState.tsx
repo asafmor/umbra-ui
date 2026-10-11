@@ -17,6 +17,8 @@ export interface EmptyStateRootProps extends BlockProps {
   tone?: 'neutral' | 'error';
   /** `alert` announces the content when it appears (for an error); `status` announces it politely. */
   role?: 'alert' | 'status';
+  /** The part this state plays in the component that shows it (`empty`, `error`). */
+  'data-part'?: string;
 }
 
 /** True when the content is wider or taller than the element. */
@@ -27,6 +29,7 @@ function Root({
   variant = 'block',
   tone = 'neutral',
   role,
+  'data-part': part,
   className,
   style,
   children,
@@ -52,6 +55,7 @@ function Root({
       ref={ref}
       role={role}
       data-umbra="empty-state"
+      data-part={part}
       data-variant={variant}
       data-tone={tone}
       data-shrink={level || undefined}

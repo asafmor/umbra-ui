@@ -11,19 +11,27 @@ const TABBABLE = 'a[href], button, input, select, textarea, [tabindex]:not([tabi
 const WIDGET =
   'a[href], button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]';
 /** Widgets that have no use for the arrow keys: from them, the arrows still move through the grid. */
-const SIMPLE_WIDGET = 'a, button, input[type="checkbox"]';
+const SIMPLE_WIDGET = 'a, button, input[type="checkbox"], input[type="radio"]';
 /** A click on one of these is the control's own, not the row's. */
 export const INTERACTIVE = 'a, button, input, select, textarea, label, [role="button"], [contenteditable]';
 
+/**
+ * The controls of a cell. What is hidden from assistive technology is not one: a `Select` keeps a
+ * native `<select>` there for forms and autofill.
+ */
 export const widgetsOf = (cell: Element) =>
-  [...cell.querySelectorAll<HTMLElement>(WIDGET)].filter((el) => !el.matches(CELL));
+  [...cell.querySelectorAll<HTMLElement>(WIDGET)].filter(
+    (el) => !el.matches(CELL) && !el.closest('[aria-hidden="true"]'),
+  );
 
 /** What a row does when it is activated or selected from the keyboard. Set by `DataTable.Row`. */
 export interface RowHandlers {
   onAction?: () => void;
-  onSelect?: (options: { range: boolean }) => void;
+  onSelect?: (options: { range: boolean; anchor?: boolean }) => void;
 }
 export const rowHandlers = new WeakMap<Element, RowHandlers>();
+/** What Ctrl or Cmd+A does in a table, by its `<table>` element. Set by `DataTable.Root`. */
+export const selectAllHandlers = new WeakMap<Element, () => void>();
 
 /** Supplied by the virtualised table, whose rows are mostly not in the DOM. */
 export interface GridAdapter {
@@ -102,6 +110,8 @@ export function useGrid() {
   const hasFocus = useRef(false);
   /** The last input was a pointer: a cell focused by a click is not scrolled to. */
   const pointer = useRef(false);
+  /** The row a Shift+Arrow last moved to: the next one from that row continues the same range. */
+  const shiftRun = useRef<Element | null>(null);
 
   const rowOf = (key: string) =>
     table.current?.querySelector<HTMLTableRowElement>(`tr[data-row-key="${CSS.escape(key)}"]`) ?? null;
@@ -241,6 +251,8 @@ export function useGrid() {
         widgets[(next + widgets.length) % widgets.length]?.focus();
         return done();
       }
+      // A control that has a list or a menu of its own open keeps every key.
+      if (target.hasAttribute('aria-haspopup') && target.getAttribute('aria-expanded') === 'true') return;
       if (!target.matches(SIMPLE_WIDGET) || !event.key.startsWith('Arrow')) return;
     }
     const row = cell.parentElement!;
@@ -250,10 +262,12 @@ export function useGrid() {
       case 'ArrowUp':
       case 'ArrowDown': {
         const origin = event.shiftKey ? rowHandlers.get(row) : undefined;
+        const started = shiftRun.current === row;
         const next = moveRow(event.key === 'ArrowUp' ? -1 : 1);
-        // Shift extends the selection from the row the user was on to the row moved to.
+        // Shift extends the selection from the row the user was on when the run began to the row moved to.
         if (origin?.onSelect && next && next !== row) {
-          origin.onSelect({ range: true });
+          if (!started) origin.onSelect({ range: true, anchor: true });
+          shiftRun.current = next;
           rowHandlers.get(next)?.onSelect?.({ range: true });
         }
         return done();
@@ -265,8 +279,12 @@ export function useGrid() {
       case 'Home':
       case 'End': {
         const edge = event.key === 'Home' ? 'first' : 'last';
-        if (mod) moveRow(edge, edge);
-        else moveColumn(cell, edge);
+        if (mod) {
+          moveRow(edge, edge);
+          // The first and last cells are in the sticky header and footer: the body follows to its own end.
+          const view = cell.closest<HTMLElement>('[data-part="viewport"]');
+          if (view) view.scrollTop = edge === 'first' ? 0 : view.scrollHeight;
+        } else moveColumn(cell, edge);
         return done();
       }
       case 'PageUp':
@@ -278,6 +296,14 @@ export function useGrid() {
           (table.current.tFoot?.offsetHeight ?? 0);
         const page = Math.max(1, Math.floor(room / (cell.offsetHeight || 1)) - 1);
         moveRow(event.key === 'PageUp' ? -page : page);
+        return done();
+      }
+      case 'a':
+      case 'A': {
+        // Ctrl or Cmd+A selects every row where several can be selected; elsewhere the key is the browser's.
+        const selectAll = selectAllHandlers.get(table.current);
+        if (!mod || !selectAll) return;
+        selectAll();
         return done();
       }
       case 'Tab':
