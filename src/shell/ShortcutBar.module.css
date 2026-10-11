@@ -84,7 +84,7 @@
   background: color-mix(
     in oklab,
     var(--umbra-shortcut-bar-item-bg, var(--umbra-color-base-surface1)),
-    #000 18%
+    #000 var(--umbra-state-press-darken)
   );
 }
 

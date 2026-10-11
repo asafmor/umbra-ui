@@ -65,15 +65,15 @@
 }
 
 .button[data-pressed] {
-  background: color-mix(in oklab, var(--bg), #000 18%);
+  background: color-mix(in oklab, var(--bg), #000 var(--umbra-state-press-darken));
 }
 
 .button:is([data-variant='primary'], [data-variant='accent'], [data-variant='danger'])[data-hovered] {
-  background: color-mix(in oklab, var(--bg), #000 12%);
+  background: color-mix(in oklab, var(--bg), #000 var(--umbra-state-hover-darken));
 }
 
 .button:is([data-variant='primary'], [data-variant='accent'], [data-variant='danger'])[data-pressed] {
-  background: color-mix(in oklab, var(--bg), #000 26%);
+  background: color-mix(in oklab, var(--bg), #000 var(--umbra-state-press-darken-strong));
 }
 
 .button[data-variant='ghost'][data-hovered] {
@@ -82,7 +82,7 @@
 
 .button[data-variant='ghost'][data-pressed],
 .button[data-variant='ghost'][aria-pressed='true'] {
-  background: color-mix(in oklab, currentColor 6%, transparent);
+  background: color-mix(in oklab, currentColor var(--umbra-state-hover-lighten), transparent);
 }
 
 /* A toggled-on button is outlined, so the state does not depend on colour alone. */

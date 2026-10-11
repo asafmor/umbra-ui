@@ -101,7 +101,7 @@
   background: color-mix(
     in oklab,
     var(--umbra-menu-item-hover-bg, var(--umbra-color-base-surface3)),
-    #000 18%
+    #000 var(--umbra-state-press-darken)
   );
 }
 

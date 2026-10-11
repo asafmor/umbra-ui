@@ -178,12 +178,12 @@
 }
 
 .root[data-collapsed='layout'] > .header:hover {
-  background: color-mix(in oklab, currentColor 6%, var(--header-bg));
+  background: color-mix(in oklab, currentColor var(--umbra-state-hover-lighten), var(--header-bg));
 }
 
 /* Pressed: one step darker (plan/interaction.md). */
 .root[data-collapsed='layout'] > .header:active {
-  background: color-mix(in oklab, #000 12%, var(--header-bg));
+  background: color-mix(in oklab, #000 var(--umbra-state-press-darken), var(--header-bg));
 }
 
 .subtitle {

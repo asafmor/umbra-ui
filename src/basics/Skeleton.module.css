@@ -1,6 +1,6 @@
 /* Not shown for the first 200ms, so content that loads fast does not flash a placeholder. */
 .skeleton {
-  animation: appear 1ms 200ms both;
+  animation: appear 1ms var(--umbra-motion-duration-appear) both;
 }
 
 .skeleton[data-shape='block'],
@@ -39,13 +39,13 @@
 
 .skeleton[data-animation='pulse']:not([data-shape='text']),
 .skeleton[data-animation='pulse'] > .line {
-  animation: pulse 1.6s ease-in-out infinite;
+  animation: pulse var(--umbra-motion-duration-pulse) ease-in-out infinite;
 }
 
 .skeleton[data-animation='pulse']:not([data-shape='text']) {
   animation:
-    appear 1ms 200ms both,
-    pulse 1.6s 200ms ease-in-out infinite;
+    appear 1ms var(--umbra-motion-duration-appear) both,
+    pulse var(--umbra-motion-duration-pulse) var(--umbra-motion-duration-appear) ease-in-out infinite;
 }
 
 @keyframes appear {

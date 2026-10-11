@@ -24,7 +24,7 @@ translate a component. A name followed by brackets can also be a function of wha
 | [`Checkbox`](#checkbox) | `requiredLabel` |
 | [`CheckboxGroup`](#checkboxgroup) | `requiredLabel` |
 | [`Columns`](#columns) | `tabsLabel` |
-| [`CommandPalette`](#commandpalette) | `label`, `placeholder`, `emptyLabel`, `errorLabel`, `retryLabel`, `loadingLabel`, `recentLabel`, `shortcutsLabel`, `resultsLabel`, `backLabel`, `moveHint`, `runHint`, `backHint`, `closeHint` |
+| [`CommandPalette`](#commandpalette) | `label`, `placeholder`, `emptyLabel`, `errorLabel`, `retryLabel`, `loadingLabel`, `recentLabel`, `shortcutsLabel`, `resultsLabel`, `backLabel`, `moveHint`, `enterKeyLabel`, `backspaceKeyLabel`, `escapeKeyLabel`, `runHint`, `backHint`, `closeHint` |
 | [`ConfirmDialog`](#confirmdialog) | `confirmLabel`, `cancelLabel`, `loadingLabel` |
 | [`DataTable`](#datatable) | `selectRowLabel(row)`, `selectAllLabel`, `highlightLabel`, `collapseGroupLabel`, `expandGroupLabel`, `showDetailsLabel`, `hideDetailsLabel`, `hiddenColumnsLabel(count)`, `loadingMoreLabel`, `increasedLabel`, `decreasedLabel`, `retryLabel` |
 | [`DonutChart`](#donutchart) | `retryLabel`, `allHiddenLabel`, `pointsLabel`, `legendLabel`, `valueLabel` |
@@ -69,7 +69,7 @@ translate a component. A name followed by brackets can also be a function of wha
 
 A stack of sections that open and close. It fills its slot; an open panel scrolls inside when space is short.
 
-**Tokens**: `--umbra-accordion-border`, `--umbra-accordion-gap`, `--umbra-accordion-header-height`, `--umbra-accordion-padding`, `--umbra-accordion-title-font`, `--umbra-card-bg`, `--umbra-card-border`, `--umbra-card-padding`, `--umbra-card-radius`, `--umbra-card-title-font`, `--umbra-focus-color`, `--umbra-scroll-thumb`.
+**Tokens**: `--umbra-accordion-border`, `--umbra-accordion-gap`, `--umbra-accordion-header-height`, `--umbra-accordion-padding`, `--umbra-accordion-title-font`, `--umbra-card-bg`, `--umbra-card-border`, `--umbra-card-padding`, `--umbra-card-radius`, `--umbra-card-title-font`, `--umbra-dir`, `--umbra-focus-color`, `--umbra-scroll-thumb`.
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -330,7 +330,7 @@ Triggers an action. Text, with an optional icon.
 
 The container for one unit of content on a page. Fills the slot its parent gives it and scrolls its own body when the content is taller.
 
-**Tokens**: `--umbra-action-bar-padding-x`, `--umbra-action-bar-padding-y`, `--umbra-card-bg`, `--umbra-card-border`, `--umbra-card-header-bg`, `--umbra-card-header-fg`, `--umbra-card-header-height`, `--umbra-card-min-height`, `--umbra-card-padding`, `--umbra-card-radius`, `--umbra-card-title-font`, `--umbra-focus-color`, `--umbra-page-header-padding`.
+**Tokens**: `--umbra-action-bar-padding-x`, `--umbra-action-bar-padding-y`, `--umbra-card-bg`, `--umbra-card-border`, `--umbra-card-header-bg`, `--umbra-card-header-fg`, `--umbra-card-header-height`, `--umbra-card-min-height`, `--umbra-card-padding`, `--umbra-card-radius`, `--umbra-card-title-font`, `--umbra-dir`, `--umbra-focus-color`, `--umbra-page-header-padding`.
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -466,7 +466,7 @@ Shares its width among its children. Below the minimum window it shows one child
 
 A search over everything the app can do or open, in a dialog near the top of the window. Opened by the `TopBar` search and by `Mod+K`. Focus stays in the input; the arrow keys move through the results.
 
-**Tokens**: `--umbra-command-palette-active-bg`, `--umbra-command-palette-active-fg`, `--umbra-command-palette-bg`, `--umbra-command-palette-border`, `--umbra-command-palette-item-height`, `--umbra-command-palette-max-height`, `--umbra-command-palette-offset`, `--umbra-command-palette-radius`, `--umbra-command-palette-scrim`, `--umbra-command-palette-width`, `--umbra-command-palette-z-index`, `--umbra-focus-color`, `--umbra-scroll-thumb`.
+**Tokens**: `--umbra-command-palette-active-bg`, `--umbra-command-palette-active-fg`, `--umbra-command-palette-bg`, `--umbra-command-palette-border`, `--umbra-command-palette-item-height`, `--umbra-command-palette-max-height`, `--umbra-command-palette-offset`, `--umbra-command-palette-radius`, `--umbra-command-palette-scrim`, `--umbra-command-palette-width`, `--umbra-command-palette-z-index`, `--umbra-dir`, `--umbra-focus-color`, `--umbra-scroll-thumb`.
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -483,7 +483,8 @@ A search over everything the app can do or open, in a dialog near the top of the
 | `onRun` | `((command: Command) => void)` | Called with every command the user runs, after its own `onRun`. |
 | `navigate` | `((href: string) => void)` | Called with the `href` of a command that has one. Defaults to a full page navigation. |
 | `shortcut` | `string \| null` | Id of the shortcut that opens and closes the palette. `null` binds none. |
-| `label` | `string` | Accessible name of the dialog and of the input. |
+| `aria-label` | `string` | Accessible name of the dialog and of the input. |
+| `label` | `string` |  |
 | `placeholder` | `string` |  |
 | `emptyLabel` | `string` |  |
 | `errorLabel` | `string` |  |
@@ -494,6 +495,9 @@ A search over everything the app can do or open, in a dialog near the top of the
 | `resultsLabel` | `string` | Accessible name of the list of results. |
 | `backLabel` | `string` | Accessible name of the breadcrumb button that leaves the open page. |
 | `moveHint` | `string` | The key hints in the footer. |
+| `enterKeyLabel` | `string` | The names of the keys in the footer hints. |
+| `backspaceKeyLabel` | `string` |  |
+| `escapeKeyLabel` | `string` |  |
 | `runHint` | `string` |  |
 | `backHint` | `string` |  |
 | `closeHint` | `string` |  |
@@ -1130,7 +1134,7 @@ The content of one row of a list: a title with optional lines, and leading and t
 
 A list of actions or links that opens from a control. One tab stop; arrow keys, type-ahead, and submenus that open with the arrow keys.
 
-**Tokens**: `--umbra-focus-color`, `--umbra-menu-bg`, `--umbra-menu-border`, `--umbra-menu-item-height`, `--umbra-menu-item-hover-bg`, `--umbra-menu-item-radius`, `--umbra-menu-max-width`, `--umbra-menu-min-width`, `--umbra-menu-radius`, `--umbra-scroll-thumb`, `--umbra-scroll-thumb-size`.
+**Tokens**: `--umbra-dir`, `--umbra-focus-color`, `--umbra-menu-bg`, `--umbra-menu-border`, `--umbra-menu-item-danger-highlight-fg`, `--umbra-menu-item-height`, `--umbra-menu-item-hover-bg`, `--umbra-menu-item-radius`, `--umbra-menu-max-width`, `--umbra-menu-min-width`, `--umbra-menu-radius`, `--umbra-scroll-thumb`, `--umbra-scroll-thumb-size`.
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -1299,7 +1303,7 @@ An anchored panel without a backdrop: the page behind it stays usable. It keeps 
 
 The one primary action of the app, at the end of the `TopBar`. Its label follows the state of the app. It fills the height of the bar and shows its icon only when the bar runs out of room.
 
-**Tokens**: `--umbra-focus-color`, `--umbra-primary-action-bg`, `--umbra-primary-action-bg-end`, `--umbra-primary-action-caret-width`, `--umbra-primary-action-fg`, `--umbra-primary-action-min-height`, `--umbra-primary-action-min-width`, `--umbra-primary-action-padding-x`, `--umbra-primary-action-radius`.
+**Tokens**: `--umbra-dir`, `--umbra-focus-color`, `--umbra-primary-action-bg`, `--umbra-primary-action-bg-end`, `--umbra-primary-action-caret-width`, `--umbra-primary-action-fg`, `--umbra-primary-action-min-height`, `--umbra-primary-action-min-width`, `--umbra-primary-action-padding-x`, `--umbra-primary-action-radius`.
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -1503,9 +1507,10 @@ A region that scrolls inside its slot. The only place scrolling happens.
 | `axis` | `"vertical" \| "horizontal" \| "both"` |  |
 | `scrollbar` | `"auto" \| "hover"` | `hover` shows the thumb only while the pointer or focus is inside the area. |
 | `fade` | `boolean` | A soft fade at an edge that has more content. |
-| `onReachEnd` | `(() => void)` | Called when the end is reached, for loading more. |
+| `onReachEnd` | `(() => void)` | Called when the end is reached, for loading more: the bottom (`vertical`, `both`) or the far edge (`horizontal`). Once each time the end is reached. It is also called when the content does not fill the area, since its end is then in view: once when the area mounts, and once more each time the content has grown and still fits. A first page that is too short can therefore load the next. |
 | `aria-label` | `string` | Accessible name, used when the area itself has to be focusable to be scrolled by keyboard. |
 | `parts` | `see Parts` | Replace or hide named pieces. |
+| `ref` | `Ref<HTMLDivElement>` | The root element. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
 | `children` | `ReactNode` |  |
@@ -1528,12 +1533,13 @@ A field for searching: always an input, or an icon that opens into one. It can l
 | `invalid` | `boolean` | Shows the danger border and an error icon. |
 | `value` | `string` | Controlled text. |
 | `onChange` | `((text: string) => void)` | Called with the text as it changes, after `debounce` milliseconds without typing. |
+| `aria-label` | `string` | Accessible name, when there is no `FormField` label. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
 | `loading` | `boolean` | Shows a spinner in place of the search icon, and skeleton rows in an empty list. |
 | `size` | `"default" \| "small"` | `small` is for table cells and dense toolbars. Otherwise the height follows the density level. |
 | `disabled` | `boolean` |  |
-| `label` | `string` | Accessible name, when there is no `FormField` label. |
+| `label` | `string` |  |
 | `readOnly` | `boolean` | Focusable and selectable, but cannot be changed. |
 | `required` | `boolean` |  |
 | `name` | `string` | Form field name. |
@@ -1623,7 +1629,7 @@ A row of joined segments that filters the content below it. One or several can b
 
 Chooses one option, or several with `multiple`, from a list that opens under a button.
 
-**Tokens**: `--umbra-field-description-color`, `--umbra-field-error-color`, `--umbra-field-marker-color`, `--umbra-focus-color`, `--umbra-focus-offset`, `--umbra-menu-border`, `--umbra-option-group-gap`, `--umbra-option-group-inline-gap`, `--umbra-option-group-min-option-width`, `--umbra-option-group-text-gap`, `--umbra-select-bg`, `--umbra-select-border`, `--umbra-select-fg`, `--umbra-select-ghost-bg`, `--umbra-select-height`, `--umbra-select-icon-color`, `--umbra-select-invalid-border`, `--umbra-select-option-selected-bg`, `--umbra-select-option-stripe-width`, `--umbra-select-padding-x`, `--umbra-select-placeholder`, `--umbra-select-popover-max-width`, `--umbra-select-radius`, `--umbra-select-swatch-size`, `--umbra-select-width`.
+**Tokens**: `--umbra-dir`, `--umbra-field-description-color`, `--umbra-field-error-color`, `--umbra-field-marker-color`, `--umbra-focus-color`, `--umbra-focus-offset`, `--umbra-menu-border`, `--umbra-option-group-gap`, `--umbra-option-group-inline-gap`, `--umbra-option-group-min-option-width`, `--umbra-option-group-text-gap`, `--umbra-select-bg`, `--umbra-select-border`, `--umbra-select-fg`, `--umbra-select-ghost-bg`, `--umbra-select-height`, `--umbra-select-icon-color`, `--umbra-select-invalid-border`, `--umbra-select-option-selected-bg`, `--umbra-select-option-stripe-width`, `--umbra-select-padding-x`, `--umbra-select-placeholder`, `--umbra-select-popover-max-width`, `--umbra-select-radius`, `--umbra-select-swatch-size`, `--umbra-select-width`.
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -1891,7 +1897,7 @@ A compact tile that sums up one thing: an icon, a title and one value. The whole
 
 Switches between views of the same content area. The panel fills the rest of the slot.
 
-**Tokens**: `--umbra-tabs-bg`, `--umbra-tabs-border`, `--umbra-tabs-fg`, `--umbra-tabs-gap`, `--umbra-tabs-height`, `--umbra-tabs-indicator-color`, `--umbra-tabs-padding-x`, `--umbra-tabs-pill-radius`, `--umbra-tabs-radius`, `--umbra-tabs-selected-bg`, `--umbra-tabs-selected-fg`, `--umbra-tabs-underline-selected-fg`, `--umbra-tabs-vertical-max-width`.
+**Tokens**: `--umbra-dir`, `--umbra-tabs-bg`, `--umbra-tabs-border`, `--umbra-tabs-fg`, `--umbra-tabs-gap`, `--umbra-tabs-height`, `--umbra-tabs-indicator-color`, `--umbra-tabs-padding-x`, `--umbra-tabs-pill-radius`, `--umbra-tabs-radius`, `--umbra-tabs-selected-bg`, `--umbra-tabs-selected-fg`, `--umbra-tabs-underline-selected-fg`, `--umbra-tabs-vertical-max-width`.
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -2032,6 +2038,7 @@ A short description of a control, shown on hover and on keyboard focus. Text onl
 | `shortcut` | `string` | Id of a shortcut in the provider's list: its keys are shown as a hint. |
 | `placement` | `OverlayPlacement` |  |
 | `delay` | `number` | Milliseconds before it shows on hover. Keyboard focus shows it at once. |
+| `closeDelay` | `number` | Milliseconds it stays after the pointer has left the control: time to move the pointer onto the tooltip, which stays while the pointer is over it. |
 | `offset` | `number` | Gap between the control and the tooltip, in pixels. |
 | `open` | `boolean` | Controlled state. |
 | `defaultOpen` | `boolean` |  |
@@ -2105,7 +2112,7 @@ The direction of a change: up, down or flat.
 
 Wraps the app once. Supplies the theme, density, icon map and shortcut registry to every component.
 
-**Tokens**: `--umbra-icon-size`.
+**Tokens**: `--umbra-dir`, `--umbra-icon-size`.
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -2129,7 +2136,7 @@ Wraps the app once. Supplies the theme, density, icon map and shortcut registry 
 
 The same `context`, `density`, `brand` and `tokens` as the provider, for one subtree.
 
-**Tokens**: `--umbra-icon-size`.
+**Tokens**: `--umbra-dir`, `--umbra-icon-size`.
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -2180,7 +2187,7 @@ A value coloured by where it falls on a five-step ramp.
 
 Side navigation for a modal, a settings screen or one column of a page.
 
-**Tokens**: `--umbra-icon-size`, `--umbra-vertical-nav-bg`, `--umbra-vertical-nav-current-bg`, `--umbra-vertical-nav-current-fg`, `--umbra-vertical-nav-fg`, `--umbra-vertical-nav-gap`, `--umbra-vertical-nav-padding`, `--umbra-vertical-nav-radius`, `--umbra-vertical-nav-rail-below`, `--umbra-vertical-nav-rail-width`, `--umbra-vertical-nav-row-height`, `--umbra-vertical-nav-stripe-width`, `--umbra-vertical-nav-width`.
+**Tokens**: `--umbra-dir`, `--umbra-icon-size`, `--umbra-vertical-nav-bg`, `--umbra-vertical-nav-current-bg`, `--umbra-vertical-nav-current-fg`, `--umbra-vertical-nav-fg`, `--umbra-vertical-nav-gap`, `--umbra-vertical-nav-padding`, `--umbra-vertical-nav-radius`, `--umbra-vertical-nav-rail-below`, `--umbra-vertical-nav-rail-width`, `--umbra-vertical-nav-row-height`, `--umbra-vertical-nav-stripe-width`, `--umbra-vertical-nav-width`.
 
 | Prop | Type | Purpose |
 |---|---|---|

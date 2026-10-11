@@ -77,18 +77,18 @@
 }
 
 .root[data-hovered]:is([data-selected], [data-indeterminate]) > .box {
-  border-color: color-mix(in oklab, var(--fill), #000 12%);
-  background: color-mix(in oklab, var(--fill), #000 12%);
+  border-color: color-mix(in oklab, var(--fill), #000 var(--umbra-state-hover-darken));
+  background: color-mix(in oklab, var(--fill), #000 var(--umbra-state-hover-darken));
 }
 
 /* Pressed darkens (plan/interaction.md); it used to lighten an unchecked control. */
 .root[data-pressed] > .box {
-  background: color-mix(in oklab, #000 18%, transparent);
+  background: color-mix(in oklab, #000 var(--umbra-state-press-darken), transparent);
 }
 
 .root[data-pressed]:is([data-selected], [data-indeterminate]) > .box {
-  border-color: color-mix(in oklab, var(--fill), #000 26%);
-  background: color-mix(in oklab, var(--fill), #000 26%);
+  border-color: color-mix(in oklab, var(--fill), #000 var(--umbra-state-press-darken-strong));
+  background: color-mix(in oklab, var(--fill), #000 var(--umbra-state-press-darken-strong));
 }
 
 .root[data-invalid] > .box {

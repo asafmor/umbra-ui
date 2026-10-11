@@ -17,7 +17,7 @@
 }
 
 .icon[data-spin] > * {
-  animation: spin 0.9s linear infinite;
+  animation: spin var(--umbra-motion-duration-spin) linear infinite;
 }
 
 @keyframes spin {

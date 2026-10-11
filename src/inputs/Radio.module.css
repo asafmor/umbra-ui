@@ -64,18 +64,18 @@
 }
 
 .root[data-hovered][data-selected] .ring {
-  border-color: color-mix(in oklab, var(--fill), #000 12%);
-  background: color-mix(in oklab, var(--fill), #000 12%);
+  border-color: color-mix(in oklab, var(--fill), #000 var(--umbra-state-hover-darken));
+  background: color-mix(in oklab, var(--fill), #000 var(--umbra-state-hover-darken));
 }
 
 /* Pressed darkens (plan/interaction.md); it used to lighten an unchecked control. */
 .root[data-pressed] .ring {
-  background: color-mix(in oklab, #000 18%, transparent);
+  background: color-mix(in oklab, #000 var(--umbra-state-press-darken), transparent);
 }
 
 .root[data-pressed][data-selected] .ring {
-  border-color: color-mix(in oklab, var(--fill), #000 26%);
-  background: color-mix(in oklab, var(--fill), #000 26%);
+  border-color: color-mix(in oklab, var(--fill), #000 var(--umbra-state-press-darken-strong));
+  background: color-mix(in oklab, var(--fill), #000 var(--umbra-state-press-darken-strong));
 }
 
 .root[data-invalid] .ring {
@@ -203,7 +203,7 @@
 }
 
 .root[data-variant='card'][data-pressed] {
-  background: color-mix(in oklab, var(--bg), #000 18%);
+  background: color-mix(in oklab, var(--bg), #000 var(--umbra-state-press-darken));
 }
 
 .root[data-variant='card'][data-invalid]:not([data-selected]) {

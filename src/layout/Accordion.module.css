@@ -77,11 +77,11 @@
 }
 
 .item:not([data-disabled]) > .header:hover {
-  background: color-mix(in oklab, currentColor 6%, transparent);
+  background: color-mix(in oklab, currentColor var(--umbra-state-hover-lighten), transparent);
 }
 
 .item:not([data-disabled]) > .header:has(.trigger:active) {
-  background: color-mix(in oklab, #000 18%, transparent);
+  background: color-mix(in oklab, #000 var(--umbra-state-press-darken), transparent);
 }
 
 /* Only the button and its chevron are dimmed: the meta text and the actions are not part of the disabled control. */
