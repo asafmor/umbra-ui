@@ -32,6 +32,11 @@ const base = [
   ['state-disabled-opacity', t.state.disabledOpacity],
   ['state-focus-ring-width', px(t.state.focusRingWidth)],
   ['state-stripe-strength', t.state.stripeStrength],
+  // Mix steps for hover and press: white over a dark surface, black over a coloured one.
+  ...['hoverLighten', 'hoverDarken', 'pressDarken', 'pressDarkenStrong'].map((k) => [
+    `state-${kebab(k)}`,
+    t.state[k],
+  ]),
   ...densityDecls('default'),
 ];
 
