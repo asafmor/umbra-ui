@@ -6,6 +6,7 @@ import {
   useState,
   type CSSProperties,
   type ReactNode,
+  isValidElement,
 } from 'react';
 import { IconButton } from '../basics/IconButton';
 import { Skeleton } from '../basics/Skeleton';
@@ -302,7 +303,14 @@ export type HorizontalScrollerProps = HorizontalScrollerRootProps;
 export function HorizontalScroller({ children, ...root }: HorizontalScrollerProps) {
   return (
     <Root {...root}>
-      {Children.map(children, (child) => child != null && child !== false && <Item>{child}</Item>)}
+      {Children.map(
+        children,
+        (child) =>
+          child != null &&
+          child !== false &&
+          // An item the app wrapped itself (for a width of its own) is not wrapped again.
+          (isValidElement(child) && child.type === Item ? child : <Item>{child}</Item>),
+      )}
     </Root>
   );
 }

@@ -101,7 +101,17 @@ export function SlotLabel({ className, style, children }: BlockProps) {
     </>
   );
   return slots.htmlFor ? (
-    <label {...props} htmlFor={slots.htmlFor}>
+    <label
+      {...props}
+      htmlFor={slots.htmlFor}
+      // A `<label>` only activates a native control. A control that is not one (the value of a
+      // `Stepper`, a spin button) takes the focus here, as a press on the label of an input gives it.
+      onClick={(event) => {
+        const control = document.getElementById(slots.htmlFor!);
+        if (!event.defaultPrevented && control && !control.matches('button, input, select, textarea'))
+          control.focus();
+      }}
+    >
       {content}
     </label>
   ) : (

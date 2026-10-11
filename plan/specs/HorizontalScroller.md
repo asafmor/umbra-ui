@@ -62,7 +62,7 @@ States: `loading`, `empty`, `error`.
 
 ### 4. Blocks
 
-`HorizontalScroller.Root`, `HorizontalScroller.Item`. `Root` takes everything but the children's wrapping; the all-in-one wraps each child in an `Item`.
+`HorizontalScroller.Root`, `HorizontalScroller.Item`. `Root` takes everything but the children's wrapping; the all-in-one wraps each child in an `Item`, except a child that is an `Item` already (integration pass, 2026-10-11: it was wrapped twice, a list item inside a list item).
 
 ## Behaviour as space shrinks
 
