@@ -31,14 +31,15 @@
 }
 
 /*
- * One line, filled from the end with the number first: where the two do not fit (a longer name in
- * another locale, a larger font from a token), the weekday wraps to a second line, which is cut off.
- * So the weekday gives way and the number is never drawn cut, whatever the steps below assume.
+ * One line is shown, and it is the last: where the weekday and the number do not fit side by side (a
+ * longer name in another locale, a larger font from a token), the number wraps to a line of its own,
+ * and the line above it, with the weekday, is cut off. So the weekday gives way and the number is
+ * never drawn cut, whatever the steps below assume.
  */
 .text {
   display: inline-flex;
-  flex-flow: row-reverse wrap;
-  justify-content: center;
+  flex-wrap: wrap;
+  place-content: flex-end center;
   gap: 0.35em;
   min-width: 0;
   max-height: 1lh;
@@ -46,7 +47,6 @@
 }
 
 .weekday {
-  order: 1;
   font-weight: 500;
 }
 
