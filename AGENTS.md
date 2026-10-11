@@ -10,7 +10,7 @@ The design is **inspired by** 40 screenshots of a game UI in `screenshots/`. It 
 
 ## Current state
 
-**Phase: Milestone 0 (foundation) built and reviewed (`plan/reviews/milestone-0.md`); Milestone 1 (core) is being built.** Update this section whenever the phase or the next step changes.
+**Phase: Milestone 1 (core, tier 1) built and reviewed (`plan/reviews/milestone-1.md`). The first release, `0.1.0`, is prepared and waits for the owner's go-ahead (`docs/releasing.md`). Milestone 2 (tier 2) is next (`plan/prompts/milestone-2.md`).** Update this section whenever the phase or the next step changes.
 
 | Step | Status | Artifact |
 |---|---|---|
@@ -50,13 +50,16 @@ The owner approved the plan and delegated the open questions (`plan/reviews/mile
 | 1f. Shell extras: PageHeader, Accordion, ShortcutBar, HistoryButtons, PrimaryAction | done |
 | Integration pass: icon map, more menus, tooltips, card collapse animation, naming rules (`plan/decisions/07-customisation.md`) | done |
 | Full-page stories (`src/stories/pages/`), guides, `dashboard` and `advanced` examples | done |
-| Fix pass on what the pages and docs work found, then the final review | in progress |
+| Fix pass on what the pages and docs work found | done |
+| Three independent reviews (components twice, release readiness) and their fixes | done; what is still open is in `plan/reviews/milestone-1.md` |
 
-**Next step**: finish 1b, then 1c, 1d and 1f in the order of `plan/roadmap.md`. A batch is built from `plan/prompts/component-brief.md`.
+**Next step**: the owner's go-ahead for the `0.1.0` release (`docs/releasing.md`; never publish without it). Then Milestone 2 from `plan/prompts/milestone-2.md`, whose order is decided by demand. A batch is built from `plan/prompts/component-brief.md`, one agent per group in its own git worktree with its own `UMBRA_TEST_PORT`, merged into `main` after the full suite passes.
 
 ### Known issues
 
-- Open findings of the Milestone 0 review, with the batch that takes each: `plan/reviews/milestone-0.md`.
+- Open findings of the reviews: `plan/reviews/milestone-1.md` ("Open"), and the status column of `plan/reviews/milestone-0.md`.
+- Several merged fix branches of Milestone 1 do not pass every check at each intermediate commit (grouped commits, baselines regenerated at the tip). Each merge commit on `main` does.
+- Tests run on Chromium only. Firefox and Safari support is stated from the CSS features' ship dates, not from a test run.
 - Commit `88f6b37` fails lint: the `lint` script arrived one commit before its config.
 - Commit `37fc048` ("WIP: …") fails lint (Prettier, three files). Two more WIP commits pass. They were already pushed, so they stay.
 - Commit `973f274` breaks "tests pass at every commit": it adds two navigation tests whose story arrives in the next commit. It was already pushed, so it stays.
@@ -105,8 +108,8 @@ The owner approved the plan and delegated the open questions (`plan/reviews/mile
 | `plan/decisions/` | One short record per tech decision: styling, behaviour base, charts, table engine, packaging, docs and testing, customisation. |
 | `plan/roadmap.md` | Pre-code tasks, milestones, build order, and the per-component definition of done. |
 | `plan/reference/` | `index.html`: the static reference screen, the visual ground truth for the look (open it in a browser; `?density=compact&context=teal` switches settings). `shot-*.png`: renders at three sizes. |
-| `plan/reviews/` | Review reports. `milestone-0.md`: what the independent review found, what was fixed, and what is open. |
-| `plan/prompts/` | `component-brief.md`: the rules for building a batch of components (read it before adding one). Ready-made prompts for starting a fresh agent session: `milestone-0.md` (used), `verify-milestone-0.md` (independent review of Milestone 0), `milestone-1.md` (plan and build Milestone 1). |
+| `plan/reviews/` | Review reports: what independent reviews found, what was fixed, and what is open. `milestone-0.md` and `milestone-1.md`. |
+| `plan/prompts/` | `component-brief.md`: the rules for building a batch of components (read it before adding one). Ready-made prompts for starting a fresh agent session: `milestone-0.md` (used), `verify-milestone-0.md` (independent review of Milestone 0), `milestone-1.md` (plan and build Milestone 1, used), `milestone-2.md` (plan and build Milestone 2). |
 | `src/` | Library source, one folder per group. `index.ts` is the `umbra-ui` entry. Each component is a `.tsx` with its `.module.css` and `.stories.tsx`; `samples.*` and `story*.tsx` files are story helpers. |
 | `src/styles/` | `index.css` (base CSS) and the generated `tokens.css` and `tokens.generated.ts`. |
 | `src/provider/` | `UmbraProvider` and `UmbraScope`, the icon map (`icons.tsx`), the shortcut registry (`shortcuts.ts`), `contrast.ts`. |
