@@ -4,14 +4,14 @@
 
 ## Purpose
 
-Rows and columns of data that fill their slot and scroll inside it: a ranking, a list of people or orders, a sheet of numbers. It sorts, selects, groups, pins columns, and hides columns by priority as it narrows.
+Rows and columns of data that fill their slot and scroll inside it: a ranking, a list of people or orders, a sheet of numbers. It sorts, selects, groups, pins columns, and hides columns by priority as it narrows. The end user can show, hide, reorder, pin and resize the columns; the app saves that choice if it wants to.
 
 ## Not for
 
 - Rows without columns or column headers: use `List`.
 - A few labels with their values: use `KeyValueList`.
 - Laying out a form or a page in a grid: use `Columns` and `Stack`.
-- Letting the end user choose, reorder or resize columns, or save views: out of scope by decision (`plan/components.md`).
+- Named, saved views of a table, and storing the user's columns: the table is controlled (`columnState`) and ships no storage. The app saves the value where it likes (`docs/recipes.md`, "Remember a user's columns").
 - Editing values in place like a spreadsheet: cells can hold controls, but there is no cell editing model.
 
 ## Evidence
@@ -26,7 +26,13 @@ About 30 of the 40 screenshots. Best: 18 and 9 (dense rows with tags, pills, bar
 | `header` | the header rows: an optional row of spanning headers (`columnGroups`), then one `headerCell` per column | shown; sticks to the top |
 | `headerCell` | label, and in a sortable column a button with the `sortIndicator` | |
 | `row` | one `cell` per column; with selection a cell first that holds a checkbox (`multiple`) or a radio (`single`); with hidden columns and `expandableHidden` a disclosure cell | |
-| `hiddenIndicator` | the mark in the last header that says how many columns are hidden ("+3"), in a narrow column of its own | while columns are hidden, without `expandableHidden` |
+| `hiddenIndicator` | the content of the columns button: how many columns are not shown ("+3"), or the columns icon when all are | see `columnsButton` |
+| `columnsButton` | a button in a narrow column of its own at the end of the header row; it opens the `columnMenu` | `columnMenu="auto"` (default): while a column is not shown (no room, or hidden by the user), without `expandableHidden`. `columnMenu`: always. `columnMenu={false}`: never (the mark is then plain text, as before) |
+| `columnMenu` | a popover that lists every column in order: a handle to move it, a checkbox to show it, "No room" when the table hid it, a pin mark; above the list "Show all" and "Reset", and a search field from 10 columns up | closed |
+| `columnMenuItem` | one row of that list | |
+| `headerMenuButton` | a "more" button in each column header | on hover of the header, on keyboard focus of its cell and while its menu is open; it takes no room |
+| `headerMenu` | the menu of one column: sort ascending, descending, clear; move left, right; pin to start, to end, unpin; hide; resize, fit to content, reset width; "Columns…" | closed |
+| `resizeHandle` | a separator on the end edge of a column header | a 2px line on hover, on focus and while dragging |
 | `groupHeader` | a group's caret, title, count, `meta` and aggregate cells | with `groupBy`; sticks below the header |
 | `detail` | the labels and values of the hidden columns, under an expanded row (a `KeyValueList`) | with `expandableHidden` |
 | `footer` | one summary cell per column | when a column has a `footer`; sticks to the bottom |
@@ -45,13 +51,13 @@ About 30 of the 40 screenshots. Best: 18 and 9 (dense rows with tags, pills, bar
 | column `pin` | `start`, `end` | the column sticks while the table scrolls sideways |
 | column `wrap` | boolean | default: one line, cut with an ellipsis |
 
-States: `loading`, empty, error, `loadingMore`; per row: hover, pressed, selected, highlighted, accent, disabled, expanded; per header: unsorted, ascending, descending; per group: collapsed; per cell: focus, changed (`highlightChanges`).
+States: `loading`, empty, error, `loadingMore`; per column: shown, hidden by the user, hidden for lack of room, pinned, resized, resizing; per row: hover, pressed, selected, highlighted, accent, disabled, expanded; per header: unsorted, ascending, descending; per group: collapsed; per cell: focus, changed (`highlightChanges`).
 
 ## Customisation
 
 ### 1. Tokens
 
-`--umbra-table-row-height`, `--umbra-table-header-height`, `--umbra-table-cell-padding-x`, `--umbra-table-edge-padding-x`, `--umbra-table-font`, `--umbra-table-color`, `--umbra-table-row-bg`, `--umbra-table-stripe-bg`, `--umbra-table-hover-bg`, `--umbra-table-selected-bg`, `--umbra-table-highlight-bg`, `--umbra-table-highlight-marker`, `--umbra-table-stripe-width`, `--umbra-table-border-color`, `--umbra-table-pin-border-color`, `--umbra-table-header-bg`, `--umbra-table-header-color`, `--umbra-table-header-active-color`, `--umbra-table-header-group-color`, `--umbra-table-header-font`, `--umbra-table-header-border-color`, `--umbra-table-footer-bg`, `--umbra-table-detail-bg`, `--umbra-table-caption-color`, `--umbra-table-change-up`, `--umbra-table-change-down`, `--umbra-table-change-neutral`, `--umbra-table-focus-offset`, `--umbra-table-control-size`. The radio of `single` selection reads the tokens of `Radio` (`--umbra-radio-selected-bg`, `-border`, `-border-width`, `-bg`, `-mark-color`) and the size of the small checkbox (`--umbra-checkbox-small-size`). Group header rows read the tokens of `GroupHeader` (`--umbra-group-header-bg`, `-color`, `-font`, `-height`). The row height follows the density level (`density-table-row`: 22 / 26 / 32px).
+`--umbra-table-row-height`, `--umbra-table-header-height`, `--umbra-table-cell-padding-x`, `--umbra-table-edge-padding-x`, `--umbra-table-font`, `--umbra-table-color`, `--umbra-table-row-bg`, `--umbra-table-stripe-bg`, `--umbra-table-hover-bg`, `--umbra-table-selected-bg`, `--umbra-table-highlight-bg`, `--umbra-table-highlight-marker`, `--umbra-table-stripe-width`, `--umbra-table-border-color`, `--umbra-table-pin-border-color`, `--umbra-table-header-bg`, `--umbra-table-header-color`, `--umbra-table-header-active-color`, `--umbra-table-header-group-color`, `--umbra-table-header-font`, `--umbra-table-header-border-color`, `--umbra-table-footer-bg`, `--umbra-table-detail-bg`, `--umbra-table-caption-color`, `--umbra-table-change-up`, `--umbra-table-change-down`, `--umbra-table-change-neutral`, `--umbra-table-focus-offset`, `--umbra-table-control-size`, `--umbra-table-resize-color` (the line of a resize handle), `--umbra-table-drop-color` (the line that shows where a dragged column lands), `--umbra-table-column-menu-width`. The radio of `single` selection reads the tokens of `Radio` (`--umbra-radio-selected-bg`, `-border`, `-border-width`, `-bg`, `-mark-color`) and the size of the small checkbox (`--umbra-checkbox-small-size`). Group header rows read the tokens of `GroupHeader` (`--umbra-group-header-bg`, `-color`, `-font`, `-height`). The row height follows the density level (`density-table-row`: 22 / 26 / 32px).
 
 The table gives two tokens of other components its own default for what is inside it: `--umbra-focus-offset` (inwards, because the table clips) and `--umbra-icon-button-size` (two pixels less than the row). They are private properties (`--focus-offset`, `--icon-button-size`), so the app's `--umbra-focus-offset` or `--umbra-icon-button-size`, set on any ancestor, wins; `--umbra-table-focus-offset` and `--umbra-table-control-size` change the table's defaults only. The table's opaque fills are mixed into the surface it is on: `--umbra-table-row-bg`, else `--umbra-scroll-fade-color`, else the surface's private `--scroll-fade-color` (2026-10-11).
 
@@ -83,7 +89,12 @@ Every fill is opaque, mixed into the surface below (`--umbra-table-row-bg`, by d
 | `collapsibleGroups` | boolean | `false` | A caret on every group header row |
 | `collapsedGroups` / `defaultCollapsedGroups` / `onCollapsedGroupsChange` | `string[]` | `[]` | Controlled or uncontrolled collapse, as group keys |
 | `stickyGroups` | boolean | `true` | Group rows stick below the header |
-| `onHiddenColumnsChange` | `(ids) => void` | — | The columns hidden for lack of width |
+| `onHiddenColumnsChange` | `(ids) => void` | — | The columns hidden for lack of width (not those the user hid: they are in `columnState`) |
+| `columnState` / `defaultColumnState` / `onColumnStateChange` | `DataTableColumnState` | `{}` | What the end user did to the columns, controlled or uncontrolled: `{ order?: string[], visibility?: Record<id, boolean>, widths?: Record<id, px>, pins?: Record<id, 'start' \| 'end' \| 'none'> }`. Plain JSON, every member optional, a missing entry means "as the app defined it". "Reset" returns to `defaultColumnState` (or `{}`), in the controlled case too |
+| `columnMenu` | `auto`, boolean | `auto` | The end user's column controls: the columns button and the menu of each header. `auto` shows the button only while a column is not shown; `true` always; `false` removes the button and the header menus |
+| `resizableColumns` / `reorderableColumns` | boolean | `true` | Resize handles on the headers; the handles and "move" rows of the menus |
+| `columnsLabel`, `showAllColumnsLabel`, `resetColumnsLabel`, `searchColumnsLabel`, `noColumnsLabel`, `noRoomLabel`, `moveColumnLabel`, `moveUpLabel`, `moveDownLabel`, `moveLeftLabel`, `moveRightLabel`, `pinStartLabel`, `pinEndLabel`, `unpinLabel`, `hideColumnLabel`, `sortAscendingLabel`, `sortDescendingLabel`, `clearSortLabel`, `resizeColumnLabel`, `autosizeColumnLabel`, `resetWidthLabel`, `columnOptionsLabel` | string | English text | Every string of the column controls. The ones that name a control of one column are followed by the column's label ("Move Region") |
+| `columnMovedLabel` / `columnWidthLabel` | `(label, position, count) => string` / `(label, px) => string` | "Region moved to position 3 of 12" / "Amount width 180 pixels" | What the live region says after a move and a resize |
 | `expandableHidden` | boolean | `false` | Each row can show its hidden columns under it |
 | `hiddenColumnsLabel` | `(count) => string` | "3 columns hidden" | Accessible name of the mark for hidden columns |
 | `loading` / `empty` / `error` / `onRetry` / `retryLabel` | the shared data states | empty text "No rows" | |
@@ -114,32 +125,36 @@ A column (`DataTableColumn<Row>`):
 | `priority` | number or `always` | 0 | Higher stays longer |
 | `sortable` / `sortFn` / `sortDescFirst` | boolean / `(a, b) => number` / boolean | | |
 | `wrap` | boolean | `false` | |
-| `pin` | `start`, `end` | — | |
+| `pin` | `start`, `end` | — | The user can change it (`columnState.pins`) |
+| `hideable` / `reorderable` / `resizable` | boolean | `true` | What the end user may do to this column. A column that is not `hideable` shows a checked, disabled box in the column menu |
+| `minWidth` / `maxWidth` | px | 48 / 800 | The limits of a resize, in the same pixels as `width` |
 | `footer` | node or `(rows) => node` | — | The summary cell |
 | `aggregate` | `(rows) => node` | — | The cell in each group header row |
 | `rowHeader` | boolean | `false` | Its cells are the headers of their rows |
 
-Helpers: `numberColumn(column)` (end-aligned, tabular, 80px, largest first) and `actionsColumn({ cell, menu, onMenuAction, menuLabel })` (pinned to the end, never hidden, header for assistive technology only; `cell` returns buttons, `menu` returns the rows of a `Menu` opened by a "more" button). There is no helper per widget: a cell renderer returns the widget.
+Helpers: `numberColumn(column)` (end-aligned, tabular, 80px, largest first) and `actionsColumn({ cell, menu, onMenuAction, menuLabel })` (pinned to the end, never hidden, neither `hideable`, `reorderable` nor `resizable`, header for assistive technology only; `cell` returns buttons, `menu` returns the rows of a `Menu` opened by a "more" button). There is no helper per widget: a cell renderer returns the widget.
 
 ### 3. Parts
 
-`header`, `headerCell`, `sortIndicator`, `hiddenIndicator`, `row`, `cell`, `groupHeader`, `detail`, `footer`, `skeleton`, `empty`, `error`. Each accepts a node, `null` or a function receiving the default part's props. `row` and `cell` also receive the data `row` (and `column`). `hiddenIndicator` receives `count`, `labels` and the default `children`; `null` removes the mark and the column it stands in. Every part carries `data-part` with its name as written here (`headerCell`, `sortIndicator`, `groupHeader`); so do the pieces that cannot be replaced: `caption`, `body`, `headerLabel`, `rowLink`, `radio`, `title`, `meta`, `state`, `fontProbe`.
+`header`, `headerCell`, `sortIndicator`, `hiddenIndicator`, `columnMenu`, `columnMenuItem`, `headerMenu`, `resizeHandle`, `row`, `cell`, `groupHeader`, `detail`, `footer`, `skeleton`, `empty`, `error`. Each accepts a node, `null` or a function receiving the default part's props. `row` and `cell` also receive the data `row` (and `column`). `hiddenIndicator` receives `count`, `labels` and the default `children`; `null` removes the mark and the column it stands in. `columnMenu` receives the props of `DataTable.ColumnMenu`, `columnMenuItem` one item of it and the default `children`, `headerMenu` the props of the `Menu` (with `column`; its `items` can be added to), `resizeHandle` the props of `DataTable.ResizeHandle` (with `column`). Every part carries `data-part` with its name as written here (`headerCell`, `sortIndicator`, `groupHeader`); so do the pieces that cannot be replaced: `caption`, `body`, `headerLabel`, `rowLink`, `radio`, `title`, `meta`, `state`, `fontProbe`, `columnsButton`, `headerMenuButton`, `dropIndicator`.
 
 ### 4. Blocks
 
-`DataTable.Root`, `DataTable.Header`, `DataTable.HeaderCell`, `DataTable.SortIndicator`, `DataTable.Body`, `DataTable.Row`, `DataTable.Cell`, `DataTable.GroupRow`, `DataTable.Footer`. A table composed from them is a grid with the same keyboard; sorting, selection and widths are then the app's (`Row` takes `onAction` and `onSelect`; `Root` takes `width`, a `<colgroup>` and `onSelectAll` for Ctrl+A; `Cell` takes `title`, shown while its text is cut, and `tooltip`, shown always).
+`DataTable.Root`, `DataTable.Header`, `DataTable.HeaderCell`, `DataTable.SortIndicator`, `DataTable.Body`, `DataTable.Row`, `DataTable.Cell`, `DataTable.GroupRow`, `DataTable.Footer`, `DataTable.ResizeHandle`, `DataTable.ColumnMenu`. A table composed from them is a grid with the same keyboard; sorting, selection and widths are then the app's (`Row` takes `onAction` and `onSelect`; `Root` takes `width`, a `<colgroup>` and `onSelectAll` for Ctrl+A; `Cell` takes `title`, shown while its text is cut, and `tooltip`, shown always). `HeaderCell` takes `onMenu` and `menuLabel` (the "more" button, Shift+F10 and a right click) and `resizeHandle` (a `DataTable.ResizeHandle`, which reports `onResize(px, phase)` and never keeps a width itself). `DataTable.ColumnMenu` is the list of the column menu without its popover: it takes `items` (`{ id, label, visible, noRoom, pin, hideable, reorderable }`) and reports `onVisibleChange`, `onMove`, `onPinChange`, `onShowAll` and `onReset`, so an app can put the list in its own toolbar or drawer.
 
 ## Behaviour as space shrinks
 
 | Step | Trigger | Result |
 |---|---|---|
 | 1 | A column narrower than its content | Text is cut with an ellipsis; while it is cut, hover or keyboard focus shows the full text in a tooltip. Widgets follow their own rules |
-| 2 | The columns do not fit at their minimum widths | Columns hide one at a time: lowest `priority` first, equal priorities from the end of the source order. They return, in reverse, when there is room. While any is hidden, one narrow column (40px) is added, so the user is told: by default a mark in its header, "+3", named "3 columns hidden", whose tooltip lists them on hover and keyboard focus; with `expandableHidden` a disclosure column instead, and each row can show its hidden columns under it. `parts={{ hiddenIndicator: null }}` gives the 40px back |
-| 3 | Only `always` columns are left and still do not fit | The table scrolls sideways inside its slot; pinned columns stay in view |
+| 2 | The columns do not fit at their minimum widths | Columns hide one at a time: lowest `priority` first, equal priorities from the end of the order (the user's, when they changed it). A column the user ticked in the column menu is never hidden for lack of room, and one they hid stays hidden at any width. They return, in reverse, when there is room. While any is hidden, one narrow column (40px) is added, so the user is told: by default a button in its header, "+3", named "3 columns hidden", whose tooltip lists them on hover and keyboard focus and which opens the column menu; with `expandableHidden` a disclosure column instead, and each row can show its hidden columns under it. `parts={{ hiddenIndicator: null }}` gives the 40px back |
+| 3 | Only `always` columns and columns the user asked for are left and still do not fit | The table scrolls sideways inside its slot; pinned columns stay in view |
 | 4 | Rows taller than the slot | The body scrolls; header, group rows and footer stick |
 | 5 | Empty or error state larger than the slot | It follows `EmptyState` |
 
 How step 2 is decided: the width of the scroll area is measured (a `ResizeObserver`, applied before paint), and `fitColumns` (`src/table/logic.ts`, unit-tested) returns the hidden columns and every width. Column widths come from the column definitions and the cell font (its size, and the width of a digit), never from the rendered cells, so the answer depends on the available width alone: it cannot oscillate at a threshold and is right after one large resize. A `content` width is computed from the text of the data, not measured in the page. The vertical scrollbar always keeps its room, so it cannot change the width either. Spare width goes to the flexible columns by `flex` up to `max`; what is left over is shared evenly, so rows always span the full width.
+
+A width the user set is fixed pixels: that column neither grows nor shrinks, the others share what is left, and it takes none of the spare width while any other column can. When the sum no longer fits, step 2 hides the lowest-priority columns the user did not ask for, then step 3 scrolls the table sideways inside itself. While a handle is dragged the same rule runs on every move, with no column hidden or shown until the handle is let go, and only the `<col>` widths are written: no row is rendered.
 
 ## Interaction and accessibility
 
@@ -149,7 +164,10 @@ Keyboard (the decided model):
 
 - **One tab stop.** The focused cell is the tab stop; controls inside cells are not in the tab order. Leaving and returning lands on the same cell.
 - **Arrow keys** move the focused cell, through header rows, group rows, detail rows and the footer. **Home / End**: first / last cell of the row. **Ctrl or Cmd + Home / End**: first / last cell of the table (in the header and the footer, which stick), and the body scrolls to its start or end with it. **PageUp / PageDown**: one page of rows.
-- **Headers**: Enter or Space on a sortable header cycles its sort (ascending, descending, unsorted; a `sortDescFirst` column starts descending). Shift+Enter adds it to a multiple sort.
+- **Headers**: Enter or Space on a sortable header cycles its sort (ascending, descending, unsorted; a `sortDescFirst` column starts descending). Shift+Enter adds it to a multiple sort. **Shift+F10 or the context-menu key** (and a right click) opens the column's menu; the "more" button is not a stop of the grid.
+- **Columns button**: a cell of the grid, at the end of the header row (End). Enter or Space opens the column menu; Escape closes it and returns to the button.
+- **Column menu**: a dialog; Tab moves through "Show all", "Reset", the search field, and each row's handle and checkbox. On a handle, **Alt or Ctrl + Arrow Up / Down** moves the column, and Enter or Space opens its actions: move up, move down, pin to start, pin to end, unpin. A pointer drags the handle; a line shows where the column lands.
+- **Resize**: "Resize" in the column's menu moves the focus to the handle, a `separator` with `aria-valuenow`, `aria-valuemin` and `aria-valuemax` in pixels. Arrow Left / Right change the width by 8px (as drawn: mirrored right to left), Home / End go to the limits, Enter keeps the width and Escape puts the old one back; both return to the header cell. A pointer drags the handle (24px wide across the column border); a double click fits the column to its content.
 - **Body cells**: Space toggles the row's selection. Enter is the row action; in a cell with exactly one control, Enter (and Space, when rows cannot be selected) is forwarded to it; in a cell with several, Enter or F2 moves focus to the first, Tab and Shift+Tab move among them, and Escape (or F2) returns to the cell. From a button, link or checkbox focused by a click, the arrow keys still move through the grid.
 - **Shift + Arrow Up / Down** extends the selection from the row that had the focus at the first Shift+Arrow, for as long as Shift+Arrow keys follow each other (coming back shrinks it); what was selected before stays. Any other move of the focus ends the range. **Shift+click** and **Shift+Space** select a range from the last row toggled.
 - **Ctrl or Cmd + A** selects every row that can be selected, where `selectionMode` is `multiple`, and the page's text is then not selected. In `single` and `none` the key is not the table's: it is left to the browser, like every key the table has no use for.
@@ -158,7 +176,7 @@ Keyboard (the decided model):
 - **Right to left**: Left and Right follow what is seen.
 - No type-ahead.
 
-Focus: the ring is drawn inside the cell (never violet). The focused cell is scrolled into view clear of the sticky header, group row, footer and pinned columns. It is remembered as row id and column id, so it follows its row through a sort and through virtualised scrolling; when its column hides it moves to the nearest column of the same row; when the focused element is removed by a render, focus returns to the cell instead of being lost.
+Focus: the ring is drawn inside the cell (never violet). The focused cell is scrolled into view clear of the sticky header, group row, footer and pinned columns. It is remembered as row id and column id, so it follows its row through a sort and through virtualised scrolling; when its column hides it moves to the nearest column of the same row; when the focused element is removed by a render, focus returns to the cell instead of being lost. After a column is moved or pinned from its menu the focus is on its header in its new place; after it is hidden, on the nearest header; when a menu closes and its opener is gone, on the grid's tab stop.
 
 Disabled rows: no hover or press response and the default cursor; their content is at the disabled opacity (40%). The fill stays opaque for the pinned cells, so bare text is mixed into the fill at that share and elements take the opacity itself; nothing is dimmed twice.
 
@@ -170,6 +188,8 @@ Not colour alone: the sort direction is the arrow's shape; a highlighted row is 
 
 Tooltips: one tooltip serves the whole table, in the look of `Tooltip`. It shows a header's `tooltip`, the label of a row's accent on its first cell, the names of the hidden columns on their mark, and the full text of a plain-text cell while that text is cut; after 500ms of hover, at once on keyboard focus, and it goes on scroll, press or blur. Nothing is mounted per cell.
 
+Column controls: moves and resizes are said by the table's `status` region ("Region moved to position 3 of 12", "Amount width 180 pixels"). Dragging is never the only way (WCAG 2.5.7): a column is moved from either menu and resized with the keys or "Fit to content". `aria-colcount` and `aria-colindex` follow the user's order and still count the columns that are not shown.
+
 Data states: `loading` sets `aria-busy` and shows skeleton rows in the real columns, hidden from assistive technology. The error state is an `alert`. `loadingMore` is announced through a `status` region.
 
 Virtualisation: only the rows in view are rendered, plus 8 behind them and one more screen of rows ahead of them in the direction of travel, between two spacer rows. The window moves in steps of four rows, and in a scroll event it is rendered before the frame is painted, so no empty band shows however fast the table is scrolled. What is rendered for a row is kept while nothing it is made from changes, so a scroll step renders only the rows that enter the window. Row heights are read from the rendered rows, so density and tokens are followed, and all rows are assumed equally tall (detail rows are measured one by one). The row that holds the tab stop and the header of the group at the top stay rendered outside the window.
@@ -179,6 +199,28 @@ Virtualisation: only the rows in view are rendered, plus 8 behind them and one m
 ## Open questions
 
 None.
+
+Resolved 2026-10-11 (end-user column management, owner's finding O-2; changes the decision "no end-user column editing"):
+
+- **One value, `columnState`**, not four pairs of props (`hiddenColumnIds`, `columnOrder`, `columnWidths`, `pinnedColumns`, each with a default and a callback). An app saves and restores one JSON value, and "Reset" is one assignment. It also leaves `onHiddenColumnsChange` meaning what it meant: the columns hidden for lack of width. No second, combined callback exists beside it, so nothing is said twice.
+- **Visibility has three states**: `true` (the user asked for the column: it is never hidden for lack of room), `false` (hidden at any width), missing (the table decides by `priority`). Ticking a column that had no room is how a user overrules the table; the table then scrolls sideways inside itself if what the user asked for does not fit.
+- **`columnMenu` is `auto` by default**, neither on nor off: the button is there whenever a column is not shown, which is the case the owner met, and a table whose columns all fit looks as it did (no 40px taken, no baseline changed). The column menu is still one step away in every table: "Columns…" in each header's menu. `columnMenu` (true) keeps the button always; the table page uses it.
+- **Resizing and reordering are on by default.** Nothing shows until a header is pointed at or focused, and without `onColumnStateChange` the table keeps the state itself, so they work out of the box.
+- **The mark became a button** ("+3"), with the same name, tooltip, part and column; with `columnMenu={false}` it is the plain text it was.
+- **The header's press stays sort.** The menu is on a "more" button that shows on hover and focus and takes no room (at the start of an end-aligned header, so it does not cover the number's label), on Shift+F10, the context-menu key and a right click.
+- **The "more" button and the resize handle are not controls of the cell** for the grid (`data-grid-ignore`): a sortable header still has exactly one, so Enter sorts.
+- **User widths are in the pixels of `width`** (written for the default density, scaled with the cell font), so a saved width fits at every density. The live region says the pixels drawn.
+- **A resize writes `<col>` widths only while the handle moves** and commits once, on release: no row renders per move (guarded by a test on 10,000 rows).
+- **The handle is 24px wide across the border**: 12px at the end of its own header and 12px at the start of the next, because a header cell clips. The last column has the 12px of its own cell only when nothing follows it.
+- **Fit to content** uses the text of every row (as `width: 'content'` does) for a column without a `cell`, and the widest rendered cell for one with a `cell`.
+- **Moves stay inside the column's pin group** (start, middle, end): the list shows the columns in the order they are drawn.
+- **Reordering is pointer events and keys only**, no drag library. A drag near the top or bottom edge of the list scrolls it.
+- **The engine keeps doing visibility; order, widths and pins are applied to the column list before the fit rule** (`applyColumnState` in `src/table/logic.ts`, unit-tested). The engine's ordering, sizing and pinning state would not be read by anything: this table lays its columns out itself.
+- **Columns the saved state does not know** (added by the app later) keep their place after the column that precedes them in the definitions; ids it knows and the app dropped are ignored.
+- **The last shown column cannot be hidden**: its box is disabled.
+- **Headers that span columns** (`columnGroups`) split when the user moves a column out from under them: neighbours in the same group merge, as before.
+- **The detail row of `expandableHidden`** shows the columns hidden for lack of room, not the ones the user hid.
+- **Not done**: named saved views; a column's place changed by dragging its header in the table itself (the list and the menu do it); touch drag of a header.
 
 Resolved 2026-10-11 (review fixes):
 

@@ -139,6 +139,7 @@ Pitch, FormationView, PlayerToken, KitIcon, ShirtNumberIcon, OppositionSummary, 
 - **Theme**: dark base; the app sets brand and context tint; violet (selected) and magenta (primary action) are fixed.
 - **Density**: three levels, set on the provider.
 - **DataTable**: sorting, rich cells, row highlight, columns auto-hide by priority. No end-user column editing or saved views.
+- **DataTable, end-user columns** (2026-10-11, owner's finding O-2; changes the line above): the end user can show, hide, reorder, pin and resize columns. Saving the choice is the app's: the table is controlled (`columnState`) and ships no storage. Named saved views stay out of scope.
 - **Charts, first release**: radar, line, bar, donut. Heatmap and scatter later.
 - **Layout**: see `layout.md`.
 - **Interaction**: see `interaction.md` (crisp motion, skeleton loading, opt-in change highlight, full keyboard navigation, command palette, shortcut registry).
