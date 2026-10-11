@@ -1,0 +1,32 @@
+name: Feature request
+description: A component, a prop or a behaviour the library should have.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: What you are building
+      description: The screen or the task, not the solution. A sketch or a screenshot of your own app helps.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you propose
+      description: A component, a prop, a part or a token, with the names you would expect.
+    validations:
+      required: true
+  - type: textarea
+    id: today
+    attributes:
+      label: What you do today
+      description: >
+        Which of the four customisation layers (tokens, props, parts, blocks) you tried, and where it
+        fell short.
+  - type: checkboxes
+    id: fit
+    attributes:
+      label: Fit
+      options:
+        - label: It is domain-neutral (useful to any data-dense app, not to one industry).
+        - label: It works inside a page that never scrolls, and says what it shows as space shrinks.

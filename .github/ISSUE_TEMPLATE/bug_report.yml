@@ -1,0 +1,45 @@
+name: Bug report
+description: Something does not work as the docs or the stories say.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A security problem? Do not open an issue: see SECURITY.md.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happens
+      description: And what you expected instead. A screenshot helps for anything visual.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: >
+        The smallest code that shows it: a link to a repository or an online sandbox, or a snippet that
+        runs when pasted into `src/App.tsx` of `examples/basic`. Say the window size and the density when
+        the problem is about layout.
+      render: tsx
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: umbra-ui version
+      placeholder: 0.1.0, or a commit hash
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: React, browser and operating system
+      placeholder: React 19.1, Firefox 131, Windows 11
+    validations:
+      required: true
+  - type: textarea
+    id: more
+    attributes:
+      label: Anything else
+      description: Console output, a screen reader and its version, the bundler or framework.
