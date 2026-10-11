@@ -1,6 +1,8 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { expectFocusKept, openStory, pressKeys, settle } from './helpers';
 import { expectChangeHighlights } from './live';
+import { contrast, pixels } from './pixels';
+import { contextPresets } from '../../src/styles/tokens.generated';
 
 // Tier 2 meters and charts: PieIndicator, DivergingMeter, Sparkline, Heatmap and Scatter. What a still
 // image cannot show: values for assistive technology, keyboard, tooltips, legends, the data states and
@@ -1068,7 +1070,8 @@ test.describe('Scatter', () => {
     const chart = tile(page, 'controlled');
     await expect(chart.getByRole('option')).toHaveCount(7);
     await chart.getByRole('button', { name: 'South' }).hover();
-    await expect(chart.locator('g[data-series="north"]')).toHaveAttribute('data-dim', 'true');
+    // Every point of the other series fades (a point is its own group, so the largest are drawn first).
+    await expect(chart.locator('g[data-series="north"][data-dim]')).toHaveCount(4);
     await chart.getByRole('button', { name: 'South' }).click();
     await expect(page.getByText('Hidden: south.')).toBeVisible();
     await expect(chart.getByRole('option')).toHaveCount(4);
@@ -1078,7 +1081,7 @@ test.describe('Scatter', () => {
     const other = tile(page, 'uncontrolled');
     await expect(other.locator('g[data-series="c"]')).toHaveCount(0);
     await other.getByRole('button', { name: 'Group C' }).press('Enter');
-    await expect(other.locator('g[data-series="c"]')).toHaveCount(1);
+    await expect(other.locator('g[data-series="c"]')).not.toHaveCount(0);
     // Shape and colour: the marks of a series and its legend marker share the shape.
     for (const [id, name, shape] of [
       ['a', 'Group A', 'dot'],
@@ -1535,5 +1538,189 @@ test.describe('Review 2', () => {
     expect((await box(part(dialog.locator('figure'), 'plot'))).height).toBe(240);
     const viewport = dialog.locator('[data-part="viewport"]');
     expect(await viewport.evaluate((el) => el.scrollHeight - el.clientHeight)).toBe(0);
+  });
+});
+
+// Review 2, what is measured: contrast as it is drawn, on the four tints, and the cost of 5,000 marks.
+test.describe('Review 2: measured', () => {
+  /**
+   * The strongest contrast a pixel of each box has against the surface beside it: what the eye has to
+   * tell the mark from its background, blur of the edges included. One screenshot for all the boxes.
+   */
+  const strongest = async (page: Page, marks: Locator) => {
+    const boxes = await marks.evaluateAll((els) =>
+      els.map((el) => {
+        const r = el.getBoundingClientRect();
+        return { x: r.x, y: r.y, width: r.width, height: r.height };
+      }),
+    );
+    const points: [number, number][] = [];
+    const spans: [number, number][] = [];
+    for (const b of boxes) {
+      const from = points.length;
+      // The surface: three pixels before the box, at its middle.
+      points.push([b.x - 3, b.y + b.height / 2]);
+      const [x1, y1] = [Math.floor(b.x) - 1, Math.floor(b.y) - 1];
+      const [x2, y2] = [Math.ceil(b.x + b.width) + 1, Math.ceil(b.y + b.height) + 1];
+      for (let x = x1; x < x2; x++) for (let y = y1; y < y2; y++) points.push([x + 0.5, y + 0.5]);
+      spans.push([from, points.length]);
+    }
+    const colours = await pixels(page, points);
+    return spans.map(([from, to]) =>
+      Math.max(...colours.slice(from + 1, to).map((c) => contrast(c, colours[from]!))),
+    );
+  };
+
+  for (const context of contextPresets) {
+    test(`MC-10: the edge of a Heatmap cell has 3:1 against the card as it is drawn (${context})`, async ({
+      page,
+    }) => {
+      await openStory(page, 'charts-heatmap--variants', { context });
+      await page.evaluate(() => document.fonts.ready);
+      // Marks of every size, so their edges start at every fraction of a pixel; the lowest step has
+      // the fill nearest to the card's, so its edge is what shows it.
+      const cells = page.locator('[data-tile="sizes"] [data-series="step-0"] [data-part="cell"]');
+      expect(await cells.count()).toBeGreaterThan(5);
+      // Each of the four edges, where it is weakest: across the edge at the middle of the side.
+      const boxes = await cells.evaluateAll((els) => els.map((el) => el.getBoundingClientRect().toJSON()));
+      const across = [-2, -1, 0, 1, 2];
+      const points = boxes.flatMap((b): [number, number][] => [
+        [b.x - 4, b.y + b.height / 2],
+        ...across.map((d): [number, number] => [b.x + d, b.y + b.height / 2]),
+        ...across.map((d): [number, number] => [b.right + d, b.y + b.height / 2]),
+        ...across.map((d): [number, number] => [b.x + b.width / 2, b.y + d]),
+        ...across.map((d): [number, number] => [b.x + b.width / 2, b.bottom + d]),
+      ]);
+      const colours = await pixels(page, points);
+      const found = boxes.flatMap((_, i) => {
+        const of = colours.slice(i * 21, i * 21 + 21);
+        return [0, 1, 2, 3].map((side) =>
+          Math.max(...of.slice(1 + side * 5, 6 + side * 5).map((c) => contrast(c, of[0]!))),
+        );
+      });
+      expect(Math.min(...found), `${found.map((c) => c.toFixed(2))}`).toBeGreaterThanOrEqual(3);
+    });
+
+    test(`MC-11: the edge of an empty PieIndicator has 3:1, at zero and with no value (${context})`, async ({
+      page,
+    }) => {
+      await openStory(page, 'meters-pieindicator--edge-values', { context });
+      await page.evaluate(() => document.fonts.ready);
+      const discs = page
+        .locator('[data-umbra="pie-indicator"]')
+        .filter({ hasText: /Zero|Under|Not measured|Not rated/ })
+        .locator('[data-part="disc"]');
+      await expect(discs).toHaveCount(4);
+      const found = await strongest(page, discs);
+      expect(Math.min(...found), `${found.map((c) => c.toFixed(2))}`).toBeGreaterThanOrEqual(3);
+    });
+  }
+
+  test('MC-11: zero and no value differ without colour: wedges against a dashed ring with a dash', async ({
+    page,
+  }) => {
+    await openStory(page, 'meters-pieindicator--edge-values');
+    const zero = part(meter(page, 'Zero'), 'disc');
+    const none = part(meter(page, 'Not measured'), 'disc');
+    // Zero: a filled disc cut into its eight wedges. No value: a hollow ring, dashed, with a dash in it.
+    await expect(zero.locator('mask line')).toHaveCount(8);
+    await expect(part(zero, 'none')).toHaveCount(0);
+    await expect(none.locator('mask')).toHaveCount(0);
+    await expect(part(none, 'none')).toHaveCount(1);
+    const look = (disc: Locator) =>
+      part(disc, 'track').evaluate((el) => {
+        const style = getComputedStyle(el);
+        return { fill: style.fill, dash: style.strokeDasharray };
+      });
+    expect(await look(zero)).toMatchObject({ dash: 'none' });
+    expect(await look(none)).toEqual({ fill: 'none', dash: '3px, 2px' });
+    // As drawn: the dash is in the middle of the ring that has no value, and nothing is in the other's.
+    const [a, b] = [await box(zero), await box(none)];
+    const [beside, inZero, inNone] = await pixels(page, [
+      [a.x - 3, a.y + a.height / 2],
+      [a.x + a.width / 2 - 2, a.y + a.height / 2 - 0.5],
+      [b.x + b.width / 2 - 2, b.y + b.height / 2 - 0.5],
+    ]);
+    expect(contrast(inNone!, beside!)).toBeGreaterThanOrEqual(3);
+    expect(contrast(inZero!, beside!)).toBeLessThan(1.5);
+  });
+
+  test('MC-16: 5,000 marks: a resize measures no label again, and a key builds nothing again', async ({
+    page,
+  }) => {
+    test.slow();
+    await openChart(page, 'charts-edge-cases--many-marks');
+    for (const id of ['scatter', 'heatmap'])
+      await expect(tile(page, id).getByRole('option')).toHaveCount(5000);
+    // What the work is made of, counted: labels measured in the page, and values formatted.
+    await page.evaluate(() => {
+      const counts = ((window as unknown as { counts: Record<string, number> }).counts = {
+        measured: 0,
+        formatted: 0,
+      });
+      const text = SVGTextContentElement.prototype;
+      const length = text.getComputedTextLength;
+      text.getComputedTextLength = function () {
+        counts.measured!++;
+        return length.call(this);
+      };
+      const format = Object.getOwnPropertyDescriptor(Intl.NumberFormat.prototype, 'format')!;
+      Object.defineProperty(Intl.NumberFormat.prototype, 'format', {
+        get() {
+          const real = format.get!.call(this) as (value: number) => string;
+          return (value: number) => {
+            counts.formatted!++;
+            return real(value);
+          };
+        },
+      });
+    });
+    const counts = () =>
+      page.evaluate(() => {
+        const w = window as unknown as { counts: Record<string, number> };
+        const now = { ...w.counts };
+        w.counts.measured = w.counts.formatted = 0;
+        return now;
+      });
+    /** Milliseconds until the frame after the one that did the work; at most two frames of it are waiting. */
+    const timed = (run: string, id: string) =>
+      page.evaluate(
+        async ([run, id]) => {
+          const el = document.querySelector<HTMLElement>(`[data-tile="${id}"]`)!;
+          const start = performance.now();
+          if (run === 'resize') el.style.width = `${el.offsetWidth - 7}px`;
+          else
+            document.activeElement!.dispatchEvent(
+              new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }),
+            );
+          await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
+          return performance.now() - start;
+        },
+        [run, id] as const,
+      );
+    for (const id of ['scatter', 'heatmap']) {
+      const chart = tile(page, id);
+      // The first resize may measure labels of new ticks; from then on everything is known.
+      await timed('resize', id);
+      await counts();
+      const resizes = [await timed('resize', id), await timed('resize', id), await timed('resize', id)];
+      const resized = await counts();
+      // Each resize builds the chart once (it formats its values), and measures next to nothing: the
+      // 5,000 names of the points were measured once. They were measured again on every resize.
+      expect(resized.formatted, id).toBeGreaterThan(0);
+      expect(resized.measured, id).toBeLessThan(100);
+
+      await marks(chart).focus();
+      await timed('key', id);
+      await counts();
+      const keys = [await timed('key', id), await timed('key', id), await timed('key', id)];
+      expect(await current(chart), id).not.toBeNull();
+      // A key moves the ring: the chart is not built again, so no value is formatted. It was, 5,000 times.
+      expect((await counts()).formatted, id).toBe(0);
+      // The clock, with room for a slow machine: the best of three. Before, a resize of the labelled
+      // scatter took 357 to 458ms and a key 143ms.
+      expect(Math.min(...resizes), `${id} resize ${resizes.map(Math.round)}`).toBeLessThan(250);
+      expect(Math.min(...keys), `${id} key ${keys.map(Math.round)}`).toBeLessThan(100);
+    }
   });
 });

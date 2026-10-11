@@ -31,6 +31,8 @@ interface PieContext {
   fraction: number;
   /** Number of wedges; 0 for a continuous disc. */
   segments: number;
+  /** There is no value: the disc is a dashed ring with a dash in it, not the empty disc of zero. */
+  missing: boolean;
   tone: MeterTone;
   color?: string | undefined;
   valueText: ReactNode;
@@ -153,6 +155,7 @@ function Root({
   const context: PieContext = {
     fraction,
     segments: count,
+    missing,
     tone: band?.tone ?? tone,
     color: band?.color,
     valueText,
@@ -221,7 +224,9 @@ function Disc({ skeleton, className, style }: PieIndicatorDiscProps) {
       </span>
     );
   }
-  const { fraction, segments } = pie;
+  const { fraction, missing } = pie;
+  // Zero is a whole disc cut into its wedges, all unlit. No value has no wedges to show.
+  const segments = missing ? 0 : pie.segments;
   return (
     <svg
       data-part="disc"
@@ -246,6 +251,7 @@ function Disc({ skeleton, className, style }: PieIndicatorDiscProps) {
       )}
       <g mask={segments > 1 ? `url(#${id})` : undefined}>
         <circle data-part="track" r="1" className={styles.track} />
+        {missing && <line data-part="none" x1="-0.42" x2="0.42" className={styles.none} />}
         {fraction > 0 && (
           <g
             data-part="fill"
