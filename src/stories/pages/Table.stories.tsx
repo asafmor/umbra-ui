@@ -8,4 +8,4 @@ export default meta;
  * A dense table of 600 rows as the main content, with a toolbar above it and a summary beside it.
  * The navigation, the history buttons and the command palette (Mod+K) move between the three pages.
  */
-export const Table: StoryObj<typeof meta> = { tags: ['narrow'], args: { initial: 'orders/all' } };
+export const Table: StoryObj<typeof meta> = { tags: ['narrow', 'tints'], args: { initial: 'orders/all' } };

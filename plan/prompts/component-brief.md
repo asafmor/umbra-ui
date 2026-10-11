@@ -41,9 +41,9 @@ Given to an agent together with a list of components. It repeats nothing that is
 Use the test port given in your task, so parallel checkouts do not collide: prefix the Playwright commands with `UMBRA_TEST_PORT=<port>`.
 
 1. `npm run typecheck`, `npm run lint` (`npm run format` and `npm run docs:tables` fix the usual failures), `npm test`.
-2. `npm run test:visual:update`: builds Storybook, runs every Playwright test, writes baselines for your new stories. No existing baseline may change; if one does, find out why.
+2. `npm run test:visual:update`: builds Storybook, runs every Playwright test, writes baselines for your new stories: 5 images per story (default density at the three sizes, compact at 1280x720, spacious at 1024x600), one more at 900x560 for a `narrow` story, and three tint images for one story per stories file, the first unless you tag another `tints` (the one that shows all the tones or variants). No existing baseline may change; if one does, find out why. When you delete or rename a story, remove its images from git too: the suite fails on an image no test produces.
 3. `npx playwright test <group> a11y --repeat-each 3`: no failures, no flakiness. The accessibility test must pass for your stories on all four tints.
-4. Look at the new baseline images (read the PNG files): at 1920x1080, 1024x600 and compact density, and on another tint. Fix anything clipped, overlapping, misaligned, unreadable or unlike the reference.
+4. Look at the new baseline images (read the PNG files): at 1920x1080, at 1024x600 (default and spacious), at compact density, and on another tint for the story captured there. Fix anything clipped, overlapping, misaligned, unreadable or unlike the reference.
 5. Commit on your branch with clear messages (one commit per component is fine), ending with the attribution line given in your task. Do not push.
 
 ## Report

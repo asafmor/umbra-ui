@@ -9,4 +9,7 @@ export default meta;
  * action bar. The navigation, the history buttons and the command palette (Mod+K) move between the
  * three pages.
  */
-export const ListAndDetail: StoryObj<typeof meta> = { tags: ['narrow'], args: { initial: 'overview/inbox' } };
+export const ListAndDetail: StoryObj<typeof meta> = {
+  tags: ['narrow', 'tints'],
+  args: { initial: 'overview/inbox' },
+};
