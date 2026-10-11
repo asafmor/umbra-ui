@@ -65,7 +65,7 @@ On every child (all umbra-ui layout-aware components accept these; wrap anything
 
 | Component | Trigger | Result |
 |---|---|---|
-| `Stack` | Sum of the children's `minHeight` (plus gaps) exceeds its height | Lowest-priority cards collapse to their header until the rest fit. Only cards with a header can collapse. A collapsed card is exactly as tall as its header and the open cards share the rest. The highest-priority card (ties: the first in source order) is the last to go. If it cannot keep its minimum with every other card collapsed, it stays open and the minimums are dropped: it takes the space that is left and scrolls inside. It collapses as well only when that space is under one and a half times its header height (no room for content); when even the headers do not fit, everything shrinks, collapsed headers too. |
+| `Stack` | Sum of the children's `minHeight` (plus gaps) exceeds its height | Lowest-priority cards collapse to their header until the rest fit. Only cards with a header can collapse. A collapsed card is exactly as tall as its header and the open cards share the rest. The highest-priority card (ties: the first in source order) is the last to go. If it cannot keep its minimum with every other card collapsed, it stays open and the minimums are dropped: it takes the space that is left and scrolls inside. It collapses as well only when that space is under one and a half times its collapsed header height (no room for content; the collapsed header is what the card becomes, and it is measured the same way while the card is open, so the rule gives one answer per height); when even the headers do not fit, everything shrinks, collapsed headers too. |
 | `Columns` | Window below the minimum (read from the window, with or without an `AppShell`) | One child at a time, with tabs |
 | both | Otherwise | Children shrink in proportion to `size`; each child applies its own rules |
 
@@ -83,6 +83,7 @@ Resolved 2026-10-10:
 
 - `Columns` does not collapse low-priority columns before tab mode in Milestone 0.
 - Approved after Milestone 0: in narrow mode every `Columns` becomes tabs, nested ones too; `narrow="keep"` opts one out.
+- 2026-10-11: the one-and-a-half-header floor of the last open card uses the **collapsed** header height, for a card in either state. It used the header as currently drawn: 86px open and 62px collapsed at the spacious density, so the card flipped on every pixel between the two floors (review finding F1). `collapseToFit` is a pure function of the height and the items; a unit test sweeps the height and a browser test sweeps the window in 1px steps both ways and against fresh loads.
 - 2026-10-11: the highest-priority card of a `Stack` stays open when it cannot reach its minimum. Before, every card collapsed and the column was left with headers only (`collapseToFit`, unit-tested).
 - 2026-10-11: a `Slot` stretches its child whatever the child's own `flex` is. A child that is `flex: none` and a size container (a `PageHeader`) was a few pixels wide in a `Slot size="content"`.
 - Batch 1b: the built-in tab strip was replaced by the one `Tabs` draws. Props and the `tabs` part are unchanged.

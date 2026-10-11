@@ -48,3 +48,26 @@ test('reports whether the open items fit after collapsing', () => {
   expect(fit(319, 10, [card('a'), card('b'), card('c')]).fits).toBe(true);
   expect(fit(50, 10, [card('a'), card('b')]).fits).toBe(false);
 });
+
+test('the result depends on the height alone, and each card changes state once as the height falls', () => {
+  // Five cards as on the Overview page: the collapsed header (62) is what a card becomes, so it is the
+  // measure on both sides of the rule. Sweeping the height never flips a card back.
+  const cards = [card('a'), card('b', 2), card('c', 1), card('d'), card('e')].map((c) => ({
+    ...c,
+    min: 104,
+    header: 62,
+  }));
+  const states = (height: number) =>
+    cards.map((c) => (fit(height, 12, cards).collapsed.has(c.id) ? 'c' : 'o'));
+  for (const [index, { id }] of cards.entries()) {
+    let changes = 0;
+    for (let height = 700; height > 250; height--) {
+      if (states(height)[index] !== states(height - 1)[index]) changes++;
+      expect(states(height), `at ${height}`).toEqual(states(height));
+    }
+    expect(changes, `card ${id}`).toBe(1);
+  }
+  // The floor of the last card is one and a half collapsed headers: 4 x 62 + 4 x 12 + 93 = 389.
+  expect(states(389).join('')).toBe('cocc' + 'c');
+  expect(states(388).join('')).toBe('ccccc');
+});

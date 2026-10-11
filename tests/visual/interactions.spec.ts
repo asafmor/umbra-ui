@@ -6,14 +6,8 @@ const open = async (page: Page, id: string, width = 1280, height = 720, density 
   await page.setViewportSize({ width, height });
   await page.goto(`/iframe.html?id=${id}&viewMode=story&globals=density:${density}`);
   await page.locator('#storybook-root > *').first().waitFor();
-  // Load every Latin font face now. A face that first loads later (the body font, when a menu is the
-  // first thing to use it) restarts every shrink level, which closes an overflow menu as it opens.
-  await page.evaluate(async () => {
-    await Promise.all(
-      [...document.fonts].filter((f) => f.unicodeRange.startsWith('U+0-FF')).map((f) => f.load()),
-    );
-    await document.fonts.ready;
-  });
+  // No font face is loaded ahead of time: one that first loads when a menu opens must disturb nothing.
+  await page.evaluate(() => document.fonts.ready);
 };
 
 test('a card collapsed by its stack opens its content in a popover, and Escape returns focus', async ({
@@ -23,7 +17,9 @@ test('a card collapsed by its stack opens its content in a popover, and Escape r
   const card = page.locator('[data-umbra="card"][data-collapsed="layout"]').first();
   const header = card.getByRole('button', { name: 'Insights' });
   await expect(header).toHaveAttribute('aria-haspopup', 'dialog');
-  await expect(card.locator('[data-part="body"]')).toHaveCount(0);
+  // The body stays mounted while the card is collapsed, hidden and out of reach.
+  await expect(card.locator('[data-part="body"]')).toBeHidden();
+  await expect(card.locator('[data-part="body"]')).toHaveAttribute('inert');
 
   await header.focus();
   await page.keyboard.press('Enter');
@@ -34,6 +30,60 @@ test('a card collapsed by its stack opens its content in a popover, and Escape r
   await page.keyboard.press('Escape');
   await expect(dialog).toHaveCount(0);
   await expect(header).toBeFocused();
+});
+
+test('a card the layout collapses keeps its content mounted: text, scroll and state survive', async ({
+  page,
+}) => {
+  await open(page, 'layout-page-layouts--three-columns', 1280, 900, 'spacious');
+  const card = page.locator('[data-umbra="card"]', { hasText: 'This week' }).last();
+  // Mark the body's own elements: a remount would make new ones.
+  const mark = () =>
+    card.evaluate((el) => {
+      const body = el.querySelector<HTMLElement>('[data-part="body"]')!;
+      const view = body.querySelector<HTMLElement>('[data-part="viewport"]')!;
+      const note = document.createElement('input');
+      note.value = 'typed before the resize';
+      note.setAttribute('aria-label', 'Note');
+      view.append(note);
+      const filler = document.createElement('div');
+      filler.style.height = '900px';
+      view.append(filler);
+      view.scrollTop = 40;
+      body.dataset.mark = 'kept';
+      return view.scrollTop;
+    });
+  const state = (root = page.locator('body')) =>
+    root.evaluate((el) => {
+      const body = el.querySelector<HTMLElement>('[data-part="body"][data-mark="kept"]');
+      return (
+        body && {
+          text: body.querySelector<HTMLInputElement>('input[aria-label="Note"]')?.value,
+          scroll: body.querySelector('[data-part="viewport"]')!.scrollTop,
+        }
+      );
+    });
+  const scrolled = await mark();
+  expect(scrolled).toBe(40);
+  const kept = { text: 'typed before the resize', scroll: 40 };
+
+  await page.setViewportSize({ width: 1280, height: 600 });
+  await expect(card).toHaveAttribute('data-collapsed', 'layout');
+  await expect(card.locator('[data-part="body"]')).toBeHidden();
+  // In the popover it is the same body, moved.
+  await card.getByRole('button', { name: 'This week' }).click();
+  const dialog = page.getByRole('dialog', { name: 'This week' });
+  await expect(dialog.locator('[data-part="body"][data-mark="kept"]')).toBeVisible();
+  expect(await state()).toEqual(kept);
+  expect(await page.locator('[data-mark="kept"]').count()).toBe(1);
+  await page.keyboard.press('Escape');
+  await expect(dialog).toHaveCount(0);
+  await expect(card.locator('[data-part="body"][data-mark="kept"]')).toBeHidden();
+
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await expect(card).not.toHaveAttribute('data-collapsed');
+  await expect(card.locator('[data-part="body"]')).toBeVisible();
+  expect(await state()).toEqual(kept);
 });
 
 test('resizing the window collapses and reopens cards', async ({ page }) => {

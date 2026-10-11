@@ -98,12 +98,27 @@
   color: var(--umbra-card-header-fg, var(--umbra-color-on-brand, #fff));
 }
 
-.root[data-collapsed] > .header {
+.root:is([data-collapsed], [data-measure]) > .header {
   padding-bottom: var(--pad);
 }
 
-.root[data-collapsed] > .header[data-header-style='band'] {
+.root:is([data-collapsed], [data-measure]) > .header[data-header-style='band'] {
   padding-bottom: var(--umbra-space-3);
+}
+
+/*
+ * `data-measure` is set for the length of one read: the header as the layout would collapse it, with
+ * the title row only. The toggle differs between the open and the collapsed card, so it is left out
+ * of both reads.
+ */
+.root[data-measure] > .header > :is(.actions, .toggle),
+.root[data-measure] > .header .subtitle {
+  display: none;
+}
+
+/* The blocks of a card the layout has collapsed stay mounted, hidden (see `useBodyBlock`). */
+.root > :is(.toolbar, .body, .footer)[hidden] {
+  display: none;
 }
 
 /* Title and subtitle keep their width until the earlier shrink steps are used up; then the title truncates. */

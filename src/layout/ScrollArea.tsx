@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode, type Ref } from 'react';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './ScrollArea.module.css';
 
@@ -14,6 +14,8 @@ export interface ScrollAreaProps {
   'aria-label'?: string;
   /** Replace or hide named pieces. */
   parts?: { fade?: Part<{ edge: 'start' | 'end' }> };
+  /** The root element. */
+  ref?: Ref<HTMLDivElement>;
   className?: string;
   style?: CSSProperties;
   children?: ReactNode;
@@ -31,6 +33,7 @@ export function ScrollArea({
   onReachEnd,
   'aria-label': label = 'Scrollable content',
   parts,
+  ref,
   className,
   style,
   children,
@@ -82,6 +85,7 @@ export function ScrollArea({
   return (
     <div
       {...data}
+      ref={ref}
       data-umbra="scroll-area"
       data-axis={axis}
       data-scrollbar={scrollbar}

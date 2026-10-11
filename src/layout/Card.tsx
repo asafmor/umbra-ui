@@ -138,13 +138,25 @@ function Root({
   useLayoutEffect(() => setHasTitle(!!document.getElementById(titleId)));
   const [popover, setPopover] = useState<HTMLElement | null>(null);
 
-  // Collapsed, the card is as tall as its header plus its own borders. An open plain header has less
-  // padding below than above; collapsed, the two are equal, so the difference is added while open.
+  // Collapsed with the caret, the card is as tall as its header plus its own borders. An open plain
+  // header has less padding below than above; collapsed, the two are equal, so the difference is added
+  // while open.
   const headerHeight = (element: HTMLElement) => {
     if (!header.current) return null;
     const { paddingTop, paddingBottom } = getComputedStyle(header.current);
     const grows = Math.max(0, parseFloat(paddingTop) - parseFloat(paddingBottom)) || 0;
     return header.current.offsetHeight + grows + element.offsetHeight - element.clientHeight;
+  };
+  // What the parent Stack counts for this card once it has collapsed it: the header as it is then
+  // (title row only, equal padding), which is not the open header. It is measured the same way whether
+  // the card is open or collapsed, so the Stack's rule gives one answer for one height
+  // (plan/layout.md, rule 3). `data-measure` applies the collapsed look for the length of the read.
+  const collapsedHeaderHeight = (element: HTMLElement) => {
+    if (!header.current) return null;
+    element.dataset.measure = '';
+    const height = header.current.offsetHeight + element.offsetHeight - element.clientHeight;
+    delete element.dataset.measure;
+    return height;
   };
   const {
     ref,
@@ -160,7 +172,8 @@ function Root({
       const natural = element.offsetHeight + (view ? view.scrollHeight - view.clientHeight : 0);
       return Math.min(natural, slotMinHeight(element));
     },
-    header: headerHeight,
+    // A card collapsed with its caret stays as it is: its header is its minimum.
+    header: (element) => (userCollapsed ? headerHeight(element) : collapsedHeaderHeight(element)),
   });
   useLayoutEffect(() => changed?.(), [changed, userCollapsed]);
 
@@ -280,7 +293,8 @@ function Root({
         </LayoutProvider>
         {collapsedBy === 'layout' && (
           <Popover.Content
-            aria-label={expandLabel}
+            // Named like the card: its title as text (the tab label), or the card's own name.
+            aria-label={slot.label ?? ariaLabel ?? expandLabel}
             anchorRef={header}
             open={popoverOpen}
             onOpenChange={setPopoverOpen}
@@ -478,26 +492,63 @@ function Header({
   );
 }
 
+/** Reads the scroll offsets inside `node`, and returns a function that puts them back. */
+function keepScroll(node: HTMLElement) {
+  const saved = [node, ...node.querySelectorAll<HTMLElement>('*')]
+    .filter((el) => el.scrollTop || el.scrollLeft)
+    .map((el) => [el, el.scrollTop, el.scrollLeft] as const);
+  return () => {
+    for (const [el, top, left] of saved) {
+      el.scrollTop = top;
+      el.scrollLeft = left;
+    }
+  };
+}
+
 /**
- * Where a body block goes: in the card while it is open, in the popover of a layout-collapsed card
- * while that is open, and nowhere while the card is collapsed.
+ * Where a body block is: in the card while it is open, in the popover of a layout-collapsed card while
+ * that is open, and hidden in the card while the layout has collapsed it and the popover is closed. It
+ * stays mounted through all three, so typed text, scroll positions and state inside it survive a
+ * resize: the element itself is moved, not rendered again. Collapsed with the caret, it is not rendered.
  */
-function useBodyPlace() {
+function useBodyBlock<E extends HTMLElement>() {
   const card = useCard();
-  return (block: ReactNode) =>
-    card.collapsedBy === null || card.closing
-      ? block
-      : card.popover
-        ? createPortal(block, card.popover)
-        : null;
+  const ref = useRef<E>(null);
+  const { collapsedBy, popover } = card;
+  useLayoutEffect(() => {
+    const node = ref.current;
+    if (!node || collapsedBy !== 'layout') return;
+    const scroll = keepScroll(node);
+    if (!popover) {
+      node.hidden = true;
+      node.inert = true;
+      return () => {
+        node.hidden = false;
+        node.inert = false;
+        scroll();
+      };
+    }
+    // The marker keeps the block's place among the card's children.
+    const marker = document.createComment('');
+    node.before(marker);
+    popover.append(node);
+    scroll();
+    return () => {
+      const back = keepScroll(node);
+      marker.replaceWith(node);
+      back();
+    };
+  }, [collapsedBy, popover]);
+  return { ref, rendered: collapsedBy !== 'user' || card.closing };
 }
 
 function Toolbar({ className, style, children }: BlockProps) {
-  return useBodyPlace()(
-    <div data-part="toolbar" className={cx(styles.toolbar, className)} style={style}>
+  const { ref, rendered } = useBodyBlock<HTMLDivElement>();
+  return rendered ? (
+    <div ref={ref} data-part="toolbar" className={cx(styles.toolbar, className)} style={style}>
       {children}
-    </div>,
-  );
+    </div>
+  ) : null;
 }
 
 export interface CardBodyProps
@@ -508,24 +559,27 @@ export interface CardBodyProps
 
 function Body({ padding, className, children, ...scroll }: CardBodyProps) {
   const card = useCard();
-  return useBodyPlace()(
+  const { ref, rendered } = useBodyBlock<HTMLDivElement>();
+  return rendered ? (
     <ScrollArea
       {...scroll}
+      ref={ref}
       data-part="body"
       data-padding={padding ?? card.padding}
       className={cx(styles.body, className)}
     >
       {children}
-    </ScrollArea>,
-  );
+    </ScrollArea>
+  ) : null;
 }
 
 function Footer({ className, style, children }: BlockProps) {
-  return useBodyPlace()(
-    <div data-part="footer" className={cx(styles.footer, className)} style={style}>
+  const { ref, rendered } = useBodyBlock<HTMLDivElement>();
+  return rendered ? (
+    <div ref={ref} data-part="footer" className={cx(styles.footer, className)} style={style}>
       {children}
-    </div>,
-  );
+    </div>
+  ) : null;
 }
 
 export interface CardProps

@@ -1,5 +1,6 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { densities } from '../../src/styles/tokens.generated';
+import { openStory, settle } from './helpers';
 
 // The three full-page reference stories (src/stories/pages): they fill any window without a page
 // scroll, turn into tabs below the minimum window, and work from the keyboard end to end.
@@ -29,12 +30,8 @@ const open = async (page: Page, id: string, width = 1280, height = 720, density 
   await page.setViewportSize({ width, height });
   await page.goto(`/iframe.html?id=${id}&viewMode=story&globals=density:${density}`);
   await page.locator('#storybook-root > *').first().waitFor();
-  await page.evaluate(async () => {
-    await Promise.all(
-      [...document.fonts].filter((f) => f.unicodeRange.startsWith('U+0-FF')).map((f) => f.load()),
-    );
-    await document.fonts.ready;
-  });
+  // No font face is loaded ahead of time: one that first loads when a menu opens must disturb nothing.
+  await page.evaluate(() => document.fonts.ready);
 };
 
 /** How far the document scrolls, and the cards and bars that reach outside the window. */
@@ -220,6 +217,57 @@ test.describe('Overview', () => {
 
     await page.setViewportSize({ width: 1920, height: 1080 });
     await expect(collapsed).toHaveCount(0);
+  });
+
+  test('the cards of the stack change state once as the height changes, the same from either side', async ({
+    page,
+    browser,
+  }) => {
+    // The highest-priority card used to flip open and closed on every pixel between 600 and 628 here:
+    // its floor was measured from the open header while it was open, and from the collapsed one after.
+    test.slow();
+    const states = (target: Page) =>
+      target.evaluate(() =>
+        [...document.querySelectorAll('[data-umbra="stack"]')]
+          .map((stack) =>
+            [...stack.querySelectorAll(':scope > [data-umbra="card"]')]
+              .map((el) => ((el as HTMLElement).dataset.collapsed ? 'c' : 'o'))
+              .join(''),
+          )
+          .join('|'),
+      );
+    const at = async (height: number) => {
+      await page.setViewportSize({ width: 1024, height });
+      await settle(page);
+      return states(page);
+    };
+    await openStory(page, overview.id, { width: 1024, height: 700, density: 'spacious' });
+    const heights = Array.from({ length: 101 }, (_, i) => 700 - i);
+    const down = new Map<number, string>();
+    for (const height of heights) down.set(height, await at(height));
+    const up = new Map<number, string>();
+    for (const height of [...heights].reverse()) up.set(height, await at(height));
+
+    // The same state at every height, whichever way it was reached.
+    expect(Object.fromEntries(up)).toEqual(Object.fromEntries(down));
+    // Each card changes state at most once over the sweep.
+    const cards = down.get(700)!.length;
+    for (let i = 0; i < cards; i++) {
+      const sequence = heights.map((height) => down.get(height)![i]);
+      const changes = sequence.filter((state, n) => n > 0 && state !== sequence[n - 1]).length;
+      expect(changes, `card ${i}: ${sequence.join('')}`).toBeLessThanOrEqual(1);
+    }
+    // The column is never left with headers only (the old state at 600, 606, 613 and 620).
+    expect([...down.values()].every((state) => state.includes('o'))).toBe(true);
+    // A fresh load at a height gives the state the resize gave.
+    for (const height of [600, 606, 613, 620, 628, 650, 700]) {
+      const fresh = await browser.newPage();
+      await openStory(fresh, overview.id, { width: 1024, height, density: 'spacious' });
+      await fresh.evaluate(() => document.fonts.ready);
+      await settle(fresh);
+      expect(await states(fresh), `fresh load at ${height}`).toBe(down.get(height));
+      await fresh.close();
+    }
   });
 
   test('the inbox filters, and selecting a message marks it read', async ({ page }) => {

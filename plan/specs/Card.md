@@ -92,8 +92,8 @@ States: `collapsed`, `loading`, `empty`, `error`, `focus-within`.
 - The popover closes by itself when the layout opens the card again, or when the window enters or leaves tab mode.
 - A card starts a new layout context: a `Slot`, `Stack` or `Columns` inside it belongs to the card, not to the layout around it.
 - The popover of a layout-collapsed card shows the card's `actions` above its content, because the collapsed header is a single button.
-- The card's content exists once. While the popover is open the `toolbar`, `body` and `footer` blocks are rendered into it (a portal) instead of the card; nothing is rendered twice, so ids are not repeated. The body is not mounted while the card is collapsed and the popover closed, as for a card collapsed with its caret.
-- Collapsing with the caret is not size-animated yet: the caret rotates (180ms) and the layout changes at once.
+- The card's content exists once. While the popover is open the `toolbar`, `body` and `footer` blocks are rendered into it (a portal) instead of the card; nothing is rendered twice, so ids are not repeated. While the card is collapsed by the layout and the popover is closed, the blocks stay mounted, hidden and inert, so text typed in them, scroll positions and state survive a resize. Opening the popover moves the same elements into it and closing moves them back; nothing is rendered again. (Limit: a block added or removed by the app while the popover is open is placed when it closes.) A card collapsed with its caret does not render its body.
+- The popover of a layout-collapsed card is named by the card: its title when that is text, else its `aria-label`, else `expandLabel`.
 
 ### The size animation
 

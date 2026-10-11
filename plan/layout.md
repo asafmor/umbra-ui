@@ -48,7 +48,7 @@ Applied in this order, innermost first:
 |---|---|
 | 1. Component | Each component owns its compact modes. `DataTable` drops columns by `priority`; text truncates with an ellipsis; a `Card` hides secondary header parts. |
 | 2. Card body | If content is still taller than the card, the card body scrolls inside (thin thumb, no track). |
-| 3. Stack | If the cards in a `Stack` cannot all keep their minimum height, the lowest-`priority` cards collapse to their header. Clicking a collapsed header opens the card's content in an anchored `Popover`. The highest-priority card is the last to go, and it stays open when it cannot keep its minimum even with every other card collapsed: it takes the space that is left and scrolls inside (decided 2026-10-11), so a column is not left with headers only. It collapses too only when that space is less than one and a half times its header, which is no room for content. |
+| 3. Stack | If the cards in a `Stack` cannot all keep their minimum height, the lowest-`priority` cards collapse to their header. Clicking a collapsed header opens the card's content in an anchored `Popover`. The highest-priority card is the last to go, and it stays open when it cannot keep its minimum even with every other card collapsed: it takes the space that is left and scrolls inside (decided 2026-10-11), so a column is not left with headers only. It collapses too only when that space is less than one and a half times its **collapsed** header (the height the card would have once collapsed: title row and equal padding, without subtitle or actions), which is no room for content. The same measure is used whether the card is open or collapsed at that moment, so the result is a function of the stack's height and its cards alone: resizing never flips a card back and forth, and a fresh load at a size gives what a resize to that size gives (decided 2026-10-11). |
 | 4. Columns | Below the minimum window size, `Columns` shows one child at a time, with tabs to switch. |
 
 - **`priority`** is a prop on any child of `Stack` or `Columns`, and on table columns. Higher stays longer. The default follows source order (first = highest).
@@ -64,6 +64,8 @@ Applied in this order, innermost first:
 - `Columns` and `Stack` are CSS flex containers; `size` maps to `flex-grow` with a zero basis.
 - Every slot has a definite width and height, so slots can be CSS size containers (`container-type: size`) and components can use container queries on both width and height. Level 1 needs no JavaScript in most cases.
 - Level 3 needs measurement (a `ResizeObserver` in `Stack`), because it compares the available height with the sum of the children's minimum heights.
+- A card the layout has collapsed keeps its content mounted: hidden and inert in the card, and moved (the same elements) into the popover while that is open. Text typed in it, scroll positions and component state survive a resize (decided 2026-10-11).
+- Level 1 rules that need measuring use one hook (`src/internal/useShrinkLevel.ts`). What a row shows is a function of its width alone: growing restarts from everything visible, shrinking only adds steps, rows restart together so they give way in their fixed order, and a restart waits while a menu opened from the row is showing.
 
 - The fallback of rule 5 is plain CSS: the root's `height: 100%` computes to `auto` in a parent without a height, and the part that scrolls or draws has a content size (`flex-basis: auto`, or `contain-intrinsic-block-size` for a chart's plot) that only counts then.
 
