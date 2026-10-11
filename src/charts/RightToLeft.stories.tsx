@@ -2,8 +2,10 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { months, plan, actual, quarters, regions, Tile, Tiles } from '../stories/charts';
 import { BarChart } from './BarChart';
 import { DonutChart } from './DonutChart';
+import { Heatmap } from './Heatmap';
 import { LineChart } from './LineChart';
 import { RadarChart } from './RadarChart';
+import { Scatter } from './Scatter';
 
 const meta: Meta = {
   title: 'Charts/Right to left',
@@ -68,6 +70,47 @@ export const AllCharts: Story = {
           axes={axes}
           series={[{ id: 'site', label: 'Site 1', values: [14, 13, 11, 11, 13, 14] }]}
           max={20}
+          labels
+        />
+      </Tile>
+    </Tiles>
+  ),
+};
+
+/**
+ * The tier 2 charts follow the same rule: the heatmap's columns and the scatter's x axis still run to
+ * the right, and the legends and cards around them mirror.
+ */
+export const HeatmapAndScatter: Story = {
+  render: () => (
+    <Tiles columns={2}>
+      <Tile title="Heatmap" id="heatmap">
+        <Heatmap
+          aria-label="Orders by region and quarter"
+          rows={[...regions.slice(0, 3), 'אזור 4']}
+          columns={quarters}
+          values={[
+            [12, 18, 25, 31],
+            [8, 14, 11, 20],
+            [22, 27, 35, 40],
+            [5, 9, 16, 12],
+          ]}
+          xTitle="Quarter"
+        />
+      </Tile>
+      <Tile title="Scatter" id="scatter">
+        <Scatter
+          aria-label="Cost against time"
+          series={[
+            {
+              id: 'a',
+              label: 'Group A',
+              data: [10, 25, 40, 55].map((x, i) => ({ x, y: 12 + i * 9, label: `Run ${i + 1}` })),
+            },
+            { id: 'b', label: 'Group B', data: [15, 35, 60].map((x, i) => ({ x, y: 40 - i * 11 })) },
+          ]}
+          xTitle="Time"
+          yTitle="Cost"
           labels
         />
       </Tile>

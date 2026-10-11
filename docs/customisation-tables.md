@@ -369,6 +369,7 @@ Compares values across categories: grouped, stacked or diverging around zero, up
 | `--umbra-chart-grid-dash` | `1 4` |
 | `--umbra-chart-grid-width` | `--umbra-border-width` (1px) |
 | `--umbra-chart-info` | `--umbra-color-semantic-info` (#3d9be8) |
+| `--umbra-chart-label-halo` | `--umbra-color-base-surface1` (#0b0612) |
 | `--umbra-chart-line-width` | `2px` |
 | `--umbra-chart-negative` | `--umbra-color-semantic-danger` (#f0455a) |
 | `--umbra-chart-outline-width` | `1.5px` |
@@ -387,6 +388,11 @@ Compares values across categories: grouped, stacked or diverging around zero, up
 | `--umbra-chart-value-fg` | `--umbra-color-base-text-primary` (#f5f3f8) |
 | `--umbra-chart-warning` | `--umbra-color-semantic-warning` (#f2b23a) |
 | `--umbra-focus-color` | `--umbra-color-fixed-focus-ring` (#ffb3f5) |
+| `--umbra-heatmap-backdrop-opacity` | `0.8` |
+| `--umbra-heatmap-cell-border` | `--umbra-color-base-border-control` (#7a6e91) |
+| `--umbra-heatmap-cell-border-width` | `--umbra-border-width` (1px) |
+| `--umbra-heatmap-cell-radius` | `2px` |
+| `--umbra-scatter-bubble-opacity` | `0.55` |
 | `--umbra-series-marker-size` | `0.875rem` |
 
 | Prop | Type | Purpose |
@@ -899,6 +905,7 @@ A ring that shows one value against a total, or how a total splits into segments
 | `--umbra-chart-grid-dash` | `1 4` |
 | `--umbra-chart-grid-width` | `--umbra-border-width` (1px) |
 | `--umbra-chart-info` | `--umbra-color-semantic-info` (#3d9be8) |
+| `--umbra-chart-label-halo` | `--umbra-color-base-surface1` (#0b0612) |
 | `--umbra-chart-line-width` | `2px` |
 | `--umbra-chart-negative` | `--umbra-color-semantic-danger` (#f0455a) |
 | `--umbra-chart-outline-width` | `1.5px` |
@@ -917,6 +924,11 @@ A ring that shows one value against a total, or how a total splits into segments
 | `--umbra-chart-value-fg` | `--umbra-color-base-text-primary` (#f5f3f8) |
 | `--umbra-chart-warning` | `--umbra-color-semantic-warning` (#f2b23a) |
 | `--umbra-focus-color` | `--umbra-color-fixed-focus-ring` (#ffb3f5) |
+| `--umbra-heatmap-backdrop-opacity` | `0.8` |
+| `--umbra-heatmap-cell-border` | `--umbra-color-base-border-control` (#7a6e91) |
+| `--umbra-heatmap-cell-border-width` | `--umbra-border-width` (1px) |
+| `--umbra-heatmap-cell-radius` | `2px` |
+| `--umbra-scatter-bubble-opacity` | `0.55` |
 | `--umbra-series-marker-size` | `0.875rem` |
 
 | Prop | Type | Purpose |
@@ -1413,6 +1425,7 @@ One or more series over categories, numbers or time, with a numeric or an ordina
 | `--umbra-chart-grid` | `--umbra-color-base-border-control` (#7a6e91) |
 | `--umbra-chart-grid-dash` | `1 4` |
 | `--umbra-chart-grid-width` | `--umbra-border-width` (1px) |
+| `--umbra-chart-label-halo` | `--umbra-color-base-surface1` (#0b0612) |
 | `--umbra-chart-line-width` | `2px` |
 | `--umbra-chart-outline-width` | `1.5px` |
 | `--umbra-chart-point-scale` | `1` |
@@ -1427,6 +1440,11 @@ One or more series over categories, numbers or time, with a numeric or an ordina
 | `--umbra-chart-track-border-width` | `--umbra-border-width` (1px) |
 | `--umbra-chart-value-fg` | `--umbra-color-base-text-primary` (#f5f3f8) |
 | `--umbra-focus-color` | `--umbra-color-fixed-focus-ring` (#ffb3f5) |
+| `--umbra-heatmap-backdrop-opacity` | `0.8` |
+| `--umbra-heatmap-cell-border` | `--umbra-color-base-border-control` (#7a6e91) |
+| `--umbra-heatmap-cell-border-width` | `--umbra-border-width` (1px) |
+| `--umbra-heatmap-cell-radius` | `2px` |
+| `--umbra-scatter-bubble-opacity` | `0.55` |
 | `--umbra-series-marker-size` | `0.875rem` |
 
 | Prop | Type | Purpose |
@@ -2001,6 +2019,7 @@ Compares one or more series across several axes that share a centre.
 | `--umbra-chart-grid` | `--umbra-color-base-border-control` (#7a6e91) |
 | `--umbra-chart-grid-dash` | `1 4` |
 | `--umbra-chart-grid-width` | `--umbra-border-width` (1px) |
+| `--umbra-chart-label-halo` | `--umbra-color-base-surface1` (#0b0612) |
 | `--umbra-chart-line-width` | `2px` |
 | `--umbra-chart-outline-width` | `1.5px` |
 | `--umbra-chart-point-scale` | `1` |
@@ -2015,6 +2034,11 @@ Compares one or more series across several axes that share a centre.
 | `--umbra-chart-track-border-width` | `--umbra-border-width` (1px) |
 | `--umbra-chart-value-fg` | `--umbra-color-base-text-primary` (#f5f3f8) |
 | `--umbra-focus-color` | `--umbra-color-fixed-focus-ring` (#ffb3f5) |
+| `--umbra-heatmap-backdrop-opacity` | `0.8` |
+| `--umbra-heatmap-cell-border` | `--umbra-color-base-border-control` (#7a6e91) |
+| `--umbra-heatmap-cell-border-width` | `--umbra-border-width` (1px) |
+| `--umbra-heatmap-cell-radius` | `2px` |
+| `--umbra-scatter-bubble-opacity` | `0.55` |
 | `--umbra-series-marker-size` | `0.875rem` |
 
 | Prop | Type | Purpose |
