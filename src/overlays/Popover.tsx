@@ -32,7 +32,7 @@ import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './Popover.module.css';
 import {
   toAriaPlacement,
-  useFlipWhenCut,
+  usePopoverRef,
   useOpenState,
   useOverlayLayer,
   type OverlayPlacement,
@@ -141,7 +141,7 @@ function Content({
   const anchor = anchorRef ?? fromTrigger?.triggerRef;
   const panel = useRef<HTMLElement>(null);
   const cap = maxHeight ?? (size === 'large' ? undefined : 480);
-  const flipWhenCut = useFlipWhenCut(cap);
+  const flipWhenCut = usePopoverRef(cap, anchor);
   const setPanel = useCallback(
     (element: HTMLElement | null) => {
       panel.current = element;

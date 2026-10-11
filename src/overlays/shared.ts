@@ -1,5 +1,6 @@
 // What Popover, Tooltip and Menu share: the placement type and the open state.
 import { useCallback, useContext, useEffect, useState, type RefObject } from 'react';
+import { PopoverContext, useSlottedContext } from 'react-aria-components';
 import { OverlayContainerContext } from '../internal/contexts';
 
 export type OverlaySide = 'top' | 'bottom' | 'start' | 'end';
@@ -135,4 +136,53 @@ export function useOverlayLayer(layer: 'popover' | 'tooltip' | 'spotlight'): {
     // its own dialog; a tooltip and a spotlight have none.
     'data-react-aria-top-layer': layer === 'popover' ? undefined : 'true',
   };
+}
+
+/**
+ * Writes on `overlay` the `--umbra-*` properties that reach `from` and not the overlay. An overlay is
+ * rendered in a portal, outside the element it was opened from, so a token the app set on an ancestor of
+ * that element (in a stylesheet or a `style`) would not reach it: `--umbra-menu-bg` on a toolbar would
+ * colour nothing. What a scope sets (`UmbraScope`, a `TopBar`) the overlay has already, and is not written.
+ *
+ * Read once, when the overlay opens.
+ * ponytail: a token that changes while the overlay is open is not followed; observe the anchor's
+ * ancestors if an app needs that.
+ */
+export function carryTokens(from: Element, overlay: HTMLElement) {
+  const there = getComputedStyle(from);
+  const here = getComputedStyle(overlay);
+  const names = new Set<string>();
+  // Browsers list custom properties in one of the two: Chromium in the style map, Firefox in the declaration.
+  const map = (
+    from as Element & { computedStyleMap?: (() => Iterable<[string, unknown]>) | undefined }
+  ).computedStyleMap?.();
+  if (map) for (const [name] of map) names.add(name);
+  for (let i = 0; i < there.length; i++) names.add(there.item(i));
+  const carried: [string, string][] = [];
+  for (const name of names) {
+    // `--umbra-slot-min-height` is a layout child's own (plan/decisions/07-customisation.md).
+    if (!name.startsWith('--umbra-') || name === '--umbra-slot-min-height') continue;
+    const value = there.getPropertyValue(name);
+    if (value !== here.getPropertyValue(name)) carried.push([name, value]);
+  }
+  for (const [name, value] of carried) overlay.style.setProperty(name, value);
+}
+
+/**
+ * The ref of every popover of the library (`Popover`, `Menu`, the list of a `Select`, the suggestions
+ * of a `SearchField`): it flips when its content is cut (`useFlipWhenCut`), and it takes the tokens of
+ * the place it was opened from (`carryTokens`). `anchor` is what it is anchored to, when that is not
+ * the trigger React Aria knows.
+ */
+export function usePopoverRef(maxHeight?: number, anchor?: RefObject<Element | null>) {
+  const flipWhenCut = useFlipWhenCut(maxHeight);
+  const trigger = useSlottedContext(PopoverContext)?.triggerRef;
+  const from = anchor ?? trigger;
+  return useCallback(
+    (element: HTMLElement | null) => {
+      if (element && from?.current) carryTokens(from.current, element);
+      return flipWhenCut(element);
+    },
+    [flipWhenCut, from],
+  );
 }

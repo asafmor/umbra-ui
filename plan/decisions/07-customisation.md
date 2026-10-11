@@ -98,3 +98,13 @@ Every component that colours by value takes the same `thresholds`: `ValuePill`, 
 
 **Rejected**: a `level: 1..5` member beside `tone` (two ways to say a colour); a required `to` (gaps are an entry with no tone); patterns chosen per colour (a free colour would have none).
 
+
+## Tokens and portals (added 2026-10-11, fix pass of review 2, SL-11)
+
+An overlay is rendered in a portal, outside the element it was opened from. What a scope sets (`UmbraProvider`, `UmbraScope`, a `TopBar` with a `brand`) has always reached it: every overlay repeats the scope's attributes. A token set in a stylesheet or a `style` on a plain ancestor did not: `--umbra-menu-bg` on a toolbar coloured no menu, `--umbra-entity-switcher-picker-width` on a header sized no picker.
+
+- **Decided: the overlay takes the tokens of the place it was opened from.** When a popover opens, every `--umbra-*` property whose value at its anchor differs from the value the overlay has is written on the overlay (`carryTokens`, `src/overlays/shared.ts`). One hook, `usePopoverRef`, does it for every popover of the library: `Popover` (and with it the picker of an `EntitySwitcher` and the popover of a collapsed card), `Menu`, the list of a `Select`, the suggestions of a `SearchField`.
+- **Rejected: rendering the overlay inside the nearest scope element.** It only helps for tokens set on a scope, which already arrive, and an overlay inside a card or a bar is clipped by it and positioned against it (a size container is the containing block of what is fixed inside it).
+- Only what differs is written, so an overlay opened from a place with no token of its own carries nothing. `--umbra-slot-min-height` is left out: it belongs to each layout child.
+- Limits: the tokens are read once, when the overlay opens; a tooltip takes the scope's tokens only. Chromium lists custom properties in `computedStyleMap()` and Firefox in `getComputedStyle()`: both are read (`scripts/check-browsers.mjs` holds the note).
+- Test: `tests/visual/shell-layout-tier2.spec.ts`, "SL-11", for the four.

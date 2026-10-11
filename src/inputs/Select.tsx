@@ -37,7 +37,7 @@ import { CheckMark } from '../overlays/Menu';
 import menuStyles from '../overlays/Menu.module.css';
 import {
   toAriaPlacement,
-  useFlipWhenCut,
+  usePopoverRef,
   useOpenState,
   useOverlayLayer,
   type OverlayPlacement,
@@ -578,7 +578,7 @@ function Popover({
   const select = useSelect();
   const scope = useScopeAttributes();
   const layer = useOverlayLayer('popover');
-  const flipWhenCut = useFlipWhenCut(maxHeight);
+  const flipWhenCut = usePopoverRef(maxHeight);
   const searching = searchable && select.search.trim() !== '';
   const matches = (option: SelectOption | undefined, text: string) =>
     !option || !text.trim() || filter(option, text);

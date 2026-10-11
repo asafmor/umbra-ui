@@ -34,7 +34,7 @@ import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './Menu.module.css';
 import {
   toAriaPlacement,
-  useFlipWhenCut,
+  usePopoverRef,
   useOpenState,
   useOverlayLayer,
   type OverlayPlacement,
@@ -356,7 +356,7 @@ function Surface({
 }: Omit<PanelProps, 'entries' | 'shared' | 'aria-label'> & { children: ReactNode }) {
   const scope = useScopeAttributes();
   const layer = useOverlayLayer('popover');
-  const flipWhenCut = useFlipWhenCut(maxHeight);
+  const flipWhenCut = usePopoverRef(maxHeight, anchorRef);
   const root = useRootMenuState(!!open, onOpenChange);
   const popover = (
     <AriaPopover
