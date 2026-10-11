@@ -10,7 +10,7 @@ const toneColours: Record<Tone, string> = {
   success: 'var(--umbra-color-semantic-success)',
   warning: 'var(--umbra-color-semantic-warning)',
   danger: 'var(--umbra-color-semantic-danger)',
-  accent: 'var(--umbra-color-fixed-selected)',
+  accent: 'var(--umbra-color-interaction)',
 };
 
 /** A tone name becomes its token; anything else is taken as a CSS colour. */

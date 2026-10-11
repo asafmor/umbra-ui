@@ -225,8 +225,8 @@ export const Customised: Story = {
             {
               ...row,
               '--umbra-avatar-size': '56px',
-              '--umbra-avatar-bg': 'var(--umbra-color-fixed-selected)',
-              '--umbra-avatar-fg': 'var(--umbra-color-fixed-on-selected)',
+              '--umbra-avatar-bg': 'var(--umbra-color-interaction)',
+              '--umbra-avatar-fg': 'var(--umbra-color-on-interaction)',
               '--umbra-avatar-radius': '16px',
             } as React.CSSProperties
           }

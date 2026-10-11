@@ -49,7 +49,7 @@
 }
 
 .fill {
-  fill: var(--paint, var(--umbra-pie-indicator-fill, var(--umbra-color-fixed-accent-text)));
+  fill: var(--paint, var(--umbra-pie-indicator-fill, var(--umbra-color-interaction-text)));
 }
 
 /* The gaps between the wedges, in units of the disc's radius. */

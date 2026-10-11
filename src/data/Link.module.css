@@ -1,5 +1,5 @@
 .link {
-  --ink: var(--umbra-link-color, var(--umbra-color-fixed-accent-text));
+  --ink: var(--umbra-link-color, var(--umbra-color-interaction-text));
 
   padding: 0;
   border: 0;

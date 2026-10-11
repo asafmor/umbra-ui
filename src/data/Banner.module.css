@@ -46,7 +46,7 @@
 }
 
 .root[data-tone='accent'] {
-  --tone: var(--umbra-banner-accent-color, var(--umbra-color-fixed-accent-text));
+  --tone: var(--umbra-banner-accent-color, var(--umbra-color-interaction-text));
 }
 
 /*
@@ -69,8 +69,8 @@
 }
 
 .root[data-variant='solid'][data-tone='accent'] {
-  --bg: var(--umbra-banner-bg, var(--umbra-color-fixed-selected));
-  --fg: var(--umbra-banner-solid-fg, var(--umbra-color-fixed-on-selected));
+  --bg: var(--umbra-banner-bg, var(--umbra-color-interaction));
+  --fg: var(--umbra-banner-solid-fg, var(--umbra-color-on-interaction));
 }
 
 .root[data-variant='outline'] {

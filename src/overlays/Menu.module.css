@@ -108,7 +108,7 @@
 /* The menu clips, so the keyboard ring is drawn inside the row. */
 .item[data-focus-visible] {
   outline: var(--umbra-state-focus-ring-width) solid
-    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-fixed-focus-ring)));
+    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-focus-ring)));
   outline-offset: calc(-1 * var(--umbra-state-focus-ring-width));
 }
 
@@ -126,8 +126,8 @@
 
 /* The current page: the selected colour, with an edge stripe and weight so it is not colour alone. */
 .item[data-current] {
-  background: var(--umbra-color-fixed-selected);
-  color: var(--umbra-color-fixed-on-selected);
+  background: var(--umbra-color-interaction);
+  color: var(--umbra-color-on-interaction);
   box-shadow: inset calc(var(--umbra-dir, 1) * var(--umbra-space-1)) 0 0 currentColor;
   font-weight: 700;
 }
@@ -165,7 +165,7 @@
   display: inline-flex;
   width: 1em;
   height: 1em;
-  color: var(--umbra-color-fixed-accent-text);
+  color: var(--umbra-color-interaction-text);
 }
 
 .check > svg {

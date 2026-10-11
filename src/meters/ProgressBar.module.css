@@ -90,7 +90,7 @@
  * depend on colour, for threshold bands and for the parts of a stacked bar.
  */
 .fill {
-  --paint: var(--umbra-progress-bar-fill, var(--umbra-color-fixed-primary));
+  --paint: var(--umbra-progress-bar-fill, var(--umbra-color-action));
   /* Dark enough for 3:1 against every tone it is drawn on: it is the cue that is not colour. */
   --ink: var(
     --umbra-progress-bar-hatch,
@@ -108,8 +108,8 @@
 .root[data-variant='plain'] .fill[data-tone='default'] {
   --paint: linear-gradient(
     var(--toward-end),
-    var(--umbra-progress-bar-fill, var(--umbra-color-fixed-primary)),
-    var(--umbra-progress-bar-fill-end, var(--umbra-progress-bar-fill, var(--umbra-color-fixed-accent-text)))
+    var(--umbra-progress-bar-fill, var(--umbra-color-action)),
+    var(--umbra-progress-bar-fill-end, var(--umbra-progress-bar-fill, var(--umbra-color-interaction-text)))
   );
 }
 
@@ -145,7 +145,7 @@
 }
 
 .fill[data-tone='accent'] {
-  --paint: var(--umbra-color-fixed-selected);
+  --paint: var(--umbra-color-interaction);
 }
 
 .fill[data-tone='ramp-1'] {

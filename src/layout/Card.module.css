@@ -155,7 +155,7 @@
 }
 
 .titleLink {
-  color: var(--umbra-color-fixed-accent-text);
+  color: var(--umbra-color-interaction-text);
   text-decoration: underline;
   text-underline-offset: 3px;
 }
@@ -173,7 +173,7 @@
 
 .headerButton:focus-visible::after {
   outline: var(--umbra-state-focus-ring-width) solid
-    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-fixed-focus-ring)));
+    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-focus-ring)));
   outline-offset: calc(-1 * var(--umbra-state-focus-ring-width));
   border-radius: var(--umbra-card-radius, var(--umbra-radius-card));
 }

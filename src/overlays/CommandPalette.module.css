@@ -87,7 +87,7 @@
 
 .search:has(.input:focus-visible) {
   box-shadow: inset 0 calc(-1 * var(--umbra-state-focus-ring-width)) 0
-    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-fixed-focus-ring)));
+    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-focus-ring)));
 }
 
 /* A page the user is in. Pressing it goes back to before that page. */
@@ -157,8 +157,8 @@
  * Focus itself stays in the input.
  */
 .item[data-active] {
-  background: var(--umbra-command-palette-active-bg, var(--umbra-color-fixed-selected));
-  color: var(--umbra-command-palette-active-fg, var(--umbra-color-fixed-on-selected));
+  background: var(--umbra-command-palette-active-bg, var(--umbra-color-interaction));
+  color: var(--umbra-command-palette-active-fg, var(--umbra-color-on-interaction));
   box-shadow: inset calc(var(--umbra-dir, 1) * var(--umbra-space-1)) 0 0 currentColor;
 }
 

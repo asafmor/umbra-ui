@@ -2,7 +2,7 @@
   --height: var(--umbra-toggle-height, calc(var(--umbra-density-control-height) / 2 + 4px));
   --width: var(--umbra-toggle-width, calc(var(--height) * 1.8));
   --inset: var(--umbra-toggle-thumb-inset, 2px);
-  --fill: var(--umbra-toggle-selected-bg, var(--umbra-color-fixed-selected));
+  --fill: var(--umbra-toggle-selected-bg, var(--umbra-color-interaction));
   --thumb: calc(var(--height) - 2 * var(--inset) - 2 * var(--umbra-border-width));
 
   display: inline-grid;
@@ -73,7 +73,7 @@
 
 .root[data-selected] .thumb {
   inset-inline-start: calc(100% - var(--thumb) - var(--inset));
-  background: var(--umbra-toggle-selected-thumb-bg, var(--umbra-color-fixed-on-selected));
+  background: var(--umbra-toggle-selected-thumb-bg, var(--umbra-color-on-interaction));
 }
 
 .root[data-selected] .thumb > :is(svg, img) {
@@ -101,7 +101,7 @@
 
 .root[data-focus-visible] > .track {
   outline: var(--umbra-state-focus-ring-width) solid
-    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-fixed-focus-ring)));
+    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-focus-ring)));
   outline-offset: var(--umbra-focus-offset, var(--focus-offset, 2px));
 }
 

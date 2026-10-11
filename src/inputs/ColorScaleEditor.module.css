@@ -153,7 +153,7 @@
 
 .handle[data-focus-visible] {
   outline: var(--umbra-state-focus-ring-width) solid
-    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-fixed-focus-ring)));
+    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-focus-ring)));
   outline-offset: var(--umbra-focus-offset, var(--focus-offset, 2px));
   z-index: 1;
 }
@@ -217,7 +217,7 @@
 
 .color:focus-visible {
   outline: var(--umbra-state-focus-ring-width) solid
-    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-fixed-focus-ring)));
+    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-focus-ring)));
   outline-offset: var(--umbra-focus-offset, var(--focus-offset, 2px));
 }
 

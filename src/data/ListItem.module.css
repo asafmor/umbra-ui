@@ -28,7 +28,7 @@
   width: var(--selected-stripe);
   background: var(
     --umbra-list-item-selected-stripe,
-    color-mix(in oklab, var(--umbra-color-fixed-selected), #fff 35%)
+    color-mix(in oklab, var(--umbra-color-interaction), #fff 35%)
   );
 }
 
@@ -59,7 +59,7 @@
   --selected-stripe: var(--umbra-list-item-stripe-width, 3px);
   --selected-bg: var(
     --umbra-list-item-selected-bg,
-    color-mix(in oklab, var(--umbra-color-fixed-selected) 28%, transparent)
+    color-mix(in oklab, var(--umbra-color-interaction) 28%, transparent)
   );
   background: var(--selected-bg);
 }
@@ -301,7 +301,7 @@
 
 .link:focus-visible::after {
   outline: var(--umbra-state-focus-ring-width) solid
-    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-fixed-focus-ring)));
+    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-focus-ring)));
   outline-offset: calc(-1 * var(--umbra-state-focus-ring-width));
 }
 

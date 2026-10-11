@@ -208,7 +208,7 @@ export const Customised: Story = {
           label="Budget"
           value="€64.0M"
           parts={{
-            label: (p) => <KeyValue.Label {...p} style={{ color: 'var(--umbra-color-fixed-accent-text)' }} />,
+            label: (p) => <KeyValue.Label {...p} style={{ color: 'var(--umbra-color-interaction-text)' }} />,
           }}
         />
       </Section>

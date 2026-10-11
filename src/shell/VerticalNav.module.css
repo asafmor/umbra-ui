@@ -109,8 +109,8 @@
 
 /* The current item: the fixed violet, with an edge stripe and weight so it does not depend on colour alone. */
 .link[aria-current] {
-  background: var(--umbra-vertical-nav-current-bg, var(--umbra-color-fixed-selected));
-  color: var(--umbra-vertical-nav-current-fg, var(--umbra-color-fixed-on-selected));
+  background: var(--umbra-vertical-nav-current-bg, var(--umbra-color-interaction));
+  color: var(--umbra-vertical-nav-current-fg, var(--umbra-color-on-interaction));
   box-shadow: inset calc(var(--umbra-dir, 1) * var(--umbra-vertical-nav-stripe-width, 3px)) 0 0 currentColor;
   font-weight: 700;
 }
@@ -118,10 +118,10 @@
 .link[aria-current]:not([aria-disabled]):hover {
   background: color-mix(
     in oklab,
-    var(--umbra-vertical-nav-current-bg, var(--umbra-color-fixed-selected)),
+    var(--umbra-vertical-nav-current-bg, var(--umbra-color-interaction)),
     #000 var(--umbra-state-hover-darken)
   );
-  color: var(--umbra-vertical-nav-current-fg, var(--umbra-color-fixed-on-selected));
+  color: var(--umbra-vertical-nav-current-fg, var(--umbra-color-on-interaction));
 }
 
 /* A closed group that holds the current item carries the stripe, so the place is not lost. */

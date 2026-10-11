@@ -34,7 +34,7 @@
 }
 
 .root[data-variant='link'] {
-  color: var(--umbra-section-link-color, var(--umbra-color-fixed-accent-text));
+  color: var(--umbra-section-link-color, var(--umbra-color-interaction-text));
 }
 
 .root[data-variant='link'] > .title {

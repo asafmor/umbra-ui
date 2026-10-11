@@ -228,7 +228,7 @@ export const Customised: Story = {
               '--umbra-summary-tile-border': 'var(--umbra-color-base-border-control)',
               '--umbra-summary-tile-radius': '0',
               '--umbra-summary-tile-icon-size': '32px',
-              '--umbra-summary-tile-icon-bg': 'var(--umbra-color-fixed-selected)',
+              '--umbra-summary-tile-icon-bg': 'var(--umbra-color-interaction)',
             } as React.CSSProperties
           }
         >

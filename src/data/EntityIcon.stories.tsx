@@ -119,7 +119,7 @@ export const Customised: Story = {
           label
           parts={{
             label: (p) => (
-              <EntityIcon.Label style={{ color: 'var(--umbra-color-fixed-accent-text)' }}>
+              <EntityIcon.Label style={{ color: 'var(--umbra-color-interaction-text)' }}>
                 {p.children}
               </EntityIcon.Label>
             ),

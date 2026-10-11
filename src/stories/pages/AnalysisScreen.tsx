@@ -147,7 +147,7 @@ export function AnalysisScreen() {
     ...scale
       .slice(1)
       .map((band): ChartAnnotation => ({ type: 'line', value: band.from, label: band.label ?? '' })),
-    { type: 'line', value: target, label: 'Target', color: 'var(--umbra-color-fixed-accent-text)' },
+    { type: 'line', value: target, label: 'Target', color: 'var(--umbra-color-interaction-text)' },
   ];
 
   const columns = useMemo<DataTableColumn<Site>[]>(

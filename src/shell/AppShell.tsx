@@ -44,12 +44,13 @@ function Root({
 }: AppShellRootProps) {
   const narrow = useNarrow();
   const [pageContext, setPageContext] = useState<ContextTint>();
-  const scope = useScope({ context: pageContext });
+  const provided = useScope({ context: pageContext });
+  const scope = provided.attributes;
   const mainId = useId();
   const shell = useMemo(() => ({ mainId, setPageContext }), [mainId]);
   return (
     <ShellContext value={shell}>
-      <ScopeProvider value={scope}>
+      <ScopeProvider scope={provided}>
         <div
           {...passThrough(rest)}
           {...scope}

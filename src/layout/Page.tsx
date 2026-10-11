@@ -20,14 +20,15 @@ export interface PageRootProps extends BlockProps, RootAttributes {
 }
 
 function Root({ context, padding = 'default', className, style, children, ...rest }: PageRootProps) {
-  const scope = useScope({ context });
+  const provided = useScope({ context });
+  const scope = provided.attributes;
   const setPageContext = useShell()?.setPageContext;
   useLayoutEffect(() => {
     setPageContext?.(context);
     return () => setPageContext?.(undefined);
   }, [setPageContext, context]);
   return (
-    <ScopeProvider value={scope}>
+    <ScopeProvider scope={provided}>
       <div
         {...passThrough(rest)}
         {...scope}

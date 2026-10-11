@@ -54,7 +54,8 @@ export interface TopBarRootProps extends BlockProps, RootAttributes {
 }
 
 function Root({ brand, moreLabel = 'More actions', className, style, children, ...rest }: TopBarRootProps) {
-  const scope = useScope({ brand });
+  const provided = useScope({ brand }, undefined, true);
+  const scope = provided.attributes;
   const nav = useRef<HTMLDivElement>(null);
   // Whether the nav has moved all it can. A ref, because the nav reports in its
   // layout effect and the bar reads it in its own, later in the same pass; the state forces that pass.
@@ -90,7 +91,7 @@ function Root({ brand, moreLabel = 'More actions', className, style, children, .
   const hold = useMemo(() => ({ hold: level < 3, report }), [level, report]);
   const bar = useMemo(() => ({ level, moreLabel }), [level, moreLabel]);
   return (
-    <ScopeProvider value={scope}>
+    <ScopeProvider scope={provided}>
       <TopBarContext value={bar}>
         <NavRefContext value={nav}>
           <NavHoldContext value={hold}>

@@ -68,8 +68,8 @@
 }
 
 .pill[data-tone='accent'] {
-  --fill: var(--umbra-color-fixed-selected);
-  --ink: var(--umbra-color-fixed-on-selected);
+  --fill: var(--umbra-color-interaction);
+  --ink: var(--umbra-color-on-interaction);
 }
 
 /* A free colour sets both inline; one the library cannot read (not hex or rgb) gets light text. */

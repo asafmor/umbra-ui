@@ -41,7 +41,7 @@
   border-radius: 0;
   background: var(
     --umbra-week-strip-today-bg,
-    color-mix(in oklab, var(--umbra-color-fixed-primary) 14%, transparent)
+    color-mix(in oklab, var(--umbra-color-action) 14%, transparent)
   );
 }
 

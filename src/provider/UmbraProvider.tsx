@@ -10,10 +10,11 @@ import {
   type ReactNode,
 } from 'react';
 import { I18nProvider, useLocale } from 'react-aria-components';
-import { contextPresets, densities, fixedColours, type TokenName } from '../styles/tokens.generated';
+import { contextPresets, densities, paletteDefaults, type TokenName } from '../styles/tokens.generated';
 import { warn } from '../utils/dev';
 import { cx } from '../utils/parts';
-import { focusColourOn, mutedTextOn, textColourOn } from './contrast';
+import { focusColourOn, mutedTextOn, parseColour, textColourOn } from './contrast';
+import { derivePalette, type PaletteInputs } from './palette';
 import { resolveLocale } from './direction';
 import { defaultIcons, type IconMap } from './icons';
 import {
@@ -41,10 +42,22 @@ export type ContextTint = ContextPreset | (string & {});
 export type TokenOverrides = Partial<Record<TokenName | (string & {}), string | number | undefined>>;
 
 export interface UmbraScopeProps extends RootAttributes {
-  /** Brand colour, used by the TopBar. Text on it is computed for contrast. Hex or `rgb()`. */
+  /**
+   * Brand colour, hex or `rgb()`. Colours the TopBar, and the interaction colour, the action colour and
+   * the context follow it unless they are set. Text on it is computed for contrast.
+   */
   brand?: string | undefined;
-  /** Context tint for the page background and tinted cards. */
+  /** Context tint: the page background, card tints, and the hue of surfaces, borders and dim text. */
   context?: ContextTint | undefined;
+  /**
+   * The colour of selected and checked things, the accent tone, links and thin marks. Hex or `rgb()`.
+   * Its lightness is adjusted where needed, so text on it and its edge against the surface keep their contrast.
+   */
+  interaction?: string | undefined;
+  /** The colour of the primary action. Hex or `rgb()`; adjusted like `interaction`. */
+  action?: string | undefined;
+  /** How opaque card surfaces are over the app background, 0 to 1. Overlays stay opaque. */
+  surfaceOpacity?: number | undefined;
   /** Spacing, row heights and text sizes. */
   density?: Density | undefined;
   /** Overrides individual tokens for this subtree. */
@@ -104,7 +117,6 @@ function createBindings(): UmbraContextValue['bindings'] {
 
 const UmbraContext = createContext<UmbraContextValue | null>(null);
 const ScopeContext = createContext<ScopeAttributes>({ 'data-umbra-scope': '', style: {} });
-export const ScopeProvider = ScopeContext.Provider;
 
 export function useUmbra() {
   const value = useContext(UmbraContext);
@@ -124,52 +136,118 @@ function isPreset(context: ContextTint): context is ContextPreset {
   return (contextPresets as readonly string[]).includes(context);
 }
 
-/** Internal: the attributes for a scope element, merged with the scopes above it. */
+type Vars = Record<string, string | number>;
+
+/**
+ * What the scopes above decided, kept apart from the attributes: the palette is derived again from all
+ * the inputs in every scope, and a token set by hand in any of them wins over what is derived.
+ */
+interface ScopeState {
+  inputs: PaletteInputs & { context?: ContextTint | undefined };
+  tokens: Vars;
+}
+const StateContext = createContext<ScopeState>({ inputs: {}, tokens: {} });
+
+export interface Scope {
+  attributes: ScopeAttributes;
+  state: ScopeState;
+}
+
+const derivedContextKeys = ['context', ...Object.keys(paletteDefaults.neutrals)];
+
+/** The variables that follow the colour inputs (plan/decisions/08-theming.md). */
+function paletteVars(inputs: ScopeState['inputs'], brandOnly = false): Vars {
+  const vars: Vars = {};
+  const { brand, context, interaction, action } = inputs;
+  const custom = context && !isPreset(context) ? context : undefined;
+  const palette = brandOnly
+    ? {}
+    : derivePalette({ brand, context: custom, interaction, action }, paletteDefaults);
+  // A preset brings its own neutrals from the stylesheet: nothing derived from the brand may cover them.
+  if (context && isPreset(context)) for (const key of derivedContextKeys) delete palette[key];
+  for (const [name, value] of Object.entries(palette)) vars[`--umbra-${name}`] = value;
+  // A colour the provider cannot read (a name, `hsl()`) is passed on as it is, without the guarantees.
+  const unread: [string, string | undefined, string][] = [
+    ['context', custom, '--umbra-context'],
+    ['interaction', interaction, '--umbra-color-interaction'],
+    ['action', action, '--umbra-color-action'],
+  ];
+  for (const [prop, value, name] of unread) {
+    if (!value || parseColour(value)) continue;
+    warn(
+      `${prop} "${value}" is not a hex or rgb() colour; it is used as it is, and contrast is not checked.`,
+    );
+    vars[name] = value;
+  }
+  if (brand) {
+    const text = textColourOn(brand);
+    if (!text) warn(`brand "${brand}" is not a hex or rgb() colour; text on it defaults to white.`);
+    else if (text.ratio < 4.5)
+      warn(`brand "${brand}" gives at most ${text.ratio.toFixed(2)}:1 text contrast; 4.5:1 is required.`);
+    vars['--umbra-color-brand'] = brand;
+    const on = text?.colour ?? '#ffffff';
+    vars['--umbra-color-on-brand'] = on;
+    // Resting nav items and the focus ring on the brand bar keep their contrast on any brand.
+    vars['--umbra-color-on-brand-muted'] = mutedTextOn(brand, on) ?? on;
+    vars['--umbra-color-on-brand-focus'] = focusColourOn(brand, paletteDefaults.focusRing, on);
+  }
+  return vars;
+}
+
+/** Internal: the attributes for a scope element, merged with the scopes above it, and the state below it. */
 export function useScope(
-  { brand, context, density, tokens }: UmbraScopeProps,
+  { brand, context, interaction, action, surfaceOpacity, density, tokens }: UmbraScopeProps,
   extra?: Partial<ScopeAttributes>,
-) {
+  /** The brand is for this element only (a `TopBar`): nothing else is derived from it. */
+  brandOnly = false,
+): Scope {
   const parent = useContext(ScopeContext);
+  const above = useContext(StateContext);
   return useMemo(() => {
-    const vars: Record<string, string | number> = {};
-    if (context && !isPreset(context)) vars['--umbra-context'] = context;
-    if (brand) {
-      const text = textColourOn(brand);
-      if (!text) warn(`brand "${brand}" is not a hex or rgb() colour; text on it defaults to white.`);
-      else if (text.ratio < 4.5)
-        warn(`brand "${brand}" gives at most ${text.ratio.toFixed(2)}:1 text contrast; 4.5:1 is required.`);
-      vars['--umbra-color-brand'] = brand;
-      const on = text?.colour ?? '#ffffff';
-      vars['--umbra-color-on-brand'] = on;
-      // Resting nav items and the focus ring on the brand bar keep their contrast on any brand.
-      vars['--umbra-color-on-brand-muted'] = mutedTextOn(brand, on) ?? on;
-      vars['--umbra-color-on-brand-focus'] = focusColourOn(brand, fixedColours.focusRing, on);
+    if (brandOnly) {
+      const bar = brand ? paletteVars({ brand }, true) : {};
+      return { attributes: { ...parent, style: { ...parent.style, ...bar } as CSSProperties }, state: above };
     }
+    const inputs = { ...above.inputs };
+    if (brand) inputs.brand = brand;
+    if (context) inputs.context = context;
+    if (interaction) inputs.interaction = interaction;
+    if (action) inputs.action = action;
+    const set: Vars = { ...above.tokens };
+    if (surfaceOpacity !== undefined)
+      set['--umbra-surface-opacity'] = Math.min(1, Math.max(0, surfaceOpacity));
     for (const [name, value] of Object.entries(tokens ?? {})) {
-      if (value !== undefined) vars[`--umbra-${name}`] = value;
+      if (value !== undefined) set[`--umbra-${name}`] = value;
     }
+    const derived = paletteVars(inputs);
     const attributes: ScopeAttributes = {
       ...parent,
       ...extra,
-      style: { ...parent.style, ...(vars as CSSProperties) },
+      style: { ...derived, ...set } as CSSProperties,
     };
     if (density) attributes['data-umbra-density'] = density;
-    if (context) {
-      // A custom colour must not be overridden by a preset attribute inherited from a parent scope.
-      if (isPreset(context)) {
-        attributes['data-umbra-context'] = context;
-        attributes.style = { ...attributes.style, ['--umbra-context' as string]: undefined };
-      } else delete attributes['data-umbra-context'];
-    }
-    return attributes;
-  }, [parent, brand, context, density, tokens, extra]);
+    // A context of the app's, or one that follows the brand, is written as variables; a preset is an attribute.
+    if (inputs.context && isPreset(inputs.context)) attributes['data-umbra-context'] = inputs.context;
+    else if ('--umbra-context' in derived) delete attributes['data-umbra-context'];
+    return { attributes, state: { inputs, tokens: set } };
+  }, [parent, above, brand, context, interaction, action, surfaceOpacity, density, tokens, extra, brandOnly]);
 }
 
-/** The same `context`, `density`, `brand` and `tokens` as the provider, for one subtree. */
-export function UmbraScope({ className, style, children, ...scope }: UmbraScopeProps) {
-  const attributes = useScope(scope);
+/** Internal: hands a scope to what is inside it, for a component that is a scope itself (`Page`). */
+export function ScopeProvider({ scope, children }: { scope: Scope; children?: ReactNode | undefined }) {
   return (
-    <ScopeContext value={attributes}>
+    <ScopeContext value={scope.attributes}>
+      <StateContext value={scope.state}>{children}</StateContext>
+    </ScopeContext>
+  );
+}
+
+/** The same colour inputs, `density` and `tokens` as the provider, for one subtree. */
+export function UmbraScope({ className, style, children, ...scope }: UmbraScopeProps) {
+  const provided = useScope(scope);
+  const { attributes } = provided;
+  return (
+    <ScopeProvider scope={provided}>
       <div
         {...passThrough(scope)}
         {...attributes}
@@ -178,7 +256,7 @@ export function UmbraScope({ className, style, children, ...scope }: UmbraScopeP
       >
         {children}
       </div>
-    </ScopeContext>
+    </ScopeProvider>
   );
 }
 
@@ -205,10 +283,17 @@ export function UmbraProvider({
   const browser = useLocale().locale;
   const { locale: resolved, direction } = resolveLocale(locale, documentDir, browser);
   const extra = useMemo(
-    () => ({ 'data-umbra-reduced-motion': reducedMotion, dir: direction, lang: locale }),
+    // The default context is an attribute here only: a brand below the root still brings its own.
+    () => ({
+      'data-umbra-context': 'violet' as const,
+      'data-umbra-reduced-motion': reducedMotion,
+      dir: direction,
+      lang: locale,
+    }),
     [reducedMotion, direction, locale],
   );
-  const attributes = useScope({ density: 'default', context: 'violet', ...scope }, extra);
+  const provided = useScope({ density: 'default', ...scope }, extra);
+  const { attributes } = provided;
 
   const [bound] = useState(() => new Map<string, () => void>());
   const [bindings] = useState(createBindings);
@@ -245,7 +330,7 @@ export function UmbraProvider({
   return (
     <I18nProvider locale={resolved}>
       <UmbraContext value={value}>
-        <ScopeContext value={attributes}>
+        <ScopeProvider scope={provided}>
           <div
             {...passThrough(scope)}
             {...attributes}
@@ -255,7 +340,7 @@ export function UmbraProvider({
           >
             {children}
           </div>
-        </ScopeContext>
+        </ScopeProvider>
       </UmbraContext>
     </I18nProvider>
   );

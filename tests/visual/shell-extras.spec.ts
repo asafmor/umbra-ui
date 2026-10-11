@@ -62,7 +62,7 @@ test('primary action: a gradient from primary to primaryEnd, with 4.5:1 text on 
     };
     const root = document.querySelector('[data-umbra="primary-action"]')!;
     root.appendChild(probe);
-    const out = [read('--umbra-color-fixed-primary'), read('--umbra-color-fixed-primary-end')];
+    const out = [read('--umbra-color-action'), read('--umbra-color-action-end')];
     probe.remove();
     return out;
   });

@@ -231,7 +231,7 @@ export const PartsAndBlocks: Story = {
           legend={false}
         >
           <RadarChart.Grid rings={1} />
-          <circle cx="50%" cy="50%" r="3" fill="var(--umbra-color-fixed-accent-text)" />
+          <circle cx="50%" cy="50%" r="3" fill="var(--umbra-color-interaction-text)" />
           <RadarChart.Series filled={false} />
           <RadarChart.AxisLabels />
         </RadarChart.Root>

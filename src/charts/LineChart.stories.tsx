@@ -356,7 +356,7 @@ export const PartsAndBlocks: Story = {
         <LineChart.Root aria-label="Orders, plan and actual" series={planActual} legend={false}>
           <LineChart.Series />
           <LineChart.Axes />
-          <circle cx="50%" cy="20%" r="5" fill="var(--umbra-color-fixed-accent-text)" />
+          <circle cx="50%" cy="20%" r="5" fill="var(--umbra-color-interaction-text)" />
         </LineChart.Root>
       </Tile>
       <Tile title="Blocks: grid over the lines">

@@ -1,4 +1,4 @@
-type Rgb = [number, number, number];
+export type Rgb = [number, number, number];
 
 // ponytail: reads hex and rgb() only. Other colour syntaxes (named, hsl, oklch) fall back to white text
 // with a development warning; resolve them through the DOM if apps need them.
@@ -13,7 +13,7 @@ export function parseColour(colour: string): Rgb | null {
   return rgb ? (rgb.slice(1, 4).map(Number) as Rgb) : null;
 }
 
-function luminance(rgb: Rgb) {
+export function luminance(rgb: Rgb) {
   const [r, g, b] = rgb.map((v) => {
     const s = v / 255;
     return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
@@ -39,7 +39,7 @@ export function textColourOn(background: string): { colour: string; ratio: numbe
   return onLight >= onDark ? { colour: light, ratio: onLight } : { colour: dark, ratio: onDark };
 }
 
-const toHex = (rgb: Rgb) => '#' + rgb.map((v) => Math.round(v).toString(16).padStart(2, '0')).join('');
+export const toHex = (rgb: Rgb) => '#' + rgb.map((v) => Math.round(v).toString(16).padStart(2, '0')).join('');
 
 /**
  * A dimmed version of `text` for resting items on `background`: mixed towards the background by up to

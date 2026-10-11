@@ -37,7 +37,7 @@ export function Value({ label, value }: { label: string; value: string }) {
       <div style={{ font: 'var(--umbra-font-label)', color: 'var(--umbra-color-base-text-secondary)' }}>
         {label}
       </div>
-      <div style={{ font: 'var(--umbra-font-title)', color: 'var(--umbra-color-fixed-accent-text)' }}>
+      <div style={{ font: 'var(--umbra-font-title)', color: 'var(--umbra-color-interaction-text)' }}>
         {value}
       </div>
     </div>
