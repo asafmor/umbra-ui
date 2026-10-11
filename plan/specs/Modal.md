@@ -59,6 +59,8 @@ States: open, closed, entering, exiting, narrow (below the minimum window). `Con
 
 Global tokens added: `size.modalSm`, `size.modalMd`, `size.modalLg`, `size.modalXl`, `size.modalNav`.
 
+The fade of a `ScrollArea` inside blends into the panel's background, through the private `--scroll-fade-color`; `--umbra-scroll-fade-color` set by the app on any ancestor wins (2026-10-11).
+
 ### 2. Props
 
 | Prop | Type | Default | Purpose |

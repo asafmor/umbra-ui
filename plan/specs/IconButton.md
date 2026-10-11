@@ -37,7 +37,7 @@ States: hover, pressed, focus, disabled, loading, and `pressed` on/off when used
 
 `--umbra-icon-button-size` (equals the control height of the density level), `--umbra-icon-size`, plus the `Button` variant colours.
 
-The badge is the public `Badge`, so its colours are Badge's tokens (`--umbra-badge-bg`, `--umbra-badge-fg`). It is smaller on a button; `--umbra-icon-button-badge-size` (14px), `--umbra-icon-button-badge-dot-size` (8px), `--umbra-icon-button-badge-padding-x` (3px) and `--umbra-icon-button-badge-font` set Badge's size tokens for it.
+The badge is the public `Badge`, so its colours are Badge's tokens (`--umbra-badge-bg`, `--umbra-badge-fg`). It is smaller on a button; `--umbra-icon-button-badge-size` (14px), `--umbra-icon-button-badge-dot-size` (8px), `--umbra-icon-button-badge-padding-x` (3px) and `--umbra-icon-button-badge-font` set its size. They are defaults, passed to `Badge` as private properties: `--umbra-badge-size`, `--umbra-badge-dot-size`, `--umbra-badge-padding-x` or `--umbra-badge-font` set by the app on any ancestor win (2026-10-11).
 
 ### 2. Props
 

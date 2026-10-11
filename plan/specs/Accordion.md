@@ -45,6 +45,8 @@ States per section: open, closed, disabled, hover, pressed, focus.
 
 `--umbra-accordion-padding`, `--umbra-accordion-border`, `--umbra-accordion-header-height`, `--umbra-accordion-gap` (between card sections), `--umbra-accordion-title-font`. The `card` variant also reads `--umbra-card-bg`, `--umbra-card-border`, `--umbra-card-radius`, `--umbra-card-padding` and `--umbra-card-title-font`, so a restyled card restyles it too.
 
+The fade of a `ScrollArea` inside blends into a card section's background, through the private `--scroll-fade-color`; `--umbra-scroll-fade-color` set by the app on any ancestor wins (2026-10-11).
+
 ### 2. Props
 
 | Prop | Type | Default | Purpose |

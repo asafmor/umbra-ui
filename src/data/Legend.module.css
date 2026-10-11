@@ -2,7 +2,7 @@
   --row: var(--umbra-legend-row-height, var(--umbra-density-table-row));
   --row-gap: var(--umbra-legend-row-gap, var(--umbra-space-1));
   /* The root clips, so focus rings inside it are drawn inwards. */
-  --umbra-focus-offset: var(--umbra-legend-focus-offset, calc(-1 * var(--umbra-state-focus-ring-width)));
+  --focus-offset: var(--umbra-legend-focus-offset, calc(-1 * var(--umbra-state-focus-ring-width)));
 
   display: flex;
   flex-wrap: wrap;
@@ -97,8 +97,8 @@ button.item[data-pressed] {
 
 button.item[data-focus-visible] {
   outline: var(--umbra-state-focus-ring-width) solid
-    var(--umbra-focus-color, var(--umbra-color-fixed-focus-ring));
-  outline-offset: var(--umbra-focus-offset, 2px);
+    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-fixed-focus-ring)));
+  outline-offset: var(--umbra-focus-offset, var(--focus-offset, 2px));
 }
 
 /* Switched off: struck through, with a faded marker, so the state does not depend on colour. */

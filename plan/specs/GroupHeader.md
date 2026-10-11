@@ -41,6 +41,8 @@ States: `collapsed`, `sticky`.
 
 `--umbra-group-header-bg`, `--umbra-group-header-color`, `--umbra-group-header-font`, `--umbra-group-header-height`, `--umbra-group-header-padding-x`, `--umbra-group-header-focus-offset` (the ring offset of the controls in the header, inwards by default because the row clips). The height follows the density level.
 
+`--umbra-group-header-focus-offset` is the default offset of the rings inside (inwards, because it clips), passed on as the private `--focus-offset`: `--umbra-focus-offset` set by the app on any ancestor wins over it (2026-10-11).
+
 ### 2. Props
 
 | Prop | Type | Default | Purpose |
