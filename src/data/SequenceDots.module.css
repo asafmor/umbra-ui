@@ -1,0 +1,148 @@
+.root {
+  --size: var(--umbra-sequence-dots-size, 0.625rem);
+  --bar-height: var(--umbra-sequence-dots-bar-height, 1rem);
+  --bar-width: var(--umbra-sequence-dots-bar-width, 0.3125rem);
+  /* The root clips, so the focus rings of its buttons are drawn inwards. */
+  --focus-offset: var(--umbra-sequence-dots-focus-offset, calc(-1 * var(--umbra-state-focus-ring-width)));
+
+  display: inline-flex;
+  align-items: center;
+  gap: var(--umbra-sequence-dots-gap, var(--umbra-space-2));
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  vertical-align: middle;
+}
+
+.root[data-size='sm'] {
+  --size: var(--umbra-sequence-dots-size, 0.5rem);
+  --bar-height: var(--umbra-sequence-dots-bar-height, 0.75rem);
+  --bar-width: var(--umbra-sequence-dots-bar-width, 0.25rem);
+  gap: var(--umbra-sequence-dots-gap, var(--umbra-space-1));
+}
+
+.root[data-size='lg'] {
+  --size: var(--umbra-sequence-dots-size, 0.875rem);
+  --bar-height: var(--umbra-sequence-dots-bar-height, 1.5rem);
+  --bar-width: var(--umbra-sequence-dots-bar-width, 0.4375rem);
+}
+
+.root[data-variant='bars'] {
+  align-items: flex-end;
+  gap: var(--umbra-sequence-dots-gap, var(--umbra-space-1));
+}
+
+.mark {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--tone);
+}
+
+.root[data-variant='bars'] .mark {
+  align-items: flex-end;
+  height: var(--bar-height);
+}
+
+.mark[data-disabled] {
+  opacity: var(--umbra-state-disabled-opacity);
+}
+
+.shape {
+  display: block;
+  width: var(--size);
+  height: var(--size);
+}
+
+/* A bar is as tall as its value; its fill is the cue that is not colour. */
+.bar {
+  box-sizing: border-box;
+  display: block;
+  width: var(--bar-width);
+  height: max(2px, calc(var(--fraction) * 100%));
+  border-radius: 1px;
+  background: currentColor;
+}
+
+.bar[data-empty] {
+  background: var(--umbra-color-base-text-muted);
+}
+
+.mark[data-mark='ring'] > .bar:not([data-empty]) {
+  border: 1px solid currentColor;
+  background: none;
+}
+
+.mark[data-mark='dash'] > .bar:not([data-empty]) {
+  border: 1px dashed currentColor;
+  background: none;
+}
+
+.mark[data-mark='half'] > .bar:not([data-empty]) {
+  background: repeating-linear-gradient(to top, currentColor 0 2px, transparent 2px 4px);
+}
+
+.mark[data-mark='square'] > .bar:not([data-empty]) {
+  background: linear-gradient(to bottom, currentColor 2px, transparent 2px 4px, currentColor 4px);
+}
+
+.mark[data-mark='diamond'] > .bar:not([data-empty]) {
+  border: 1px solid currentColor;
+  background: linear-gradient(to top, currentColor 50%, transparent 50%);
+}
+
+/* A mark that can be pressed is a target of 24px, whatever the size of its drawing. */
+button.mark {
+  min-width: var(--umbra-sequence-dots-target-size, 1.5rem);
+  min-height: var(--umbra-sequence-dots-target-size, 1.5rem);
+  border-radius: var(--umbra-radius-control);
+  cursor: pointer;
+  transition: background-color var(--umbra-motion-duration-fast);
+}
+
+.root[data-interactive] {
+  gap: 0;
+}
+
+.root[data-interactive][data-variant='bars'] .mark {
+  align-items: center;
+}
+
+.root[data-interactive][data-variant='bars'] .bar {
+  align-self: flex-end;
+  margin-block-end: calc((var(--umbra-sequence-dots-target-size, 1.5rem) - var(--bar-height)) / 2);
+  max-height: var(--bar-height);
+  height: max(2px, calc(var(--fraction) * var(--bar-height)));
+}
+
+button.mark[data-hovered] {
+  background: color-mix(in oklab, currentColor var(--umbra-state-hover-lighten), transparent);
+}
+
+button.mark[data-pressed] {
+  background: color-mix(in oklab, #000 var(--umbra-state-press-darken), transparent);
+}
+
+button.mark[data-disabled] {
+  cursor: default;
+}
+
+.skeleton {
+  display: block;
+  width: calc(var(--count) * (var(--size) + var(--umbra-space-2)) - var(--umbra-space-2));
+  height: var(--size);
+}
+
+.root[data-variant='bars'] .skeleton {
+  width: calc(var(--count) * (var(--bar-width) + var(--umbra-space-1)) - var(--umbra-space-1));
+  height: var(--bar-height);
+}
+
+.empty {
+  color: var(--umbra-sequence-dots-empty-color, var(--umbra-color-base-text-muted));
+  font: var(--umbra-font-label);
+}
