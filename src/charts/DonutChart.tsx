@@ -217,14 +217,22 @@ function Segments() {
   const { model, uid } = frame;
   return (
     <g data-part="segments" transform={`translate(${model.cx} ${model.cy})`}>
-      {model.segments.map((s) => (
-        <g key={s.id} className={styles.series} {...seriesProps(frame, s.id)} {...frame.pointProps(s.point)}>
-          <defs>
-            <FillPattern id={`${uid}-fill-${s.id}`} kind={s.fill} color={s.color} />
-          </defs>
-          <path d={s.d} {...fillPaint(s.fill, s.color, `${uid}-fill-${s.id}`)} />
-        </g>
-      ))}
+      {/* A value of zero has no arc to draw or to point at. */}
+      {model.segments
+        .filter((s) => s.d)
+        .map((s) => (
+          <g
+            key={s.id}
+            className={styles.series}
+            {...seriesProps(frame, s.id)}
+            {...frame.pointProps(s.point)}
+          >
+            <defs>
+              <FillPattern id={`${uid}-fill-${s.id}`} kind={s.fill} color={s.color} />
+            </defs>
+            <path d={s.d} {...fillPaint(s.fill, s.color, `${uid}-fill-${s.id}`)} />
+          </g>
+        ))}
     </g>
   );
 }

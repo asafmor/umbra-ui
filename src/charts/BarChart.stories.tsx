@@ -70,7 +70,7 @@ export const Variants: Story = {
           colorBy="sign"
           labels
           formatValue={(v) => `${v > 0 ? '+' : ''}${v}%`}
-          annotations={[{ type: 'line', value: 10, label: 'Goal' }]}
+          annotations={[{ type: 'line', value: 10, label: 'Target' }]}
         />
       </Tile>
       <Tile title="Colour by threshold" id="thresholds">

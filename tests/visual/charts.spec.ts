@@ -338,6 +338,13 @@ test.describe('Chart accessibility and states', () => {
     await open(page, 'charts-linechart--states');
     await expect(tile(page, 'hidden').locator('[data-part="empty"]')).toHaveText('All series are hidden');
     await expect(has(tile(page, 'hidden'), 'legend').getByRole('button')).toHaveCount(2);
+
+    // A value of zero has no arc: no point, no list of points, and the value is in the summary.
+    await open(page, 'charts-donutchart--states');
+    const zero = page.getByRole('figure', { name: 'Nothing used' });
+    await expect(zero.getByRole('option')).toHaveCount(0);
+    await expect(zero.getByRole('listbox')).toHaveCount(0);
+    await expect(zero).toHaveAccessibleDescription('0% (0 / 100)');
   });
 
   test('the skeleton, empty, error and tooltip parts take a node, null and a function (C17)', async ({
@@ -501,7 +508,7 @@ test.describe('BarChart', () => {
     // By sign: negative bars are striped as well as red.
     const sign = tile(page, 'sign');
     await expect(sign.locator('[data-pattern="stripes"]')).toHaveCount(2);
-    await expect(sign.locator('[data-part="annotations"] [data-kind="line"]')).toContainText('Goal');
+    await expect(sign.locator('[data-part="annotations"] [data-kind="line"]')).toContainText('Target');
     // By threshold: each step has its own fill.
     const steps = tile(page, 'thresholds');
     await expect(steps.locator('[data-pattern="stripes"]')).toHaveCount(2);
