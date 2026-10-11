@@ -5,27 +5,28 @@ export interface Region {
   id: string;
   name: string;
   orders: number;
-  won: number;
-  open: number;
-  lost: number;
-  points: number;
+  shipped: number;
+  pending: number;
+  returned: number;
+  /** In thousands. */
+  revenue: number;
 }
 
-/** Twenty regions in ranking order. */
+/** Twenty regions, the one with the most revenue first. */
 export const regions: Region[] = Array.from({ length: 20 }, (_, i) => {
-  const won = Math.max(1, 19 - i - (i % 3));
-  const open = (i * 5) % 7;
-  const lost = Math.max(0, 30 - won - open - (i % 4));
+  const shipped = 24 + ((i * 37) % 61);
+  const pending = (i * 5) % 9;
+  const returned = (i * 7) % 6;
   return {
     id: `r${i + 1}`,
     name: `Region ${i + 1}`,
-    orders: won + open + lost,
-    won,
-    open,
-    lost,
-    points: won * 3 + open,
+    orders: shipped + pending + returned,
+    shipped,
+    pending,
+    returned,
+    revenue: shipped * 85 - returned * 40,
   };
-}).sort((a, b) => b.points - a.points);
+}).sort((a, b) => b.revenue - a.revenue);
 
 export interface Person {
   id: string;

@@ -179,6 +179,37 @@ export function rangeIds(order: string[], anchor: string | null, target: string)
   return order.slice(Math.min(from, to), Math.max(from, to) + 1);
 }
 
+/** Where a Shift range starts, and the selection it is added to. */
+export interface SelectionMemo {
+  anchor: string | null;
+  base: string[];
+}
+
+/**
+ * The selection after one step: a toggle of `id`, or (with `range`) the rows from the anchor to `id`
+ * added to what was selected when the range began. `anchor` begins a new range at `id`: the first
+ * Shift+Arrow of a run starts where the focus is, not at the last row toggled.
+ */
+export function selectStep(
+  mode: 'single' | 'multiple' | 'none',
+  selected: string[],
+  memo: SelectionMemo,
+  id: string,
+  options: { range?: boolean; anchor?: boolean },
+  order: () => string[],
+): { ids: string[]; memo: SelectionMemo } {
+  const isSelected = selected.includes(id);
+  if (mode === 'single') {
+    return { ids: isSelected && !options.range ? [] : [id], memo: { anchor: id, base: [] } };
+  }
+  if (options.range) {
+    const next = options.anchor || memo.anchor === null ? { anchor: id, base: selected } : memo;
+    return { ids: [...new Set([...next.base, ...rangeIds(order(), next.anchor, id)])], memo: next };
+  }
+  const ids = isSelected ? selected.filter((other) => other !== id) : [...selected, id];
+  return { ids, memo: { anchor: id, base: ids } };
+}
+
 // `changeDirection` lives with the shared highlight; it is still tested with the table's rules.
 export { changeDirection } from '../internal/useChangeHighlight';
 

@@ -43,15 +43,23 @@ import { useUmbra } from '../provider/UmbraProvider';
 import { useScopeAttributes } from '../provider/UmbraProvider';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './DataTable.module.css';
-import { GridAdapterContext, INTERACTIVE, rowHandlers, useGrid, type GridAdapter } from './grid';
+import {
+  GridAdapterContext,
+  INTERACTIVE,
+  rowHandlers,
+  selectAllHandlers,
+  useGrid,
+  type GridAdapter,
+} from './grid';
 import {
   defaultWidthMetrics,
   resolveWidth,
   fitColumns,
   offsetsOf,
   orderGroups,
-  rangeIds,
+  selectStep,
   windowRange,
+  type SelectionMemo,
   type ColumnSize,
 } from './logic';
 
@@ -205,6 +213,8 @@ export interface DataTableRootProps extends BlockProps {
   announcement?: string;
   /** Called when the table is scrolled to its end. */
   onReachEnd?: () => void;
+  /** Called on Ctrl or Cmd+A. Without it the key is left to the browser. */
+  onSelectAll?: () => void;
   elementRef?: RefObject<HTMLDivElement | null>;
 }
 
@@ -225,6 +235,7 @@ function Root({
   state,
   announcement,
   onReachEnd,
+  onSelectAll,
   elementRef,
   className,
   style,
@@ -235,6 +246,12 @@ function Root({
   const root = elementRef ?? own;
   const [table, gridHandlers] = useGrid();
   const scope = useScopeAttributes();
+  useLayoutEffect(() => {
+    const el = table.current;
+    if (!el) return;
+    if (onSelectAll) selectAllHandlers.set(el, onSelectAll);
+    else selectAllHandlers.delete(el);
+  });
 
   // One tooltip for the whole table, in the look of `Tooltip`: the full text of a cell that is cut, or
   // the hint of a header. A cell says what to show with `data-tip`; nothing is mounted per cell.
@@ -337,7 +354,7 @@ function Root({
         </div>
       )}
       {/* 1ch wide, 1em high, with a cell's padding: what column widths are measured in. */}
-      <span data-part="font-probe" aria-hidden="true" className={styles.probe} />
+      <span data-part="fontProbe" aria-hidden="true" className={styles.probe} />
       <div role="status" className={srOnly}>
         {announcement}
       </div>
@@ -402,7 +419,7 @@ function SortIndicator({ direction, index }: DataTableSortIndicatorProps) {
     direction === 'asc' ? icons.sortAscending : direction === 'desc' ? icons.sortDescending : icons.sortNone;
   return (
     <span
-      data-part="sort-indicator"
+      data-part="sortIndicator"
       data-direction={direction}
       aria-hidden="true"
       className={styles.sortIndicator}
@@ -474,7 +491,7 @@ function HeaderCell({
   const labelId = useId();
   const description = longDescription ?? tooltip;
   const content = (
-    <span id={labelId} data-part="header-label" className={hideLabel ? srOnly : styles.headerLabel}>
+    <span id={labelId} data-part="headerLabel" className={hideLabel ? srOnly : styles.headerLabel}>
       {children}
     </span>
   );
@@ -482,7 +499,7 @@ function HeaderCell({
     <th
       scope={scope}
       data-cell=""
-      data-part="header-cell"
+      data-part="headerCell"
       data-col={columnId}
       data-align={align}
       data-pin={pin}
@@ -540,8 +557,11 @@ export interface DataTableRowProps extends BlockProps {
   accent?: string;
   /** Called on Enter, on a double click, and on a click when there is no `onSelect`. */
   onAction?: () => void;
-  /** Called on Space and on a click; `range` with Shift. */
-  onSelect?: (options: { range: boolean }) => void;
+  /**
+   * Called on Space and on a click; `range` with Shift. `anchor` says that a new range starts at this
+   * row: the first Shift+Arrow of a run starts where the focus is.
+   */
+  onSelect?: (options: { range: boolean; anchor?: boolean }) => void;
   /** `data-` attributes go on the row element. */
   [data: `data-${string}`]: string | undefined;
 }
@@ -574,6 +594,7 @@ function Row({
   return (
     <tr
       ref={ref}
+      data-part="row"
       data-kind="row"
       {...data}
       data-row-key={rowKey ?? generated}
@@ -617,6 +638,8 @@ export interface DataTableCellProps extends BlockProps, CellLayoutProps {
   wrap?: boolean;
   /** The cell's full text: shown in a tooltip while the cell cuts it. */
   title?: string;
+  /** A hint shown in a tooltip on hover and keyboard focus, whether or not the text is cut. */
+  tooltip?: string;
   /** `false` keeps the cell out of the keyboard grid: a placeholder or a skeleton. */
   focusable?: boolean;
 }
@@ -633,6 +656,7 @@ function Cell({
   numeric,
   wrap,
   title,
+  tooltip,
   focusable = true,
   className,
   style,
@@ -652,7 +676,8 @@ function Cell({
       data-wrap={wrap || undefined}
       aria-colindex={index}
       colSpan={colSpan}
-      data-tip={title}
+      data-tip={tooltip ?? title}
+      data-tip-always={tooltip ? '' : undefined}
       tabIndex={focusable ? -1 : undefined}
       className={cx(styles.cell, className)}
       style={pinStyle(pin, pinOffset, style)}
@@ -711,7 +736,7 @@ function GroupRow({
   return (
     <tr
       data-kind="group"
-      data-part="group-header"
+      data-part="groupHeader"
       data-row-key={rowKey ?? generated}
       data-sticky={sticky || undefined}
       data-collapsed={(collapsible && collapsed) || undefined}
@@ -752,29 +777,25 @@ function without<T extends object, K extends keyof T>(value: T, ...keys: K[]): O
 }
 
 /**
- * Selection by click, Space and Shift range. The anchor of a range and the selection it extends are
- * refs: two range steps can follow each other in one key press (Shift+Arrow), before the next render.
+ * Selection by click, Space and Shift range (`selectStep`). The anchor of a range and the selection it
+ * extends are a ref: two range steps follow each other in one key press (Shift+Arrow), before the next render.
  */
 function useSelect(
   mode: 'none' | 'single' | 'multiple',
   selectedIds: string[],
   commit: (ids: string[]) => void,
 ) {
-  const anchor = useRef<string | null>(null);
-  const base = useRef<string[]>([]);
-  return (id: string, rangeTo: boolean, order: () => string[]) => {
-    const isSelected = selectedIds.includes(id);
-    if (mode === 'single') {
-      anchor.current = id;
-      return commit(isSelected && !rangeTo ? [] : [id]);
-    }
-    if (rangeTo) {
-      if (anchor.current === null) [anchor.current, base.current] = [id, selectedIds];
-      return commit([...new Set([...base.current, ...rangeIds(order(), anchor.current, id)])]);
-    }
-    const next = isSelected ? selectedIds.filter((other) => other !== id) : [...selectedIds, id];
-    [anchor.current, base.current] = [id, next];
-    commit(next);
+  const memo = useRef<SelectionMemo>({ anchor: null, base: [] });
+  // Within one key press the second step builds on the first, which has not rendered yet.
+  const latest = useRef(selectedIds);
+  useLayoutEffect(() => {
+    latest.current = selectedIds;
+  });
+  return (id: string, options: { range?: boolean; anchor?: boolean }, order: () => string[]) => {
+    const next = selectStep(mode, latest.current, memo.current, id, options, order);
+    memo.current = next.memo;
+    latest.current = next.ids;
+    commit(next.ids);
   };
 }
 
@@ -812,6 +833,44 @@ function RowCheckbox({
   );
 }
 
+/**
+ * The control of a row where one row can be selected: a radio, in the look of `Radio`. A native input,
+ * because the rows of a table cannot sit in the element of a `RadioGroup`, and because pressing the
+ * chosen row again clears the selection, which a radio group does not do.
+ */
+function RowRadio({
+  label,
+  checked,
+  disabled,
+  onToggle,
+}: {
+  label: string;
+  checked: boolean;
+  disabled: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <label
+      data-part="radio"
+      data-selected={checked || undefined}
+      data-disabled={disabled || undefined}
+      className={cx(styles.widget, styles.radio)}
+    >
+      <input
+        type="radio"
+        aria-label={label}
+        checked={checked}
+        disabled={disabled}
+        className={srOnly}
+        // A click on the chosen radio clears it, so the click is heard, not the change.
+        onChange={() => {}}
+        onClick={onToggle}
+      />
+      <span aria-hidden="true" className={styles.radioMark} />
+    </label>
+  );
+}
+
 function useControlled<T>(value: T | undefined, initial: T, onChange?: (next: T) => void) {
   const [inner, setInner] = useState(initial);
   const set = (next: T) => {
@@ -841,6 +900,8 @@ const features = tableFeatures({
 const SELECT = '__select';
 const EXPAND = '__expand';
 const GROUP = '__group';
+/** The column that says how many columns are hidden, when rows cannot show them. */
+const HIDDEN = '__hidden';
 const UTILITY_WIDTH = 40;
 /** Rows rendered beyond the visible ones, on the side the table is not scrolling towards. */
 const OVERSCAN = 8;
@@ -848,6 +909,11 @@ const OVERSCAN = 8;
 const OVERSCAN_STEP = 4;
 /** `virtualize="auto"` starts above this many rows. */
 const VIRTUAL_FROM = 200;
+
+// Default callbacks are constants: a new function on every render would be a new input to every row.
+const defaultSelectRowLabel = () => 'Select row';
+const defaultHiddenColumnsLabel = (count: number) =>
+  count === 1 ? '1 column hidden' : `${count} columns hidden`;
 
 const valueOf = <Row,>(column: DataTableColumn<Row>, row: Row): unknown =>
   typeof column.accessor === 'function'
@@ -871,6 +937,8 @@ interface Col<Row> {
   align: DataTableAlign;
   numeric: boolean;
   width: number;
+  /** Position among all the columns, hidden ones included, from 1. */
+  index: number;
 }
 
 export interface DataTableProps<Row> extends DataStateProps {
@@ -892,15 +960,15 @@ export interface DataTableProps<Row> extends DataStateProps {
   /** The rows arrive sorted (by a server): headers still show and report the sort, the table does not reorder. */
   manualSorting?: boolean;
 
-  /** `single` and `multiple` add a checkbox column and let the user select rows. */
+  /** Lets the user select rows, and adds a column for it: a radio per row in `single`, a checkbox in `multiple`. */
   selectionMode?: 'none' | 'single' | 'multiple';
   /** Controlled selection: the ids of the selected rows. */
   selectedIds?: string[];
   defaultSelectedIds?: string[];
   onSelectionChange?: (ids: string[]) => void;
-  /** Accessible name of a row's checkbox. */
+  /** Accessible name of a row's checkbox or radio. */
   selectRowLabel?: (row: Row) => string;
-  /** Accessible name of the header checkbox, or of the checkbox column in `single`. */
+  /** Accessible name of the header checkbox, or of the radio column in `single`. */
   selectAllLabel?: string;
 
   /** Ids of rows shown with a stronger fill and an edge marker: "my row" in a ranking. */
@@ -945,6 +1013,11 @@ export interface DataTableProps<Row> extends DataStateProps {
   /** Accessible names of that control. */
   showDetailsLabel?: string;
   hideDetailsLabel?: string;
+  /**
+   * Accessible name of the mark in the header that says columns are hidden ("+3"), from their number.
+   * The mark is shown while columns are hidden and rows cannot show them (no `expandableHidden`).
+   */
+  hiddenColumnsLabel?: (count: number) => string;
 
   /** Number of skeleton rows shown while `loading`. */
   skeletonRows?: number;
@@ -982,6 +1055,8 @@ export interface DataTableProps<Row> extends DataStateProps {
     header?: Part<BlockProps>;
     headerCell?: Part<DataTableHeaderCellProps & { column: DataTableColumn<Row> }>;
     sortIndicator?: Part<DataTableSortIndicatorProps>;
+    /** The mark in the header that says columns are hidden. `null` removes it and its column. */
+    hiddenIndicator?: Part<{ count: number; labels: string[]; children: ReactNode }>;
     row?: Part<DataTableRowProps & { row: Row }>;
     cell?: Part<DataTableCellProps & { row: Row; column: DataTableColumn<Row> }>;
     groupHeader?: Part<DataTableGroupRowProps>;
@@ -1015,7 +1090,7 @@ export function DataTable<Row>({
   selectedIds: selectedProp,
   defaultSelectedIds,
   onSelectionChange,
-  selectRowLabel = () => 'Select row',
+  selectRowLabel = defaultSelectRowLabel,
   selectAllLabel = selectionMode === 'multiple' ? 'Select all rows' : 'Selection',
   highlightedRowIds,
   rowHighlight,
@@ -1039,6 +1114,7 @@ export function DataTable<Row>({
   expandableHidden = false,
   showDetailsLabel = 'Show hidden columns',
   hideDetailsLabel = 'Hide hidden columns',
+  hiddenColumnsLabel = defaultHiddenColumnsLabel,
   skeletonRows = 8,
   loadingMore = false,
   loadingMoreLabel = 'Loading more',
@@ -1101,7 +1177,7 @@ export function DataTable<Row>({
     };
     // What widths are measured in: the cell font and padding. The probe is 1ch by 1em, so the observer
     // also reports a change of density or of the font tokens.
-    const probe = root.current?.querySelector<HTMLElement>('[data-part="font-probe"]');
+    const probe = root.current?.querySelector<HTMLElement>('[data-part="fontProbe"]');
     const measureFont = () => {
       if (!probe) return;
       const box = probe.getBoundingClientRect();
@@ -1143,6 +1219,9 @@ export function DataTable<Row>({
   }, [columns, data]);
 
   // --- Columns: which fit, how wide, and where the pinned ones stick -------------------------------
+  // While columns are hidden one narrow column is added: the carets that show them under each row, or
+  // the mark that says how many there are.
+  const hiddenUtility = expandableHidden || parts?.hiddenIndicator !== null;
   const fit = useMemo(() => {
     const sizes: ColumnSize[] = columns.map((column) => ({
       id: column.id,
@@ -1165,10 +1244,11 @@ export function DataTable<Row>({
         utility: true,
       });
     }
-    return fitColumns(sizes, size?.width ?? null, expandableHidden ? UTILITY_WIDTH : 0);
-  }, [columns, selectable, expandableHidden, size?.width, widthMetrics, contentChars]);
+    return fitColumns(sizes, size?.width ?? null, hiddenUtility ? UTILITY_WIDTH : 0);
+  }, [columns, selectable, hiddenUtility, size?.width, widthMetrics, contentChars]);
   const hiddenKey = fit.hidden.join('\n');
   const showExpander = expandableHidden && fit.hidden.length > 0;
+  const showHiddenMark = !expandableHidden && hiddenUtility && fit.hidden.length > 0;
 
   // --- Rows: sorting, grouping and selection state come from the engine --------------------------
   const groupKey = useMemo(
@@ -1241,10 +1321,21 @@ export function DataTable<Row>({
     const numeric = (column: DataTableColumn<Row>) =>
       column.numeric ?? (data[0] !== undefined && typeof valueOf(column, data[0]) === 'number');
     const list: Col<Row>[] = [...(selectable ? [SELECT] : []), ...(showExpander ? [EXPAND] : [])].map(
-      (id) => ({ id, pin: 'start', align: 'center', numeric: false, width: fit.widths[id] ?? UTILITY_WIDTH }),
+      (id, i) => ({
+        id,
+        pin: 'start',
+        align: 'center',
+        numeric: false,
+        width: fit.widths[id] ?? UTILITY_WIDTH,
+        index: i + 1,
+      }),
     );
+    // A column's position counts the hidden columns too, so assistive technology hears that some are missing.
+    let index = list.length;
     for (const pin of ['start', undefined, 'end'] as const) {
-      for (const def of visible.filter((column) => column.pin === pin)) {
+      for (const def of columns.filter((column) => column.pin === pin)) {
+        index++;
+        if (!visible.includes(def)) continue;
         const isNumeric = numeric(def);
         list.push({
           id: def.id,
@@ -1253,8 +1344,19 @@ export function DataTable<Row>({
           align: def.align ?? (isNumeric ? 'end' : 'start'),
           numeric: isNumeric,
           width: fit.widths[def.id]!,
+          index,
         });
       }
+    }
+    if (showHiddenMark) {
+      list.push({
+        id: HIDDEN,
+        pin: 'end',
+        align: 'center',
+        numeric: false,
+        width: UTILITY_WIDTH,
+        index: index + 1,
+      });
     }
     // Pinned columns stick at the summed width of the pinned columns between them and their edge.
     let offset = 0;
@@ -1273,7 +1375,9 @@ export function DataTable<Row>({
     if (ends.length) ends[ends.length - 1]!.pinEdge = true;
     return list;
     // eslint-disable-next-line react-hooks/exhaustive-deps -- `data[0]` only decides the default alignment
-  }, [columns, fit, selectable, showExpander, data[0]]);
+  }, [columns, fit, selectable, showExpander, showHiddenMark, data[0]]);
+  // Every column, shown or not, and the columns the table adds.
+  const columnCount = columns.length + cols.filter((c) => !c.def).length;
   const totalWidth = size ? cols.reduce((sum, c) => sum + c.width, 0) : undefined;
   const hiddenColumns = useMemo(
     () => columns.filter((column) => fit.hidden.includes(column.id)),
@@ -1451,8 +1555,8 @@ export function DataTable<Row>({
     table.setRowSelection(Object.fromEntries(ids.map((id) => [id, true as const]))),
   );
   // What a Shift range runs over: the rows on screen that can be selected, in order.
-  const selectRow = (id: string, rangeTo: boolean) =>
-    select(id, rangeTo, () =>
+  const selectRow = (id: string, options: { range?: boolean; anchor?: boolean }) =>
+    select(id, options, () =>
       items.flatMap((item) => (item.kind === 'row' && item.row.getCanSelect() ? [item.row.id] : [])),
     );
 
@@ -1491,6 +1595,7 @@ export function DataTable<Row>({
       onRowAction,
       selectRowLabel,
       selectAllLabel,
+      hiddenColumnsLabel,
       highlightLabel,
       collapsibleGroups,
       stickyGroups,
@@ -1510,21 +1615,21 @@ export function DataTable<Row>({
     return rendered.get(key);
   };
 
-  const layout = (c: Col<Row>, index: number) => ({
+  const layout = (c: Col<Row>) => ({
     columnId: c.id,
     align: c.align,
     pin: c.pin,
     pinOffset: c.pinOffset,
     pinEdge: c.pinEdge,
-    index: index + 1,
+    index: c.index,
   });
 
   // --- Header ------------------------------------------------------------------------------------------
   const sortedCount = sort.length;
-  const headerCell = (c: Col<Row>, index: number) => {
+  const headerCell = (c: Col<Row>) => {
     if (c.id === SELECT) {
       return (
-        <HeaderCell key={c.id} {...layout(c, index)} label={selectAllLabel}>
+        <HeaderCell key={c.id} {...layout(c)} label={selectAllLabel}>
           {selectionMode === 'multiple' && !loading && (
             <Checkbox
               size="small"
@@ -1537,12 +1642,33 @@ export function DataTable<Row>({
         </HeaderCell>
       );
     }
-    if (!c.def) return <HeaderCell key={c.id} {...layout(c, index)} label={showDetailsLabel} />;
+    if (c.id === HIDDEN) {
+      const labels = hiddenColumns.map((column) =>
+        typeof column.header === 'string' ? column.header : (column.headerLabel ?? column.id),
+      );
+      const mark = { count: labels.length, labels, children: `+${labels.length}` };
+      return (
+        <HeaderCell
+          key={c.id}
+          {...layout(c)}
+          label={hiddenColumnsLabel(labels.length)}
+          tooltip={labels.join(', ')}
+          className={styles.hiddenMark}
+        >
+          {renderPart(parts?.hiddenIndicator, mark, (p) => (
+            <span data-part="hiddenIndicator" aria-hidden="true">
+              {p.children}
+            </span>
+          ))}
+        </HeaderCell>
+      );
+    }
+    if (!c.def) return <HeaderCell key={c.id} {...layout(c)} label={showDetailsLabel} />;
     const column = table.getColumn(c.id);
     const direction = column?.getIsSorted() || 'none';
     const sortIndex = sortedCount > 1 && direction !== 'none' ? (column?.getSortIndex() ?? 0) + 1 : undefined;
     const props: DataTableHeaderCellProps & { column: DataTableColumn<Row> } = {
-      ...layout(c, index),
+      ...layout(c),
       column: c.def,
       sort: c.def.sortable ? direction : undefined,
       sortIndex,
@@ -1585,11 +1711,11 @@ export function DataTable<Row>({
           <>
             {spans.length > 0 && (
               <Row rowKey="head-groups" index={1} data-kind="header">
-                {spans.map(({ group, first, index, span }) =>
+                {spans.map(({ group, first, span }) =>
                   group ? (
                     <HeaderCell
                       key={`${group.id}:${first.id}`}
-                      {...layout(first, index)}
+                      {...layout(first)}
                       columnId={`group:${group.id}`}
                       align="center"
                       pinEdge={false}
@@ -1675,8 +1801,8 @@ export function DataTable<Row>({
               expandLabel: expandGroupLabel,
               sticky: stickyGroups,
               colSpan,
-              children: cols.slice(colSpan).map((c, i) => (
-                <Cell key={c.id} {...layout(c, colSpan + i)} numeric={c.numeric}>
+              children: cols.slice(colSpan).map((c) => (
+                <Cell key={c.id} {...layout(c)} numeric={c.numeric}>
                   {c.def?.aggregate?.(originals)}
                 </Cell>
               )),
@@ -1695,7 +1821,7 @@ export function DataTable<Row>({
         key: column.id,
         label: column.headerLabel ?? column.header,
         value: cellContent(
-          { id: column.id, def: column, align: 'start', numeric: false, width: 0 },
+          { id: column.id, def: column, align: 'start', numeric: false, width: 0, index: 0 },
           row,
           position,
         ).content,
@@ -1738,24 +1864,34 @@ export function DataTable<Row>({
       onAction: href
         ? () => document.getElementById(linkId)?.click()
         : onRowAction && (() => onRowAction(original)),
-      onSelect: selectable ? ({ range: rangeTo }) => selectRow(id, rangeTo) : undefined,
+      onSelect: selectable ? (options) => selectRow(id, options) : undefined,
       'data-parked': parked ? '' : undefined,
-      children: cols.map((c, i) => {
+      children: cols.map((c) => {
         if (c.id === SELECT) {
           return (
-            <Cell key={c.id} {...layout(c, i)}>
-              <RowCheckbox
-                label={selectRowLabel(original)}
-                checked={isSelected}
-                disabled={disabled}
-                onToggle={(rangeTo) => selectRow(id, rangeTo)}
-              />
+            <Cell key={c.id} {...layout(c)}>
+              {selectionMode === 'single' ? (
+                <RowRadio
+                  label={selectRowLabel(original)}
+                  checked={isSelected}
+                  disabled={disabled}
+                  onToggle={() => selectRow(id, {})}
+                />
+              ) : (
+                <RowCheckbox
+                  label={selectRowLabel(original)}
+                  checked={isSelected}
+                  disabled={disabled}
+                  onToggle={(range) => selectRow(id, { range })}
+                />
+              )}
             </Cell>
           );
         }
+        if (c.id === HIDDEN) return <Cell key={c.id} {...layout(c)} focusable={false} />;
         if (c.id === EXPAND) {
           return (
-            <Cell key={c.id} {...layout(c, i)}>
+            <Cell key={c.id} {...layout(c)}>
               <GroupHeader.Toggle
                 collapsed={!isExpanded}
                 label={isExpanded ? hideDetailsLabel : showDetailsLabel}
@@ -1767,13 +1903,18 @@ export function DataTable<Row>({
         const column = c.def!;
         const { value, text, content } = cellContent(c, row, position);
         const cellProps: DataTableCellProps & { row: Row; column: DataTableColumn<Row> } = {
-          ...layout(c, i),
+          ...layout(c),
           row: original,
           column,
           rowHeader: column.rowHeader,
           numeric: c.numeric,
           wrap: column.wrap,
           title: !column.cell && !c.numeric && !column.wrap && text ? text : undefined,
+          // The meaning of the row's stripe, for those who see it: colour alone would not say.
+          tooltip:
+            c.id === firstDataColumn && accent
+              ? accent.label + (!column.cell && text ? ` · ${text}` : '')
+              : undefined,
           children: (
             <>
               {flashes(column) && (
@@ -1787,7 +1928,7 @@ export function DataTable<Row>({
               {c.id === firstDataColumn && accent && <span className={srOnly}>{accent.label} </span>}
               {c.id === firstDataColumn && highlighted && <span className={srOnly}>{highlightLabel} </span>}
               {href && c.id === linkColumn ? (
-                <a id={linkId} href={href} tabIndex={-1} data-part="row-link" className={styles.rowLink}>
+                <a id={linkId} href={href} tabIndex={-1} data-part="rowLink" className={styles.rowLink}>
                   {content}
                 </a>
               ) : (
@@ -1855,14 +1996,16 @@ export function DataTable<Row>({
   const skeletonRow = (rowIndex: number) => (
     <tr key={`skeleton-${rowIndex}`} aria-hidden="true" data-kind="skeleton" className={styles.row}>
       {cols.map((c, i) => (
-        <Cell key={c.id} {...layout(c, i)} index={undefined} focusable={false}>
-          {renderPart(parts?.skeleton, { rowIndex, columnId: c.id }, () =>
-            c.def ? (
-              <Skeleton width={`${40 + ((rowIndex * 7 + i * 13) % 5) * 12}%`} className={styles.skeleton} />
-            ) : (
-              <Skeleton shape="block" width={14} height={14} className={styles.skeleton} />
-            ),
-          )}
+        <Cell key={c.id} {...layout(c)} index={undefined} focusable={false}>
+          {renderPart(parts?.skeleton, { rowIndex, columnId: c.id }, () => (
+            <span data-part="skeleton" className={styles.skeletonPart}>
+              {c.def ? (
+                <Skeleton width={`${40 + ((rowIndex * 7 + i * 13) % 5) * 12}%`} className={styles.skeleton} />
+              ) : (
+                <Skeleton shape="block" width={14} height={14} className={styles.skeleton} />
+              )}
+            </span>
+          ))}
         </Cell>
       ))}
     </tr>
@@ -1884,10 +2027,10 @@ export function DataTable<Row>({
         {
           children: (
             <Row rowKey="foot" index={headKeys.length + items.length + 1} data-kind="footer">
-              {cols.map((c, i) => {
+              {cols.map((c) => {
                 const content = c.def?.footer;
                 return (
-                  <Cell key={c.id} {...layout(c, i)} numeric={c.numeric} rowHeader={c.def?.rowHeader}>
+                  <Cell key={c.id} {...layout(c)} numeric={c.numeric} rowHeader={c.def?.rowHeader}>
                     {typeof content === 'function' ? content(leafRows) : content}
                   </Cell>
                 );
@@ -1909,7 +2052,7 @@ export function DataTable<Row>({
         showCaption={showCaption}
         multiselectable={selectionMode === 'multiple' || undefined}
         rowCount={headKeys.length + items.length + (hasFooter ? 1 : 0)}
-        columnCount={cols.length}
+        columnCount={columnCount}
         width={totalWidth}
         headerRows={headKeys.length}
         dividers={dividers}
@@ -1918,6 +2061,7 @@ export function DataTable<Row>({
         state={state || undefined}
         announcement={loadingMore ? loadingMoreLabel : undefined}
         onReachEnd={onReachEnd}
+        onSelectAll={selectionMode === 'multiple' ? () => table.toggleAllRowsSelected(true) : undefined}
         className={className}
         style={style}
       >
