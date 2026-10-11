@@ -263,3 +263,20 @@ An independent reviewer (with three sub-reviewers) checked 11 components, the pl
 ### Verified correct
 
 `useShrinkLevel`: 1px sweeps of the TopBar with ContextBlock and EntitySwitcher identical both ways and equal to fresh loads, two resizes in one frame, menus held open through resizes, cold fonts, rows inside a Modal, a Popover and a collapsed card's popover (the one hole is SL-3). The on-demand menu on the good path. The collapsed card's popover on the page (controls respond, typed text survives a resize, focus returns, StrictMode clean). Root attributes in 97 of 100 cases. Server rendering and hydration of all 11 components (apart from X-6). No third-party type in `dist/**/*.d.ts`. 34 test mutations all caught (X-7 is the one gap). No page scroll in any story or page at four sizes and three densities with wheel, keys and tabbing; shrink steps without hysteresis; the heat scale's second cue always present; meter bands equal `ProgressBar`; Spotlight ring 17:1 and above. Not verified: a real screen reader, Safari, Firefox beyond SL-1, touch, development-only warnings.
+
+## Owner's feedback from Storybook (2026-10-11)
+
+Found by the owner while using the Storybook. Each is a requirement of the fix pass. Two change earlier decisions (O-2 and O-6); the change is recorded in `plan/components.md` under "Decisions" when it is built.
+
+| Id | Where | Finding | Status |
+|---|---|---|---|
+| O-1 | `WidgetBoard` (analysis page) | Collapsing a card is not smooth: it flickers before closing (the same as SL-4) | open |
+| O-2 | `DataTable` (table page) | When the width cannot show every column, the user cannot choose which columns to show or hide, nor resize or reorder them. **Changes the decision "no end-user column editing"**: the table gets a column menu (show, hide, reorder, resize, reset), controlled by the app so it can save the choice | open |
+| O-3 | Table page, "Views" card (`VerticalNav`) | The items hug the left and leave the right of the card empty: they should fill the width | open |
+| O-4 | Selected and highlighted rows | The left edge stripe is unwanted on: the selected item of a `VerticalNav`, the highlighted row of the command palette, the selected option of an open `Select` or `Menu`. It stays on list items of the inbox kind and on table rows. The second cue that is not colour must remain (a check, a weight change) | open |
+| O-5 | Inbox page, favourite button (`IconButton` toggle) | A pressed star is an outline star in an outlined box: it should be a filled, coloured star, and a pointer press should not leave a focus ring | open |
+| O-6 | Theming | Changing the brand colour changes little: everything stays purple and magenta. Brand and context should visibly drive the look. **Changes the decision "violet (selected) and magenta (primary action) are fixed"**: they become defaults derived from the brand, still overridable as tokens | open |
+| O-7 | `LevelMeter` rows (list and detail page) | Each meter starts right after its label, so the meters do not line up: labels need their own column and the meters theirs | open |
+| O-8 | Table page | The `ActionBar` of the selection is hidden under the table's summary row | open |
+| O-9 | `ContextBlock` | An optional background, slightly lighter or darker than the bar it sits in, as in the source | open |
+| O-10 | Theming | One global setting for how opaque card backgrounds are over the app background | open |
