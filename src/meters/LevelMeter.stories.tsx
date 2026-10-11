@@ -98,8 +98,9 @@ export const EdgeValues: Story = {
         <LevelMeter label="Balance" min={-50} max={50} value={0} compare={30} showValue />
       </Panel>
       <Panel title="No value, unknown level, one step">
-        <LevelMeter label="No value" />
-        <LevelMeter label="Unknown level" levels={levels} value="missing" />
+        <LevelMeter label="No value" showValue />
+        <LevelMeter label="Unknown level" levels={levels} value="missing" showValue />
+        <LevelMeter label="Not rated" value={null} showValue emptyLabel="n/a" noValueLabel="Not rated yet" />
         <LevelMeter label="One level" levels={levels.slice(0, 1)} value="none" showValue />
       </Panel>
       <Panel title="Loading">
@@ -158,10 +159,27 @@ const rows = [
   { name: 'Person D', level: 'good', load: 64 },
 ];
 
+/** Right to left: the scale runs from the right, and the marker, the band and the end labels mirror with it. */
+export const RightToLeft: Story = {
+  globals: { direction: 'rtl' },
+  render: () => (
+    <Board columns={2}>
+      <Panel title="Numeric">
+        <LevelMeter label="Skill level" value={20} minLabel="Low" maxLabel="High" showValue />
+        <LevelMeter label="Estimate" range={[10, 40]} value={30} compare={80} showValue />
+      </Panel>
+      <Panel title="Named and zones">
+        <LevelMeter label="Skill level" levels={levels} value="basic" showValue />
+        <LevelMeter label="Capacity" value={85} zones={zones} showValue />
+      </Panel>
+    </Board>
+  ),
+};
+
 /** In table cells, with the small size. */
 export const InCell: Story = {
   render: () => (
-    <Panel title="Team" style={{ maxWidth: 720 }}>
+    <Panel title="People" style={{ maxWidth: 720 }}>
       <table style={{ width: '100%', borderCollapse: 'collapse', font: 'var(--umbra-font-table-cell)' }}>
         <thead>
           <tr style={{ color: 'var(--umbra-color-base-text-muted)' }}>

@@ -50,7 +50,7 @@ interface MeterContext {
   compare?: number;
   band?: [number, number];
   tone: MeterTone;
-  valueText: string;
+  valueText: ReactNode;
   /** How far the meter has shrunk: 1 hides the end labels, 2 and 3 thin the ticks. */
   level: number;
   loading: boolean;
@@ -72,7 +72,7 @@ interface BlockProps {
 
 export interface LevelMeterRootProps extends BlockProps {
   /** Where the marker sits. Leave it out to show only a `range`. */
-  value?: LevelMeterValue;
+  value?: LevelMeterValue | null;
   min?: number;
   max?: number;
   /** Number of ticks on a numeric scale. */
@@ -99,6 +99,10 @@ export interface LevelMeterRootProps extends BlockProps {
   formatValue?: (value: number) => string;
   /** Shows skeletons in place of the ticks and the value. */
   loading?: boolean;
+  /** Shown in place of the value text when there is no value, or the value names no level. */
+  emptyLabel?: ReactNode;
+  /** What assistive technology and the tooltip say when there is no value and no range. */
+  noValueLabel?: string;
   /** `false` turns off the tooltip that shows the exact value on hover. */
   tooltip?: boolean;
   /** Names a meter that has no visible label. */
@@ -126,6 +130,8 @@ function Root({
   boxed = true,
   formatValue,
   loading = false,
+  emptyLabel = '—',
+  noValueLabel = 'No value',
   tooltip = true,
   className,
   style,
@@ -150,8 +156,8 @@ function Root({
   const min = levels ? 0 : minProp;
   const max = levels ? Math.max(1, levels.length - 1) : maxProp;
   /** A value as a number on the scale; `undefined` when it is missing or names no level. */
-  const position = (v: LevelMeterValue | undefined) => {
-    if (typeof v !== 'string') return v === undefined || Number.isNaN(v) ? undefined : v;
+  const position = (v: LevelMeterValue | null | undefined) => {
+    if (typeof v !== 'string') return v === undefined || v === null || Number.isNaN(v) ? undefined : v;
     const index = levels?.findIndex((l) => l.id === v) ?? -1;
     return index < 0 ? undefined : index;
   };
@@ -181,9 +187,12 @@ function Root({
     .filter((tick) => tickShown(tick.i, count, stride));
 
   const shownValue = value === undefined ? '' : text(value);
-  const valueText = zone?.label ? `${shownValue} · ${zone.label}` : shownValue;
+  const valueText =
+    value === undefined ? emptyLabel : zone?.label ? `${shownValue} · ${zone.label}` : shownValue;
+  const hasRange = low !== undefined && high !== undefined;
   const spoken = describe(
-    shownValue,
+    // No value and no range is not zero: the text says that the value is missing.
+    value === undefined && !hasRange ? noValueLabel : shownValue,
     zone?.label,
     low !== undefined && high !== undefined && `${rangeLabel}: ${text(low)} – ${text(high)}`,
     compare !== undefined && `${compareLabel}: ${text(compare)}`,
@@ -197,6 +206,7 @@ function Root({
     'data-boxed': boxed || undefined,
     'data-tone': markerTone,
     'data-shrink': level || undefined,
+    'data-empty': (value === undefined && !hasRange) || undefined,
     'data-out-of-range': value === undefined ? undefined : outOfRange(value, min, max),
     className: cx(styles.root, className),
     style: { '--n': ticks.length, ...style } as CSSProperties,
@@ -283,13 +293,17 @@ export interface LevelMeterStripProps extends BlockProps {
 function Strip({ children, skeleton, className, style }: LevelMeterStripProps) {
   const meter = useMeter();
   if (meter.loading) {
-    return renderPart(skeleton, {}, () => (
-      <Skeleton shape="block" className={cx(styles.strip, styles.skeleton)} />
-    ));
+    return (
+      <span data-part="skeleton" className={styles.skeletonPart}>
+        {renderPart(skeleton, {}, () => (
+          <Skeleton shape="block" className={cx(styles.strip, styles.skeleton)} />
+        ))}
+      </span>
+    );
   }
   return (
     <div data-part="strip" className={cx(styles.strip, className)} style={style}>
-      <div className={styles.plot}>
+      <div data-part="plot" className={styles.plot}>
         {meter.ticks.map((tick) => (
           <i key={tick.at} data-part="tick" data-lit={tick.lit || undefined} style={at(tick.at)} />
         ))}

@@ -856,7 +856,7 @@ The key for a chart or any colour-coded data: one marker and label per series.
 
 A strip of ticks with a marker that shows where a value sits on a scale.
 
-**Tokens**: `--umbra-level-meter-band`, `--umbra-level-meter-border`, `--umbra-level-meter-compare`, `--umbra-level-meter-height`, `--umbra-level-meter-length`, `--umbra-level-meter-marker`, `--umbra-level-meter-marker-width`, `--umbra-level-meter-pitch`, `--umbra-level-meter-radius`, `--umbra-level-meter-tick`, `--umbra-level-meter-tick-lit`, `--umbra-level-meter-tick-width`, `--umbra-level-meter-track`.
+**Tokens**: `--umbra-level-meter-band`, `--umbra-level-meter-border`, `--umbra-level-meter-boundary`, `--umbra-level-meter-compare`, `--umbra-level-meter-height`, `--umbra-level-meter-length`, `--umbra-level-meter-marker`, `--umbra-level-meter-marker-width`, `--umbra-level-meter-pitch`, `--umbra-level-meter-radius`, `--umbra-level-meter-tick`, `--umbra-level-meter-tick-lit`, `--umbra-level-meter-tick-width`, `--umbra-level-meter-track`.
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -866,7 +866,7 @@ A strip of ticks with a marker that shows where a value sits on a scale.
 | `valueLabel` | `ReactNode` | Replaces the formatted value. Setting it shows the value. |
 | `showValue` | `boolean` | Shows the value as text after the meter. |
 | `parts` | `see Parts` | Replace or hide named pieces. |
-| `value` | `LevelMeterValue` | Where the marker sits. Leave it out to show only a `range`. |
+| `value` | `LevelMeterValue \| null` | Where the marker sits. Leave it out to show only a `range`. |
 | `aria-label` | `string` | Names a meter that has no visible label. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
@@ -877,6 +877,8 @@ A strip of ticks with a marker that shows where a value sits on a scale.
 | `min` | `number` |  |
 | `max` | `number` |  |
 | `formatValue` | `((value: number) => string)` | Text of a position on a numeric scale. A named scale uses the labels of its levels. |
+| `emptyLabel` | `ReactNode` | Shown in place of the value text when there is no value, or the value names no level. |
+| `noValueLabel` | `string` | What assistive technology and the tooltip say when there is no value and no range. |
 | `tooltip` | `boolean` | `false` turns off the tooltip that shows the exact value on hover. |
 | `steps` | `number` | Number of ticks on a numeric scale. |
 | `levels` | `LevelMeterLevel[]` | A named scale: one tick per level, and the marker sits on a level. Replaces `min`, `max` and `steps`. |
@@ -1276,7 +1278,7 @@ The top-level sections of the app, inside the `TopBar`.
 
 A bar that fills with a value: progress of a task, or a measured level. Fills the width of its container.
 
-**Tokens**: `--umbra-progress-bar-fill`, `--umbra-progress-bar-fill-end`, `--umbra-progress-bar-height`, `--umbra-progress-bar-min-width`, `--umbra-progress-bar-radius`, `--umbra-progress-bar-segment-gap`, `--umbra-progress-bar-target`, `--umbra-progress-bar-target-width`, `--umbra-progress-bar-track`.
+**Tokens**: `--umbra-progress-bar-fill`, `--umbra-progress-bar-fill-end`, `--umbra-progress-bar-hatch`, `--umbra-progress-bar-height`, `--umbra-progress-bar-min-width`, `--umbra-progress-bar-radius`, `--umbra-progress-bar-segment-gap`, `--umbra-progress-bar-target`, `--umbra-progress-bar-target-width`, `--umbra-progress-bar-track`, `--umbra-progress-bar-track-border`, `--umbra-progress-bar-travel-duration`.
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -1286,7 +1288,7 @@ A bar that fills with a value: progress of a task, or a measured level. Fills th
 | `valuePlacement` | `"outside" \| "inside"` | `inside` draws the value on the bar; it needs `size="thick"`, and hides when the bar is too short for it. |
 | `parts` | `see Parts` | Replace or hide named pieces. |
 | `indeterminate` | `boolean` | Progress of unknown length. Moves, or shows a static striped fill when motion is reduced. |
-| `value` | `number` | The current value. A stacked bar defaults to the sum of its parts. |
+| `value` | `number \| null` | The current value. A stacked bar defaults to the sum of its parts. `null` or nothing means there is no value: the bar is empty, and says so. |
 | `aria-label` | `string` | Names a bar that has no visible label. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
@@ -1304,6 +1306,8 @@ A bar that fills with a value: progress of a task, or a measured level. Fills th
 | `target` | `number` | Draws a tick at a goal value. |
 | `targetLabel` | `string` | Names the target for assistive technology. |
 | `formatValue` | `((value: number, scale: ProgressBarScale) => string)` | Text of a value. The default is a rounded percentage. |
+| `emptyLabel` | `ReactNode` | Shown in place of the value text when there is no value. |
+| `noValueLabel` | `string` | What assistive technology and the tooltip say when there is no value. |
 | `tooltip` | `boolean` | `false` turns off the tooltip that shows the exact value on hover. |
 | `highlightChanges` | `boolean` | A changed value flashes softly once: green when a number rose, red when it fell, neutral otherwise. A sign shows the direction without colour. No flash under reduced motion; the sign stays. The value is never counted up or down. |
 | `increasedLabel` | `string` | What a screen reader hears with the sign of a value that rose or fell. |
