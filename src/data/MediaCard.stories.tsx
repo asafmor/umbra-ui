@@ -25,8 +25,12 @@ const text =
 const save = <IconButton icon={<Bookmark />} label="Save for later" variant="ghost" />;
 const pair = {
   title: 'Region A',
-  side: { leading: <EntityIcon name="Region A" size="sm" letters={2} />, meta: '12' },
-  opposite: { title: 'Region B', leading: <EntityIcon name="Region B" size="sm" letters={2} />, meta: '9' },
+  side: { leading: <EntityIcon name="Region A" alt="" size="sm" letters={2} />, meta: '12' },
+  opposite: {
+    title: 'Region B',
+    leading: <EntityIcon name="Region B" alt="" size="sm" letters={2} />,
+    meta: '9',
+  },
   center: 'to',
 };
 
@@ -149,12 +153,19 @@ function Pressable() {
         onPress={() => setLast('Opened the pair')}
       />
       <MediaCard size="content" image={<Picture hue={120} />} title="Plain: nothing to press" meta="Static" />
+      <MediaCard
+        size="content"
+        selected
+        image={<Picture hue={190} />}
+        title="The chosen card"
+        meta="selected"
+      />
       <Log>Last action: {last}</Log>
     </Stack>
   );
 }
 
-/** The whole card as a link or a button, with a control inside that stays its own. */
+/** The whole card as a link or a button, with a control inside that stays its own; and the chosen card of a set. */
 export const LinksAndActions: Story = { render: () => <Pressable /> };
 
 const long = 'A long headline that wraps to a second line and then ends in an ellipsis when it must';

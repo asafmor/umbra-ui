@@ -9,7 +9,9 @@
   container: umbra-media-card / inline-size;
   position: relative;
   isolation: isolate;
-  flex: 1 1 0;
+  /* A share of a height that is given; where none is (a column that is as tall as its content), a
+     basis in per cent is the content's height, so the card does not collapse to its padding. */
+  flex: 1 1 0%;
   min-width: 0;
   min-height: 0;
   display: flex;
@@ -76,13 +78,16 @@
 }
 
 .title,
-.description {
+.description,
+.clamp {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: var(--lines);
   line-clamp: var(--lines);
   margin: 0;
-  overflow: hidden;
+  /* Clipped, not hidden: a hidden box scrolls to the focused link inside it, which showed the last
+     lines of a long title and closed its tooltip. */
+  overflow: clip;
   overflow-wrap: anywhere;
 }
 
@@ -94,6 +99,11 @@
 .description {
   color: var(--secondary);
   font: var(--umbra-font-label);
+}
+
+/* Every piece of the line hidden by its part: no empty line is left. */
+.footer:empty {
+  display: none;
 }
 
 .footer {
@@ -127,6 +137,12 @@
   position: relative;
   z-index: 1;
   margin-inline-start: auto;
+}
+
+/* A button is one box: it takes the heading's width, and its text is clamped inside it (`.clamp`). */
+button.link {
+  display: block;
+  width: 100%;
 }
 
 /* The whole card is the hit area of its link or button. */
@@ -225,6 +241,12 @@
   background: linear-gradient(to top, var(--scrim) calc(100% - var(--fade)), transparent);
 }
 
+/* A light ring on a light picture cannot be told from it: a dark band lies inside the ring. */
+.root[data-image='behind'] .link:focus-visible::after {
+  box-shadow: inset 0 0 0 calc(2 * var(--umbra-state-focus-ring-width))
+    var(--umbra-media-card-focus-band, var(--umbra-color-base-surface1));
+}
+
 .root[data-image='behind'][data-interactive]:hover .picture {
   filter: brightness(1.12);
 }
@@ -239,12 +261,26 @@
   min-width: 0;
 }
 
-.root[data-variant='pair'] > .content[data-part='skeleton'] {
+.root[data-variant='pair'] > .content[data-part='skeleton']:not([data-known]) {
   padding: var(--pad);
 }
 
 .skeletonTitle {
   font: var(--umbra-font-body);
+}
+
+/* Loading, with the content known: the piece itself, unseen, under a placeholder of its size. */
+.ghost {
+  position: relative;
+  min-width: 0;
+  visibility: hidden;
+}
+
+.veil {
+  position: absolute;
+  inset: 0;
+  min-height: 0;
+  visibility: visible;
 }
 
 /* Show less as the card gets shorter than its content: one step per level (useFitLevel). */

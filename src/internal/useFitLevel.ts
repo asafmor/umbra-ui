@@ -12,6 +12,10 @@ const tooTall = (el: HTMLElement) => el.scrollHeight > el.clientHeight + 1;
  * The level is a function of the size alone: when the element grows, in either direction, it starts
  * again from 0, and all of it happens before the paint. An element that is as tall as its content (no
  * slot gives it a height) never overflows, so it stays at 0. The element must clip its overflow.
+ *
+ * The caller's CSS must let the element be that tall where no height is given: `height: 100%`, or a
+ * flex basis of `0%` (not `0`, which collapses it to its padding in a column without a height, and
+ * every level then hides something until nothing is left). See plan/layout.md, rule 5.
  */
 export function useFitLevel(element: RefObject<HTMLElement | null>, max: number, resetKey?: unknown) {
   const [level, setLevel] = useState(0);
