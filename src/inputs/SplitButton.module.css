@@ -1,0 +1,42 @@
+/* The two halves are `Button`s (their look is Button's own stylesheet); here they are only joined. */
+.root {
+  display: inline-flex;
+  min-width: 0;
+  max-width: 100%;
+  vertical-align: middle;
+}
+
+.root[data-full-width] {
+  display: flex;
+  width: 100%;
+}
+
+.root .action {
+  border-start-end-radius: 0;
+  border-end-end-radius: 0;
+}
+
+.root[data-full-width] .action {
+  flex: 1 1 auto;
+}
+
+/* The caret is narrower than it is tall, and never under 24px (WCAG 2.5.8). Its border lies over the action's. */
+.root .caret[data-icon-only] {
+  width: var(--umbra-split-button-caret-width, max(24px, calc(var(--height) * 0.8)));
+  margin-inline-start: calc(-1 * var(--umbra-border-width));
+  border-start-start-radius: 0;
+  border-end-start-radius: 0;
+}
+
+/* Where the halves have no border of their own, a line in the text colour parts them. */
+.root .caret:is([data-variant='primary'], [data-variant='accent'], [data-variant='ghost']) {
+  border-inline-start-color: var(
+    --umbra-split-button-divider,
+    color-mix(in oklab, var(--fg) 40%, transparent)
+  );
+}
+
+/* The focus ring of one half is drawn over the other. */
+.root :is(.action, .caret)[data-focus-visible] {
+  z-index: 1;
+}
