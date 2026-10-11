@@ -97,6 +97,6 @@ Of the 20 open items of the Milestone 0 review, 17 were found fixed; the rest ar
 | Tokens declared and never read | `space-0`, `size-min-window-width`, `size-min-window-height`. | Milestone 2 |
 | 12 baseline images per story, 177 MB in total | Policy in decision 06; whether to trim captures is open. | Milestone 2 proposes a trim; the owner decides |
 | Browsers | Decided: Firefox and Safari are supported without automated tests (decision 06). Milestone 2 keeps the stated minimum versions true and writes a manual checklist. No real screen reader, zoom or touch testing yet. | Milestone 2 |
-| Source maps | Decided: one map per module with the source embedded stays (decision 05). Milestone 2 adds the checks and a packed-size limit. | Milestone 2 |
+| Source maps | Done 2026-10-11: `check:package` proves every map (and found block names shifting the lines of seven modules, fixed), `release:check` limits the packed size to 1300 kB, an example in the Vite development server proves what a developer sees, and the getting-started guide has a "Debugging" section (decision 05, "Source maps: what is checked"). | Done |
 | Repository settings | Protect `main`, enable private vulnerability reporting, Pages for the Storybook workflow is enabled and the site is published. | Owner (the first two) |
 | The `0.1.0` release itself | Prepared and rehearsed (`docs/releasing.md`). Not now: the owner releases when the library is ready for production. | Owner |

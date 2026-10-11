@@ -27,6 +27,8 @@ for (const name of names.length ? names : all) {
   // The copy of the library, and Vite's cache of it for `npm run dev`.
   rmSync(`${cwd}/node_modules/umbra-ui`, { recursive: true, force: true });
   rmSync(`${cwd}/node_modules/.vite`, { recursive: true, force: true });
+  // The cache of the second development server of tests/examples/source-maps.spec.ts.
+  rmSync(`${cwd}/node_modules/.vite-source-maps`, { recursive: true, force: true });
   // --ignore-scripts: the library is already built; without it npm rebuilds it for every example.
   run('install', '--ignore-scripts', '--no-audit', '--no-fund');
   run('run', 'build');

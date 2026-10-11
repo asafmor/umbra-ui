@@ -245,6 +245,77 @@ The stylesheet relies on current CSS and has no fallbacks for older browsers.
   menu) is settled in the browser, after hydration.
 - Import `umbra-ui/styles.css` once, in the root layout.
 
+## Debugging
+
+What the package ships, so that an error inside a component can be read:
+
+- **Readable modules.** One JavaScript file per source file, not minified: `dist/layout/Card.js` is
+  `Card.tsx` without its types. Your bundler minifies your build.
+- **Source maps with the source inside.** Every module has a `.js.map` that holds its `.tsx` file, so a
+  stack frame can be shown as a line of the original source. The package does not hold `src/`.
+- **Names.** React DevTools and component stacks show `Card`, `Card.Header`, `DataTable.Root`.
+
+What DevTools shows for a frame inside the library depends on whether your bundler reads the package's
+maps. Checked with the versions in the table:
+
+| Bundler                               | Without setup                    | To see the `.tsx` lines                                 |
+| ------------------------------------- | -------------------------------- | ------------------------------------------------------- |
+| Vite 8.3, development server          | The built module, `dist/**/*.js` | Keep the library out of the pre-bundle (below)          |
+| webpack 5.111                         | The built module                 | `source-map-loader` 5 (below)                           |
+| Next.js 16.4 (Turbopack, the default) | The `.tsx` lines                 | Nothing                                                 |
+| Next.js 16.4 with `--webpack`         | The built module                 | `source-map-loader`, added in `webpack()` of the config |
+
+- The built module is close to the source: same names, same order, comments kept. Most errors can be read
+  from it, so the setup below is optional.
+- In Next.js, `transpilePackages` is not needed for the library and does not change what the maps show.
+  Every module starts with `'use client'`, so a Server Component can import a component directly
+  ([Server rendering](#server-rendering)).
+
+**Vite.** Vite bundles each dependency before serving it, and that bundle's map stops at the built
+modules. Excluded from the pre-bundle, the library is served module by module with its own maps. Its
+dependencies must stay in: some hold CommonJS, which a browser cannot load as it is.
+
+```ts
+// vite.config.ts
+import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vite';
+
+export default defineConfig({
+  plugins: [react()],
+  optimizeDeps: {
+    exclude: ['umbra-ui'],
+    include: ['react-aria-components', '@tanstack/react-table', 'd3-scale', 'd3-shape', 'lucide-react'].map(
+      (name) => `umbra-ui > ${name}`,
+    ),
+  },
+});
+```
+
+The development server then makes one request per module of the library that the page uses. This
+changes the development server only, not `vite build`.
+
+**webpack.** Install `source-map-loader` and run it before the other loaders, for the library only:
+
+```js
+// webpack.config.js
+export default {
+  devtool: 'source-map',
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        enforce: 'pre',
+        include: /node_modules[\\/]umbra-ui/,
+        use: ['source-map-loader'],
+      },
+    ],
+  },
+};
+```
+
+In Next.js with `--webpack`, push the same rule onto `config.module.rules` in the `webpack(config)`
+function of `next.config.js`.
+
 ## Next
 
 | Guide                                           | Read it for                                                            |
