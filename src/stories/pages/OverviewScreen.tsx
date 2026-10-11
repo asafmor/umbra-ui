@@ -78,7 +78,7 @@ const count = (id: keyof Region & string, header: string, priority: number) =>
   numberColumn<Region>({ id, header, accessor: id, width: 52, priority, sortDescFirst: true });
 
 const regionColumns: DataTableColumn<Region>[] = [
-  numberColumn({ id: 'pos', header: 'Rank', accessor: 'pos', width: 52, align: 'start', priority: 'always' }),
+  numberColumn({ id: 'pos', header: '#', accessor: 'pos', width: 52, align: 'start', priority: 'always' }),
   {
     id: 'name',
     header: 'Region',
@@ -237,6 +237,8 @@ function SummaryCard({ go }: { go: (place: Place) => void }) {
             highlightLabel="Your region"
             rowAccent={accent}
             striped
+            // The mark for hidden columns is as wide as a column: in this narrow card the value column is worth more.
+            parts={{ hiddenIndicator: null }}
           />
           <SectionTitle onOpen={() => go('people/teams')}>Top performers</SectionTitle>
           <List aria-label="Top performers" height="content" striped itemSize="compact">

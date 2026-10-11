@@ -10,29 +10,29 @@ export async function expectChangeHighlights(page: Page, story: string, text = t
     await page.goto(`/iframe.html?id=${story}&viewMode=story`);
     await page.locator('#storybook-root > *').first().waitFor();
   };
-  const mark = (kind: string, part: 'flash' | 'sign') =>
-    page.locator(`[data-live="${kind}"] [data-part="change-${part}"]`);
+  const mark = (kind: string, part: 'Flash' | 'Sign') =>
+    page.locator(`[data-live="${kind}"] [data-part="change${part}"]`);
   const update = page.getByRole('button', { name: 'Update values' });
 
   await open();
   // Nothing flashes for the first value.
   await expect(page.locator('[data-part="changeFlash"]')).toHaveCount(0);
   await update.click();
-  await expect(mark('up', 'flash')).toHaveAttribute('data-direction', 'up');
-  await expect(mark('up', 'sign')).toHaveText('▲increased');
-  await expect(mark('down', 'flash')).toHaveAttribute('data-direction', 'down');
-  await expect(mark('down', 'sign')).toHaveText('▼decreased');
+  await expect(mark('up', 'Flash')).toHaveAttribute('data-direction', 'up');
+  await expect(mark('up', 'Sign')).toHaveText('▲increased');
+  await expect(mark('down', 'Flash')).toHaveAttribute('data-direction', 'down');
+  await expect(mark('down', 'Sign')).toHaveText('▼decreased');
   if (text) {
     // Text has no direction: a neutral flash and no sign.
-    await expect(mark('text', 'flash')).toHaveAttribute('data-direction', 'neutral');
-    await expect(mark('text', 'sign')).toHaveCount(0);
+    await expect(mark('text', 'Flash')).toHaveAttribute('data-direction', 'neutral');
+    await expect(mark('text', 'Sign')).toHaveCount(0);
   }
   // Only what changed flashes; the value is the new one at once, not counted up.
-  await expect(mark('same', 'flash')).toHaveCount(0);
+  await expect(mark('same', 'Flash')).toHaveCount(0);
   await expect(page.locator('[data-live="up"]')).toContainText('41');
   await expect(page.locator('[data-live="down"]')).toContainText('39');
   // The flash covers the value's own element, and is a fade that plays once.
-  const flash = await mark('up', 'flash').evaluate((el) => {
+  const flash = await mark('up', 'Flash').evaluate((el) => {
     const css = getComputedStyle(el);
     const host = el.parentElement!;
     return {
@@ -53,9 +53,9 @@ export async function expectChangeHighlights(page: Page, story: string, text = t
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await open();
   await update.click();
-  await expect(mark('up', 'sign')).toHaveText('▲increased');
-  expect(await mark('up', 'flash').evaluate((el) => parseFloat(getComputedStyle(el).animationDuration))).toBe(
+  await expect(mark('up', 'Sign')).toHaveText('▲increased');
+  expect(await mark('up', 'Flash').evaluate((el) => parseFloat(getComputedStyle(el).animationDuration))).toBe(
     0,
   );
-  expect(await mark('up', 'flash').evaluate((el) => getComputedStyle(el).opacity)).toBe('0');
+  expect(await mark('up', 'Flash').evaluate((el) => getComputedStyle(el).opacity)).toBe('0');
 }
