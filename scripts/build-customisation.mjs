@@ -27,7 +27,53 @@ const doc = (symbol) => cell(ts.displayPartsToString(symbol.getDocumentationComm
 const typeText = (symbol, node) =>
   checker
     .typeToString(checker.getTypeOfSymbolAtLocation(symbol, node), node, ts.TypeFormatFlags.NoTruncation)
+    // A type from another file prints as import("./file").Name: the name alone reads better.
+    .replace(/import\("[^"]*"\)\./g, '')
     .replace(/ \| undefined$/, '');
+
+/** Names a file gives a default text to, as in `{ clearLabel = 'Clear' }`. */
+const defaults = new Map();
+function hasDefault(prop) {
+  const file = prop.declarations?.[0]?.getSourceFile();
+  if (!file) return false;
+  if (!defaults.has(file)) {
+    const names = new Set();
+    const visit = (n) => {
+      if (ts.isBindingElement(n) && n.initializer && ts.isIdentifier(n.name)) {
+        const init = n.initializer;
+        if (ts.isStringLiteralLike(init) || ts.isTemplateExpression(init) || ts.isArrowFunction(init))
+          names.add(n.name.text);
+      }
+      ts.forEachChild(n, visit);
+    };
+    visit(file);
+    defaults.set(file, names);
+  }
+  return defaults.get(file).has(prop.name);
+}
+/**
+ * A prop that holds one of the library's own words: translate these. See docs/customisation.md.
+ * It is optional, a string or a function, and named `…Label` or `…Hint`; a `label`, `placeholder` or
+ * `…Name` counts only when the component gives it a default (elsewhere those are the app's own text).
+ */
+function isText(prop, node) {
+  if (!(prop.flags & ts.SymbolFlags.Optional) || prop.name === 'className') return false;
+  const type = checker.getNonNullableType(checker.getTypeOfSymbolAtLocation(prop, node));
+  const plain = (type.isUnion() ? type.types : [type]).every(
+    (t) => t.flags & ts.TypeFlags.StringLike || t.getCallSignatures().length,
+  );
+  if (!plain) return false;
+  return (
+    /(Label|Hint)$/.test(prop.name) || (/^label$|[pP]laceholder$|Name$/.test(prop.name) && hasDefault(prop))
+  );
+}
+/** `moreLabel(count)` when the prop is, or can be, a function of the things it describes. */
+function textProp(prop, node) {
+  const type = checker.getNonNullableType(checker.getTypeOfSymbolAtLocation(prop, node));
+  const signature = (type.isUnion() ? type.types : [type]).flatMap((t) => t.getCallSignatures())[0];
+  const params = signature ? `(${signature.parameters.map((p) => p.name).join(', ')})` : '';
+  return `\`${prop.name}${params}\``;
+}
 
 /** CSS variables a file reads with a fallback, in its stylesheet or in its own code: those are the component's own tokens. */
 const reads = (text) => [...text.matchAll(/var\(\s*(--umbra-[a-z0-9-]+)\s*,/g)].map(([, name]) => name);
@@ -54,6 +100,7 @@ function tokensOf(sourceFile, seen = new Set()) {
 }
 
 const sections = [];
+const strings = [];
 for (const symbol of exported) {
   const target = resolveAlias(symbol);
   const node = target.valueDeclaration;
@@ -69,6 +116,8 @@ for (const symbol of exported) {
 
   const propsSymbol = exported.find((s) => s.name === `${name}Props`);
   const props = propsSymbol ? checker.getDeclaredTypeOfSymbol(resolveAlias(propsSymbol)).getProperties() : [];
+  const texts = props.filter((prop) => isText(prop, node)).map((prop) => textProp(prop, node));
+  if (texts.length) strings.push(`| [\`${name}\`](#${name.toLowerCase()}) | ${texts.join(', ')} |`);
   if (props.length) {
     lines.push('| Prop | Type | Purpose |', '|---|---|---|');
     for (const prop of props) {
@@ -109,6 +158,15 @@ const text = [
   'A token is a CSS variable: set it in CSS on any ancestor, or through the `tokens` prop of',
   '`UmbraProvider` or `UmbraScope` (without the `--umbra-` prefix). Every component also accepts',
   '`className` and `style` on its root.',
+  '',
+  '## Built-in strings',
+  '',
+  "Every prop that holds one of the library's own words, with an English default. Pass your own to",
+  'translate a component. A name followed by brackets can also be a function of what it describes.',
+  '',
+  '| Component | Text props |',
+  '|---|---|',
+  ...strings.sort((a, b) => a.localeCompare(b)),
   '',
   sections.map((s) => s.text).join('\n'),
 ].join('\n');

@@ -7,11 +7,19 @@ From an empty Vite app to a full-window screen in six steps.
 ```sh
 npm create vite@latest my-app -- --template react-ts
 cd my-app
-npm install github:asafmor/umbra-ui
+npm install umbra-ui
 npm install @fontsource/figtree @fontsource/barlow-condensed lucide-react
 ```
 
-- React 19 or later.
+<!-- pre-release: remove at 0.1.0 -->
+
+> **Not on npm yet.** Until `0.1.0` is published, the third line is
+> `npm install github:asafmor/umbra-ui`. It downloads the repository and builds the package on your machine,
+> so it takes a few minutes.
+
+<!-- /pre-release -->
+
+- React 19 or later, in a current browser ([browser support](#browser-support)).
 - The package is ESM only and ships its types.
 - The two fonts are yours to load. Any way of loading Figtree and Barlow Condensed works; without them
   the text falls back to system fonts.
@@ -188,17 +196,54 @@ A part takes a node (replace it), `null` (hide it) or a function that receives t
 
 ## What is in the box
 
-| Group    | Components                                                                                                               |
-| -------- | ------------------------------------------------------------------------------------------------------------------------ |
-| Layout   | `AppShell`, `Page`, `Columns`, `Stack`, `Slot`, `Card`, `SectionTitle`, `ScrollArea`, `Accordion`                        |
-| Shell    | `TopBar`, `PrimaryNav`, `SubNav`, `VerticalNav`, `PageHeader`, `PrimaryAction`, `HistoryButtons`, `ShortcutBar`          |
-| Data     | `List`, `ListItem`, `DataTable`, `KeyValue`, `StatValue`, `SummaryTile`, `Tag`, `Badge`, `ValuePill`, `Avatar`, and more |
-| Meters   | `ProgressBar`, `LevelMeter`                                                                                              |
-| Charts   | `LineChart`, `BarChart`, `DonutChart`, `RadarChart`, from `umbra-ui/charts`                                              |
-| Inputs   | `Button`, `IconButton`, `TextField`, `Checkbox`, `RadioGroup`, `Toggle`, `FormField`, `Tabs`, `SegmentedFilter`          |
-| Overlays | `Modal`, `ConfirmDialog`, `Popover`, `Menu`, `Tooltip`, `CommandPalette`, `ActionBar`                                    |
+| Group    | Components                                                                                                                               |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| Layout   | `AppShell`, `Page`, `Columns`, `Stack`, `Slot`, `Card`, `SectionTitle`, `ScrollArea`, `Accordion`                                        |
+| Shell    | `TopBar`, `PrimaryNav`, `SubNav`, `VerticalNav`, `PageHeader`, `PrimaryAction`, `HistoryButtons`, `ShortcutBar`                          |
+| Data     | `List`, `ListItem`, `DataTable`, `KeyValue`, `StatValue`, `SummaryTile`, `Tag`, `Badge`, `ValuePill`, `Avatar`, and more                 |
+| Meters   | `ProgressBar`, `LevelMeter`                                                                                                              |
+| Charts   | `LineChart`, `BarChart`, `DonutChart`, `RadarChart`, from `umbra-ui/charts`                                                              |
+| Inputs   | `Button`, `IconButton`, `TextField`, `SearchField`, `Select`, `Checkbox`, `RadioGroup`, `Toggle`, `FormField`, `Tabs`, `SegmentedFilter` |
+| Overlays | `Modal`, `ConfirmDialog`, `Popover`, `Menu`, `Tooltip`, `CommandPalette`, `ActionBar`                                                    |
 
 The [README](../README.md#components) has one line on each.
+
+## Browser support
+
+The stylesheet relies on current CSS and has no fallbacks for older browsers.
+
+| Browser         | Minimum | Set by                   |
+| --------------- | ------- | ------------------------ |
+| Chrome and Edge | 117     | subgrid                  |
+| Firefox         | 121     | `:has()`                 |
+| Safari          | 16.2    | `color-mix()` in `oklab` |
+
+| Feature                               | Used for                                              | Without it                                                    |
+| ------------------------------------- | ----------------------------------------------------- | ------------------------------------------------------------- |
+| `color-mix()` in `oklab`              | Tints, hover and pressed colours, borders             | Required: those colours are missing                           |
+| `:has()`                              | States that depend on a child (a hovered trigger)     | Required                                                      |
+| Container queries                     | Showing less as a component narrows                   | Required: content is cut instead                              |
+| `dvh` and `dvw` units                 | The shell is exactly the window                       | Required                                                      |
+| Subgrid                               | One label column for every row of a `KeyValueList`    | Degrades: each row sizes its own label. Chrome 111 is enough. |
+| `transition-behavior: allow-discrete` | Hiding the scrollbar while an `Accordion` panel opens | Degrades: the scrollbar shows during the transition           |
+| `scrollbar-color`, `scrollbar-width`  | Thin scrollbars in Firefox                            | Degrades: the browser's own scrollbar                         |
+
+- The automated tests run in Chromium only. Firefox and Safari are expected to work from the versions
+  above, and are not tested yet.
+- React 19.0 or later. No React 18.
+- Node 20 or later, when you render on the server. In the browser the package needs a bundler (Vite,
+  webpack, Next.js): it is ESM, and it imports its dependencies by name.
+
+## Server rendering
+
+- Every component renders with `renderToString` and hydrates without warnings. Nothing touches `window`
+  or `document` while rendering.
+- They are client components: they use state, effects and context. With React Server Components (the
+  Next.js App Router), import them from a file that starts with `'use client'`, and render that file from
+  your server components.
+- What depends on measured sizes (which cards of a stack collapse, which nav items move to the "more"
+  menu) is settled in the browser, after hydration.
+- Import `umbra-ui/styles.css` once, in the root layout.
 
 ## Next
 

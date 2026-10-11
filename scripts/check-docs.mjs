@@ -49,6 +49,9 @@ const { options } = ts.convertCompilerOptionsFromJson(config.compilerOptions, ro
 const prelude = abs('scripts/check-docs-prelude.ts');
 Object.assign(options, {
   noEmit: true,
+  // The strictest setting an app may have: a sample that passes `undefined` to an optional prop must
+  // compile there too.
+  exactOptionalPropertyTypes: true,
   paths: {
     'umbra-ui': [abs('src/index.ts')],
     'umbra-ui/charts': [abs('src/charts/index.ts')],

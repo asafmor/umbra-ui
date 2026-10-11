@@ -144,7 +144,7 @@ Hex values are eyeballed from compressed video frames; treat them as approximate
 | SubNav | Context switcher "League A" (icon + label + stepper); "Overview" selected | Below TopBar | |
 | ShortcutBar | Pills incl. "Transfer Activity" with purple Badge "1", "Calendar" | Right | |
 | PageHeader | Large logo (~90px) + big condensed title "League A" + subtitle "20 Clubs" with shield icon; up/down stepper beside logo | Header band | New component. Right side: 4 labelled facts (label small grey above value with icon/flag). |
-| KeyValue | Label over value, with flag / crest / dash / green dot icon | Header right | "Based In ENG", "Current Holders Club E", "Competition Ranking 1st in Europe", "Reputation Superb". |
+| KeyValue | Label over value, with flag / crest / dash / green dot icon | Header right | "Based In CTA", "Current Holders Club E", "Competition Ranking 1st in Region A", "Reputation Superb". |
 | ResultCard (score card) | Full-time result | Horizontal strip | Anatomy: date left + status right ("Full Time"), two rows of crest + team + score. ~170px wide. Maps to a compact Card in a horizontal scroller. |
 | HorizontalScroller | 11 cards, last clipped | Strip | No visible arrows or scrollbar; overflow implied by clipping. |
 | SectionTitle | White underlined condensed title (not pink here) | Each column | Third variant: white underlined. |
@@ -178,7 +178,7 @@ Hex values are eyeballed from compressed video frames; treat them as approximate
 | Badge | Squad number: blue filled rounded square | Next to name | |
 | Tag | "Wnt" green with small orange right-edge stripe; value chip "£2M - £4.2M" with tag icon (bordered) | Header | Value-range chip is a bordered pill with a leading icon. |
 | Button | "Actions" primary (magenta fill, person icon, chevron) = menu button; "Compare" secondary (white outline, icon) | Header, positions panel | Primary colour here is magenta/pink (same family as Continue). |
-| KeyValue | "Home Club / Important Player", flag "GER / 19 caps / 1 goal", wage + contract date | Header | Two-line blocks with icon. |
+| KeyValue | "Home Club / Important Player", flag "CTB / 19 caps / 1 goal", wage + contract date | Header | Two-line blocks with icon. |
 | StarRating | Current Ability 3.5/5, Potential Ability 3.5/5; role rows 2.5-3.5 | Header right, role list | Gold filled, half, and hollow stars. |
 | Pitch | Small horizontal green pitch with a 4-4-2-ish grid of position dots | Positions panel | Dots colour-coded by suitability: bright green ringed (selected/natural), green, yellow-green, yellow, orange, dark/grey (unsuitable). Position heat-dot map. |
 | SegmentedFilter | "In Possession" selected (purple) / "Out of Possession" | Under pitch | |

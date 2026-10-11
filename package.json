@@ -8,12 +8,30 @@
     "type": "git",
     "url": "git+https://github.com/asafmor/umbra-ui.git"
   },
+  "homepage": "https://github.com/asafmor/umbra-ui#readme",
+  "bugs": "https://github.com/asafmor/umbra-ui/issues",
+  "keywords": [
+    "react",
+    "components",
+    "ui",
+    "design-system",
+    "dashboard",
+    "data-table",
+    "charts",
+    "layout",
+    "dark-theme",
+    "typescript"
+  ],
   "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
   "sideEffects": [
     "**/*.css"
   ],
   "files": [
-    "dist"
+    "dist",
+    "CHANGELOG.md"
   ],
   "exports": {
     ".": {
@@ -26,9 +44,6 @@
     },
     "./styles.css": "./dist/styles.css"
   },
-  "workspaces": [
-    "examples/*"
-  ],
   "scripts": {
     "tokens": "node scripts/build-tokens.mjs",
     "build": "npm run tokens && vite build && tsc -p tsconfig.build.json && node scripts/fix-types.mjs",
@@ -41,13 +56,16 @@
     "test:visual": "npm run build-storybook -- --quiet && playwright test",
     "test:visual:update": "npm run build-storybook -- --quiet && playwright test --update-snapshots",
     "changeset": "changeset",
-    "version": "changeset version",
-    "release": "npm run lint && npm run typecheck && npm test && npm run build && changeset publish",
+    "version": "changeset version && npm install --package-lock-only --ignore-scripts",
+    "release": "npm run lint && npm run typecheck && npm test && npm run build && node scripts/check-release.mjs --final && changeset publish",
     "prepare": "npm run build",
     "check:package": "node scripts/check-treeshake.mjs",
     "docs:tables": "npm run tokens && node scripts/build-customisation.mjs",
     "docs:check": "npm run tokens && node scripts/check-docs.mjs",
-    "test:examples": "npm run build && npm run build --workspaces --if-present && playwright test -c playwright.examples.config.ts"
+    "test:examples": "npm run build && node scripts/examples.mjs && playwright test -c playwright.examples.config.ts",
+    "release:check": "node scripts/check-release.mjs",
+    "examples": "node scripts/examples.mjs",
+    "examples:standalone": "node scripts/check-examples-standalone.mjs"
   },
   "peerDependencies": {
     "react": ">=19",
@@ -88,24 +106,5 @@
     "typescript-eslint": "^8.71.1",
     "vite": "^8.3.4",
     "vitest": "^5.0.3"
-  },
-  "homepage": "https://github.com/asafmor/umbra-ui#readme",
-  "bugs": {
-    "url": "https://github.com/asafmor/umbra-ui/issues"
-  },
-  "engines": {
-    "node": ">=24"
-  },
-  "keywords": [
-    "react",
-    "components",
-    "ui",
-    "design-system",
-    "dashboard",
-    "data-table",
-    "charts",
-    "layout",
-    "accessibility",
-    "dark-theme"
-  ]
+  }
 }

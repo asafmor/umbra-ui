@@ -11,7 +11,29 @@ import { contextPresets, densities } from '../src/styles/tokens.generated';
 import './preview.css';
 
 const preview: Preview = {
-  parameters: { layout: 'fullscreen' },
+  parameters: {
+    layout: 'fullscreen',
+    options: {
+      // The sidebar reads top to bottom: the welcome page, the guides in reading order, then the components.
+      storySort: {
+        order: [
+          'Welcome',
+          'Guides',
+          ['Getting started', 'Layout', 'Theming', 'Customisation', 'Recipes', 'Customisation tables'],
+          'Pages',
+          'Foundation',
+          'Layout',
+          'Shell',
+          'Basics',
+          'Data',
+          'Inputs',
+          'Overlays',
+          'Meters',
+          'Charts',
+        ],
+      },
+    },
+  },
   initialGlobals: { density: 'default', context: 'violet', direction: 'ltr' },
   globalTypes: {
     density: { description: 'Density level', toolbar: { title: 'Density', items: [...densities] } },
