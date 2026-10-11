@@ -7,6 +7,63 @@ A token is a CSS variable: set it in CSS on any ancestor, or through the `tokens
 `UmbraProvider` or `UmbraScope` (without the `--umbra-` prefix). Every component also accepts
 `className` and `style` on its root.
 
+## Built-in strings
+
+Every prop that holds one of the library's own words, with an English default. Pass your own to
+translate a component. A name followed by brackets can also be a function of what it describes.
+
+| Component | Text props |
+|---|---|
+| [`ActionBar`](#actionbar) | `selectionLabel(count)`, `clearLabel` |
+| [`AppShell`](#appshell) | `skipLabel` |
+| [`AvatarGroup`](#avatargroup) | `moreLabel(count)` |
+| [`Banner`](#banner) | `dismissLabel` |
+| [`BarChart`](#barchart) | `retryLabel`, `pointsLabel`, `legendLabel` |
+| [`Button`](#button) | `loadingLabel` |
+| [`Card`](#card) | `retryLabel`, `collapseLabel`, `expandLabel`, `moreLabel` |
+| [`Checkbox`](#checkbox) | `requiredLabel` |
+| [`CheckboxGroup`](#checkboxgroup) | `requiredLabel` |
+| [`Columns`](#columns) | `tabsLabel` |
+| [`CommandPalette`](#commandpalette) | `label`, `placeholder`, `emptyLabel`, `errorLabel`, `retryLabel`, `loadingLabel`, `recentLabel`, `shortcutsLabel`, `resultsLabel`, `backLabel`, `moveHint`, `runHint`, `backHint`, `closeHint` |
+| [`ConfirmDialog`](#confirmdialog) | `confirmLabel`, `cancelLabel`, `loadingLabel` |
+| [`DataTable`](#datatable) | `selectRowLabel(row)`, `selectAllLabel`, `highlightLabel`, `collapseGroupLabel`, `expandGroupLabel`, `showDetailsLabel`, `hideDetailsLabel`, `loadingMoreLabel`, `increasedLabel`, `decreasedLabel`, `retryLabel` |
+| [`DonutChart`](#donutchart) | `retryLabel`, `pointsLabel`, `legendLabel` |
+| [`FormField`](#formfield) | `requiredLabel`, `optionalLabel` |
+| [`GroupHeader`](#groupheader) | `moreLabel`, `collapseLabel`, `expandLabel` |
+| [`HistoryButtons`](#historybuttons) | `backLabel`, `forwardLabel`, `entriesLabel` |
+| [`IconButton`](#iconbutton) | `loadingLabel` |
+| [`KeyValue`](#keyvalue) | `increasedLabel`, `decreasedLabel` |
+| [`Legend`](#legend) | `moreLabel(count)`, `allLabel` |
+| [`LevelMeter`](#levelmeter) | `compareLabel`, `rangeLabel`, `increasedLabel`, `decreasedLabel` |
+| [`LineChart`](#linechart) | `retryLabel`, `pointsLabel`, `legendLabel` |
+| [`Link`](#link) | `externalLabel` |
+| [`List`](#list) | `loadingMoreLabel`, `retryLabel` |
+| [`ListItem`](#listitem) | `unreadLabel`, `accentLabel`, `increasedLabel`, `decreasedLabel` |
+| [`Menu`](#menu) | `emptyLabel` |
+| [`Modal`](#modal) | `navLabel`, `closeLabel` |
+| [`PageHeader`](#pageheader) | `moreLabel`, `backLabel`, `breadcrumbsLabel` |
+| [`Popover`](#popover) | `closeLabel` |
+| [`PrimaryAction`](#primaryaction) | `loadingLabel`, `attentionLabel`, `menuLabel` |
+| [`PrimaryNav`](#primarynav) | `moreLabel`, `submenuLabel(label)` |
+| [`ProgressBar`](#progressbar) | `targetLabel`, `increasedLabel`, `decreasedLabel` |
+| [`RadarChart`](#radarchart) | `retryLabel`, `pointsLabel`, `legendLabel` |
+| [`RadioGroup`](#radiogroup) | `requiredLabel` |
+| [`SearchField`](#searchfield) | `clearLabel`, `label`, `loadingLabel`, `noResultsLabel`, `recentLabel`, `removeRecentLabel` |
+| [`SectionTitle`](#sectiontitle) | `moreLabel` |
+| [`SegmentedFilter`](#segmentedfilter) | `allLabel`, `moreLabel` |
+| [`Select`](#select) | `placeholder`, `clearLabel`, `retryLabel`, `searchPlaceholder`, `searchLabel`, `loadingLabel`, `noResultsLabel`, `selectedLabel(count)` |
+| [`ShortcutBar`](#shortcutbar) | `moreLabel(count)`, `moreName(count)`, `editLabel` |
+| [`StatValue`](#statvalue) | `increasedLabel`, `decreasedLabel` |
+| [`SubNav`](#subnav) | `moreLabel`, `submenuLabel(label)` |
+| [`SummaryTile`](#summarytile) | `increasedLabel`, `decreasedLabel` |
+| [`Tabs`](#tabs) | `moreLabel`, `closeLabel` |
+| [`Tag`](#tag) | `removeLabel`, `stripeLabel` |
+| [`TextField`](#textfield) | `clearLabel` |
+| [`TopBar`](#topbar) | `searchLabel`, `backLabel`, `forwardLabel`, `moreLabel` |
+| [`TrendArrow`](#trendarrow) | `upLabel`, `downLabel`, `flatLabel` |
+| [`ValuePill`](#valuepill) | `levelLabel(level, steps)`, `increasedLabel`, `decreasedLabel` |
+| [`VerticalNav`](#verticalnav) | `collapseLabel`, `expandLabel` |
+
 ## Accordion
 
 A stack of sections that open and close. It fills its slot; an open panel scrolls inside when space is short.
@@ -204,7 +261,7 @@ Compares values across categories: grouped, stacked or diverging around zero, up
 | `parts` | `see Parts` | Replace or hide named pieces. |
 | `aria-label` | `string` | Accessible name of the chart. Required unless `aria-labelledby` is set. |
 | `className` | `string` |  |
-| `style` | `import("react").CSSProperties` |  |
+| `style` | `CSSProperties` |  |
 | `empty` | `ReactNode` | Shown when there is no data. |
 | `error` | `ReactNode` | When set, shown in place of the chart. |
 | `variant` | `"stacked" \| "grouped" \| "diverging"` | `grouped`: the series side by side. `stacked`: on top of each other. `diverging`: every second series is drawn on the other side of zero, with all values shown as positive. |
@@ -228,8 +285,8 @@ Compares values across categories: grouped, stacked or diverging around zero, up
 | `xTitle` | `string` | Title of the horizontal axis. |
 | `yTitle` | `string` | Title of the vertical axis. |
 | `aria-labelledby` | `string` | Id of the element that names the chart, for example a card title. |
-| `legend` | `string \| number \| bigint \| boolean \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| import("react").ReactPortal \| Promise<string \| number \| bigint \| boolean \| import("react").ReactPortal \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| null \| undefined> \| null` | The legend: `true` or a placement shows the built-in one, `false` hides it, and a node replaces it. By default it is shown below the chart when there is more than one series. |
-| `onPointPress` | `((point: import(".").ChartPoint) => void)` | Called when a point is clicked, or activated with Enter or Space. |
+| `legend` | `string \| number \| bigint \| boolean \| ReactElement<unknown, string \| JSXElementConstructor<any>> \| Iterable<ReactNode> \| ReactPortal \| Promise<string \| number \| bigint \| boolean \| ReactPortal \| ReactElement<unknown, string \| JSXElementConstructor<any>> \| Iterable<ReactNode> \| null \| undefined> \| null` | The legend: `true` or a placement shows the built-in one, `false` hides it, and a node replaces it. By default it is shown below the chart when there is more than one series. |
+| `onPointPress` | `((point: ChartPoint) => void)` | Called when a point is clicked, or activated with Enter or Space. |
 | `pointsLabel` | `string` | Accessible name of the list of data points. |
 | `legendLabel` | `string` | Accessible name of the legend. |
 
@@ -277,8 +334,8 @@ The container for one unit of content on a page. Fills the slot its parent gives
 |---|---|---|
 | `title` | `ReactNode` | Header title. The header is shown when it is set. |
 | `loading` | `boolean` | Shows the body skeleton. |
-| `empty` | `ReactNode \| import("../internal/dataState").DataStateContent` | Shown in place of the body when set (and not loading or in error): text or a node, or `{ title, description, icon, action }` for the same empty state as the other data components. |
-| `error` | `ReactNode \| import("../internal/dataState").DataStateContent` | Shown in place of the body when set: text or a node, `{ title, description, icon, action }`, or `true` for a default text. |
+| `empty` | `ReactNode \| DataStateContent` | Shown in place of the body when set (and not loading or in error): text or a node, or `{ title, description, icon, action }` for the same empty state as the other data components. |
+| `error` | `ReactNode \| DataStateContent` | Shown in place of the body when set: text or a node, `{ title, description, icon, action }`, or `true` for a default text. |
 | `onRetry` | `(() => void)` | Adds a retry button to the error state. |
 | `retryLabel` | `string` | Label of the retry button. |
 | `parts` | `see Parts` | Replace or hide named pieces. `toolbar` and `footer` are empty unless given, as `Card.Toolbar` and `Card.Footer`. |
@@ -330,7 +387,7 @@ A box that is checked or not: one yes-or-no choice, or one of several in a `Chec
 | `onChange` | `((checked: boolean) => void)` |  |
 | `aria-label` | `string` | Accessible name of a checkbox that has no visible label. |
 | `className` | `string` |  |
-| `style` | `import("react").CSSProperties` |  |
+| `style` | `CSSProperties` |  |
 | `size` | `"default" \| "small"` | `small` is for use inside table cells. Otherwise the size follows the density level. |
 | `disabled` | `boolean` |  |
 | `checked` | `boolean` | Controlled state. |
@@ -364,7 +421,7 @@ Several checkboxes that answer one question, with a shared label, description an
 | `onChange` | `((value: string[]) => void)` |  |
 | `aria-label` | `string` | Accessible name of a group that has no visible label. |
 | `className` | `string` |  |
-| `style` | `import("react").CSSProperties` |  |
+| `style` | `CSSProperties` |  |
 | `orientation` | `"vertical" \| "horizontal"` | `horizontal` puts the checkboxes on one line, wrapping when they do not fit. |
 | `disabled` | `boolean` |  |
 | `readOnly` | `boolean` |  |
@@ -539,8 +596,8 @@ A table of rows and columns that fills its slot and scrolls inside it: sorting, 
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
 | `loading` | `boolean` | Shows skeletons in the final layout and marks the component busy. |
-| `empty` | `ReactNode \| import("../internal/dataState").DataStateContent` | Shown when there is no data: text, a node, or `{ title, description, icon, action }`. Defaults to a short English text. |
-| `error` | `ReactNode \| import("../internal/dataState").DataStateContent` | Shown in place of the data when set: text, a node, `{ title, description, icon, action }`, or `true` for a default text. |
+| `empty` | `ReactNode \| DataStateContent` | Shown when there is no data: text, a node, or `{ title, description, icon, action }`. Defaults to a short English text. |
+| `error` | `ReactNode \| DataStateContent` | Shown in place of the data when set: text, a node, `{ title, description, icon, action }`, or `true` for a default text. |
 | `onRetry` | `(() => void)` | Adds a retry button to the error state. |
 | `retryLabel` | `string` | Label of the retry button. |
 
@@ -562,7 +619,7 @@ A ring that shows one value against a total, or how a total splits into segments
 | `value` | `number` | The single-value form: one value against `max`. |
 | `aria-label` | `string` | Accessible name of the chart. Required unless `aria-labelledby` is set. |
 | `className` | `string` |  |
-| `style` | `import("react").CSSProperties` |  |
+| `style` | `CSSProperties` |  |
 | `empty` | `ReactNode` | Shown when there is no data. |
 | `error` | `ReactNode` | When set, shown in place of the chart. |
 | `tone` | `DonutTone` | Colour of the single value. The number in the centre is the cue that does not depend on colour. |
@@ -580,8 +637,8 @@ A ring that shows one value against a total, or how a total splits into segments
 | `onRetry` | `(() => void)` | Adds a retry button to the error state. |
 | `retryLabel` | `string` |  |
 | `aria-labelledby` | `string` | Id of the element that names the chart, for example a card title. |
-| `legend` | `string \| number \| bigint \| boolean \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| import("react").ReactPortal \| Promise<string \| number \| bigint \| boolean \| import("react").ReactPortal \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| null \| undefined> \| null` | The legend: `true` or a placement shows the built-in one, `false` hides it, and a node replaces it. By default it is shown below the chart when there is more than one series. |
-| `onPointPress` | `((point: import(".").ChartPoint) => void)` | Called when a point is clicked, or activated with Enter or Space. |
+| `legend` | `string \| number \| bigint \| boolean \| ReactElement<unknown, string \| JSXElementConstructor<any>> \| Iterable<ReactNode> \| ReactPortal \| Promise<string \| number \| bigint \| boolean \| ReactPortal \| ReactElement<unknown, string \| JSXElementConstructor<any>> \| Iterable<ReactNode> \| null \| undefined> \| null` | The legend: `true` or a placement shows the built-in one, `false` hides it, and a node replaces it. By default it is shown below the chart when there is more than one series. |
+| `onPointPress` | `((point: ChartPoint) => void)` | Called when a point is clicked, or activated with Enter or Space. |
 | `pointsLabel` | `string` | Accessible name of the list of data points. |
 | `legendLabel` | `string` | Accessible name of the legend. |
 | `data` | `DonutSegment[]` | The segment form: several values that share the ring. |
@@ -658,7 +715,7 @@ Pairs a label, a description and an error message with one control: a row of a f
 | `parts` | `see Parts` | Replace or hide named pieces. |
 | `invalid` | `boolean` | Marks the control invalid. Set by itself when the field has an error. |
 | `className` | `string` |  |
-| `style` | `import("react").CSSProperties` |  |
+| `style` | `CSSProperties` |  |
 | `disabled` | `boolean` | Disables the control. |
 | `layout` | `"inline" \| "stacked" \| "row"` | `row`: label and description at the start, control at the end, as in a settings list. `stacked`: label above the control. `inline`: label and control on one line, the description and error under the control. `row` and `inline` stack when the field is narrow. |
 | `labelWidth` | `string \| number` | The width of the label column of a `row` or `inline` field: a number of pixels, or any CSS width. |
@@ -904,7 +961,7 @@ One or more series over categories, numbers or time, with a numeric or an ordina
 | `parts` | `see Parts` | Replace or hide named pieces. |
 | `aria-label` | `string` | Accessible name of the chart. Required unless `aria-labelledby` is set. |
 | `className` | `string` |  |
-| `style` | `import("react").CSSProperties` |  |
+| `style` | `CSSProperties` |  |
 | `empty` | `ReactNode` | Shown when there is no data. |
 | `error` | `ReactNode` | When set, shown in place of the chart. |
 | `loading` | `boolean` | Shows a placeholder in the chart's shape. |
@@ -923,8 +980,8 @@ One or more series over categories, numbers or time, with a numeric or an ordina
 | `xTitle` | `string` |  |
 | `yTitle` | `string` |  |
 | `aria-labelledby` | `string` | Id of the element that names the chart, for example a card title. |
-| `legend` | `string \| number \| bigint \| boolean \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| import("react").ReactPortal \| Promise<string \| number \| bigint \| boolean \| import("react").ReactPortal \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| null \| undefined> \| null` | The legend: `true` or a placement shows the built-in one, `false` hides it, and a node replaces it. By default it is shown below the chart when there is more than one series. |
-| `onPointPress` | `((point: import(".").ChartPoint) => void)` | Called when a point is clicked, or activated with Enter or Space. |
+| `legend` | `string \| number \| bigint \| boolean \| ReactElement<unknown, string \| JSXElementConstructor<any>> \| Iterable<ReactNode> \| ReactPortal \| Promise<string \| number \| bigint \| boolean \| ReactPortal \| ReactElement<unknown, string \| JSXElementConstructor<any>> \| Iterable<ReactNode> \| null \| undefined> \| null` | The legend: `true` or a placement shows the built-in one, `false` hides it, and a node replaces it. By default it is shown below the chart when there is more than one series. |
+| `onPointPress` | `((point: ChartPoint) => void)` | Called when a point is clicked, or activated with Enter or Space. |
 | `pointsLabel` | `string` | Accessible name of the list of data points. |
 | `legendLabel` | `string` | Accessible name of the legend. |
 | `yLevels` | `string[]` | Makes the y axis ordinal: the named levels, from the bottom up. Points then give a level name as `y`. |
@@ -1000,8 +1057,8 @@ A vertical list of rows that scrolls inside its slot, with optional groups, sele
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
 | `loading` | `boolean` | Shows skeletons in the final layout and marks the component busy. |
-| `empty` | `ReactNode \| import("../internal/dataState").DataStateContent` | Shown when there is no data: text, a node, or `{ title, description, icon, action }`. Defaults to a short English text. |
-| `error` | `ReactNode \| import("../internal/dataState").DataStateContent` | Shown in place of the data when set: text, a node, `{ title, description, icon, action }`, or `true` for a default text. |
+| `empty` | `ReactNode \| DataStateContent` | Shown when there is no data: text, a node, or `{ title, description, icon, action }`. Defaults to a short English text. |
+| `error` | `ReactNode \| DataStateContent` | Shown in place of the data when set: text, a node, `{ title, description, icon, action }`, or `true` for a default text. |
 | `onRetry` | `(() => void)` | Adds a retry button to the error state. |
 | `retryLabel` | `string` | Label of the retry button. |
 
@@ -1260,12 +1317,12 @@ The top-level sections of the app, inside the `TopBar`.
 | `parts` | `see Parts` | Replace or hide named pieces. An `item` function receives each item's props. |
 | `value` | `string` | The active item. |
 | `onChange` | `((id: string) => void)` | Called with the id of the item the user chose. |
-| `renderLink` | `((props: import("..").LinkRenderProps) => ReactNode)` | Plugs in the app's router link. Defaults to a plain `<a>`. |
+| `renderLink` | `((props: LinkRenderProps) => ReactNode)` | Plugs in the app's router link. Defaults to a plain `<a>`. |
 | `moreLabel` | `string` | Label of the overflow item. |
 | `submenuLabel` | `((label: string) => string)` | Accessible name of the caret that opens an item's dropdown, from the item's label. |
 | `aria-label` | `string` | Accessible name of the navigation landmark. |
 | `className` | `string` |  |
-| `style` | `import("react").CSSProperties` |  |
+| `style` | `CSSProperties` |  |
 
 **Parts**: `indicator`, `more`, `item`.
 
@@ -1326,7 +1383,7 @@ Compares one or more series across several axes that share a centre.
 | `parts` | `see Parts` | Replace or hide named pieces. |
 | `aria-label` | `string` | Accessible name of the chart. Required unless `aria-labelledby` is set. |
 | `className` | `string` |  |
-| `style` | `import("react").CSSProperties` |  |
+| `style` | `CSSProperties` |  |
 | `empty` | `ReactNode` | Shown when there is no data. |
 | `error` | `ReactNode` | When set, shown in place of the chart. |
 | `loading` | `boolean` | Shows a placeholder in the chart's shape. |
@@ -1342,8 +1399,8 @@ Compares one or more series across several axes that share a centre.
 | `retryLabel` | `string` |  |
 | `series` (required) | `RadarSeries[]` |  |
 | `aria-labelledby` | `string` | Id of the element that names the chart, for example a card title. |
-| `legend` | `string \| number \| bigint \| boolean \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| import("react").ReactPortal \| Promise<string \| number \| bigint \| boolean \| import("react").ReactPortal \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| null \| undefined> \| null` | The legend: `true` or a placement shows the built-in one, `false` hides it, and a node replaces it. By default it is shown below the chart when there is more than one series. |
-| `onPointPress` | `((point: import(".").ChartPoint) => void)` | Called when a point is clicked, or activated with Enter or Space. |
+| `legend` | `string \| number \| bigint \| boolean \| ReactElement<unknown, string \| JSXElementConstructor<any>> \| Iterable<ReactNode> \| ReactPortal \| Promise<string \| number \| bigint \| boolean \| ReactPortal \| ReactElement<unknown, string \| JSXElementConstructor<any>> \| Iterable<ReactNode> \| null \| undefined> \| null` | The legend: `true` or a placement shows the built-in one, `false` hides it, and a node replaces it. By default it is shown below the chart when there is more than one series. |
+| `onPointPress` | `((point: ChartPoint) => void)` | Called when a point is clicked, or activated with Enter or Space. |
 | `pointsLabel` | `string` | Accessible name of the list of data points. |
 | `legendLabel` | `string` | Accessible name of the legend. |
 | `startAngle` | `number` | Where the first axis points, in degrees clockwise from 12 o'clock. |
@@ -1368,7 +1425,7 @@ One option of a `RadioGroup`.
 | `value` (required) | `string` | What the group's `value` is when this option is chosen. |
 | `aria-label` | `string` | Accessible name of an option that has no visible label. |
 | `className` | `string` |  |
-| `style` | `import("react").CSSProperties` |  |
+| `style` | `CSSProperties` |  |
 | `disabled` | `boolean` |  |
 
 **Parts**: `mark`, `media`, `label`, `description`.
@@ -1394,7 +1451,7 @@ A choice of exactly one option among a few, all visible at once.
 | `onChange` | `((value: string) => void)` |  |
 | `aria-label` | `string` | Accessible name of a group that has no visible label. |
 | `className` | `string` |  |
-| `style` | `import("react").CSSProperties` |  |
+| `style` | `CSSProperties` |  |
 | `variant` | `RadioVariant` | `default`: a dot and a label. `card`: a bordered tile with a title, a description and an icon. |
 | `orientation` | `"vertical" \| "horizontal"` | The direction of the options, and of the arrow keys that move between them. |
 | `disabled` | `boolean` |  |
@@ -1446,7 +1503,7 @@ A field for searching: always an input, or an icon that opens into one. It can l
 | `value` | `string` | Controlled text. |
 | `onChange` | `((text: string) => void)` | Called with the text as it changes, after `debounce` milliseconds without typing. |
 | `className` | `string` |  |
-| `style` | `import("react").CSSProperties` |  |
+| `style` | `CSSProperties` |  |
 | `loading` | `boolean` | Shows a spinner in place of the search icon, and skeleton rows in an empty list. |
 | `size` | `"default" \| "small"` | `small` is for table cells and dense toolbars. Otherwise the height follows the density level. |
 | `disabled` | `boolean` |  |
@@ -1551,7 +1608,7 @@ Chooses one option, or several with `multiple`, from a list that opens under a b
 | `onChange` | `((id: string) => void)` | Called with the id of the chosen option, or `''` when the choice is cleared. |
 | `aria-label` | `string` | Accessible name of a select that has no `FormField` label. |
 | `className` | `string` |  |
-| `style` | `import("react").CSSProperties` |  |
+| `style` | `CSSProperties` |  |
 | `variant` | `"default" \| "ghost" \| "inCell"` | `ghost` has no border until hovered, for toolbars and headers. `inCell` fills a table cell and takes the `tone` or `color` of the chosen option as its fill. |
 | `open` | `boolean` | Controlled state of the list. |
 | `defaultOpen` | `boolean` |  |
@@ -1573,8 +1630,8 @@ Chooses one option, or several with `multiple`, from a list that opens under a b
 | `clearLabel` | `string` | Accessible name of the clear button. |
 | `fullWidth` | `boolean` | Fills the width of its slot. Otherwise it is as wide as its value. |
 | `onSearchChange` | `((text: string) => void)` | Called with the text typed in the filter field of a `searchable` select, and with `''` when it closes. |
-| `empty` | `ReactNode \| import("../internal/dataState").DataStateContent` | Shown when there are no options: text, a node, or `{ title, description, icon, action }`. |
-| `error` | `ReactNode \| import("../internal/dataState").DataStateContent` | Shown in place of the data when set: text, a node, `{ title, description, icon, action }`, or `true` for a default text. |
+| `empty` | `ReactNode \| DataStateContent` | Shown when there are no options: text, a node, or `{ title, description, icon, action }`. |
+| `error` | `ReactNode \| DataStateContent` | Shown in place of the data when set: text, a node, `{ title, description, icon, action }`, or `true` for a default text. |
 | `loading` | `boolean` | Shows skeletons in the final layout and marks the component busy. |
 | `placement` | `OverlayPlacement` | Side of the trigger and alignment along it. It flips to the other side to stay in the window. |
 | `offset` | `number` | Gap between the trigger and the list, in pixels. |
@@ -1755,7 +1812,7 @@ The second bar: the pages of the current section, and room for shortcuts at the 
 | `parts` | `see Parts` | Replace or hide named pieces. |
 | `value` | `string` | The active item. |
 | `onChange` | `((id: string) => void)` | Called with the id of the item the user chose. |
-| `renderLink` | `((props: import("..").LinkRenderProps) => ReactNode)` | Plugs in the app's router link. Defaults to a plain `<a>`. |
+| `renderLink` | `((props: LinkRenderProps) => ReactNode)` | Plugs in the app's router link. Defaults to a plain `<a>`. |
 | `moreLabel` | `string` | Label of the overflow item. |
 | `submenuLabel` | `((label: string) => string)` | Accessible name of the caret that opens an item's dropdown, from the item's label. |
 | `aria-label` | `string` | Accessible name of the navigation landmark. |
@@ -1884,7 +1941,7 @@ A box for typing one line of text, or several with `multiline`.
 | `onChange` | `((value: string) => void)` |  |
 | `aria-label` | `string` | Accessible name of a field that has no `FormField` label. |
 | `className` | `string` |  |
-| `style` | `import("react").CSSProperties` |  |
+| `style` | `CSSProperties` |  |
 | `size` | `"default" \| "small"` | `small` is for use inside table cells. Otherwise the height follows the density level. |
 | `disabled` | `boolean` |  |
 | `rows` | `number` | Visible lines of a `multiline` field. |
@@ -1918,7 +1975,7 @@ A switch for a setting that takes effect at once: on or off.
 | `onChange` | `((checked: boolean) => void)` |  |
 | `aria-label` | `string` | Accessible name of a toggle that has no visible label. |
 | `className` | `string` |  |
-| `style` | `import("react").CSSProperties` |  |
+| `style` | `CSSProperties` |  |
 | `size` | `"default" \| "small"` | `small` is for use inside table cells and dense toolbars. Otherwise the size follows the density level. |
 | `disabled` | `boolean` |  |
 | `checked` | `boolean` | Controlled state. |

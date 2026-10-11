@@ -1006,8 +1006,8 @@ its own series.
 
 ## 11. The shell with a router
 
-`renderLink` plugs the router's link into everything that navigates. This sample uses React Router;
-render it inside a `<BrowserRouter>`.
+`renderLink` plugs the router's link into everything that navigates. This sample uses React Router
+(`npm install react-router-dom`); render it inside a `<BrowserRouter>`.
 
 - The items carry `href`. `value` comes from the route, and `onChange` is not needed.
 - `history` on the `TopBar` shows back and forward buttons on the browser history, which the router
@@ -1048,7 +1048,10 @@ const renderLink = (props: LinkRenderProps) => <Link to={props.href} {...props} 
 
 export function App() {
   const navigate = useNavigate();
-  const [, section = 'orders', page = 'open'] = useLocation().pathname.split('/');
+  // At '/' both parts are empty strings, so a destructuring default would not apply.
+  const parts = useLocation().pathname.split('/');
+  const section = parts[1] || 'orders';
+  const page = parts[2] || 'open';
 
   return (
     <UmbraProvider brand="#2a2f8f">
@@ -1065,7 +1068,7 @@ export function App() {
                   id: s.id,
                   label: String(s.label),
                   section: 'Go to',
-                  href: s.href,
+                  href: `/${s.id}`,
                 }))}
               />
             }

@@ -114,7 +114,7 @@ export function App() {
         }
       >
         {/* The whole section: the page background and every card follow. */}
-        <Page context={section === 'returns' ? '#b8562a' : undefined}>
+        <Page context={section === 'returns' ? '#b8562a' : 'slate'}>
           <Columns>
             <Card title="Queue" size={2} />
             {/* One card: only this subtree changes. */}
@@ -132,7 +132,8 @@ export function App() {
 ## Token groups
 
 Every token is a CSS variable. The global ones are generated from one file (`plan/tokens.json`) and
-declared on `:root`; the `TokenName` type lists them, so the `tokens` prop completes them in an editor.
+declared on `:root`. The `tokens` prop is typed with their names (the `TokenOverrides` type), so an editor
+completes them; it also takes any other name, for the variables of single components.
 
 | Group    | Variables (after `--umbra-`)                                                                                                                                                                          | Notes                                                                       |
 | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
@@ -316,6 +317,7 @@ Any node works: an icon of another set, an inline `<svg>`. It is sized by the co
 | `search`                                      | The top bar's search trigger, the command palette     |
 | `spinner`                                     | Loading buttons                                       |
 | `edit`                                        | `ShortcutBar`                                         |
+| `recent`                                      | The recent searches of `SearchField`                  |
 | `sortAscending`, `sortDescending`, `sortNone` | `DataTable` headers                                   |
 | `check`, `indeterminate`                      | Checkbox, toggle, checked menu rows and segments      |
 | `invalid`                                     | An invalid field and its error text                   |
