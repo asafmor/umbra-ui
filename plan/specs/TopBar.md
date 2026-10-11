@@ -70,6 +70,7 @@ The all-in-one `TopBar` is built from these blocks and nothing else, with `Histo
 
 | Step | Result |
 |---|---|
+| 0a, 0b | A `ContextBlock` in `context` hides its second line, then its chip (`plan/specs/ContextBlock.md`). `data-shrink` stays `0`; any other node changes nothing here |
 | 1 | `context` hides |
 | 2 | `actions` collapse into one overflow `Menu`; the search trigger stays |
 | 3 | `nav` items move into a "More" menu from the end (see `PrimaryNav`) |
@@ -107,6 +108,11 @@ Resolved 2026-10-10 (Milestone 1):
 - Gradual narrowing never reached step 4 with a nav: the nav reported that it was exhausted only at the moment it moved its last item. The bar now measures the overflow itself once the nav has nothing left to move.
 
 Resolved 2026-10-10: for a brand colour where neither white nor near-black text reaches 4.5:1, the bar uses the better of the two and warns in development. The bar colour is never changed.
+
+Resolved 2026-10-11 (Milestone 2):
+
+- **The context block gives way in steps.** `TopBar.Root` takes two steps for a `ContextBlock` before its own first one, and hands the count to the block through a context (`ContextShrinkContext`), so a bar composed from blocks does the same. The bar's own steps and `data-shrink` (`0` to `4`) are unchanged, and a plain node in `context` behaves as before. The stories fill `context` with a `ContextBlock` now.
+- **An `EntitySwitcher` in the bar** goes in `TopBar.Start` or replaces the `logo` part; at step 4 it shows its icon only, as a `Button` with `collapseTo="icon"` does.
 
 Resolved 2026-10-11 (review 2):
 

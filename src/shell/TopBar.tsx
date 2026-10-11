@@ -12,7 +12,7 @@ import {
   type RefObject,
 } from 'react';
 import { IconButton } from '../basics/IconButton';
-import { ForceCollapseContext } from '../internal/contexts';
+import { ContextShrinkContext, ForceCollapseContext } from '../internal/contexts';
 import { isOverflowing, useShrinkLevel } from '../internal/useShrinkLevel';
 import type { CommandPaletteProps } from '../overlays/CommandPalette';
 import { ActionsOverflow } from '../internal/ActionsOverflow';
@@ -30,7 +30,8 @@ interface BlockProps {
 }
 
 /**
- * Shrink steps, in order: 1 the context block hides, 2 the actions collapse into one menu, 3 the nav
+ * Shrink steps, in order: before the first, a `ContextBlock` hides its second line and then its chip
+ * (`CONTEXT_STEPS`; they change nothing for any other node). Then: 1 the context block hides, 2 the actions collapse into one menu, 3 the nav
  * moves items into "More", 4 the primary action shows its icon only. Each step is taken by a block
  * that reads the level from the root, so a bar composed by hand shrinks the same way; a step whose
  * block is missing changes nothing and the next one follows at once.
@@ -40,6 +41,8 @@ interface TopBarContextValue {
   moreLabel: string;
 }
 const TopBarContext = createContext<TopBarContextValue>({ level: 0, moreLabel: 'More actions' });
+/** The steps a `ContextBlock` takes by itself before the bar's first step. */
+const CONTEXT_STEPS = 2;
 const NavRefContext = createContext<RefObject<HTMLDivElement | null> | null>(null);
 
 export interface TopBarRootProps extends BlockProps {
@@ -59,7 +62,7 @@ function Root({ brand, moreLabel = 'More actions', className, style, children }:
   // The nav slot is what runs out of room; a nav inside it clips its own list, so look at that too.
   // The bar itself is what is watched for growth: the slot's width changes with every step taken.
   const root = useRef<HTMLElement>(null);
-  const level = useShrinkLevel(root, 4, undefined, {
+  const taken = useShrinkLevel(root, CONTEXT_STEPS + 4, undefined, {
     overflowing: () => {
       const slot = nav.current;
       // Without a nav to give way, the bar itself is what overflows.
@@ -72,8 +75,12 @@ function Root({ brand, moreLabel = 'More actions', className, style, children }:
     },
     // Step 3 belongs to the nav. Step 4 waits until the nav has nothing left to move, or there is none.
     canAdvance: (current) =>
-      current < 3 || navExhausted.current || !nav.current?.querySelector('[data-overflow-watch]'),
+      current < CONTEXT_STEPS + 3 ||
+      navExhausted.current ||
+      !nav.current?.querySelector('[data-overflow-watch]'),
   });
+  // The bar's own level, as `data-shrink` shows it: the block's steps come before it.
+  const level = Math.max(0, taken - CONTEXT_STEPS);
   const report = useCallback((exhausted: boolean) => {
     if (navExhausted.current === exhausted) return;
     navExhausted.current = exhausted;
@@ -86,18 +93,20 @@ function Root({ brand, moreLabel = 'More actions', className, style, children }:
       <TopBarContext value={bar}>
         <NavRefContext value={nav}>
           <NavHoldContext value={hold}>
-            <ForceCollapseContext value={level >= 4}>
-              <header
-                {...scope}
-                ref={root}
-                data-umbra="top-bar"
-                data-shrink={level}
-                className={cx(styles.root, className)}
-                style={{ ...scope.style, ...style }}
-              >
-                {children}
-              </header>
-            </ForceCollapseContext>
+            <ContextShrinkContext value={Math.min(taken, CONTEXT_STEPS)}>
+              <ForceCollapseContext value={level >= 4}>
+                <header
+                  {...scope}
+                  ref={root}
+                  data-umbra="top-bar"
+                  data-shrink={level}
+                  className={cx(styles.root, className)}
+                  style={{ ...scope.style, ...style }}
+                >
+                  {children}
+                </header>
+              </ForceCollapseContext>
+            </ContextShrinkContext>
           </NavHoldContext>
         </NavRefContext>
       </TopBarContext>
@@ -153,7 +162,7 @@ function Logo({ className, style, children }: BlockProps) {
   );
 }
 
-/** A two-line status block. Hidden at the first shrink step. */
+/** The slot of a `ContextBlock`, which gives up its second line and then its chip first. Hidden at the first shrink step. */
 function Context({ className, style, children }: BlockProps) {
   const { level } = useContext(TopBarContext);
   return level >= 1 ? null : (
@@ -225,7 +234,7 @@ export interface TopBarProps extends TopBarRootProps {
   nav?: ReactNode | undefined;
   /** `IconButton`s. They collapse into one menu when space is short. */
   actions?: ReactNode | undefined;
-  /** A two-line status block. Hides first when space is short. */
+  /** A `ContextBlock`. The first thing to give way when space is short. */
   context?: ReactNode | undefined;
   /** The one primary action of the app: a `PrimaryAction`. Any other node is shown as it is. */
   primaryAction?: ReactNode | undefined;

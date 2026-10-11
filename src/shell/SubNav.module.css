@@ -8,6 +8,15 @@
   font: var(--umbra-font-label);
 }
 
+/* The bar is too low for two stacked targets: the steppers of an `EntitySwitcher` sit side by side. */
+.start {
+  flex: none;
+  display: flex;
+  align-items: center;
+  font-weight: 700;
+  --entity-switcher-stepper-direction: row;
+}
+
 .label {
   flex: none;
   padding-inline-end: var(--umbra-space-5);

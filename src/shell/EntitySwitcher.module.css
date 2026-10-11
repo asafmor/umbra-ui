@@ -1,0 +1,204 @@
+/* Font and colour come from where the switcher sits: a page title, a brand bar, the sub bar. */
+.root {
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-entity-switcher-gap, var(--umbra-space-2));
+  min-width: 0;
+  max-width: 100%;
+  /* Clips, so the shared hook can tell when the content no longer fits; rings are drawn inwards. */
+  overflow: hidden;
+  color: inherit;
+  --focus-offset: calc(-1 * var(--umbra-state-focus-ring-width));
+}
+
+.trigger,
+.stepper {
+  margin: 0;
+  border: 0;
+  border-radius: var(--umbra-entity-switcher-radius, var(--umbra-radius-control));
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  transition: background-color var(--umbra-motion-duration-fast);
+}
+
+.trigger {
+  flex: 0 1 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-space-3);
+  /* It can shrink; what is inside it keeps a floor (the name's minimum), and that is what overflows. */
+  min-width: 0;
+  min-height: 24px;
+  padding: var(--umbra-space-1) var(--umbra-entity-switcher-padding-x, var(--umbra-space-2));
+  font: inherit;
+  text-align: start;
+  text-transform: inherit;
+  letter-spacing: inherit;
+}
+
+.trigger:not(:disabled):hover,
+.trigger[aria-expanded='true'],
+.stepper:not([aria-disabled='true']):hover {
+  background: var(--umbra-entity-switcher-hover-bg, color-mix(in oklab, currentColor 12%, transparent));
+}
+
+.trigger:not(:disabled):active,
+.stepper:not([aria-disabled='true']):active {
+  background: color-mix(in oklab, currentColor 20%, transparent);
+}
+
+.trigger:disabled,
+.stepper[aria-disabled='true'] {
+  opacity: var(--umbra-state-disabled-opacity);
+  cursor: default;
+}
+
+/* The mark, whatever it is made of: an `EntityIcon`, an `Avatar`, an icon. */
+.icon {
+  flex: none;
+  display: flex;
+  --size: var(--umbra-entity-switcher-icon-size, 1.25em);
+  --entity-icon-size: var(--size);
+  --avatar-size: var(--size);
+  --icon-size: var(--size);
+}
+
+.icon > :is(svg, img) {
+  width: var(--size);
+  height: var(--size);
+}
+
+/* Cut down to a few letters before the next step is taken. */
+.name {
+  flex: 0 1 auto;
+  min-width: var(--umbra-entity-switcher-name-min-width, 4ch);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.caret {
+  flex: none;
+  display: flex;
+  --icon-size: 0.875em;
+}
+
+/* Stacked where there is room for two targets; side by side in a low bar. */
+.steppers {
+  flex: none;
+  display: flex;
+  flex-direction: var(
+    --umbra-entity-switcher-stepper-direction,
+    var(--entity-switcher-stepper-direction, column)
+  );
+}
+
+.stepper {
+  display: grid;
+  place-items: center;
+  width: var(--umbra-entity-switcher-stepper-size, 24px);
+  height: var(--umbra-entity-switcher-stepper-size, 24px);
+  padding: 0;
+  --icon-size: 16px;
+}
+
+.stepper[data-part='previous'] > * {
+  rotate: 180deg;
+}
+
+/* The picker. */
+.picker {
+  width: var(--umbra-entity-switcher-picker-width, 280px);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.search {
+  flex: 1 1 auto;
+}
+
+.list {
+  padding: var(--umbra-space-2);
+  /* The list clips: the ring of a row is drawn inwards. */
+  --focus-offset: calc(-1 * var(--umbra-state-focus-ring-width));
+}
+
+.group ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.groupLabel {
+  padding: var(--umbra-space-3) var(--umbra-space-3) var(--umbra-space-1);
+  color: var(--umbra-color-base-text-secondary);
+  font: var(--umbra-font-label);
+}
+
+.row {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-space-3);
+  width: 100%;
+  min-height: var(--umbra-density-control-height);
+  margin: 0;
+  padding: var(--umbra-space-2) var(--umbra-space-3);
+  border: 0;
+  border-radius: var(--umbra-radius-control);
+  background: none;
+  color: var(--umbra-color-base-text-primary);
+  font: var(--umbra-font-body);
+  text-align: start;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.row:is(a, button:not(:disabled)):hover {
+  background: color-mix(in oklab, var(--umbra-color-base-text-primary) 8%, transparent);
+}
+
+/* The current entity: the selected fill, and a check so it is not marked by colour alone. */
+.row[aria-current] {
+  background: var(--umbra-color-fixed-selected);
+  color: var(--umbra-color-fixed-on-selected);
+}
+
+.row:disabled {
+  opacity: var(--umbra-state-disabled-opacity);
+  cursor: default;
+}
+
+.rowText {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: grid;
+}
+
+.rowLabel,
+.rowDescription {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.rowDescription {
+  color: var(--umbra-color-base-text-secondary);
+  font: var(--umbra-font-label);
+}
+
+.row[aria-current] .rowDescription {
+  color: inherit;
+}
+
+.message {
+  padding: var(--umbra-space-5);
+  color: var(--umbra-color-base-text-secondary);
+  font: var(--umbra-font-body);
+  text-align: center;
+}

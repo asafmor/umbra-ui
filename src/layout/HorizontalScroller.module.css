@@ -1,0 +1,108 @@
+.root {
+  position: relative;
+  display: flex;
+  /* The row clips: a focus ring inside it is drawn inwards. */
+  --focus-offset: calc(-1 * var(--umbra-state-focus-ring-width));
+}
+
+.track {
+  display: flex;
+  gap: var(--umbra-horizontal-scroller-gap, var(--umbra-density-gap));
+  width: max-content;
+  min-width: 100%;
+  min-height: 100%;
+}
+
+.item {
+  flex: none;
+  display: flex;
+  width: var(--umbra-horizontal-scroller-item-width, var(--item-width, auto));
+}
+
+.item > * {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.root[data-snap] > [data-umbra='scroll-area'] > [data-part='viewport'] {
+  scroll-snap-type: x proximity;
+}
+
+.root[data-snap] .item {
+  scroll-snap-align: start;
+}
+
+/* No thumb at all, as in the source: the buttons, the keyboard, the wheel and touch scroll the row. */
+.root[data-scrollbar='none'] > [data-umbra='scroll-area'] > [data-part='viewport']::-webkit-scrollbar {
+  display: none;
+}
+
+@supports not selector(::-webkit-scrollbar) {
+  .root[data-scrollbar='none'] > [data-umbra='scroll-area'] > [data-part='viewport'] {
+    scrollbar-width: none;
+  }
+}
+
+/*
+ * The fade is a mask on the row, not a colour over it: the row sits on a page background, a card or a
+ * brand band, and no single colour is right on all of them. The `ScrollArea` says which edge has more.
+ */
+.root > [data-umbra='scroll-area'] > [data-part='viewport'] {
+  --fade-direction: to right;
+  --fade-start: #000;
+  --fade-end: #000;
+  --fade-size: var(--umbra-horizontal-scroller-fade-size, var(--umbra-space-8));
+  mask-image: linear-gradient(
+    var(--fade-direction),
+    var(--fade-start),
+    #000 var(--fade-size),
+    #000 calc(100% - var(--fade-size)),
+    var(--fade-end)
+  );
+}
+
+/* Right to left the row starts at the right edge. */
+.root > [data-umbra='scroll-area'] > [data-part='viewport']:is([dir='rtl'], [dir='rtl'] *) {
+  --fade-direction: to left;
+}
+
+.root > [data-umbra='scroll-area'][data-fade-start] > [data-part='viewport'] {
+  --fade-start: transparent;
+}
+
+.root > [data-umbra='scroll-area'][data-fade-end] > [data-part='viewport'] {
+  --fade-end: transparent;
+}
+
+/* Over the edge it scrolls towards, above the fade. Only the button itself takes the pointer. */
+.button {
+  position: absolute;
+  inset-block: 0;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  padding-inline: var(--umbra-space-2);
+  pointer-events: none;
+  --focus-offset: 2px;
+}
+
+.button[data-part='previous'] {
+  inset-inline-start: 0;
+}
+
+.button[data-part='next'] {
+  inset-inline-end: 0;
+}
+
+.button > * {
+  pointer-events: auto;
+  width: var(--umbra-horizontal-scroller-button-size, var(--umbra-density-control-height));
+  height: var(--umbra-horizontal-scroller-button-size, var(--umbra-density-control-height));
+  box-shadow: var(--umbra-elevation-overlay);
+}
+
+.skeleton {
+  display: flex;
+  width: var(--umbra-horizontal-scroller-item-width, var(--item-width, 160px));
+  height: var(--umbra-horizontal-scroller-skeleton-height, 72px);
+}

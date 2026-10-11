@@ -1,4 +1,5 @@
 import { Children, isValidElement, useState, type CSSProperties, type ReactNode } from 'react';
+import { ForceCollapseContext } from '../internal/contexts';
 import { cx, renderPart, type Part } from '../utils/parts';
 import {
   Item,
@@ -26,6 +27,15 @@ function Label({ className, style, children }: BlockProps) {
   );
 }
 
+/** A slot before the label that stays: an `EntitySwitcher`, which shows its icon only at the bar's last step. */
+function Start({ className, style, children }: BlockProps) {
+  return (
+    <div data-part="start" className={cx(styles.start, className)} style={style}>
+      {children}
+    </div>
+  );
+}
+
 function End({ className, style, children }: BlockProps) {
   return (
     <div data-part="end" className={cx(styles.end, className)} style={style}>
@@ -42,13 +52,22 @@ export interface SubNavRootProps extends NavRootProps {
 }
 
 interface FrameProps extends SubNavRootProps {
+  start: ReactNode;
   label: ReactNode;
   end: ReactNode;
 }
 
-function Frame({ 'aria-label': ariaLabel = 'Section', label, end, className, style, ...list }: FrameProps) {
+function Frame({
+  'aria-label': ariaLabel = 'Section',
+  start,
+  label,
+  end,
+  className,
+  style,
+  ...list
+}: FrameProps) {
   // Shrink order: the end slot first (its ShortcutBar sheds labels, then chips), then items into "More",
-  // then the label hides.
+  // then the label hides and an `EntitySwitcher` in the start slot shows its icon only.
   const [labelHidden, setLabelHidden] = useState(false);
   return (
     <nav
@@ -57,8 +76,13 @@ function Frame({ 'aria-label': ariaLabel = 'Section', label, end, className, sty
       className={cx(navClass('sub', className), styles.root)}
       style={style}
     >
+      <ForceCollapseContext value={labelHidden}>{start}</ForceCollapseContext>
       {!labelHidden && label}
-      <NavList {...list} extraSteps={label ? 1 : 0} onExtraSteps={(count) => setLabelHidden(count > 0)} />
+      <NavList
+        {...list}
+        extraSteps={label || start ? 1 : 0}
+        onExtraSteps={(count) => setLabelHidden(count > 0)}
+      />
       {end}
     </nav>
   );
@@ -68,13 +92,15 @@ function Root({ children, ...frame }: SubNavRootProps) {
   const all = Children.toArray(children);
   const is = (type: unknown) => (child: ReactNode) => isValidElement(child) && child.type === type;
   return (
-    <Frame {...frame} label={all.find(is(Label))} end={all.find(is(End))}>
-      {all.filter((child) => !is(Label)(child) && !is(End)(child))}
+    <Frame {...frame} start={all.find(is(Start))} label={all.find(is(Label))} end={all.find(is(End))}>
+      {all.filter((child) => !is(Start)(child) && !is(Label)(child) && !is(End)(child))}
     </Frame>
   );
 }
 
 export interface SubNavProps extends Omit<SubNavRootProps, 'children' | 'parts'> {
+  /** A slot before the label, for an `EntitySwitcher`. It stays when the label hides. */
+  start?: ReactNode | undefined;
   /** The section name. */
   label?: ReactNode | undefined;
   /** The pages of the section. Same shape as `PrimaryNav`. */
@@ -84,6 +110,7 @@ export interface SubNavProps extends Omit<SubNavRootProps, 'children' | 'parts'>
   /** Replace or hide named pieces. */
   parts?:
     | (SubNavRootProps['parts'] & {
+        start?: Part<{ children: ReactNode }> | undefined;
         label?: Part<{ children: ReactNode }> | undefined;
         item?: Part<NavItemProps> | undefined;
         end?: Part<{ children: ReactNode }> | undefined;
@@ -92,11 +119,12 @@ export interface SubNavProps extends Omit<SubNavRootProps, 'children' | 'parts'>
 }
 
 /** The second bar: the pages of the current section, and room for shortcuts at the end. */
-export function SubNav({ label, items, end, parts, ...root }: SubNavProps) {
+export function SubNav({ start, label, items, end, parts, ...root }: SubNavProps) {
   return (
     <Frame
       {...root}
       parts={parts}
+      start={renderPart(parts?.start, { children: start }, (p) => p.children && <Start>{p.children}</Start>)}
       label={renderPart(parts?.label, { children: label }, (p) => p.children && <Label>{p.children}</Label>)}
       end={renderPart(parts?.end, { children: end }, (p) => p.children && <End>{p.children}</End>)}
     >
@@ -106,6 +134,7 @@ export function SubNav({ label, items, end, parts, ...root }: SubNavProps) {
 }
 
 SubNav.Root = Root;
+SubNav.Start = Start;
 SubNav.Label = Label;
 SubNav.Item = Item;
 SubNav.Menu = Menu;

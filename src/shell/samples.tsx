@@ -15,12 +15,24 @@ import {
 } from 'lucide-react';
 import type { Command } from '../overlays/CommandPalette';
 import type { Shortcut } from '../provider/shortcuts';
+import { ContextBlock, type ContextBlockProps } from './ContextBlock';
 import { PrimaryAction, type PrimaryActionProps } from './PrimaryAction';
 import type { ShortcutBarItem } from './ShortcutBar';
 
 /** The primary action the bar stories use. */
 export const SamplePrimaryAction = (props: Partial<PrimaryActionProps>) => (
   <PrimaryAction label="Continue" icon={<ChevronsRight />} {...props} />
+);
+
+/** The context block the bar stories use. The time is fixed and written in UTC, so it is the same on every machine. */
+export const SampleContext = (props: Partial<ContextBlockProps>) => (
+  <ContextBlock
+    primary="Sat 10 Oct 2026"
+    secondary="Quarter close in 6 days"
+    time="2026-10-10T09:30:00Z"
+    timeFormat={{ hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZone: 'UTC' }}
+    {...props}
+  />
 );
 
 /** Pinned shortcuts, each with an icon. */
