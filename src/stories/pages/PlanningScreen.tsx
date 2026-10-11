@@ -40,8 +40,9 @@ const SLOTS = 3;
 export const teams = Array.from({ length: 6 }, (_, i) => ({
   id: `team-${i + 1}`,
   label: `Team ${i + 1}`,
-  description: `Region ${(i % 3) + 1} · ${6 + ((i * 5) % 7)} people`,
-  group: `Region ${(i % 3) + 1}`,
+  description: `${6 + ((i * 5) % 7)} people`,
+  // The steppers follow the order of the picker, group by group: the teams of a region are neighbours.
+  group: `Region ${Math.floor(i / 2) + 1}`,
 }));
 
 // September to November 2026, with one week left without items.
@@ -85,7 +86,7 @@ const tour: SpotlightStep[] = [
     body: 'Each week has its own focus and intensity, and can be copied or cleared.',
   },
   {
-    target: '[data-tour="week"]',
+    target: '.tour-week',
     title: 'The week at a glance',
     body: 'The week of the day you select in the month.',
     placement: 'start',
@@ -244,7 +245,7 @@ export function PlanningScreen({ team }: { team: string }) {
           </Card>
         </Stack>
         <Stack size={1.5} label="Week">
-          <Card title="Week" tone="neutral" size={0.8} priority={2} minHeight={160} data-tour="week">
+          <Card title="Week" tone="neutral" size={0.8} priority={2} minHeight={160} className="tour-week">
             <WeekStrip
               aria-label="Week of the selected day"
               date={selected ?? TODAY}

@@ -1,8 +1,8 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { densities } from '../../src/styles/tokens.generated';
-import { openStory, settle } from './helpers';
+import { expectFocusKept, openStory, pressKeys, settle } from './helpers';
 
-// The three full-page reference stories (src/stories/pages): they fill any window without a page
+// The five full-page reference stories (src/stories/pages): they fill any window without a page
 // scroll, turn into tabs below the minimum window, and work from the keyboard end to end.
 const pages = [
   {
@@ -18,17 +18,26 @@ const pages = [
     action: 'Search requests',
   },
   { id: 'pages-table--table', name: 'Table', tabs: ['Orders', 'Summary'], action: 'Export' },
+  { id: 'pages-planning--planning', name: 'Planning', tabs: ['Schedule', 'Week'], action: 'Copy month' },
+  { id: 'pages-analysis--analysis', name: 'Analysis', tabs: ['Charts', 'Sites'], action: 'Scale' },
 ] as const;
-const [overview, listDetail, table] = pages;
+const [overview, listDetail, table, planning, analysis] = pages;
 
 const problems = new WeakMap<Page, string[]>();
-const open = async (page: Page, id: string, width = 1280, height = 720, density = 'default') => {
+const open = async (
+  page: Page,
+  id: string,
+  width = 1280,
+  height = 720,
+  density = 'default',
+  direction = 'ltr',
+) => {
   const seen: string[] = [];
   problems.set(page, seen);
   page.on('console', (m) => ['error', 'warning'].includes(m.type()) && seen.push(m.text()));
   page.on('pageerror', (error) => seen.push(String(error)));
   await page.setViewportSize({ width, height });
-  await page.goto(`/iframe.html?id=${id}&viewMode=story&globals=density:${density}`);
+  await page.goto(`/iframe.html?id=${id}&viewMode=story&globals=density:${density};direction:${direction}`);
   await page.locator('#storybook-root > *').first().waitFor();
   // No font face is loaded ahead of time: one that first loads when a menu opens must disturb nothing.
   await page.evaluate(() => document.fonts.ready);
@@ -44,6 +53,8 @@ const overflow = (page: Page) =>
       ...document.querySelectorAll('[data-umbra="card"], [data-umbra="top-bar"], [data-umbra="sub-nav"]'),
     ]
       .filter((el) => {
+        // The widgets of a board scroll inside it: one below its edge is not outside the window.
+        if (el.closest('[data-part="grid"]')) return false;
         const r = el.getBoundingClientRect();
         return (
           r.width > 0 &&
@@ -472,5 +483,337 @@ test.describe('Table', () => {
     await open(page, table.id, 1280, 720, 'spacious');
     const cell = rows(page).first().locator('[data-col="__select"]');
     expect(await cell.evaluate((el) => getComputedStyle(el).textOverflow)).toBe('clip');
+  });
+});
+
+// The two pages of tier 2: the time group, the new charts, the tour and the sheet of shortcuts.
+const tier2 = [
+  {
+    ...planning,
+    steps: ['Move between months', 'Settings of a week', 'The week at a glance', 'Another team'],
+    own: 'Copy the month',
+    other: 'Edit the scale',
+    regions: ['entity-switcher', 'planner', 'week-strip', 'list'],
+  },
+  {
+    ...analysis,
+    steps: ['Pick a report', 'A board of widgets', 'One scale for the page'],
+    own: 'Edit the scale',
+    other: 'Copy the month',
+    regions: ['horizontal-scroller', 'widget-board', 'data-table', 'action-bar'],
+  },
+];
+
+for (const { id, name, steps, own, other, regions } of tier2) {
+  test.describe(name, () => {
+    test('Tab walks through every region of the page, and focus is never lost', async ({ page }) => {
+      await open(page, id, 1920, 1080);
+      const seen = new Set<string>();
+      let stops = 0;
+      for (; stops < 80; stops++) {
+        await page.keyboard.press('Tab');
+        const around = await page.evaluate(() => {
+          const names: string[] = [];
+          for (let el = document.activeElement; el && el !== document.body; el = el.parentElement)
+            if (el instanceof HTMLElement && el.dataset.umbra) names.push(el.dataset.umbra);
+          return document.activeElement === document.body ? null : names;
+        });
+        // The body has the focus only once the walk is past the last control of the document.
+        if (!around) break;
+        for (const region of around) seen.add(region);
+      }
+      expect(stops).toBeGreaterThan(20);
+      for (const region of regions) expect([...seen], region).toContain(region);
+      // The next Tab starts again at the skip link.
+      await pressKeys(page, 'Tab');
+      await expect(page.getByRole('link', { name: 'Skip to content' })).toBeFocused();
+      expect(problems.get(page)).toEqual([]);
+    });
+
+    test('the tour lights real elements of the page step by step, and returns the focus', async ({
+      page,
+    }) => {
+      await open(page, id);
+      const button = page.getByRole('button', { name: 'Tour', exact: true });
+      await button.click();
+      const callout = page.getByRole('dialog');
+      for (const [i, title] of steps.entries()) {
+        await expect(callout).toHaveAccessibleName(title);
+        await expect(callout).toContainText(`${i + 1} of ${steps.length}`);
+        // The ring is around something that is drawn, inside the window.
+        await expect
+          .poll(async () => {
+            const ring = await page.locator('[data-umbra="spotlight"] [data-part="ring"]').boundingBox();
+            return (
+              !!ring && ring.width > 20 && ring.height > 10 && ring.x >= -1 && ring.x + ring.width <= 1281
+            );
+          })
+          .toBe(true);
+        await expectFocusKept(page);
+        expect(await overflow(page)).toEqual(fits);
+        await callout.getByRole('button', { name: i === steps.length - 1 ? 'Done' : 'Next' }).click();
+      }
+      await expect(callout).toHaveCount(0);
+      await expect(button).toBeFocused();
+
+      // Its shortcut starts it again from the first step; Escape leaves it.
+      await page.keyboard.press('Shift+T');
+      await expect(callout).toHaveAccessibleName(steps[0]!);
+      await page.keyboard.press('Escape');
+      await expect(callout).toHaveCount(0);
+      await expectFocusKept(page);
+      expect(problems.get(page)).toEqual([]);
+    });
+
+    test('? and the help button open the sheet of shortcuts, and the palette runs one', async ({ page }) => {
+      await open(page, id);
+      await page.keyboard.press('?');
+      const sheet = page.getByRole('dialog', { name: 'Keyboard shortcuts' });
+      // Only what can run here: the keys of the other page are bound by nothing on this one.
+      await expect(sheet.getByText('Take the tour')).toBeVisible();
+      await expect(sheet.getByText(own)).toBeVisible();
+      await expect(sheet.getByText(other)).toHaveCount(0);
+      expect(await overflow(page)).toEqual(fits);
+      await page.keyboard.press('Escape');
+      await expect(sheet).toHaveCount(0);
+
+      const help = page.getByRole('button', { name: 'Keyboard shortcuts' });
+      await help.click();
+      await page.keyboard.type('tour');
+      await expect(sheet.getByRole('listitem')).toHaveCount(1);
+      await page.keyboard.press('Escape');
+      await page.keyboard.press('Escape');
+      await expect(sheet).toHaveCount(0);
+      await expect(help).toBeFocused();
+
+      await page.keyboard.press('Control+k');
+      await page.keyboard.type('Take the tour');
+      const palette = page.getByRole('dialog', { name: 'Command palette' });
+      await expect(palette.getByRole('option').first()).toContainText('Take the tour');
+      await page.keyboard.press('Enter');
+      await expect(page.getByRole('dialog', { name: steps[0]! })).toBeVisible();
+      await expect(palette).toHaveCount(0);
+      expect(problems.get(page)).toEqual([]);
+    });
+
+    test('right to left: the page mirrors and still fits', async ({ page }) => {
+      await open(page, id, 1280, 720, 'default', 'rtl');
+      await expect(page.locator('[data-umbra-root]').last()).toHaveAttribute('dir', 'rtl');
+      // The navigation starts at the right, and the main action of the bar is at the left.
+      const nav = await page.getByRole('navigation', { name: 'Main' }).boundingBox();
+      const action = await page.locator('[data-umbra="primary-action"]').boundingBox();
+      expect(nav!.x).toBeGreaterThan(action!.x + action!.width);
+      for (const [width, height] of [
+        [1920, 1080],
+        [1280, 720],
+        [1024, 600],
+        [900, 560],
+      ] as const) {
+        await page.setViewportSize({ width, height });
+        expect(await overflow(page), `${width}x${height}`).toEqual(fits);
+      }
+      expect(problems.get(page)).toEqual([]);
+    });
+  });
+}
+
+test.describe('Planning', () => {
+  test.beforeEach(({ page }) => open(page, planning.id));
+  const planner = (page: Page) => page.locator('[data-umbra="planner"]');
+
+  test('the month changes by the buttons, the list and the keyboard, within its limits', async ({ page }) => {
+    const grid = planner(page).getByRole('grid');
+    await expect(grid).toHaveAccessibleName('Schedule, October 2026');
+    const next = planner(page).getByRole('button', { name: 'Next month' });
+    await next.click();
+    await expect(grid).toHaveAccessibleName('Schedule, November 2026');
+    await expect(next).toBeDisabled();
+    await planner(page).getByRole('button', { name: 'Today' }).click();
+    await expect(grid).toHaveAccessibleName('Schedule, October 2026');
+
+    await planner(page).locator('[data-part="toolbar"] [data-part="trigger"]').click();
+    await page.getByRole('option', { name: 'September 2026' }).click();
+    await expect(grid).toHaveAccessibleName('Schedule, September 2026');
+    await expect(planner(page).getByRole('button', { name: 'Previous month' })).toBeDisabled();
+
+    // In the grid, Page Down and Page Up change the month and the focus stays in the grid.
+    await tabTo(page, grid);
+    await pressKeys(page, 'PageDown');
+    await expect(grid).toHaveAccessibleName('Schedule, October 2026');
+    await expect(grid.locator(':focus')).toHaveCount(1);
+    await pressKeys(page, 'PageDown', 'PageDown');
+    await expect(grid).toHaveAccessibleName('Schedule, November 2026');
+    // The arrow keys move through the days and their slots, and never out of the grid.
+    await pressKeys(page, 'ArrowRight', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'End', 'Home', 'ArrowUp');
+    await expect(grid.locator(':focus')).toHaveCount(1);
+    expect(await overflow(page)).toEqual(fits);
+    expect(problems.get(page)).toEqual([]);
+  });
+
+  test('selecting a day moves the week strip, and clearing a week empties it', async ({ page }) => {
+    const strip = page.locator('[data-umbra="week-strip"]');
+    await expect(strip.locator('time').first()).toHaveAttribute('datetime', '2026-10-05');
+    await planner(page).getByRole('gridcell', { name: 'Tuesday, October 20, 2026' }).click();
+    await expect(strip.locator('time').first()).toHaveAttribute('datetime', '2026-10-19');
+
+    const planned = page.locator('[data-umbra="page-header"]').getByText('Planned').locator('..');
+    await expect(planned).toContainText('234');
+    const week = planner(page).getByRole('rowheader', { name: 'Week, Oct 19 – 25' });
+    const clear = week.getByRole('button', { name: 'Clear' });
+    await clear.click();
+    await expect(clear).toBeDisabled();
+    await expect(planned).not.toContainText('234');
+    await expect(strip.locator('[data-umbra="schedule-slot"]:not([data-variant="empty"])')).toHaveCount(0);
+    await expectFocusKept(page);
+    expect(problems.get(page)).toEqual([]);
+  });
+
+  test('the controls beside a week keep their own values', async ({ page }) => {
+    const week = planner(page).getByRole('rowheader', { name: 'Week, Oct 5 – 11' });
+    await week.getByRole('slider').focus();
+    await pressKeys(page, 'ArrowRight');
+    await expect(week.getByRole('status')).toHaveText('65% · Normal');
+    await pressKeys(page, 'End');
+    await expect(week.getByRole('status')).toHaveText('100% · Heavy');
+    await week.getByRole('button', { name: 'Focus of the week' }).click();
+    await page.getByRole('option', { name: 'Reviews first' }).click();
+    await expect(week.getByRole('button', { name: 'Focus of the week' })).toContainText('Reviews first');
+    // The week before is as it was.
+    const before = planner(page).getByRole('rowheader', { name: 'Week, Sep 28 – Oct 4' });
+    await expect(before.getByRole('status')).toHaveText('60% · Normal');
+    await expect(before.getByRole('button', { name: 'Focus of the week' })).toContainText('Balanced');
+  });
+
+  test('the switcher in the bar steps to the next team and finds one by name', async ({ page }) => {
+    const bar = page.getByRole('navigation', { name: 'Section' });
+    const overline = page.locator('[data-umbra="page-header"] [data-part="overline"]');
+    await expect(overline).toHaveText('Team 2');
+    await bar.getByRole('button', { name: 'Next: Team 3' }).click();
+    await expect(overline).toHaveText('Team 3');
+    await bar.getByRole('button', { name: 'Team 3', exact: true }).click();
+    await page.keyboard.type('Team 6');
+    const rows = page.getByRole('dialog').locator('[data-part="row"]');
+    await expect(rows).toHaveCount(1);
+    await rows.click();
+    await expect(overline).toHaveText('Team 6');
+    await expectFocusKept(page);
+    expect(problems.get(page)).toEqual([]);
+  });
+});
+
+test.describe('Analysis', () => {
+  test.beforeEach(({ page }) => open(page, analysis.id));
+  /** The band of every bar, the colour of every cell of the heatmap, and the text of the table's indicators. */
+  const looks = (page: Page) =>
+    page.evaluate(() => ({
+      bars: [...document.querySelectorAll<SVGElement>('[data-part="bars"] [data-band]')].map(
+        (el) => el.dataset.band,
+      ),
+      cells: [...document.querySelectorAll('[data-part="cells"] [data-part="cell"]')].map(
+        (el) => getComputedStyle(el).fill,
+      ),
+      pies: [...document.querySelectorAll('[data-umbra="data-table"] [data-umbra="pie-indicator"]')].map(
+        (el) => el.textContent,
+      ),
+    }));
+
+  test('the scale editor recolours the charts and the table while it is open', async ({ page }) => {
+    const before = await looks(page);
+    expect(before.bars).toHaveLength(8);
+    expect(before.cells).toHaveLength(50);
+
+    await page.keyboard.press('Shift+S');
+    const dialog = page.getByRole('dialog', { name: 'Scale' });
+    const from = dialog.getByRole('spinbutton', { name: 'Stop 3: From' });
+    await from.fill('85');
+    await from.press('Tab');
+    await expect.poll(() => looks(page)).not.toEqual(before);
+    // Every part of the page follows: the bars change band, the cells colour, the table its labels.
+    const moved = await looks(page);
+    expect(moved.bars).not.toEqual(before.bars);
+    expect(moved.cells).not.toEqual(before.cells);
+    expect(moved.pies).not.toEqual(before.pies);
+
+    // Another colour for a band reaches the cells too.
+    await dialog.getByRole('button', { name: 'Stop 1: Colour' }).click();
+    await page.getByRole('option', { name: 'Info' }).click();
+    await expect.poll(async () => (await looks(page)).cells).not.toEqual(moved.cells);
+
+    await dialog.getByRole('group', { name: 'Scale' }).getByRole('button', { name: 'Reset' }).click();
+    await expect.poll(() => looks(page)).toEqual(before);
+    await page.keyboard.press('Escape');
+    await expect(dialog).toHaveCount(0);
+    await expectFocusKept(page);
+    expect(await overflow(page)).toEqual(fits);
+    expect(problems.get(page)).toEqual([]);
+  });
+
+  test('the stepper and the slider of the settings change the charts', async ({ page }) => {
+    const scale = page.getByRole('button', { name: 'Scale', exact: true });
+    await scale.click();
+    const dialog = page.getByRole('dialog', { name: 'Scale' });
+    await dialog.getByRole('button', { name: 'Next', exact: true }).click();
+    await expect(dialog.getByRole('spinbutton', { name: 'Sites in the bar chart' })).toHaveAttribute(
+      'aria-valuenow',
+      '10',
+    );
+    await expect(page.locator('[data-part="bars"] [data-band]')).toHaveCount(10);
+    await dialog.getByRole('slider', { name: 'Target' }).focus();
+    await pressKeys(page, 'ArrowRight', 'ArrowRight');
+    await expect(dialog.getByRole('group', { name: 'Target' }).getByRole('status')).toHaveText('70 · Good');
+    await dialog.getByRole('button', { name: 'Done' }).click();
+    await expect(dialog).toHaveCount(0);
+    await expect(scale).toBeFocused();
+  });
+
+  test('picking a report changes the table, and the row of reports scrolls inside itself', async ({
+    page,
+  }) => {
+    const table = page.locator('[data-umbra="data-table"]');
+    const first = () => table.getByRole('row').nth(1).innerText();
+    const before = await first();
+    const report = page.locator('[data-umbra="media-card"]').filter({ hasText: 'Region 2' });
+    await expect(report).not.toContainText('Shown');
+    await report.getByRole('button').click();
+    await expect.poll(first).not.toBe(before);
+    await expect(report).toContainText('Shown');
+
+    await page.setViewportSize({ width: 1024, height: 600 });
+    const scroller = page.locator('[data-umbra="horizontal-scroller"]');
+    const left = () =>
+      scroller.evaluate((el) =>
+        Math.max(...[el, ...el.querySelectorAll('*')].map((node) => Math.abs(node.scrollLeft))),
+      );
+    expect(await left()).toBe(0);
+    await scroller.getByRole('button', { name: 'Next' }).click();
+    await expect.poll(left).toBeGreaterThan(100);
+    expect(await overflow(page)).toEqual(fits);
+  });
+
+  test('the widgets collapse one by one and all at once', async ({ page }) => {
+    const board = page.locator('[data-umbra="widget-board"]');
+    const collapsed = board.locator('[data-umbra="card"][data-collapsed]');
+    await expect(collapsed).toHaveCount(0);
+    await card(page, 'Score by site').getByRole('button').first().click();
+    await expect(collapsed).toHaveCount(1);
+    await board.getByRole('button', { name: 'Collapse all' }).click();
+    await expect(collapsed).toHaveCount(4);
+    await board.getByRole('button', { name: 'Expand all' }).click();
+    await expect(collapsed).toHaveCount(0);
+    await expectFocusKept(page);
+    expect(await overflow(page)).toEqual(fits);
+  });
+
+  test('the split button exports by its action, its menu and its shortcut', async ({ page }) => {
+    const bar = page.locator('[data-umbra="action-bar"]');
+    await bar.getByRole('button', { name: 'Export', exact: true }).click();
+    await expect(bar).toContainText('Exported All regions as PDF');
+    await bar.getByRole('button', { name: 'More ways to export' }).click();
+    await page.getByRole('menuitem', { name: 'Export as CSV' }).click();
+    await expect(bar).toContainText('Exported All regions as CSV');
+    await expectFocusKept(page);
+    await page.keyboard.press('Control+e');
+    await expect(bar).toContainText('Exported All regions as PDF');
+    expect(problems.get(page)).toEqual([]);
   });
 });

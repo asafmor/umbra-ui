@@ -187,7 +187,14 @@ export function AnalysisScreen() {
         priority: 2,
         sortable: true,
         cell: (s) => (
-          <PieIndicator value={s.used} thresholds={scale} showValue layout="inline" size="small" />
+          <PieIndicator
+            value={s.used}
+            thresholds={scale}
+            showValue
+            layout="inline"
+            size="small"
+            aria-label="Capacity in use"
+          />
         ),
       },
       {
@@ -216,7 +223,7 @@ export function AnalysisScreen() {
         accessor: 'rating',
         width: 92,
         priority: 0,
-        cell: (s) => <StarRating readOnly size="small" value={s.rating} />,
+        cell: (s) => <StarRating readOnly size="small" value={s.rating} aria-label="Rating" />,
       },
     ],
     [scale],
@@ -264,17 +271,16 @@ export function AnalysisScreen() {
       <Stack>
         <HorizontalScroller size="content" aria-label="Reports" itemWidth={264} snap>
           {reports.map((r, i) => (
-            <HorizontalScroller.Item key={r.id}>
-              <MediaCard
-                image={<Picture hue={r.hue} />}
-                title={r.title}
-                headingLevel={2}
-                category={r.category}
-                meta={r.meta}
-                aria-label={`${r.title}${i === report ? ', shown' : ''}`}
-                onPress={() => setReport(i)}
-              />
-            </HorizontalScroller.Item>
+            <MediaCard
+              key={r.id}
+              image={<Picture hue={r.hue} />}
+              title={r.title}
+              headingLevel={2}
+              // The report on the page says so in words: a card has no selected state of its own.
+              category={i === report ? 'Shown' : r.category}
+              meta={r.meta}
+              onPress={() => setReport(i)}
+            />
           ))}
         </HorizontalScroller>
         <Columns>
