@@ -72,7 +72,7 @@
   transition:
     opacity var(--umbra-motion-duration-fast),
     color var(--umbra-motion-duration-fast);
-  --umbra-icon-size: 0.9em;
+  --icon-size: 0.9em;
 }
 
 .sub .link,
@@ -100,7 +100,7 @@
 .caret:focus-visible {
   outline: var(--umbra-state-focus-ring-width) solid
     var(--umbra-focus-color, var(--umbra-color-fixed-focus-ring));
-  outline-offset: var(--umbra-focus-offset, 2px);
+  outline-offset: var(--umbra-focus-offset, var(--focus-offset, 2px));
   border-radius: var(--umbra-radius-control);
 }
 
@@ -153,4 +153,24 @@
   bottom: calc(50% - 0.6em - 7px);
   height: 2px;
   background: var(--umbra-subnav-indicator-color, var(--umbra-color-base-text-primary));
+}
+
+/*
+ * Nothing left to move: only the current item and "More" are in the list. In a bar narrower still,
+ * "More" keeps its caret and its label ends in an ellipsis, instead of being cut at the edge.
+ */
+.list:not(:has(> [data-part='item']:not([data-active]))) > [data-part='more'] {
+  flex: 0 1 auto;
+  min-width: 2.5em;
+}
+
+.list:not(:has(> [data-part='item']:not([data-active]))) > [data-part='more'] > .link {
+  min-width: 0;
+}
+
+.list:not(:has(> [data-part='item']:not([data-active]))) > [data-part='more'] .label {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

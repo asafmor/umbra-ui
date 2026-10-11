@@ -91,8 +91,10 @@ function Root({
       isIndeterminate={indeterminate}
       isDisabled={control.disabled}
       isReadOnly={readOnly}
-      isInvalid={control.invalid}
-      isRequired={control.required}
+      // Only when set here or by a field: a `false` would hide what the group says. In a required
+      // group each box is required while none is checked, which is what holds the form back.
+      isInvalid={control.invalid || undefined}
+      isRequired={control.required || undefined}
       name={name}
       value={value}
       id={control.id}

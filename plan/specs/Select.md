@@ -140,3 +140,10 @@ Resolved 2026-10-10:
 - Only the `inCell` variant is filled with the chosen colour. Elsewhere the colour is a swatch before the label.
 - Read-only is the library's own state (React Aria has none for a select): the list does not open and changes are ignored.
 - The clear button and the error icon have no part name: the part list is the one in the catalog task.
+
+Resolved 2026-10-11 (review 2):
+
+- **Invalid, exactly where** (F13). The trigger button carries `aria-invalid="true"` (a global ARIA attribute, valid on a button; `aria-required` is not, so required is said by the label's marker and by the message below). The error icon is shown beside the value. The visually hidden native `<select>` carries `required` and `name`: it is what the browser validates and submits; it is not focusable and not read. The message of a field's `error` is the trigger's description (`aria-describedby`).
+- **Required, on submit.** A required select left empty holds the form back and says why: the browser's own message ("Please select an item in the list.", in the browser's language) is shown as the error of the `FormField` around it and is the trigger's description; without a field it is the description only. Choosing a value clears it. The select passed `invalid={false}` to React Aria, which silenced this; it now passes `invalid` only when set.
+- The stripe of the selected option is on the start side in either direction; the list renders into the modal it was opened from.
+- `inCell`: the focus ring is the fixed focus colour on a dark gap ring, so it keeps 3:1 on any fill (F30). The filter input of a searchable list has a visible ring (F30). The caret turns with the motion easing token (F33).

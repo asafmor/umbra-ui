@@ -13,10 +13,10 @@ Every component is customised through the same four layers. A developer tries th
 
 Rules:
 
-- **Tokens** can be set on the provider or on any subtree.
+- **Tokens** can be set on the provider or on any subtree. A component never declares the public token of another component on one of its parts: that would beat the app's value set on an ancestor. A container that needs a different default for a child (a 24px clear button in a field, a smaller icon in a nav item) sets a private property, and the child reads `var(--umbra-<token>, var(--<token>, <default>))` (decided 2026-10-11; done for `icon-size`, `icon-button-size`, `focus-offset` and `primary-action-min-height`).
 - **Props** cover the common cases only. A component does not grow a prop for every piece; that is what parts are for.
 - **Parts**: each component publishes a fixed list of part names. A part accepts a node (replace), `null` (hide), or a function that receives the default part's props (wrap or adjust).
-- **Blocks**: the all-in-one component is itself built from its public blocks, so anything it does can be rebuilt by hand.
+- **Blocks**: the all-in-one component is itself built from its public blocks, so anything it does can be rebuilt by hand. Exceptions, each recorded in its spec (2026-10-11): a component that is a single control with fixed inner parts (`PrimaryAction`), or whose value is the wiring between existing public components (`HistoryButtons`), publishes no blocks; its pieces are reached through `parts`, and a hand-built version is composed from the public components it uses.
 - Every component also accepts `className` and `style` on its root, and exposes its state as `data-` attributes for CSS.
 - **Each component's spec lists all four layers**: its tokens, props, part names and blocks. The per-component customisation table in the docs is generated from the source, so it cannot go out of date.
 

@@ -23,5 +23,5 @@
   width: calc(
     var(--umbra-history-buttons-size, var(--umbra-density-control-height)) / 2 + var(--umbra-space-2)
   );
-  --umbra-icon-size: 0.875em;
+  --icon-size: 0.875em;
 }

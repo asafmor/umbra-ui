@@ -84,3 +84,7 @@ The label truncates with an ellipsis. With `collapseTo="icon"` and an icon set, 
 ## Open questions
 
 None.
+
+Resolved 2026-10-11 (review 2):
+
+- `size="small"` is never under 24px high (WCAG 2.5.8); at the compact density it was 20px (F31).

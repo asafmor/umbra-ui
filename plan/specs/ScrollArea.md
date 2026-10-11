@@ -74,3 +74,10 @@ Resolved 2026-10-10: the `hidden` scrollbar option is dropped.
 Resolved 2026-10-11:
 
 - 2026-10-11: the accessible name is `aria-label` (it was `label`), as on the other components: `plan/decisions/07-customisation.md`, "Prop names".
+
+Resolved 2026-10-11 (review 2):
+
+- `axis="both"` tracks both axes (F20): `data-fade-start` / `data-fade-end` for the top and bottom as before, and `data-fade-inline-start` / `data-fade-inline-end` with two more `fade` parts (`edge`: `inline-start`, `inline-end`) for the sides. A focus stop is added when either axis overflows.
+- `onReachEnd` (F20): the end of the main axis (bottom for `vertical` and `both`, the far edge for `horizontal`). Called once each time the end is reached. When the content does not fill the area its end is already in view: it is called once when the area mounts, and once more each time the content has grown and still fits. It is never called twice for the same content size, so a load that adds nothing cannot loop.
+- The side fades follow the direction (F32).
+- `ref` (the root element) is a prop.

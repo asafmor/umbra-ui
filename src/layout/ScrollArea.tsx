@@ -8,12 +8,17 @@ export interface ScrollAreaProps {
   scrollbar?: 'auto' | 'hover';
   /** A soft fade at an edge that has more content. */
   fade?: boolean;
-  /** Called when the end is reached, for loading more. */
+  /**
+   * Called when the end is reached, for loading more: the bottom (`vertical`, `both`) or the far edge
+   * (`horizontal`). Once each time the end is reached. It is also called when the content does not fill
+   * the area, since its end is then in view: once when the area mounts, and once more each time the
+   * content has grown and still fits. A first page that is too short can therefore load the next.
+   */
   onReachEnd?: () => void;
   /** Accessible name, used when the area itself has to be focusable to be scrolled by keyboard. */
   'aria-label'?: string;
   /** Replace or hide named pieces. */
-  parts?: { fade?: Part<{ edge: 'start' | 'end' }> };
+  parts?: { fade?: Part<{ edge: ScrollEdge }> };
   /** The root element. */
   ref?: Ref<HTMLDivElement>;
   className?: string;
@@ -22,6 +27,13 @@ export interface ScrollAreaProps {
   /** `data-` attributes go on the root element. */
   [data: `data-${string}`]: string | undefined;
 }
+
+/** `start` and `end` are the edges of the main axis; `axis="both"` also has the two inline edges. */
+export type ScrollEdge = 'start' | 'end' | 'inline-start' | 'inline-end';
+
+const still = { start: false, end: false, inlineStart: false, inlineEnd: false, needsFocus: false };
+
+const edges: ScrollEdge[] = ['start', 'end', 'inline-start', 'inline-end'];
 
 const focusable = 'a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
@@ -40,11 +52,12 @@ export function ScrollArea({
   ...data
 }: ScrollAreaProps) {
   const viewport = useRef<HTMLDivElement>(null);
-  const [state, setState] = useState({ start: false, end: false, needsFocus: false });
+  const [state, setState] = useState(still);
   const reachEnd = useRef(onReachEnd);
   // Kept across renders: the effect below runs again whenever `children` is a new node, which must not
-  // report the same end a second time.
-  const atEnd = useRef(false);
+  // report the same end a second time. `end` while scrolled to the end, `fits:<size>` while the content
+  // does not fill the area (a new size is a new end), null otherwise.
+  const atEnd = useRef<string | null>(null);
   useEffect(() => {
     reachEnd.current = onReachEnd;
   });
@@ -52,22 +65,33 @@ export function ScrollArea({
   useEffect(() => {
     const el = viewport.current;
     if (!el) return;
-    const horizontal = axis === 'horizontal';
+    const read = (inline: boolean) => {
+      const position = Math.abs(inline ? el.scrollLeft : el.scrollTop);
+      const max = inline ? el.scrollWidth - el.clientWidth : el.scrollHeight - el.clientHeight;
+      // The extent of the content itself, which is less than the area's when it fits.
+      const size = [...el.children].reduce(
+        (sum, child) => sum + child.getBoundingClientRect()[inline ? 'width' : 'height'],
+        0,
+      );
+      return { start: position > 1, end: position < max - 1, max, size };
+    };
+    const none = { start: false, end: false, max: 0, size: 0 };
     const measure = () => {
-      const position = Math.abs(horizontal ? el.scrollLeft : el.scrollTop);
-      const max = horizontal ? el.scrollWidth - el.clientWidth : el.scrollHeight - el.clientHeight;
+      // The main axis is the one `start`, `end` and `onReachEnd` are about.
+      const main = read(axis === 'horizontal');
+      const cross = axis === 'both' ? read(true) : none;
       const next = {
-        start: position > 1,
-        end: position < max - 1,
-        needsFocus: max > 1 && !el.querySelector(focusable),
+        start: main.start,
+        end: main.end,
+        inlineStart: cross.start,
+        inlineEnd: cross.end,
+        needsFocus: (main.max > 1 || cross.max > 1) && !el.querySelector(focusable),
       };
       setState((prev) =>
-        prev.start === next.start && prev.end === next.end && prev.needsFocus === next.needsFocus
-          ? prev
-          : next,
+        (Object.keys(next) as (keyof typeof next)[]).every((key) => prev[key] === next[key]) ? prev : next,
       );
-      const reached = max > 1 && !next.end;
-      if (reached && !atEnd.current) reachEnd.current?.();
+      const reached = next.end ? null : main.max > 1 ? 'end' : `fits:${main.size}`;
+      if (reached && reached !== atEnd.current) reachEnd.current?.();
       atEnd.current = reached;
     };
     measure();
@@ -91,6 +115,8 @@ export function ScrollArea({
       data-scrollbar={scrollbar}
       data-fade-start={(fade && state.start) || undefined}
       data-fade-end={(fade && state.end) || undefined}
+      data-fade-inline-start={(fade && state.inlineStart) || undefined}
+      data-fade-inline-end={(fade && state.inlineEnd) || undefined}
       className={cx(styles.root, className)}
       style={style}
     >
@@ -103,7 +129,7 @@ export function ScrollArea({
         {children}
       </div>
       {fade &&
-        (['start', 'end'] as const).map((edge) =>
+        (axis === 'both' ? edges : edges.slice(0, 2)).map((edge) =>
           renderPart(parts?.fade, { edge }, () => (
             <div key={edge} aria-hidden="true" data-part="fade" data-edge={edge} className={styles.fade} />
           )),

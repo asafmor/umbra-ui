@@ -134,3 +134,10 @@ Resolved 2026-10-10:
 - After a row is chosen the list stays closed until the text changes.
 - The remove button of a recent search is not a real button (see above); `Shift+Delete` is the keyboard path.
 - `landmark` is an option, off by default: a page should have few `search` landmarks.
+
+Resolved 2026-10-11 (review 2):
+
+- With the list open, the clear button stays exposed to assistive technology (it is still a tab stop; React Aria hid it, which axe reports as `aria-hidden-focus`). The placeholder rows of a loading list are inside an option named by `loadingLabel` (axe `aria-toggle-field-name`) (F15).
+- The ring of the clear button is drawn inside the field, which clips (F16).
+- The accessible name is `aria-label` (decision 07); `label` still works and is deprecated (F25). The name of the suggestion list ("Suggestions") is React Aria's own string, which follows the provider's `locale`; it is not a prop.
+- Not changed: `Escape` closes the list and a later `Escape` clears the text (measured: three presses from an open list with text, not four).

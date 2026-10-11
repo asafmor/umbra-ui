@@ -3,6 +3,8 @@ import {
   createContext,
   isValidElement,
   useContext,
+  useEffect,
+  useId,
   useLayoutEffect,
   useRef,
   useState,
@@ -13,6 +15,7 @@ import {
   Autocomplete,
   Button as AriaButton,
   ButtonContext,
+  FieldErrorContext,
   Header as AriaHeader,
   Input as AriaInput,
   ListBox as AriaListBox,
@@ -44,7 +47,7 @@ import { useScopeAttributes } from '../provider/UmbraProvider';
 import { cx, renderPart, type Part } from '../utils/parts';
 import type { BlockProps } from './fieldParts';
 import styles from './Select.module.css';
-import { useFieldControl } from './useField';
+import { useField, useFieldControl } from './useField';
 
 /** One choice of a select. */
 export interface SelectOption {
@@ -137,6 +140,7 @@ interface SelectContextValue {
   placeholder: string;
   id: string | undefined;
   invalid: boolean;
+  setMessage: (message: string | null) => void;
   canClear: boolean;
   clear: () => void;
   clearLabel: string;
@@ -232,6 +236,15 @@ function Root({
   children,
 }: SelectRootProps) {
   const control = useFieldControl({ id, disabled, invalid, required });
+  // The browser's own message when the form is submitted with a required select left empty. A field
+  // around the select shows it as its error; alone, the select carries it as its description.
+  const [message, setMessage] = useState<string | null>(null);
+  const messageId = useId();
+  const report = useField().report;
+  useEffect(() => {
+    report?.(message);
+    return () => report?.(null);
+  }, [report, message]);
   const [isOpen, setOpen] = useOpenState(open, defaultOpen, onOpenChange);
   const [own, setOwn] = useState(multiple ? (defaultValues ?? []) : defaultValue ? [defaultValue] : []);
   const current = multiple ? (values ?? own) : value !== undefined ? (value ? [value] : []) : own;
@@ -286,14 +299,23 @@ function Root({
         if (!next) setSearch('');
       }}
       isDisabled={control.disabled}
-      isInvalid={control.invalid}
+      // Only when it is set: a `false` would tell React Aria that the app decides, and silence the
+      // select's own validation (required, on submit).
+      isInvalid={control.invalid || undefined}
       isRequired={control.required}
       name={name}
       placeholder={placeholder}
       aria-label={ariaLabel}
       aria-labelledby={control.labelledBy}
-      aria-describedby={control.describedBy}
+      aria-describedby={
+        [control.describedBy, message && !report && messageId].filter(Boolean).join(' ') || undefined
+      }
     >
+      {message && !report && (
+        <span id={messageId} hidden>
+          {message}
+        </span>
+      )}
       <SelectContext
         value={{
           entries,
@@ -303,6 +325,7 @@ function Root({
           placeholder,
           id: control.id,
           invalid: control.invalid,
+          setMessage,
           canClear: clearable && current.length > 0 && !control.disabled && !readOnly,
           clear: () => change([]),
           clearLabel,
@@ -327,6 +350,19 @@ export interface SelectTriggerProps extends BlockProps {
 function Trigger({ icon, className, style, children }: SelectTriggerProps) {
   const select = useSelect();
   const button = useRef<HTMLButtonElement>(null);
+  // Invalid by the app's word, or by the select's own validation (required, on submit).
+  const validation = useContext(FieldErrorContext);
+  const invalid = select.invalid || !!validation?.isInvalid;
+  const message = validation?.isInvalid ? (validation.validationErrors[0] ?? null) : null;
+  const { setMessage } = select;
+  useEffect(() => setMessage(message), [setMessage, message]);
+  // On the trigger, which is what has the focus and what a screen reader reads. `aria-invalid` is a
+  // global attribute, so a button may carry it (`aria-required` is not, and stays off). Set on the
+  // element: React Aria's button does not pass it on.
+  useLayoutEffect(() => {
+    if (invalid) button.current?.setAttribute('aria-invalid', 'true');
+    else button.current?.removeAttribute('aria-invalid');
+  }, [invalid]);
   return (
     <>
       <AriaButton
@@ -338,7 +374,7 @@ function Trigger({ icon, className, style, children }: SelectTriggerProps) {
       >
         {children === undefined ? <Value /> : children}
       </AriaButton>
-      {select.invalid && (
+      {invalid && (
         <span data-part="invalidIcon" className={styles.invalidIcon}>
           <IconSlot>
             <BareIcon name="invalid" />

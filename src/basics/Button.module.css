@@ -97,7 +97,7 @@
 .button[data-focus-visible] {
   outline: var(--umbra-state-focus-ring-width) solid
     var(--umbra-focus-color, var(--umbra-color-fixed-focus-ring));
-  outline-offset: var(--umbra-focus-offset, 2px);
+  outline-offset: var(--umbra-focus-offset, var(--focus-offset, 2px));
 }
 
 .button[data-disabled] {
@@ -110,7 +110,8 @@
 }
 
 .button[data-size='small'] {
-  --height: calc(var(--umbra-density-table-row) - 2px);
+  /* Never under 24px: the smallest pointer target (WCAG 2.5.8). At the compact density it was 20px. */
+  --height: max(24px, calc(var(--umbra-density-table-row) - 2px));
   padding: 0 var(--umbra-space-3);
   gap: var(--umbra-space-2);
   font: var(--umbra-font-label);
@@ -123,8 +124,8 @@
 
 .button[data-icon-only] {
   flex: none;
-  width: var(--umbra-icon-button-size, var(--height));
-  height: var(--umbra-icon-button-size, var(--height));
+  width: var(--umbra-icon-button-size, var(--icon-button-size, var(--height)));
+  height: var(--umbra-icon-button-size, var(--icon-button-size, var(--height)));
   padding: 0;
   overflow: visible;
 }

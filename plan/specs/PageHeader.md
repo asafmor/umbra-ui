@@ -115,3 +115,7 @@ Resolved 2026-10-10:
 - No `sticky` prop: `Page` keeps the header above the content, and inside a card it goes in the toolbar part or above the body.
 - No loading state of its own: pass skeletons as `title` and `media` while a page loads.
 - The up / down stepper beside the mark (5, 30) belongs to `EntitySwitcher`; put it in `media` or `actions`.
+
+Resolved 2026-10-11 (review 2):
+
+- The back button shows its name as a tooltip, as any icon-only button does (F31).

@@ -89,7 +89,7 @@
   white-space: nowrap;
   cursor: pointer;
   outline: none;
-  --umbra-icon-size: 1.25em;
+  --icon-size: 1.25em;
 }
 
 /* Hover and the arrow keys move the same highlight: one step lighter. */
@@ -114,6 +114,14 @@
 
 .item[data-danger] {
   color: var(--umbra-color-semantic-danger);
+}
+
+/* On the lighter highlight the danger red is under 4.5:1; one step lighter keeps it readable. */
+.item[data-danger]:is([data-focused], [data-hovered], [data-open]) {
+  color: var(
+    --umbra-menu-item-danger-highlight-fg,
+    color-mix(in oklab, var(--umbra-color-semantic-danger), #fff 22%)
+  );
 }
 
 /* The current page: the selected colour, with an edge stripe and weight so it is not colour alone. */

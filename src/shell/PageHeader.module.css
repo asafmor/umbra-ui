@@ -57,7 +57,7 @@
   padding: 0;
   list-style: none;
   overflow: hidden;
-  --umbra-icon-size: 1em;
+  --icon-size: 1em;
 }
 
 .breadcrumbs li {

@@ -307,7 +307,10 @@
   clip-path: inset(50%);
 }
 
+/* The panel clips, so the ring of a control at its edge is drawn inwards (plan/interaction.md). */
 .panel {
+  --focus-offset: calc(-1 * var(--umbra-state-focus-ring-width));
+
   display: flex;
   flex: 1 1 0;
   flex-direction: column;

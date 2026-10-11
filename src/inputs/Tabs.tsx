@@ -304,6 +304,14 @@ function List({
         {...shrink.attributes}
         className={cx(shrink.className, styles.strip)}
         onKeyDown={onKeyDown}
+        onBlur={(event) => {
+          // With manual activation the focused tab is not the selected one. Once focus has left the
+          // list, the tab stop is the selected tab again, not the one that last had focus.
+          if (event.currentTarget.contains(event.relatedTarget)) return;
+          const all = tabsIn(event.currentTarget).filter((t) => !t.disabled);
+          const stop = all.find((t) => t.getAttribute('aria-selected') === 'true') ?? all[0];
+          for (const tab of all) tab.tabIndex = tab === stop ? 0 : -1;
+        }}
       >
         {closable && <span ref={owner} {...tablist} className={styles.owner} />}
         {renderPart(parts?.indicator, {}, () => (

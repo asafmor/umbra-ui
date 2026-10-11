@@ -78,12 +78,17 @@
 .root:has(> .trigger[data-focus-visible]) {
   outline: var(--umbra-state-focus-ring-width) solid
     var(--umbra-focus-color, var(--umbra-color-fixed-focus-ring));
-  outline-offset: var(--umbra-focus-offset, 2px);
+  outline-offset: var(--umbra-focus-offset, var(--focus-offset, 2px));
 }
 
 /* A table cell clips, so there the ring is drawn inwards. */
 .root[data-variant='inCell']:has(> .trigger[data-focus-visible]) {
   outline-offset: calc(-1 * var(--umbra-state-focus-ring-width));
+}
+
+/* On a coloured fill the ring alone can be under 3:1: a dark line inside it gives it an edge on any fill. */
+.root[data-variant='inCell'][data-tone]:has(> .trigger[data-focus-visible]) {
+  box-shadow: inset 0 0 0 calc(2 * var(--umbra-state-focus-ring-width)) var(--umbra-color-base-surface1);
 }
 
 .root[data-invalid] {
@@ -134,7 +139,7 @@
   min-width: 0;
   overflow: hidden;
   white-space: nowrap;
-  --umbra-icon-size: 1.25em;
+  --icon-size: 1.25em;
 }
 
 /* Text alone (the placeholder, several labels, a count) truncates as one line. */
@@ -195,7 +200,8 @@
 
 .root > [data-part='icon'] {
   color: var(--umbra-select-icon-color, var(--umbra-color-base-text-secondary));
-  transition: rotate calc(var(--umbra-motion-duration-base) * var(--umbra-motion-scale));
+  transition: rotate calc(var(--umbra-motion-duration-base) * var(--umbra-motion-scale))
+    var(--umbra-motion-easing-enter);
 }
 
 .root[data-variant='inCell'][data-tone] > [data-part='icon'] {
@@ -213,8 +219,8 @@
 }
 
 .clear {
-  --umbra-icon-button-size: 24px;
-  --umbra-focus-offset: calc(-1 * var(--umbra-state-focus-ring-width));
+  --icon-button-size: 24px;
+  --focus-offset: calc(-1 * var(--umbra-state-focus-ring-width));
 
   position: relative;
   z-index: 1;
@@ -280,7 +286,7 @@
 }
 
 /* Focus stays in the filter field while the arrow keys move through the options; the ring shows where typing goes. */
-.search:has(.searchInput[data-focus-visible]) {
+.search:has(.searchInput:is([data-focus-visible], :focus-visible)) {
   outline: var(--umbra-state-focus-ring-width) solid
     var(--umbra-focus-color, var(--umbra-color-fixed-focus-ring));
   outline-offset: calc(-1 * var(--umbra-state-focus-ring-width));

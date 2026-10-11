@@ -89,8 +89,10 @@ export function PrimaryAction({
   // Shrink steps of its own: 1 the description hides, 2 the label hides (only with an icon to keep).
   const hasDescription = description !== undefined && description !== null && description !== false;
   const max = (hasDescription ? 1 : 0) + (icon ? 1 : 0);
-  const level = useShrinkLevel(root, max);
-  const collapsed = !!icon && (collapsedProp ?? (forced || level === max));
+  // One more step after those: the label truncates. It is a step, not the resting state: an action with
+  // nothing to hide used to count as "out of steps" at once, which dropped its minimum width.
+  const level = useShrinkLevel(root, max + 1);
+  const collapsed = !!icon && (collapsedProp ?? (forced || level >= max));
   const showDescription = hasDescription && !collapsed && level === 0;
   useShortcut(shortcut, disabled || loading ? undefined : onPress);
 
@@ -152,7 +154,7 @@ export function PrimaryAction({
       data-umbra="primary-action"
       data-collapsed={collapsed || undefined}
       // With nothing left to hide, the label truncates.
-      data-truncate={(level === max && !collapsed) || undefined}
+      data-truncate={(level > max && !collapsed) || undefined}
       data-attention={attention || undefined}
       data-loading={loading || undefined}
       data-disabled={disabled || undefined}

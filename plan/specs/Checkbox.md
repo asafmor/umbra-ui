@@ -131,3 +131,8 @@ Resolved 2026-10-10:
 - `size="small"` is a fixed step below the density size, not a second density scale.
 - A group's `columns` is the same grid as `RadioGroup`'s.
 - No "select all" prop: it is one controlled `Checkbox` with `indeterminate` (shown in the stories).
+
+Resolved 2026-10-11 (review 2):
+
+- `required` on a `CheckboxGroup` works (F12): while no box is checked every box is `required`, which is what the browser validates, so the form does not submit; with one checked none is. A checkbox passed its own `required={false}` and `invalid={false}` to React Aria, which hid what the group said; it now passes them only when set.
+- Pressed darkens an unchecked box too; it used to lighten it (F33). The same for `Radio` and `Toggle`.

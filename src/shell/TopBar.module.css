@@ -94,5 +94,5 @@
 
 /* Icon only, the primary action is as wide as the bar is tall. */
 .primaryAction > [data-umbra='primary-action'] {
-  --umbra-primary-action-min-height: 0px;
+  --primary-action-min-height: 0px;
 }

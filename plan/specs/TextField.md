@@ -99,3 +99,7 @@ Resolved 2026-10-10:
 - No password reveal button and no character counter: both fit in `suffix`.
 - A `multiline` field has a fixed number of rows and does not resize or grow, so it cannot push the page into scrolling.
 - The ring is drawn inwards, on the whole field, so it survives in a table cell or any container that clips.
+
+Resolved 2026-10-11 (review 2):
+
+- The ring of the clear button is drawn inside the field, which clips (F16).

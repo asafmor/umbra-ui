@@ -105,3 +105,8 @@ Resolved 2026-10-10 (Milestone 1):
 - Gradual narrowing never reached step 4 with a nav: the nav reported that it was exhausted only at the moment it moved its last item. The bar now measures the overflow itself once the nav has nothing left to move.
 
 Resolved 2026-10-10: for a brand colour where neither white nor near-black text reaches 4.5:1, the bar uses the better of the two and warns in development. The bar colour is never changed.
+
+Resolved 2026-10-11 (review 2):
+
+- The bar declares no public token of another component (F21): what it needs inside itself is a private default (`--primary-action-min-height`, `--icon-size`), which the component reads after its public token, so `--umbra-primary-action-min-height` or `--umbra-icon-size` set by the app on any ancestor wins. `--umbra-badge-ring` is still declared here, because `Badge` (another group's file) does not read a private default yet.
+- When nothing is left to move, "More" itself gives way: its label ends in an ellipsis and its caret stays, so it is not cut at the edge down to a bar 470px wide (it was cut from 470px; F31). Narrower than that the logo and the actions alone are wider than the bar: not supported, as phones are not a design target (`plan/layout.md`).

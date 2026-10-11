@@ -101,8 +101,8 @@
 
 .affix > :is(svg, img) {
   display: block;
-  width: var(--umbra-icon-size, 1.25em);
-  height: var(--umbra-icon-size, 1.25em);
+  width: var(--umbra-icon-size, var(--icon-size, 1.25em));
+  height: var(--umbra-icon-size, var(--icon-size, 1.25em));
 }
 
 .invalidIcon {
@@ -115,8 +115,10 @@
   display: inline-flex;
 }
 
+/* The field clips: the ring of the button is drawn inside it. */
 .clear {
-  --umbra-icon-button-size: 24px;
+  --icon-button-size: 24px;
+  --focus-offset: calc(-1 * var(--umbra-state-focus-ring-width));
 
   display: inline-flex;
   flex: none;

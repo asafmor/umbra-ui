@@ -2,8 +2,8 @@
   display: inline-grid;
   place-items: center;
   flex: none;
-  width: var(--umbra-icon-size, 1.25em);
-  height: var(--umbra-icon-size, 1.25em);
+  width: var(--umbra-icon-size, var(--icon-size, 1.25em));
+  height: var(--umbra-icon-size, var(--icon-size, 1.25em));
 }
 
 .icon > :is(svg, img) {

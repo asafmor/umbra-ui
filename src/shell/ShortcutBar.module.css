@@ -50,7 +50,7 @@
   text-decoration: none;
   cursor: pointer;
   transition: background-color var(--umbra-motion-duration-fast);
-  --umbra-icon-size: 1.1em;
+  --icon-size: 1.1em;
 }
 
 .chip[data-icon-only] {

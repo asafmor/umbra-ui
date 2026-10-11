@@ -155,7 +155,7 @@
 .caret {
   flex: none;
   display: flex;
-  --umbra-icon-size: 1em;
+  --icon-size: 1em;
   transition: rotate calc(var(--umbra-motion-duration-base) * var(--umbra-motion-scale))
     var(--umbra-motion-easing-enter);
 }
@@ -166,7 +166,9 @@
 
 /* Items of a group line up with the label of the group. */
 .nested > .item > .link {
-  padding-inline-start: calc(var(--umbra-space-4) + var(--umbra-icon-size, 1.25em) + var(--umbra-space-3));
+  padding-inline-start: calc(
+    var(--umbra-space-4) + var(--umbra-icon-size, var(--icon-size, 1.25em)) + var(--umbra-space-3)
+  );
 }
 
 .section + .section,

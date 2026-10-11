@@ -5,7 +5,7 @@
   min-width: 0;
   overflow: hidden;
   /* The row clips its content, so the rings of its link and controls are drawn inside them. */
-  --umbra-focus-offset: calc(-1 * var(--umbra-state-focus-ring-width));
+  --focus-offset: calc(-1 * var(--umbra-state-focus-ring-width));
   margin-bottom: var(--umbra-space-3);
   color: var(--umbra-section-title-color, var(--umbra-color-base-text-primary));
 }

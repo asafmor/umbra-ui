@@ -1,4 +1,4 @@
-import { useId, type ReactNode } from 'react';
+import { useId, type ReactNode, useState } from 'react';
 import { cx, renderPart, type Part } from '../utils/parts';
 import {
   Marker,
@@ -56,14 +56,18 @@ function Root({
 }: FormFieldRootProps) {
   const auto = useId();
   const slots = useTextSlots();
+  const [reported, setReported] = useState<string | null>(null);
   const field: FieldState = {
     id: id ?? `${auto}-control`,
     labelId: slots.labelId,
     descriptionId: slots.hasDescription ? slots.descriptionId : undefined,
     errorId: slots.hasError ? slots.errorId : undefined,
-    invalid: invalid || slots.hasError,
+    // A message the control reported is the control's own finding: telling the control it is invalid
+    // because of it would make the control drop the finding (React Aria then takes the app's word).
+    invalid: invalid || (slots.hasError && !reported),
     required,
     disabled,
+    report: setReported,
   };
   const marker = required ? (
     <Marker kind="required">{requiredLabel}</Marker>
@@ -76,7 +80,7 @@ function Root({
       data-layout={layout}
       data-surface={surface || undefined}
       data-label-width={labelWidth !== undefined || undefined}
-      data-invalid={field.invalid || undefined}
+      data-invalid={field.invalid || !!reported || undefined}
       data-required={required || undefined}
       data-disabled={disabled || undefined}
       className={cx(styles.root, className)}
@@ -88,7 +92,14 @@ function Root({
       }}
     >
       <TextSlotsProvider value={{ ...slots, marker, htmlFor: field.id }}>
-        <FieldContext value={field}>{children}</FieldContext>
+        <FieldContext value={field}>
+          {children}
+          {/*
+            The control's own validation message (a required select left empty). With an error from the
+            app the control is invalid by the app's word and reports nothing, so there is one message.
+          */}
+          {reported && <ErrorText>{reported}</ErrorText>}
+        </FieldContext>
       </TextSlotsProvider>
     </div>
   );

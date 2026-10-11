@@ -42,10 +42,12 @@ const overlay = '[role="menu"], [role="listbox"], [role="dialog"]';
 type Update = (() => void) | undefined;
 interface Row {
   targets: Element[];
-  /** A watched element has changed size. */
-  resized: () => Update;
+  /** A watched element has changed size: the update to make, or `restart` when the row has grown. */
+  resized: () => Update | 'restart';
   /** Start again from 0. */
   restart: () => Update;
+  /** A menu opened from the row is showing, or still has the focus while it closes. */
+  busy: () => boolean;
 }
 const rows = new Set<Row>();
 const observed = new Map<Element, number>();
@@ -56,12 +58,33 @@ function apply(updates: Update[]) {
   const todo = updates.filter((update) => !!update);
   if (todo.length) flushSync(() => todo.forEach((update) => update()));
 }
-const restartAll = () => apply([...rows].map((row) => row.restart()));
+
+// A restart waits while a menu opened from any row is showing: restarting unmounts its trigger. When
+// the menu has gone, focus is on nothing for a frame or two before it is given back to the trigger;
+// the wait for that is bounded, in case it never is. One wait for all rows, so they restart once.
+let frame = 0;
+let waited = false;
+let lost = 0;
+function restartAll() {
+  cancelAnimationFrame(frame);
+  frame = 0;
+  if ([...rows].some((row) => row.busy())) {
+    waited = true;
+    lost = 0;
+  } else if (!waited || !focusLost() || lost++ >= 10) {
+    waited = false;
+    return apply([...rows].map((row) => row.restart()));
+  }
+  frame = requestAnimationFrame(restartAll);
+}
 
 function addRow(row: Row) {
   observer ??= new ResizeObserver((entries) => {
     const changed = new Set(entries.map((entry) => entry.target));
-    apply([...rows].filter((r) => r.targets.some((t) => changed.has(t))).map((r) => r.resized()));
+    const updates = [...rows].filter((r) => r.targets.some((t) => changed.has(t))).map((r) => r.resized());
+    // A row that has grown restarts every row, so rows beside each other settle in their order.
+    if (updates.includes('restart')) restartAll();
+    else apply(updates as Update[]);
   });
   // Text measured before a web font arrived may have been wider; start again when fonts finish loading.
   if (!rows.size) document.fonts?.addEventListener('loadingdone', restartAll);
@@ -80,7 +103,10 @@ function addRow(row: Row) {
         observer!.unobserve(target);
       }
     }
-    if (!rows.size) document.fonts?.removeEventListener('loadingdone', restartAll);
+    if (!rows.size) {
+      document.fonts?.removeEventListener('loadingdone', restartAll);
+      cancelAnimationFrame(frame);
+    }
   };
 }
 
@@ -158,27 +184,6 @@ export function useShrinkLevel(
     );
     settled.current = widths();
     const scope = el.parentElement ?? el;
-    let frame = 0;
-
-    // Starts again from 0, once no menu opened from the row is showing, and once focus has left that
-    // menu: a closing menu keeps focus until it has faded out, and only then gives it back to its
-    // trigger. Restarting sooner would render the trigger again and leave focus with nowhere to go.
-    // When the menu has gone, focus is on nothing for a frame or two before it is given back; the
-    // wait for that is bounded, in case it never is.
-    let lost = 0;
-    const later = () => {
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(() => {
-        if (busy() || (focusLost() && lost++ < 10)) return later();
-        lost = 0;
-        restartAll();
-      });
-    };
-    const waiting = new MutationObserver(() => {
-      if (scope.querySelector(expanded)) return;
-      waiting.disconnect();
-      later();
-    });
     const busy = () => {
       const active = document.activeElement;
       return (
@@ -186,31 +191,22 @@ export function useShrinkLevel(
       );
     };
     const restart = () => {
-      if (scope.querySelector(expanded)) {
-        waiting.observe(scope, { subtree: true, attributes: true, attributeFilter: ['aria-expanded'] });
-        return;
-      }
-      if (busy()) return void later();
       if (shown.current !== 0) return to(0);
       if (mustAdvance(0)) return to(1);
     };
 
-    const remove = addRow({
+    return addRow({
       targets: watched.current,
       resized: () => {
         const now = widths();
         const grew = now.some((width, i) => width > (settled.current[i] ?? width) + 0.5);
         settled.current = now;
-        if (grew) return restart();
+        if (grew) return 'restart';
         if (mustAdvance(shown.current)) return to(shown.current + 1);
       },
       restart,
+      busy,
     });
-    return () => {
-      remove();
-      waiting.disconnect();
-      cancelAnimationFrame(frame);
-    };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- the helpers only read refs
   }, [element]);
 

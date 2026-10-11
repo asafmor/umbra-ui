@@ -12,6 +12,7 @@ import { useShrinkLevel } from '../internal/useShrinkLevel';
 import { MoreButton } from '../layout/SectionTitle';
 import { ActionsOverflow } from '../overlays/Menu';
 import { textColourOn } from '../provider/contrast';
+import { Tooltip } from '../overlays/Tooltip';
 import { Icon } from '../provider/icons';
 import { cx, renderPart, type Part } from '../utils/parts';
 import type { LinkRenderProps } from '../utils/link';
@@ -185,9 +186,12 @@ export interface PageHeaderBackProps {
 function Back({ label = 'Back', onBack, className, style }: PageHeaderBackProps) {
   return (
     <span data-part="back" className={cx(styles.back, className)} style={style}>
-      <ButtonBase umbra="icon-button" variant="ghost" iconOnly label={label} onPress={onBack}>
-        <Icon name="back" />
-      </ButtonBase>
+      {/* An icon alone: its name is also its tooltip, as on an `IconButton`. */}
+      <Tooltip content={label} placement="bottom">
+        <ButtonBase umbra="icon-button" variant="ghost" iconOnly label={label} onPress={onBack}>
+          <Icon name="back" />
+        </ButtonBase>
+      </Tooltip>
     </span>
   );
 }

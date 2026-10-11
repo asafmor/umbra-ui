@@ -79,6 +79,8 @@ export interface CommandPaletteProps {
   /** Id of the shortcut that opens and closes the palette. `null` binds none. */
   shortcut?: string | null;
   /** Accessible name of the dialog and of the input. */
+  'aria-label'?: string;
+  /** @deprecated Use `aria-label`: the palette shows no label of its own (decision 07). */
   label?: string;
   placeholder?: string;
   emptyLabel?: string;
@@ -149,7 +151,8 @@ function Panel({
   onRun,
   navigate = (href) => window.location.assign(href),
   shortcut,
-  label = 'Command palette',
+  'aria-label': ariaLabel,
+  label = ariaLabel ?? 'Command palette',
   placeholder = 'Type a command or search',
   emptyLabel = 'No results',
   errorLabel = 'Something went wrong',

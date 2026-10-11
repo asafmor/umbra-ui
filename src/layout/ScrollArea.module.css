@@ -69,7 +69,8 @@
   --fade: var(--umbra-scroll-fade-color, var(--umbra-context-card-tint));
 }
 
-.root:not([data-axis='horizontal']) > .fade {
+/* Top and bottom: the main axis of `vertical` and `both`. */
+.root:not([data-axis='horizontal']) > .fade:is([data-edge='start'], [data-edge='end']) {
   inset-inline: 0;
   height: var(--umbra-space-5);
 }
@@ -84,31 +85,39 @@
   background: linear-gradient(transparent, var(--fade));
 }
 
-.root[data-axis='horizontal'] > .fade {
+/* The two side edges: the main axis of `horizontal`, and the second axis of `both`. */
+.root[data-axis='horizontal'] > .fade,
+.fade:is([data-edge='inline-start'], [data-edge='inline-end']) {
   inset-block: 0;
   width: var(--umbra-space-5);
 }
 
-.root[data-axis='horizontal'] > .fade[data-edge='start'] {
+.root[data-axis='horizontal'] > .fade[data-edge='start'],
+.fade[data-edge='inline-start'] {
   inset-inline-start: 0;
   background: linear-gradient(to right, var(--fade), transparent);
 }
 
-.root[data-axis='horizontal'] > .fade[data-edge='end'] {
+.root[data-axis='horizontal'] > .fade[data-edge='end'],
+.fade[data-edge='inline-end'] {
   inset-inline-end: 0;
   background: linear-gradient(to left, var(--fade), transparent);
 }
 
 /* The start edge is on the right when the direction is right to left. */
-.root[data-axis='horizontal'] > .fade[data-edge='start']:dir(rtl) {
+.root[data-axis='horizontal'] > .fade[data-edge='start']:dir(rtl),
+.fade[data-edge='inline-start']:dir(rtl) {
   background: linear-gradient(to left, var(--fade), transparent);
 }
 
-.root[data-axis='horizontal'] > .fade[data-edge='end']:dir(rtl) {
+.root[data-axis='horizontal'] > .fade[data-edge='end']:dir(rtl),
+.fade[data-edge='inline-end']:dir(rtl) {
   background: linear-gradient(to right, var(--fade), transparent);
 }
 
 .root[data-fade-start] > .fade[data-edge='start'],
-.root[data-fade-end] > .fade[data-edge='end'] {
+.root[data-fade-end] > .fade[data-edge='end'],
+.root[data-fade-inline-start] > .fade[data-edge='inline-start'],
+.root[data-fade-inline-end] > .fade[data-edge='inline-end'] {
   opacity: 1;
 }

@@ -13,7 +13,10 @@
   display: flex;
   min-width: 0;
   max-width: 100%;
-  min-height: var(--umbra-primary-action-min-height, var(--umbra-density-control-height));
+  min-height: var(
+    --umbra-primary-action-min-height,
+    var(--primary-action-min-height, var(--umbra-density-control-height))
+  );
   /* It clips, so it can tell when its label no longer fits; rings are drawn inwards. */
   overflow: hidden;
   border-radius: var(--umbra-primary-action-radius, 0);
@@ -147,7 +150,10 @@
 .root[data-collapsed] > .button {
   flex: none;
   justify-content: center;
-  min-width: var(--umbra-primary-action-min-height, var(--umbra-density-control-height));
+  min-width: var(
+    --umbra-primary-action-min-height,
+    var(--primary-action-min-height, var(--umbra-density-control-height))
+  );
   aspect-ratio: 1;
   padding: 0;
   /* The marker moves to the corner of the icon. */

@@ -100,3 +100,8 @@ Resolved 2026-10-10:
 - `icon` sits at the end by default, as in the evidence; `iconPosition` moves it.
 - `badge` and `attention` together show the count only: the count is the stronger statement.
 - Hover is not animated: a gradient cannot transition without registering a global custom property.
+
+Resolved 2026-10-11 (review 2):
+
+- The minimum width (180px) applies to an action with nothing to hide (F31): truncating the label is a shrink step of its own, taken only when the action runs out of room. Before, such an action counted as out of steps from the start and was as narrow as its label (107px).
+- **Blocks: none, as an exception to decision 07** (recorded there): it is one button with fixed inner parts, all replaceable through `parts`; a version built by hand is a `Button` in `TopBar.PrimaryAction`.

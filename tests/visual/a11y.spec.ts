@@ -19,6 +19,19 @@ for (const story of Object.values(index.entries).filter((e) => e.type === 'story
       await page.goto(`/iframe.html?id=${story.id}&viewMode=story&globals=context:${context}`);
       await page.locator('#storybook-root > *').first().waitFor();
       await page.evaluate(() => document.fonts.ready);
+      // Wait for every fade to end. A story that opens a menu or a popover fades it in, and axe reads the
+      // colours as they are painted: read mid-fade, text is blended with what is behind it and fails the
+      // contrast check now and then (it did, about one run in twenty, on `overlays-menu--basic`).
+      await page.evaluate(async () => {
+        await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
+        await Promise.all(
+          document
+            .getAnimations()
+            // Not the ones that never end (a spinner, a skeleton).
+            .filter((a) => Number.isFinite(a.effect?.getComputedTiming().endTime))
+            .map((a) => a.finished.catch(() => null)),
+        );
+      });
       // Storybook's own accessibility panel may be running axe on the same page; wait for it.
       const analyze = async (tries = 20): Promise<Awaited<ReturnType<AxeBuilder['analyze']>>> => {
         try {

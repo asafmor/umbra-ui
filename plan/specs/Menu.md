@@ -118,3 +118,9 @@ Resolved 2026-10-10:
 - Actions that move into an overflow menu (`Card`, `SectionTitle`, `TopBar`) keep working as they are written: inside that menu a `Button` or `IconButton` renders as a menu item, a toggle as a checkbox item with its check at the end of the row, a link button as a link item, and a `Menu` with a `trigger` as a submenu. A plain element that wraps actions (`<div>`, `<span>`) gives way to them, and text among them is left out. A component of the app among the actions must render one of those three itself; if it renders its own wrapper element, the rows after it are lost.
 - Trailing icons on a row (the source's "opens elsewhere" mark) are part of the label node; there is no prop for them.
 - The check is the library's own icon; it is replaced through `parts.check` (it is not in the provider's icon map yet).
+
+Resolved 2026-10-11 (review 2):
+
+- A danger row under the highlight (pointer or arrow keys) takes a lighter red, `--umbra-menu-item-danger-highlight-fg`: the plain danger red was 4.40:1 on the highlight (F14). Measured 4.5:1 or more on all four tints (`tests/visual/regressions.spec.ts`).
+- The stripe of the current row is on the start side, and the submenu chevron is mirrored, when the direction is right to left (F32). The menu renders into the modal it was opened from.
+- Kept: `Space` on a radio or checkbox row changes it and leaves the menu open, `Enter` changes it and closes. This is the ARIA Authoring Practices pattern for `menuitemradio` (review 2 listed it as a defect, F30).

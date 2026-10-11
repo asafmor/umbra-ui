@@ -16,6 +16,11 @@ export interface FieldState {
   invalid: boolean;
   required: boolean;
   disabled: boolean;
+  /**
+   * For a control that validates itself (a required `Select` on submit): the message to show as the
+   * field's error, or null to take it away. The field shows it only while it has no error of its own.
+   */
+  report?: (message: string | null) => void;
 }
 
 export const noField: FieldState = {

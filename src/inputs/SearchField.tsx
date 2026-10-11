@@ -117,6 +117,8 @@ export interface SearchFieldRootProps extends BlockProps {
   /** Makes the field a `search` landmark, for the main search of a page. */
   landmark?: boolean;
   /** Accessible name, when there is no `FormField` label. */
+  'aria-label'?: string;
+  /** @deprecated Use `aria-label`: the field shows no label of its own (decision 07). */
   label?: string;
   /** Rows shown in a list under the field, as given: the app filters them. Pass `[]`, not nothing, while there are none. */
   suggestions?: SearchSuggestion[];
@@ -154,7 +156,8 @@ function Root({
   expandTo = 'start',
   collapsedLabel,
   landmark = false,
-  label = 'Search',
+  'aria-label': ariaLabel,
+  label = ariaLabel ?? 'Search',
   suggestions,
   recent,
   onSelect,
@@ -454,7 +457,14 @@ function Clear({ label = 'Clear', className, style }: SearchFieldClearProps) {
   const field = useSearchField();
   if (!field.canClear) return null;
   return (
-    <span data-part="clear" className={cx(styles.clear, className)} style={style}>
+    // With the list open React Aria hides everything but the input and the list from assistive
+    // technology. This button stays reachable by Tab, so it must stay visible to it: the mark says so.
+    <span
+      data-part="clear"
+      data-react-aria-top-layer="true"
+      className={cx(styles.clear, className)}
+      style={style}
+    >
       <ButtonBase
         umbra="icon-button"
         variant="ghost"
@@ -593,6 +603,8 @@ function Suggestions({
   );
   const empty = field.loading ? (
     <>
+      {/* React Aria renders this inside an option, which must have a name. */}
+      <span className={styles.hiddenText}>{field.loadingLabel}</span>
       <Skeleton />
       <Skeleton width="70%" />
     </>

@@ -125,3 +125,11 @@ Resolved 2026-10-10:
 - An item without `content` gets no panel; the app shows the content itself.
 - No loading, empty or error state.
 - Step 3 is a "more" menu (the public `Menu`), not scrolling. Its button sits outside the `tablist` (which may only hold tabs) and is the tab stop after it. Fade-scrolling stays only for a vertical list. The tab strip of `Columns` gets the same menu.
+
+Resolved 2026-10-11 (review 2):
+
+- **Right to left** (F9): the arrow keys follow what is drawn, the shrink steps run (the test for the last tab knows which edge is the end), "more" is at the end of the strip, and the indicator sits on the selected tab. Tested in `tests/visual/rtl.spec.ts`.
+- **A panel clips**, so the ring of a control at its edge is drawn inwards (F16).
+- **Font loads and resizes** (F2, F17): the "more" menu opens on the first press with no font preloaded, and two width changes in one frame end where one does (`src/internal/useShrinkLevel.ts`).
+- **Manual activation** (F30): the tab stop is the selected tab whenever focus is outside the list, not the tab that last had focus.
+- **Kept without React Aria** (reviewed 2026-10-11): React Aria's tabs do not allow a close button beside a tab or the "more" step. The cost was hand-made focus, direction and indicator code; all three are now correct in both directions and covered by tests, so the decision stands.

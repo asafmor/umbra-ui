@@ -208,8 +208,10 @@
   color: var(--umbra-search-field-invalid-border, var(--umbra-color-semantic-danger));
 }
 
+/* The field clips: the ring of the button is drawn inside it. */
 .clear {
-  --umbra-icon-button-size: 24px;
+  --icon-button-size: 24px;
+  --focus-offset: calc(-1 * var(--umbra-state-focus-ring-width));
 
   display: inline-flex;
   flex: none;
@@ -265,4 +267,13 @@
   padding: var(--umbra-space-3) var(--umbra-space-4);
   font: var(--umbra-font-label);
   color: var(--umbra-color-base-text-secondary);
+}
+
+.hiddenText {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }

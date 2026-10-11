@@ -104,3 +104,8 @@ Resolved 2026-10-10:
 - The stack threshold is fixed at 20em, because a container query cannot read a token. `layout="stacked"` is the way to stack earlier.
 - `surface` is a prop, not only tokens: it is the source's look and one word to ask for.
 - No `FormSection`: `SectionTitle` above a list of fields does it.
+
+Resolved 2026-10-11 (review 2):
+
+- **Which element carries what** (F13). The control's focusable element gets `id` (the label's `for`), `aria-describedby` (description, then error) and `aria-invalid` when invalid: the `<input>` of a `TextField` or `SearchField`, the `<input>` of a `Checkbox`, `Toggle` or `Radio`, the group element of a `CheckboxGroup` or `RadioGroup`, and the trigger button of a `Select`. `required` goes on the native form element (for a `Select`, its hidden `<select>`). The earlier text promised `aria-invalid` on the select's trigger and nothing set it.
+- **A control's own validation message.** A control that validates itself reports its message to the field (`report` on the internal field context), which shows it in its error block, wired as the control's description. Used by `Select` for `required` on submit. While such a message shows, the field does not tell the control it is invalid (the control already knows), and `data-invalid` is on the field as for any error.

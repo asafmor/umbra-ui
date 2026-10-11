@@ -77,3 +77,7 @@ Resolved 2026-10-10:
 - The reserved defaults are `Alt+ArrowLeft` and `Alt+ArrowRight` (recorded in `plan/interaction.md`).
 - Browser mode reads `navigation.canGoBack` and `canGoForward` and follows `currententrychange`. Browsers without the Navigation API keep both buttons enabled, since there is no way to know.
 - The long press and right click are extras for pointer users; the caret is the way in for keyboard and screen-reader users, so it is always shown with `entries`.
+
+Resolved 2026-10-11 (review 2):
+
+- **Blocks: none, as an exception to decision 07** (recorded there): it is two `IconButton`s and a `Menu` wired to one history, and the wiring is the component. An app that wants another arrangement uses those two components with its own history; `TopBar` takes any node in `history`.

@@ -57,7 +57,7 @@
 
 /* The icon stays when the text is gone. */
 .status:has(.statusIcon) {
-  min-width: var(--umbra-icon-size, 1.25em);
+  min-width: var(--umbra-icon-size, var(--icon-size, 1.25em));
 }
 
 .statusIcon {

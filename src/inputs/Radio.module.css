@@ -68,8 +68,9 @@
   background: color-mix(in oklab, var(--fill), #000 12%);
 }
 
+/* Pressed darkens (plan/interaction.md); it used to lighten an unchecked control. */
 .root[data-pressed] .ring {
-  background: color-mix(in oklab, var(--umbra-color-base-text-primary) 12%, transparent);
+  background: color-mix(in oklab, #000 18%, transparent);
 }
 
 .root[data-pressed][data-selected] .ring {
@@ -84,7 +85,7 @@
 .root[data-variant='default'][data-focus-visible] .ring {
   outline: var(--umbra-state-focus-ring-width) solid
     var(--umbra-focus-color, var(--umbra-color-fixed-focus-ring));
-  outline-offset: var(--umbra-focus-offset, 2px);
+  outline-offset: var(--umbra-focus-offset, var(--focus-offset, 2px));
 }
 
 .root[data-disabled] {
@@ -212,7 +213,7 @@
 .root[data-variant='card'][data-focus-visible] {
   outline: var(--umbra-state-focus-ring-width) solid
     var(--umbra-focus-color, var(--umbra-color-fixed-focus-ring));
-  outline-offset: var(--umbra-focus-offset, 2px);
+  outline-offset: var(--umbra-focus-offset, var(--focus-offset, 2px));
 }
 
 /* Step 1: a narrow card hides its media. */
