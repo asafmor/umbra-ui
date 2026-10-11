@@ -78,7 +78,7 @@ function Root({ axes, series, max, startAngle = 0, children, ...common }: RadarC
   const top = max ?? niceDomain([0, ...series.flatMap((s) => s.values.filter((v) => v != null))], true)[1];
   const maxes = axes.map((a) => a.max ?? top);
 
-  const build = ({ width, height, fontSize, level, hidden }: BuildInput): RadarModel => {
+  const build = ({ width, height, fontSize, measure, level, hidden }: BuildInput): RadarModel => {
     const shown = all.filter((s) => !hidden.includes(s.id));
     const angles = radarAngles(axes.length, startAngle);
     // Values are printed beside the axis labels when only one series is drawn, as in the source.
@@ -87,7 +87,7 @@ function Root({ axes, series, max, startAngle = 0, children, ...common }: RadarC
       level < 3
         ? axes.map((a, i) => ({ text: values[i] ? `${a.label} ${values[i]}` : a.label, angle: angles[i]! }))
         : [];
-    const layout = polarLayout(width, height, wanted, fontSize);
+    const layout = polarLayout(width, height, wanted, fontSize, measure);
     const radius = Math.max(layout.radius - (wanted.length ? 0 : pointSize + 3), 0);
     const built = shown.map((s) => {
       const at = radarPoints(s.values, maxes, layout.cx, layout.cy, radius, angles);
@@ -206,7 +206,8 @@ function Series({ filled = true }: { filled?: boolean }) {
           <path className={styles.line} d={s.path} strokeDasharray={s.dash} />
           {s.points.map((p) => (
             <g key={p.key} {...frame.pointProps(p)}>
-              <circle className={styles.hit} cx={p.x} cy={p.y} r={10} />
+              {/* 24px across: the smallest target a pointer can be asked to hit. */}
+              <circle className={styles.hit} cx={p.x} cy={p.y} r={12} />
               <g className={styles.point}>
                 <PointShape shape={s.shape} x={p.x} y={p.y} size={pointSize} />
               </g>
@@ -222,12 +223,12 @@ function Series({ filled = true }: { filled?: boolean }) {
 function AxisLabels() {
   const { model } = useFrame<RadarModel>();
   return (
-    <g data-part="axis-labels">
+    <g data-part="axisLabels">
       {model.labels.map((l, i) => (
         <text key={i} x={l.x} y={l.y} textAnchor={l.anchor}>
           {l.text}
           {l.value && (
-            <tspan className={styles.valueLabel} dx="0.35em" data-part="value-label">
+            <tspan className={styles.valueLabel} dx="0.35em" data-part="valueLabel">
               {l.value}
             </tspan>
           )}

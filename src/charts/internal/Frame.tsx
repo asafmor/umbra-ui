@@ -3,22 +3,25 @@
 import {
   createContext,
   useContext,
+  useEffect,
   useId,
+  useLayoutEffect,
+  useReducer,
   useRef,
   useState,
   type CSSProperties,
   type KeyboardEvent,
   type ReactNode,
 } from 'react';
-import { Button } from '../../basics/Button';
 import { Skeleton } from '../../basics/Skeleton';
 import { Legend, type LegendProps } from '../../data/Legend';
+import { dataState, type DataStateProps } from '../../internal/dataState';
 import { heightProps } from '../../internal/height';
 import { SeriesMarker, type SeriesMarkerKind } from '../../internal/SeriesMarker';
 import { cx, renderPart, type Part } from '../../utils/parts';
 import styles from '../Chart.module.css';
-import { levelFor, placeTooltip } from './scales';
-import { useChartSize } from './useChartSize';
+import { fitTooltip, levelFor, placeTooltip, type Measure } from './scales';
+import { measurer, useChartSize } from './useChartSize';
 
 /** One data point, as the app receives it in `onPointPress`. */
 export interface ChartPoint {
@@ -53,14 +56,14 @@ export interface ChartParts {
   tooltip?: Part<ChartTooltipProps>;
   /** The placeholder shown while `loading`. */
   skeleton?: Part;
-  /** The message shown when there is no data. */
+  /** The empty state: shown when there is no data, or when every series is switched off. */
   empty?: Part<{ children: ReactNode }>;
-  /** The message and retry action shown when `error` is set. */
-  error?: Part<{ children: ReactNode; onRetry?: () => void; retryLabel: string }>;
+  /** The error state, with its retry button when `onRetry` is set. */
+  error?: Part<{ children: ReactNode }>;
 }
 
-/** Props every chart takes. */
-export interface ChartCommonProps {
+/** Props every chart takes. The loading, empty and error props are the same as on every data component. */
+export interface ChartCommonProps extends DataStateProps {
   /** Accessible name of the chart. Required unless `aria-labelledby` is set. */
   'aria-label'?: string;
   /** Id of the element that names the chart, for example a card title. */
@@ -82,15 +85,8 @@ export interface ChartCommonProps {
   formatValue?: (value: number) => string;
   /** Called when a point is clicked, or activated with Enter or Space. */
   onPointPress?: (point: ChartPoint) => void;
-  /** Shows a placeholder in the chart's shape. */
-  loading?: boolean;
-  /** Shown when there is no data. */
-  empty?: ReactNode;
-  /** When set, shown in place of the chart. */
-  error?: ReactNode;
-  /** Adds a retry button to the error state. */
-  onRetry?: () => void;
-  retryLabel?: string;
+  /** Shown in place of the plot when the legend has switched every series off. */
+  allHiddenLabel?: string;
   /** Accessible name of the list of data points. */
   pointsLabel?: string;
   /** Accessible name of the legend. */
@@ -144,6 +140,8 @@ export interface BuildInput {
   width: number;
   height: number;
   fontSize: number;
+  /** The width of a label in the chart's font. */
+  measure: Measure;
   level: number;
   hidden: readonly string[];
 }
@@ -153,6 +151,7 @@ interface FrameValue {
   width: number;
   height: number;
   fontSize: number;
+  measure: Measure;
   level: number;
   uid: string;
   active: PointModel | null;
@@ -221,10 +220,11 @@ export function Frame<M extends FrameModel>({
   onHiddenChange,
   onPointPress,
   loading = false,
-  empty = 'No data',
+  empty,
   error,
   onRetry,
-  retryLabel = 'Retry',
+  retryLabel,
+  allHiddenLabel = 'All series are hidden',
   pointsLabel = 'Data points',
   legendLabel = 'Legend',
   height,
@@ -242,7 +242,14 @@ export function Frame<M extends FrameModel>({
   const [highlight, setHighlight] = useState<string | null>(null);
   const [activeKey, setActive] = useState<{ key: string; keyboard: boolean } | null>(null);
 
-  const state = loading ? 'loading' : error != null && error !== false ? 'error' : isEmpty ? 'empty' : null;
+  // With every series switched off there is nothing to draw: the empty state says so, and the legend
+  // stays, so a series can be switched back on.
+  const allHidden = !isEmpty && series.length > 0 && series.every((s) => hidden.includes(s.id));
+  const stateNode = dataState(
+    { loading, empty: allHidden ? allHiddenLabel : empty, error, onRetry, retryLabel },
+    { isEmpty: isEmpty || allHidden, defaultEmpty: { title: 'No data' } },
+  );
+  const state = error ? 'error' : loading ? 'loading' : stateNode ? 'empty' : null;
   const level = levelFor(slot.width, slot.height, widths, heights);
 
   const custom = legend != null && typeof legend !== 'boolean' && !placements.includes(legend as string);
@@ -253,8 +260,8 @@ export function Frame<M extends FrameModel>({
     wanted &&
     level < 1 &&
     state !== 'error' &&
-    state !== 'empty' &&
-    (loading ? (
+    (state !== 'empty' || allHidden) &&
+    (state === 'loading' ? (
       // A placeholder of the legend's height, so the plot does not move when the data arrives.
       <div className={styles.legendSkeleton} aria-hidden="true">
         <Skeleton width="40%" />
@@ -293,7 +300,8 @@ export function Frame<M extends FrameModel>({
   const showLegend = legendNode != null && legendNode !== false;
 
   const drawn = !state && plot.width > 0 && plot.height > 0;
-  const model = drawn ? build({ ...plot, level, hidden }) : null;
+  const measure = measurer(plot.font, plot.fontSize);
+  const model = drawn ? build({ ...plot, measure, level, hidden }) : null;
   const rows = model?.rows.filter((row) => row.length) ?? [];
   const all = rows.flat();
   const active = (activeKey && all.find((p) => p.key === activeKey.key)) || null;
@@ -364,8 +372,60 @@ export function Frame<M extends FrameModel>({
         active: p === active,
       })),
   };
+  // A tooltip part of `null` shows no tooltip at all, not an empty box.
+  const tooltipNode = tooltip ? renderPart(parts?.tooltip, tooltip, (p) => <ChartTooltip {...p} />) : null;
   const place = active && placeTooltip(active.x, active.y, plot.width, plot.height);
-  const descriptionId = `${uid}-description`;
+
+  // The tooltip is placed once it is drawn and its size is known, so that it is never cut: inside the
+  // chart when it fits, outside it when the chart is too short. It is shown in the top layer (the
+  // Popover API), where no card or scroll area clips it, and stays in the chart's own DOM, so it keeps
+  // the tokens, the density and the direction of its place.
+  // ponytail: without the Popover API it is only `position: fixed`, which a transformed ancestor still clips.
+  const tooltipRef = useRef<HTMLDivElement>(null);
+  const [, replace] = useReducer((n: number) => n + 1, 0);
+  useLayoutEffect(() => {
+    const [el, plotEl, root] = [tooltipRef.current, plotRef.current, rootRef.current];
+    if (!el || !plotEl || !root || !active || !place) return;
+    try {
+      if (!el.matches(':popover-open')) el.showPopover();
+    } catch {
+      // No Popover API: the element is already shown.
+    }
+    const from = plotEl.getBoundingClientRect();
+    const box = el.getBoundingClientRect();
+    const page = document.documentElement;
+    const fit = fitTooltip({
+      x: from.left + active.x,
+      y: from.top + active.y,
+      width: box.width,
+      height: box.height,
+      align: place.align,
+      side: place.side,
+      chart: root.getBoundingClientRect(),
+      window: { left: 0, top: 0, right: page.clientWidth, bottom: page.clientHeight },
+    });
+    el.style.left = `${fit.left}px`;
+    el.style.top = `${fit.top}px`;
+    el.dataset.side = fit.side;
+  });
+  // While a point is shown: Escape dismisses it wherever the focus is (a hover tooltip too), and the
+  // tooltip follows its point when something scrolls.
+  const shown = active !== null;
+  useEffect(() => {
+    if (!shown) return;
+    const onKey = (event: globalThis.KeyboardEvent) => {
+      if (event.key === 'Escape') setActive(null);
+    };
+    document.addEventListener('keydown', onKey);
+    window.addEventListener('scroll', replace, true);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      window.removeEventListener('scroll', replace, true);
+    };
+  }, [shown]);
+  // No summary of data that is not there (it read "0: ").
+  const summaryText = description ?? (isEmpty ? '' : summary);
+  const descriptionId = summaryText ? `${uid}-description` : undefined;
 
   return (
     <figure
@@ -379,7 +439,7 @@ export function Frame<M extends FrameModel>({
       aria-label={label}
       aria-labelledby={labelledBy}
       aria-describedby={descriptionId}
-      aria-busy={loading || undefined}
+      aria-busy={state === 'loading' || undefined}
       className={cx(styles.root, className)}
       style={{ ...heightProps(height).style, ...style }}
     >
@@ -390,34 +450,25 @@ export function Frame<M extends FrameModel>({
       )}
       <div ref={plotRef} className={styles.plot} data-part="plot">
         {state === 'loading' && (
-          <div className={styles.state} aria-hidden="true">
+          <div className={styles.state} data-part="skeleton" aria-hidden="true">
             {renderPart(parts?.skeleton, {}, () => skeleton)}
           </div>
         )}
-        {state === 'empty' &&
-          renderPart(parts?.empty, { children: empty }, (p) => (
-            <div className={styles.state} data-part="empty">
-              {p.children}
-            </div>
-          ))}
-        {state === 'error' &&
-          renderPart(parts?.error, { children: error, onRetry, retryLabel }, (p) => (
-            <div className={styles.state} data-part="error" role="alert">
-              <span className={styles.message}>{p.children}</span>
-              {p.onRetry && (
-                <Button size="small" onPress={p.onRetry}>
-                  {p.retryLabel}
-                </Button>
-              )}
-            </div>
-          ))}
+        {(state === 'empty' || state === 'error') &&
+          // The shared state (src/internal/dataState.tsx) carries `data-part` "empty" or "error".
+          renderPart(
+            state === 'error' ? parts?.error : parts?.empty,
+            { children: <div className={styles.state}>{stateNode}</div> },
+            (p) => p.children,
+          )}
         {model && (
           <div
             className={styles.marks}
-            role="listbox"
-            aria-label={pointsLabel}
+            // A list of points only when there are points: an empty listbox is not a valid tab stop.
+            role={all.length ? 'listbox' : undefined}
+            aria-label={all.length ? pointsLabel : undefined}
             aria-activedescendant={active ? `${uid}-${active.key}` : undefined}
-            tabIndex={0}
+            tabIndex={all.length ? 0 : undefined}
             data-has-active={keyboard || undefined}
             onKeyDown={onKeyDown}
             onBlur={() => setActive(null)}
@@ -425,7 +476,9 @@ export function Frame<M extends FrameModel>({
           >
             <svg width={plot.width} height={plot.height} role="presentation" className={styles.svg}>
               <FrameContext
-                value={{ model, ...plot, level, uid, active, highlight, pointProps } satisfies FrameValue}
+                value={
+                  { model, ...plot, measure, level, uid, active, highlight, pointProps } satisfies FrameValue
+                }
               >
                 <g key={signature} className={styles.draw}>
                   {children}
@@ -435,18 +488,16 @@ export function Frame<M extends FrameModel>({
             </svg>
           </div>
         )}
-        {tooltip && place && (
+        {tooltipNode != null && tooltipNode !== false && place && (
           <div
+            ref={tooltipRef}
+            popover="manual"
             className={styles.tooltip}
             data-part="tooltip"
             data-align={place.align}
-            data-side={place.side}
             aria-hidden="true"
-            style={{ left: active.x, top: active.y }}
           >
-            {renderPart(parts?.tooltip, tooltip, (p) => (
-              <ChartTooltip {...p} />
-            ))}
+            {tooltipNode}
           </div>
         )}
       </div>
@@ -455,9 +506,11 @@ export function Frame<M extends FrameModel>({
           {legendNode}
         </div>
       )}
-      <p id={descriptionId} className={styles.hidden}>
-        {description ?? summary}
-      </p>
+      {summaryText && (
+        <p id={descriptionId} className={styles.hidden}>
+          {summaryText}
+        </p>
+      )}
       {!state && (
         <table className={styles.hidden}>
           {label && <caption>{label}</caption>}
@@ -490,7 +543,7 @@ export function Frame<M extends FrameModel>({
 /** The outline of the hovered or focused point: the focus ring when it was reached by keyboard. */
 function Ring({ point, keyboard }: { point: PointModel; keyboard: boolean }) {
   const o = point.outline;
-  const props = { className: styles.ring, 'data-part': 'focus-ring', 'data-keyboard': keyboard || undefined };
+  const props = { className: styles.ring, 'data-part': 'focusRing', 'data-keyboard': keyboard || undefined };
   if (o.type === 'circle') return <circle cx={point.x} cy={point.y} r={o.r + 3} {...props} />;
   if (o.type === 'path') return <path d={o.d} transform={o.transform} {...props} />;
   return <rect x={o.x - 2} y={o.y - 2} width={o.width + 4} height={o.height + 4} rx={3} {...props} />;

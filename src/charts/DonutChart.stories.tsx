@@ -103,7 +103,10 @@ export const States: Story = {
           <DonutChart
             aria-label="Budget used"
             value={81}
-            error={`The budget could not be loaded. Retries: ${tries}.`}
+            error={{
+              title: 'The budget could not be loaded',
+              description: `The server did not answer. Retries: ${tries}.`,
+            }}
             onRetry={() => setTries(tries + 1)}
           />
         </Tile>
@@ -201,8 +204,16 @@ export const PartsAndBlocks: Story = {
           }}
         />
       </Tile>
-      <Tile title="Centre part hidden">
-        <DonutChart aria-label="Budget used" value={81} parts={{ center: null }} />
+      <Tile title="Centre part hidden; named by another element" id="named">
+        <span id="donut-budget-name" hidden>
+          Budget
+        </span>
+        <DonutChart
+          aria-labelledby="donut-budget-name"
+          valueLabel="Used"
+          value={81}
+          parts={{ center: null }}
+        />
       </Tile>
       <Tile title="Centre part as a function">
         <DonutChart

@@ -197,7 +197,7 @@ A message band inside a card or page: a notice, a warning, or an insight about t
 
 Compares values across categories: grouped, stacked or diverging around zero, upright or sideways.
 
-**Tokens**: `--umbra-chart-annotation`, `--umbra-chart-annotation-width`, `--umbra-chart-area-opacity`, `--umbra-chart-axis`, `--umbra-chart-axis-width`, `--umbra-chart-band-opacity`, `--umbra-chart-bar-radius`, `--umbra-chart-center-font`, `--umbra-chart-content-height`, `--umbra-chart-dim-opacity`, `--umbra-chart-fg`, `--umbra-chart-font`, `--umbra-chart-gap`, `--umbra-chart-grid`, `--umbra-chart-grid-dash`, `--umbra-chart-grid-width`, `--umbra-chart-line-width`, `--umbra-chart-point-scale`, `--umbra-chart-tooltip-bg`, `--umbra-chart-tooltip-border`, `--umbra-chart-tooltip-fg`, `--umbra-chart-tooltip-radius`, `--umbra-chart-track`, `--umbra-chart-value-fg`, `--umbra-focus-color`, `--umbra-legend-row-height`.
+**Tokens**: `--umbra-chart-annotation`, `--umbra-chart-annotation-dash`, `--umbra-chart-annotation-width`, `--umbra-chart-area-opacity`, `--umbra-chart-axis`, `--umbra-chart-axis-width`, `--umbra-chart-band-edge-width`, `--umbra-chart-band-opacity`, `--umbra-chart-bar-radius`, `--umbra-chart-center-font`, `--umbra-chart-content-height`, `--umbra-chart-dim-opacity`, `--umbra-chart-fg`, `--umbra-chart-font`, `--umbra-chart-gap`, `--umbra-chart-grid`, `--umbra-chart-grid-dash`, `--umbra-chart-grid-width`, `--umbra-chart-line-width`, `--umbra-chart-negative`, `--umbra-chart-outline-width`, `--umbra-chart-point-scale`, `--umbra-chart-positive`, `--umbra-chart-ring-width`, `--umbra-chart-tooltip-bg`, `--umbra-chart-tooltip-border`, `--umbra-chart-tooltip-fg`, `--umbra-chart-tooltip-max-width`, `--umbra-chart-tooltip-radius`, `--umbra-chart-track`, `--umbra-chart-track-border`, `--umbra-chart-track-border-width`, `--umbra-chart-value-fg`, `--umbra-focus-color`, `--umbra-legend-row-height`, `--umbra-series-marker-size`.
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -205,11 +205,11 @@ Compares values across categories: grouped, stacked or diverging around zero, up
 | `aria-label` | `string` | Accessible name of the chart. Required unless `aria-labelledby` is set. |
 | `className` | `string` |  |
 | `style` | `import("react").CSSProperties` |  |
-| `empty` | `ReactNode` | Shown when there is no data. |
-| `error` | `ReactNode` | When set, shown in place of the chart. |
+| `empty` | `ReactNode \| import("../internal/dataState").DataStateContent` | Shown when there is no data: text, a node, or `{ title, description, icon, action }`. Defaults to a short English text. |
+| `error` | `ReactNode \| import("../internal/dataState").DataStateContent` | Shown in place of the data when set: text, a node, `{ title, description, icon, action }`, or `true` for a default text. |
 | `variant` | `"stacked" \| "grouped" \| "diverging"` | `grouped`: the series side by side. `stacked`: on top of each other. `diverging`: every second series is drawn on the other side of zero, with all values shown as positive. |
 | `orientation` | `"vertical" \| "horizontal"` | `horizontal` puts the categories on the left and draws the bars sideways. |
-| `loading` | `boolean` | Shows a placeholder in the chart's shape. |
+| `loading` | `boolean` | Shows skeletons in the final layout and marks the component busy. |
 | `hiddenIds` | `readonly string[]` | Ids of the series that are switched off (controlled). |
 | `defaultHiddenIds` | `readonly string[]` |  |
 | `onHiddenChange` | `((hiddenIds: string[]) => void)` |  |
@@ -219,7 +219,7 @@ Compares values across categories: grouped, stacked or diverging around zero, up
 | `description` | `string` | What a screen reader hears after the name. Defaults to a generated summary of the data. |
 | `labels` | `boolean` | Draws labels on the chart itself, so it can be read without the legend or the tooltip. |
 | `onRetry` | `(() => void)` | Adds a retry button to the error state. |
-| `retryLabel` | `string` |  |
+| `retryLabel` | `string` | Label of the retry button. |
 | `categories` (required) | `string[]` |  |
 | `series` (required) | `BarSeries[]` |  |
 | `colorBy` | `"series" \| "sign"` | `sign` colours bars by the sign of their value; negative bars are also striped. |
@@ -230,6 +230,7 @@ Compares values across categories: grouped, stacked or diverging around zero, up
 | `aria-labelledby` | `string` | Id of the element that names the chart, for example a card title. |
 | `legend` | `string \| number \| bigint \| boolean \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| import("react").ReactPortal \| Promise<string \| number \| bigint \| boolean \| import("react").ReactPortal \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| null \| undefined> \| null` | The legend: `true` or a placement shows the built-in one, `false` hides it, and a node replaces it. By default it is shown below the chart when there is more than one series. |
 | `onPointPress` | `((point: import(".").ChartPoint) => void)` | Called when a point is clicked, or activated with Enter or Space. |
+| `allHiddenLabel` | `string` | Shown in place of the plot when the legend has switched every series off. |
 | `pointsLabel` | `string` | Accessible name of the list of data points. |
 | `legendLabel` | `string` | Accessible name of the legend. |
 
@@ -552,7 +553,7 @@ A table of rows and columns that fills its slot and scrolls inside it: sorting, 
 
 A ring that shows one value against a total, or how a total splits into segments.
 
-**Tokens**: `--umbra-chart-annotation`, `--umbra-chart-annotation-width`, `--umbra-chart-area-opacity`, `--umbra-chart-axis`, `--umbra-chart-axis-width`, `--umbra-chart-band-opacity`, `--umbra-chart-bar-radius`, `--umbra-chart-center-font`, `--umbra-chart-content-height`, `--umbra-chart-dim-opacity`, `--umbra-chart-fg`, `--umbra-chart-font`, `--umbra-chart-gap`, `--umbra-chart-grid`, `--umbra-chart-grid-dash`, `--umbra-chart-grid-width`, `--umbra-chart-line-width`, `--umbra-chart-point-scale`, `--umbra-chart-tooltip-bg`, `--umbra-chart-tooltip-border`, `--umbra-chart-tooltip-fg`, `--umbra-chart-tooltip-radius`, `--umbra-chart-track`, `--umbra-chart-value-fg`, `--umbra-focus-color`, `--umbra-legend-row-height`.
+**Tokens**: `--umbra-chart-annotation`, `--umbra-chart-annotation-dash`, `--umbra-chart-annotation-width`, `--umbra-chart-area-opacity`, `--umbra-chart-axis`, `--umbra-chart-axis-width`, `--umbra-chart-band-edge-width`, `--umbra-chart-band-opacity`, `--umbra-chart-bar-radius`, `--umbra-chart-center-font`, `--umbra-chart-content-height`, `--umbra-chart-dim-opacity`, `--umbra-chart-fg`, `--umbra-chart-font`, `--umbra-chart-gap`, `--umbra-chart-grid`, `--umbra-chart-grid-dash`, `--umbra-chart-grid-width`, `--umbra-chart-info`, `--umbra-chart-line-width`, `--umbra-chart-negative`, `--umbra-chart-outline-width`, `--umbra-chart-point-scale`, `--umbra-chart-positive`, `--umbra-chart-ring-width`, `--umbra-chart-tooltip-bg`, `--umbra-chart-tooltip-border`, `--umbra-chart-tooltip-fg`, `--umbra-chart-tooltip-max-width`, `--umbra-chart-tooltip-radius`, `--umbra-chart-track`, `--umbra-chart-track-border`, `--umbra-chart-track-border-width`, `--umbra-chart-value`, `--umbra-chart-value-fg`, `--umbra-chart-warning`, `--umbra-focus-color`, `--umbra-legend-row-height`, `--umbra-series-marker-size`.
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -563,10 +564,10 @@ A ring that shows one value against a total, or how a total splits into segments
 | `aria-label` | `string` | Accessible name of the chart. Required unless `aria-labelledby` is set. |
 | `className` | `string` |  |
 | `style` | `import("react").CSSProperties` |  |
-| `empty` | `ReactNode` | Shown when there is no data. |
-| `error` | `ReactNode` | When set, shown in place of the chart. |
+| `empty` | `ReactNode \| import("../internal/dataState").DataStateContent` | Shown when there is no data: text, a node, or `{ title, description, icon, action }`. Defaults to a short English text. |
+| `error` | `ReactNode \| import("../internal/dataState").DataStateContent` | Shown in place of the data when set: text, a node, `{ title, description, icon, action }`, or `true` for a default text. |
 | `tone` | `DonutTone` | Colour of the single value. The number in the centre is the cue that does not depend on colour. |
-| `loading` | `boolean` | Shows a placeholder in the chart's shape. |
+| `loading` | `boolean` | Shows skeletons in the final layout and marks the component busy. |
 | `hiddenIds` | `readonly string[]` | Ids of the series that are switched off (controlled). |
 | `defaultHiddenIds` | `readonly string[]` |  |
 | `onHiddenChange` | `((hiddenIds: string[]) => void)` |  |
@@ -578,10 +579,11 @@ A ring that shows one value against a total, or how a total splits into segments
 | `description` | `string` | What a screen reader hears after the name. Defaults to a generated summary of the data. |
 | `labels` | `boolean` | Draws labels on the chart itself, so it can be read without the legend or the tooltip. |
 | `onRetry` | `(() => void)` | Adds a retry button to the error state. |
-| `retryLabel` | `string` |  |
+| `retryLabel` | `string` | Label of the retry button. |
 | `aria-labelledby` | `string` | Id of the element that names the chart, for example a card title. |
 | `legend` | `string \| number \| bigint \| boolean \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| import("react").ReactPortal \| Promise<string \| number \| bigint \| boolean \| import("react").ReactPortal \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| null \| undefined> \| null` | The legend: `true` or a placement shows the built-in one, `false` hides it, and a node replaces it. By default it is shown below the chart when there is more than one series. |
 | `onPointPress` | `((point: import(".").ChartPoint) => void)` | Called when a point is clicked, or activated with Enter or Space. |
+| `allHiddenLabel` | `string` | Shown in place of the plot when the legend has switched every series off. |
 | `pointsLabel` | `string` | Accessible name of the list of data points. |
 | `legendLabel` | `string` | Accessible name of the legend. |
 | `data` | `DonutSegment[]` | The segment form: several values that share the ring. |
@@ -590,6 +592,7 @@ A ring that shows one value against a total, or how a total splits into segments
 | `sweep` | `number` | Degrees the ring covers. Less than 360 leaves it open, as a gauge. |
 | `roundedCaps` | `boolean` | Rounds the ends of the value. On by default in the single-value form. |
 | `gap` | `number` | Degrees left empty between segments. |
+| `valueLabel` | `string` | What the single value is called for screen readers when the chart is named by `aria-labelledby`. |
 
 **Parts**: `legend`, `tooltip`, `skeleton`, `empty`, `error`, `center`.
 
@@ -907,7 +910,7 @@ A strip of ticks with a marker that shows where a value sits on a scale.
 
 One or more series over categories, numbers or time, with a numeric or an ordinal y axis.
 
-**Tokens**: `--umbra-chart-annotation`, `--umbra-chart-annotation-width`, `--umbra-chart-area-opacity`, `--umbra-chart-axis`, `--umbra-chart-axis-width`, `--umbra-chart-band-opacity`, `--umbra-chart-bar-radius`, `--umbra-chart-center-font`, `--umbra-chart-content-height`, `--umbra-chart-dim-opacity`, `--umbra-chart-fg`, `--umbra-chart-font`, `--umbra-chart-gap`, `--umbra-chart-grid`, `--umbra-chart-grid-dash`, `--umbra-chart-grid-width`, `--umbra-chart-line-width`, `--umbra-chart-point-scale`, `--umbra-chart-tooltip-bg`, `--umbra-chart-tooltip-border`, `--umbra-chart-tooltip-fg`, `--umbra-chart-tooltip-radius`, `--umbra-chart-track`, `--umbra-chart-value-fg`, `--umbra-focus-color`, `--umbra-legend-row-height`.
+**Tokens**: `--umbra-chart-annotation`, `--umbra-chart-annotation-dash`, `--umbra-chart-annotation-width`, `--umbra-chart-area-opacity`, `--umbra-chart-axis`, `--umbra-chart-axis-width`, `--umbra-chart-band-edge-width`, `--umbra-chart-band-opacity`, `--umbra-chart-bar-radius`, `--umbra-chart-center-font`, `--umbra-chart-content-height`, `--umbra-chart-dim-opacity`, `--umbra-chart-fg`, `--umbra-chart-font`, `--umbra-chart-gap`, `--umbra-chart-grid`, `--umbra-chart-grid-dash`, `--umbra-chart-grid-width`, `--umbra-chart-line-width`, `--umbra-chart-outline-width`, `--umbra-chart-point-scale`, `--umbra-chart-ring-width`, `--umbra-chart-tooltip-bg`, `--umbra-chart-tooltip-border`, `--umbra-chart-tooltip-fg`, `--umbra-chart-tooltip-max-width`, `--umbra-chart-tooltip-radius`, `--umbra-chart-track`, `--umbra-chart-track-border`, `--umbra-chart-track-border-width`, `--umbra-chart-value-fg`, `--umbra-focus-color`, `--umbra-legend-row-height`, `--umbra-series-marker-size`.
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -915,9 +918,9 @@ One or more series over categories, numbers or time, with a numeric or an ordina
 | `aria-label` | `string` | Accessible name of the chart. Required unless `aria-labelledby` is set. |
 | `className` | `string` |  |
 | `style` | `import("react").CSSProperties` |  |
-| `empty` | `ReactNode` | Shown when there is no data. |
-| `error` | `ReactNode` | When set, shown in place of the chart. |
-| `loading` | `boolean` | Shows a placeholder in the chart's shape. |
+| `empty` | `ReactNode \| import("../internal/dataState").DataStateContent` | Shown when there is no data: text, a node, or `{ title, description, icon, action }`. Defaults to a short English text. |
+| `error` | `ReactNode \| import("../internal/dataState").DataStateContent` | Shown in place of the data when set: text, a node, `{ title, description, icon, action }`, or `true` for a default text. |
+| `loading` | `boolean` | Shows skeletons in the final layout and marks the component busy. |
 | `hiddenIds` | `readonly string[]` | Ids of the series that are switched off (controlled). |
 | `defaultHiddenIds` | `readonly string[]` |  |
 | `onHiddenChange` | `((hiddenIds: string[]) => void)` |  |
@@ -926,7 +929,7 @@ One or more series over categories, numbers or time, with a numeric or an ordina
 | `description` | `string` | What a screen reader hears after the name. Defaults to a generated summary of the data. |
 | `labels` | `boolean` | Draws labels on the chart itself, so it can be read without the legend or the tooltip. |
 | `onRetry` | `(() => void)` | Adds a retry button to the error state. |
-| `retryLabel` | `string` |  |
+| `retryLabel` | `string` | Label of the retry button. |
 | `categories` | `string[]` | The order of a category x axis. Defaults to the order the names first appear in. |
 | `series` (required) | `LineSeries[]` |  |
 | `annotations` | `ChartAnnotation[]` | Reference lines and bands on either axis. |
@@ -935,6 +938,7 @@ One or more series over categories, numbers or time, with a numeric or an ordina
 | `aria-labelledby` | `string` | Id of the element that names the chart, for example a card title. |
 | `legend` | `string \| number \| bigint \| boolean \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| import("react").ReactPortal \| Promise<string \| number \| bigint \| boolean \| import("react").ReactPortal \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| null \| undefined> \| null` | The legend: `true` or a placement shows the built-in one, `false` hides it, and a node replaces it. By default it is shown below the chart when there is more than one series. |
 | `onPointPress` | `((point: import(".").ChartPoint) => void)` | Called when a point is clicked, or activated with Enter or Space. |
+| `allHiddenLabel` | `string` | Shown in place of the plot when the legend has switched every series off. |
 | `pointsLabel` | `string` | Accessible name of the list of data points. |
 | `legendLabel` | `string` | Accessible name of the legend. |
 | `yLevels` | `string[]` | Makes the y axis ordinal: the named levels, from the bottom up. Points then give a level name as `y`. |
@@ -1328,7 +1332,7 @@ A bar that fills with a value: progress of a task, or a measured level. Fills th
 
 Compares one or more series across several axes that share a centre.
 
-**Tokens**: `--umbra-chart-annotation`, `--umbra-chart-annotation-width`, `--umbra-chart-area-opacity`, `--umbra-chart-axis`, `--umbra-chart-axis-width`, `--umbra-chart-band-opacity`, `--umbra-chart-bar-radius`, `--umbra-chart-center-font`, `--umbra-chart-content-height`, `--umbra-chart-dim-opacity`, `--umbra-chart-fg`, `--umbra-chart-font`, `--umbra-chart-gap`, `--umbra-chart-grid`, `--umbra-chart-grid-dash`, `--umbra-chart-grid-width`, `--umbra-chart-line-width`, `--umbra-chart-point-scale`, `--umbra-chart-tooltip-bg`, `--umbra-chart-tooltip-border`, `--umbra-chart-tooltip-fg`, `--umbra-chart-tooltip-radius`, `--umbra-chart-track`, `--umbra-chart-value-fg`, `--umbra-focus-color`, `--umbra-legend-row-height`.
+**Tokens**: `--umbra-chart-annotation`, `--umbra-chart-annotation-dash`, `--umbra-chart-annotation-width`, `--umbra-chart-area-opacity`, `--umbra-chart-axis`, `--umbra-chart-axis-width`, `--umbra-chart-band-edge-width`, `--umbra-chart-band-opacity`, `--umbra-chart-bar-radius`, `--umbra-chart-center-font`, `--umbra-chart-content-height`, `--umbra-chart-dim-opacity`, `--umbra-chart-fg`, `--umbra-chart-font`, `--umbra-chart-gap`, `--umbra-chart-grid`, `--umbra-chart-grid-dash`, `--umbra-chart-grid-width`, `--umbra-chart-line-width`, `--umbra-chart-outline-width`, `--umbra-chart-point-scale`, `--umbra-chart-ring-width`, `--umbra-chart-tooltip-bg`, `--umbra-chart-tooltip-border`, `--umbra-chart-tooltip-fg`, `--umbra-chart-tooltip-max-width`, `--umbra-chart-tooltip-radius`, `--umbra-chart-track`, `--umbra-chart-track-border`, `--umbra-chart-track-border-width`, `--umbra-chart-value-fg`, `--umbra-focus-color`, `--umbra-legend-row-height`, `--umbra-series-marker-size`.
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -1339,9 +1343,9 @@ Compares one or more series across several axes that share a centre.
 | `aria-label` | `string` | Accessible name of the chart. Required unless `aria-labelledby` is set. |
 | `className` | `string` |  |
 | `style` | `import("react").CSSProperties` |  |
-| `empty` | `ReactNode` | Shown when there is no data. |
-| `error` | `ReactNode` | When set, shown in place of the chart. |
-| `loading` | `boolean` | Shows a placeholder in the chart's shape. |
+| `empty` | `ReactNode \| import("../internal/dataState").DataStateContent` | Shown when there is no data: text, a node, or `{ title, description, icon, action }`. Defaults to a short English text. |
+| `error` | `ReactNode \| import("../internal/dataState").DataStateContent` | Shown in place of the data when set: text, a node, `{ title, description, icon, action }`, or `true` for a default text. |
+| `loading` | `boolean` | Shows skeletons in the final layout and marks the component busy. |
 | `hiddenIds` | `readonly string[]` | Ids of the series that are switched off (controlled). |
 | `defaultHiddenIds` | `readonly string[]` |  |
 | `onHiddenChange` | `((hiddenIds: string[]) => void)` |  |
@@ -1351,11 +1355,12 @@ Compares one or more series across several axes that share a centre.
 | `description` | `string` | What a screen reader hears after the name. Defaults to a generated summary of the data. |
 | `labels` | `boolean` | Draws labels on the chart itself, so it can be read without the legend or the tooltip. |
 | `onRetry` | `(() => void)` | Adds a retry button to the error state. |
-| `retryLabel` | `string` |  |
+| `retryLabel` | `string` | Label of the retry button. |
 | `series` (required) | `RadarSeries[]` |  |
 | `aria-labelledby` | `string` | Id of the element that names the chart, for example a card title. |
 | `legend` | `string \| number \| bigint \| boolean \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| import("react").ReactPortal \| Promise<string \| number \| bigint \| boolean \| import("react").ReactPortal \| import("react").ReactElement<unknown, string \| import("react").JSXElementConstructor<any>> \| Iterable<ReactNode> \| null \| undefined> \| null` | The legend: `true` or a placement shows the built-in one, `false` hides it, and a node replaces it. By default it is shown below the chart when there is more than one series. |
 | `onPointPress` | `((point: import(".").ChartPoint) => void)` | Called when a point is clicked, or activated with Enter or Space. |
+| `allHiddenLabel` | `string` | Shown in place of the plot when the legend has switched every series off. |
 | `pointsLabel` | `string` | Accessible name of the list of data points. |
 | `legendLabel` | `string` | Accessible name of the legend. |
 | `startAngle` | `number` | Where the first axis points, in degrees clockwise from 12 o'clock. |

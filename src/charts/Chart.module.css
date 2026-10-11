@@ -83,9 +83,13 @@
   outline: none;
 }
 
+/* The plot does not mirror in a right-to-left page: values grow to the right and time runs to the
+   right. Laid out left to right, a label's anchor means the same side everywhere, so labels stay
+   beside their marks. Text in a right-to-left script is still drawn in its own direction. */
 .svg {
   display: block;
   overflow: hidden;
+  direction: ltr;
 }
 
 .svg text {
@@ -146,14 +150,14 @@
 
 .axisLine {
   stroke: var(--axis);
-  stroke-width: var(--umbra-chart-axis-width, 1px);
+  stroke-width: var(--umbra-chart-axis-width, var(--umbra-border-width));
   fill: none;
   shape-rendering: crispEdges;
 }
 
 .gridLine {
   stroke: var(--grid);
-  stroke-width: var(--umbra-chart-grid-width, 1px);
+  stroke-width: var(--umbra-chart-grid-width, var(--umbra-border-width));
   stroke-dasharray: var(--umbra-chart-grid-dash, 1 4);
   fill: none;
   shape-rendering: crispEdges;
@@ -178,12 +182,18 @@
 .annotation line {
   stroke: currentColor;
   stroke-width: var(--umbra-chart-annotation-width, 1.5px);
-  stroke-dasharray: 5 3;
+  stroke-dasharray: var(--umbra-chart-annotation-dash, 5 3);
 }
 
+/* The tint alone is about 1.3:1 against the card. The band's two edges are lines in the annotation
+   colour, so where it starts and ends can be read without the tint. */
 .annotation rect {
   fill: currentColor;
   opacity: var(--umbra-chart-band-opacity, 0.16);
+}
+
+.annotation[data-kind='band'] line {
+  stroke-width: var(--umbra-chart-band-edge-width, var(--umbra-border-width));
 }
 
 .svg .annotation text {
@@ -221,8 +231,13 @@
   scale: var(--umbra-chart-point-scale, 1);
 }
 
+/* The track shows how far the scale goes. Its fill is quiet (about 1.2:1 against the card), so it has
+   an edge line with 3:1. The line is drawn inside the ring (the path is clipped to itself, which hides
+   the outer half of the stroke), so the value covers it and it does not thicken the ring. */
 .track {
   fill: var(--umbra-chart-track, var(--umbra-color-base-surface3));
+  stroke: var(--umbra-chart-track-border, var(--umbra-color-base-border-control));
+  stroke-width: calc(2 * var(--umbra-chart-track-border-width, var(--umbra-border-width)));
 }
 
 .hit {
@@ -242,7 +257,7 @@
 .ring {
   fill: none;
   stroke: var(--strong);
-  stroke-width: 1.5px;
+  stroke-width: var(--umbra-chart-ring-width, 1.5px);
   pointer-events: none;
 }
 
@@ -282,10 +297,14 @@
   font: var(--umbra-chart-font, var(--umbra-font-label));
 }
 
+/* Placed by the chart in window pixels (see Frame.tsx), in the top layer where the browser has one.
+   `inset` and `margin` undo what a popover gets from the browser. */
 .tooltip {
-  position: absolute;
+  position: fixed;
+  inset: auto;
   z-index: 1;
-  max-width: 66%;
+  margin: 0;
+  max-width: min(var(--umbra-chart-tooltip-max-width, 20rem), calc(100vw - 2 * var(--umbra-space-2)));
   padding: var(--umbra-space-2) var(--umbra-space-3);
   border: var(--umbra-border-width) solid
     var(--umbra-chart-tooltip-border, var(--umbra-color-base-border-strong));
@@ -297,21 +316,6 @@
   white-space: nowrap;
   overflow: hidden;
   pointer-events: none;
-  --tx: -50%;
-  --ty: calc(-100% - 10px);
-  translate: var(--tx) var(--ty);
-}
-
-.tooltip[data-align='start'] {
-  --tx: 0%;
-}
-
-.tooltip[data-align='end'] {
-  --tx: -100%;
-}
-
-.tooltip[data-side='below'] {
-  --ty: 10px;
 }
 
 .tooltipTitle {
@@ -355,18 +359,14 @@
   color: var(--umbra-color-base-text-secondary);
 }
 
-.message {
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 /* Skeletons in the shape of each chart. */
 .skeletonRing {
   mask: radial-gradient(closest-side, transparent 72%, #000 73%);
 }
 
 .skeletonBars {
+  /* Like the bars they stand for, the placeholders do not mirror. */
+  direction: ltr;
   width: 100%;
   height: 100%;
   display: flex;

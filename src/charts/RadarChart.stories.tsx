@@ -25,10 +25,10 @@ const axes: RadarAxis[] = [
 ].map((label) => ({ id: label.toLowerCase(), label }));
 const six = axes.slice(0, 6);
 const site: RadarSeries = { id: 'site', label: 'Site 1', values: [14, 13, 11, 11, 13, 14, 14, 13] };
-const teams: RadarSeries[] = [
-  { id: 'a', label: 'Team A', values: [16, 12, 9, 14, 11, 15] },
-  { id: 'b', label: 'Team B', values: [10, 15, 14, 8, 16, 11] },
-  { id: 'c', label: 'Team C', values: [7, 9, 17, 12, 8, 13] },
+const regions: RadarSeries[] = [
+  { id: 'a', label: 'Region 1', values: [16, 12, 9, 14, 11, 15] },
+  { id: 'b', label: 'Region 2', values: [10, 15, 14, 8, 16, 11] },
+  { id: 'c', label: 'Region 3', values: [7, 9, 17, 12, 8, 13] },
 ];
 
 /** One series with its values printed, several series, both grids, and per-axis maximums. */
@@ -36,23 +36,29 @@ export const Variants: Story = {
   render: () => (
     <Tiles>
       <Tile title="One series, values on the labels" id="single">
-        <RadarChart aria-label="Site 1 scores" axes={axes} series={[site]} max={20} rings={2} labels />
+        <RadarChart aria-label="Site 1 ratings" axes={axes} series={[site]} max={20} rings={2} labels />
       </Tile>
       <Tile title="Several series" id="several">
-        <RadarChart aria-label="Team scores" axes={six} series={teams} max={20} />
+        <RadarChart aria-label="Region ratings" axes={six} series={regions} max={20} />
       </Tile>
       <Tile title="Circle grid" id="circle">
         <RadarChart
-          aria-label="Team scores"
+          aria-label="Region ratings"
           axes={six}
-          series={teams.slice(0, 2)}
+          series={regions.slice(0, 2)}
           max={20}
           grid="circle"
           rings={4}
         />
       </Tile>
       <Tile title="Outlines only" id="outline">
-        <RadarChart aria-label="Team scores" axes={six} series={teams.slice(0, 2)} max={20} filled={false} />
+        <RadarChart
+          aria-label="Region ratings"
+          axes={six}
+          series={regions.slice(0, 2)}
+          max={20}
+          filled={false}
+        />
       </Tile>
       <Tile title="A maximum per axis" id="max">
         <RadarChart
@@ -61,7 +67,7 @@ export const Variants: Story = {
           axes={[
             { id: 'orders', label: 'Orders', max: 500 },
             { id: 'staff', label: 'Staff', max: 40 },
-            { id: 'score', label: 'Score', max: 10 },
+            { id: 'rating', label: 'Rating', max: 10 },
             { id: 'hours', label: 'Hours', max: 2000 },
             { id: 'sites', label: 'Sites', max: 12 },
           ]}
@@ -91,26 +97,26 @@ export const States: Story = {
     return (
       <Tiles columns={2}>
         <Tile title="Loading">
-          <RadarChart aria-label="Team scores" axes={six} series={teams} loading />
+          <RadarChart aria-label="Region ratings" axes={six} series={regions} loading />
         </Tile>
         <Tile title="Empty">
-          <RadarChart aria-label="Team scores" axes={six} series={[]} />
+          <RadarChart aria-label="Region ratings" axes={six} series={[]} />
         </Tile>
         <Tile title="Error">
           <RadarChart
-            aria-label="Team scores"
+            aria-label="Region ratings"
             axes={six}
-            series={teams}
-            error={`The scores could not be loaded. Retries: ${tries}.`}
+            series={regions}
+            error={`The ratings could not be loaded. Retries: ${tries}.`}
             onRetry={() => setTries(tries + 1)}
           />
         </Tile>
         <Tile title="Missing values sit at the centre">
           <RadarChart
-            aria-label="Team scores"
+            aria-label="Region ratings"
             axes={six}
             max={20}
-            series={[{ id: 'a', label: 'Team A', values: [16, null, 9, 14, null, 15] }]}
+            series={[{ id: 'a', label: 'Region 1', values: [16, null, 9, 14, null, 15] }]}
           />
         </Tile>
       </Tiles>
@@ -118,7 +124,7 @@ export const States: Story = {
   },
 };
 
-const full = <RadarChart aria-label="Site 1 scores" axes={axes} series={[site]} max={20} labels legend />;
+const full = <RadarChart aria-label="Site 1 ratings" axes={axes} series={[site]} max={20} labels legend />;
 
 /** What the chart keeps as its slot shrinks: legend, then the values, then the axis labels. */
 export const Shrink: Story = {
@@ -141,7 +147,7 @@ export const Shrink: Story = {
       </Box>
       <Box width={230} height={200} note="long labels truncate">
         <RadarChart
-          aria-label="Scores"
+          aria-label="Ratings"
           axes={['Customer satisfaction', 'Delivery reliability', 'Cost per order', 'Response time'].map(
             (l) => ({
               id: l,
@@ -169,15 +175,15 @@ export const Interaction: Story = {
         <Tiles columns={2}>
           <Tile title="Several series" id="several">
             <RadarChart
-              aria-label="Team scores"
+              aria-label="Region ratings"
               axes={six}
-              series={teams}
+              series={regions}
               max={20}
               onPointPress={setPressed}
             />
           </Tile>
           <Tile title="One series" id="single">
-            <RadarChart aria-label="Site 1 scores" axes={axes} series={[site]} max={20} labels />
+            <RadarChart aria-label="Site 1 ratings" axes={axes} series={[site]} max={20} labels />
           </Tile>
         </Tiles>
       </div>
@@ -190,31 +196,37 @@ export const PartsAndBlocks: Story = {
   render: () => (
     <Tiles>
       <Tile title="Legend at the side">
-        <RadarChart aria-label="Team scores" axes={six} series={teams} max={20} legend="end" />
+        <RadarChart aria-label="Region ratings" axes={six} series={regions} max={20} legend="end" />
       </Tile>
       <Tile title="Legend part hidden">
-        <RadarChart aria-label="Team scores" axes={six} series={teams} max={20} parts={{ legend: null }} />
+        <RadarChart
+          aria-label="Region ratings"
+          axes={six}
+          series={regions}
+          max={20}
+          parts={{ legend: null }}
+        />
       </Tile>
       <Tile title="Tooltip part as a function" id="tooltip">
         <RadarChart
-          aria-label="Team scores"
+          aria-label="Region ratings"
           axes={six}
-          series={teams}
+          series={regions}
           max={20}
           parts={{ tooltip: (p) => `${p.title}: ${p.rows.map((r) => r.value).join(' / ')}` }}
         />
       </Tile>
       <Tile title="Blocks: no axis labels">
-        <RadarChart.Root aria-label="Team scores" axes={six} series={teams.slice(0, 1)} max={20}>
+        <RadarChart.Root aria-label="Region ratings" axes={six} series={regions.slice(0, 1)} max={20}>
           <RadarChart.Grid rings={5} shape="circle" />
           <RadarChart.Series />
         </RadarChart.Root>
       </Tile>
       <Tile title="Blocks: the app's own ring">
         <RadarChart.Root
-          aria-label="Team scores"
+          aria-label="Region ratings"
           axes={six}
-          series={teams.slice(0, 2)}
+          series={regions.slice(0, 2)}
           max={20}
           legend={false}
         >
@@ -226,11 +238,11 @@ export const PartsAndBlocks: Story = {
       </Tile>
       <Tile title="Legend replaced by a node">
         <RadarChart
-          aria-label="Team scores"
+          aria-label="Region ratings"
           axes={six}
-          series={teams.slice(0, 2)}
+          series={regions.slice(0, 2)}
           max={20}
-          legend={<span style={{ font: 'var(--umbra-font-label)' }}>Team A against Team B</span>}
+          legend={<span style={{ font: 'var(--umbra-font-label)' }}>Region 1 against Region 2</span>}
         />
       </Tile>
     </Tiles>
