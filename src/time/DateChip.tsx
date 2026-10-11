@@ -8,6 +8,7 @@ import {
   formatDayMonth,
   formatFull,
   formatWeekday,
+  validDate,
   type IsoDate,
   type WeekdayFormat,
 } from './dates';
@@ -74,6 +75,8 @@ function Root({
   ...rest
 }: DateChipRootProps) {
   const { locale } = useLocale();
+  // What is not a date draws nothing, and warns: never a wrong date (dates.ts, `validDate`).
+  if (!validDate(date, 'DateChip date')) return null;
   const spoken = [formatFull(date, locale), today && todayLabel, selected && selectedLabel].filter(Boolean);
   return (
     <time
