@@ -39,6 +39,8 @@ States: image failed (falls back to the icon, then to the generated mark).
 
 `--umbra-entity-icon-size`, `--umbra-entity-icon-radius`, `--umbra-entity-icon-gap`, `--umbra-entity-icon-bg` and `--umbra-entity-icon-fg` (the generated mark; setting the background turns the per-name colour off).
 
+`--umbra-entity-icon-size` is read before the private `--entity-icon-size`, the default a container gives the icons inside it (`PageHeader`'s media): the app's token set on any ancestor wins (2026-10-11).
+
 ### 2. Props
 
 | Prop | Type | Default | Purpose |

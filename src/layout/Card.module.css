@@ -4,7 +4,7 @@
   --pad: var(--umbra-card-padding, var(--umbra-density-card-padding));
   /* Read by the parent Stack, which holds the card to it only while all its cards fit. */
   --umbra-slot-min-height: var(--umbra-card-min-height, var(--umbra-density-card-min-height));
-  --umbra-scroll-fade-color: var(--bg);
+  --scroll-fade-color: var(--bg);
 
   flex: 1 1 0;
   min-width: 0;
@@ -94,7 +94,7 @@
 .header[data-header-style='band'] {
   padding-block: var(--umbra-space-3);
   --header-bg: var(--umbra-card-header-bg, var(--umbra-color-brand));
-  --umbra-badge-ring: var(--umbra-card-header-fg, var(--umbra-color-on-brand, #fff));
+  --badge-ring: var(--umbra-card-header-fg, var(--umbra-color-on-brand, #fff));
   color: var(--umbra-card-header-fg, var(--umbra-color-on-brand, #fff));
 }
 
@@ -172,7 +172,7 @@
 
 .headerButton:focus-visible::after {
   outline: var(--umbra-state-focus-ring-width) solid
-    var(--umbra-focus-color, var(--umbra-color-fixed-focus-ring));
+    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-fixed-focus-ring)));
   outline-offset: calc(-1 * var(--umbra-state-focus-ring-width));
   border-radius: var(--umbra-card-radius, var(--umbra-radius-card));
 }

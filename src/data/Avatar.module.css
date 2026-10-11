@@ -1,6 +1,6 @@
 .root {
   /* Without a size the avatar is as tall as a control, so it follows the density level. */
-  --size: var(--umbra-avatar-size, var(--umbra-density-control-height));
+  --size: var(--umbra-avatar-size, var(--avatar-size, var(--umbra-density-control-height)));
   --ring: var(--umbra-avatar-ring, var(--umbra-color-fixed-accent-text));
 
   position: relative;
@@ -12,23 +12,23 @@
 }
 
 .root[data-size='xs'] {
-  --size: var(--umbra-avatar-size, 18px);
+  --size: var(--umbra-avatar-size, var(--avatar-size, 18px));
 }
 
 .root[data-size='sm'] {
-  --size: var(--umbra-avatar-size, 24px);
+  --size: var(--umbra-avatar-size, var(--avatar-size, 24px));
 }
 
 .root[data-size='md'] {
-  --size: var(--umbra-avatar-size, 32px);
+  --size: var(--umbra-avatar-size, var(--avatar-size, 32px));
 }
 
 .root[data-size='lg'] {
-  --size: var(--umbra-avatar-size, 48px);
+  --size: var(--umbra-avatar-size, var(--avatar-size, 48px));
 }
 
 .root[data-size='xl'] {
-  --size: var(--umbra-avatar-size, 72px);
+  --size: var(--umbra-avatar-size, var(--avatar-size, 72px));
 }
 
 .media {

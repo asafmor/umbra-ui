@@ -118,7 +118,7 @@ Resolved 2026-10-11 (review fixes):
 - **The focus ring in a `solid` banner stays on the fill** (review B5), and has its own tokens.
 - **A compact banner never takes a second line** (review B11): it wrapped below 110px when it had actions.
 - **The steps are stated for the content box** (review B12). The code was right and the spec quoted the same numbers as outer widths.
-- `--umbra-icon-button-size` and `--umbra-focus-offset` are still set inside the banner for the controls it holds, each through a banner token an app can set.
+- The banner's defaults for the controls it holds are private properties: `--icon-button-size` (from `--umbra-banner-dismiss-size`), `--focus-offset` (from `--umbra-banner-focus-offset`) and, on a solid banner, `--focus-color` (from `--umbra-banner-focus-color`). `--umbra-icon-button-size`, `--umbra-focus-offset` or `--umbra-focus-color` set by the app on any ancestor wins over them (2026-10-11).
 
 Resolved 2026-10-10:
 

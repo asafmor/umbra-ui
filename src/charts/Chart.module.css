@@ -82,7 +82,7 @@
 /* With a point focused the ring is on the point; without one it is on the plot, drawn inwards. */
 .marks:focus-visible {
   outline: var(--umbra-state-focus-ring-width) solid
-    var(--umbra-focus-color, var(--umbra-color-fixed-focus-ring));
+    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-fixed-focus-ring)));
   outline-offset: calc(-1 * var(--umbra-state-focus-ring-width));
 }
 
@@ -270,7 +270,7 @@
 }
 
 .ring[data-keyboard] {
-  stroke: var(--umbra-focus-color, var(--umbra-color-fixed-focus-ring));
+  stroke: var(--umbra-focus-color, var(--focus-color, var(--umbra-color-fixed-focus-ring)));
   stroke-width: var(--umbra-state-focus-ring-width);
 }
 
