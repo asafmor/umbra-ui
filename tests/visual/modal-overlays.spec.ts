@@ -133,6 +133,10 @@ test("a chart's tooltip shows inside a modal, above it", async ({ page }) => {
 
 test("a card's header menu opens inside a modal, above it, and a row runs", async ({ page }) => {
   await open(page);
+  // The header has room for its two actions: narrow the card until it has not.
+  await modalOf(page)
+    .locator('[data-umbra="card"]')
+    .evaluate((card) => (card.parentElement!.style.width = '240px'));
   const more = modalOf(page).getByRole('button', { name: 'More actions' });
   await more.focus();
   await page.keyboard.press('Enter');
