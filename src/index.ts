@@ -355,3 +355,102 @@ export type {
   SearchFieldSuggestionsProps,
   SearchSuggestion,
 } from './inputs/SearchField';
+export { SequenceDots } from './data/SequenceDots';
+export type {
+  SequenceDotsProps,
+  SequenceDotsRootProps,
+  SequenceDotsMarkProps,
+  SequenceDotsItem,
+  SequenceDotsMark,
+  SequenceDotsId,
+} from './data/SequenceDots';
+export { MediaCard } from './data/MediaCard';
+export type {
+  MediaCardProps,
+  MediaCardRootProps,
+  MediaCardImageProps,
+  MediaCardTitleProps,
+  MediaCardDescriptionProps,
+  MediaCardPairProps,
+  MediaCardSide,
+} from './data/MediaCard';
+export { Comparison } from './data/Comparison';
+export type {
+  ComparisonProps,
+  ComparisonRootProps,
+  ComparisonTableProps,
+  ComparisonHeaderProps,
+  ComparisonSideProps,
+  ComparisonSummaryProps,
+  ComparisonValueProps,
+  ComparisonBarsProps,
+  ComparisonStripProps,
+  ComparisonSide,
+  ComparisonRow,
+  ComparisonSummary,
+  ComparisonValue,
+  ComparisonId,
+} from './data/Comparison';
+export { StarRating } from './inputs/StarRating';
+export type {
+  StarRatingProps,
+  StarRatingRootProps,
+  StarRatingStarsProps,
+  StarRatingStarProps,
+  StarRatingValueProps,
+  StarRatingSize,
+} from './inputs/StarRating';
+export { SplitButton } from './inputs/SplitButton';
+export type {
+  SplitButtonProps,
+  SplitButtonRootProps,
+  SplitButtonActionProps,
+  SplitButtonMenuProps,
+} from './inputs/SplitButton';
+export { Slider } from './inputs/Slider';
+export type {
+  SliderProps,
+  SliderRootProps,
+  SliderTrackProps,
+  SliderThumbProps,
+  SliderOutputProps,
+  SliderMarksProps,
+  SliderValue,
+  SliderMark,
+} from './inputs/Slider';
+export { Stepper } from './inputs/Stepper';
+export type {
+  StepperProps,
+  StepperRootProps,
+  StepperButtonProps,
+  StepperValueProps,
+  StepperIndicatorProps,
+  StepperOption,
+} from './inputs/Stepper';
+export { ColorScaleEditor } from './inputs/ColorScaleEditor';
+export type {
+  ColorScaleEditorProps,
+  ColorScaleEditorRootProps,
+  ColorScaleBlockProps,
+  ColorScaleChange,
+  ColorScaleToneLabels,
+} from './inputs/ColorScaleEditor';
+export { Spotlight } from './overlays/Spotlight';
+export type {
+  SpotlightProps,
+  SpotlightRootProps,
+  SpotlightCalloutProps,
+  SpotlightTitleProps,
+  SpotlightStep,
+  SpotlightTarget,
+} from './overlays/Spotlight';
+export { ShortcutsSheet } from './overlays/ShortcutsSheet';
+export type {
+  ShortcutsSheetProps,
+  ShortcutsSheetSectionProps,
+  ShortcutsSheetItemProps,
+  ShortcutsSheetKeysProps,
+  ShortcutsSheetSearchProps,
+  ShortcutsSheetSectionData,
+  ShortcutsSheetItemData,
+} from './overlays/ShortcutsSheet';

@@ -30,8 +30,10 @@ translate a component. A name followed by brackets can also be a function of wha
 | [`Card`](#card) | `retryLabel`, `collapseLabel`, `expandLabel`, `moreLabel` |
 | [`Checkbox`](#checkbox) | `requiredLabel` |
 | [`CheckboxGroup`](#checkboxgroup) | `requiredLabel` |
+| [`ColorScaleEditor`](#colorscaleeditor) | `stopLabel`, `fromLabel`, `colorLabel`, `nameLabel`, `removeLabel`, `addLabel`, `resetLabel`, `trackLabel` |
 | [`Columns`](#columns) | `tabsLabel` |
 | [`CommandPalette`](#commandpalette) | `label`, `placeholder`, `emptyLabel`, `errorLabel`, `retryLabel`, `loadingLabel`, `recentLabel`, `shortcutsLabel`, `resultsLabel`, `backLabel`, `moveHint`, `enterKeyLabel`, `backspaceKeyLabel`, `escapeKeyLabel`, `runHint`, `backHint`, `closeHint` |
+| [`Comparison`](#comparison) | `metricLabel`, `summaryLabel`, `leaderLabel`, `retryLabel`, `increasedLabel`, `decreasedLabel` |
 | [`ConfirmDialog`](#confirmdialog) | `confirmLabel`, `cancelLabel`, `loadingLabel` |
 | [`DataTable`](#datatable) | `selectRowLabel(row)`, `selectAllLabel`, `highlightLabel`, `collapseGroupLabel`, `expandGroupLabel`, `showDetailsLabel`, `hideDetailsLabel`, `hiddenColumnsLabel(count)`, `loadingMoreLabel`, `increasedLabel`, `decreasedLabel`, `retryLabel` |
 | [`DonutChart`](#donutchart) | `retryLabel`, `allHiddenLabel`, `pointsLabel`, `legendLabel`, `valueLabel` |
@@ -60,8 +62,15 @@ translate a component. A name followed by brackets can also be a function of wha
 | [`SectionTitle`](#sectiontitle) | `moreLabel` |
 | [`SegmentedFilter`](#segmentedfilter) | `allLabel`, `moreLabel` |
 | [`Select`](#select) | `placeholder`, `clearLabel`, `retryLabel`, `searchPlaceholder`, `searchLabel`, `loadingLabel`, `noResultsLabel`, `selectedLabel(count)` |
+| [`SequenceDots`](#sequencedots) | `loadingLabel`, `noValueLabel` |
 | [`ShortcutBar`](#shortcutbar) | `moreLabel(count)`, `moreName(count)`, `editLabel` |
+| [`ShortcutsSheet`](#shortcutssheet) | `searchLabel`, `clearLabel`, `closeLabel`, `emptyLabel`, `ungroupedLabel`, `reservedLabel`, `orLabel` |
+| [`Slider`](#slider) | `startLabel`, `endLabel` |
+| [`SplitButton`](#splitbutton) | `menuLabel`, `loadingLabel` |
+| [`Spotlight`](#spotlight) | `nextLabel`, `backLabel`, `skipLabel`, `doneLabel`, `progressLabel(current, total)` |
+| [`StarRating`](#starrating) | `emptyLabel`, `noValueLabel`, `clearLabel` |
 | [`StatValue`](#statvalue) | `increasedLabel`, `decreasedLabel` |
+| [`Stepper`](#stepper) | `emptyLabel`, `previousLabel`, `nextLabel` |
 | [`SubNav`](#subnav) | `moreLabel`, `submenuLabel(label)` |
 | [`SummaryTile`](#summarytile) | `increasedLabel`, `decreasedLabel` |
 | [`Tabs`](#tabs) | `moreLabel`, `closeLabel` |
@@ -641,6 +650,52 @@ Several checkboxes that answer one question, with a shared label, description an
 
 **Blocks**: `CheckboxGroup.Root`, `CheckboxGroup.Label`, `CheckboxGroup.Description`, `CheckboxGroup.Options`, `CheckboxGroup.Error`.
 
+## ColorScaleEditor
+
+Edits a scale of value bands and their colours: the `thresholds` that `ValuePill`, `ProgressBar`, `LevelMeter`, `BarChart` and `DonutChart` take. With `readOnly` it is the preview row alone.
+
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-focus-color` | `--umbra-color-fixed-focus-ring` (#ffb3f5) |
+| `--umbra-focus-offset` | `2px` |
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `invalid` | `boolean` |  |
+| `value` | `readonly Threshold[]` | Controlled value: the stops, ascending. The `thresholds` of every component that colours by value. |
+| `onChange` | `((value: Threshold[]) => void)` |  |
+| `aria-label` | `string` | Accessible name, when no `FormField` names it. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `disabled` | `boolean` |  |
+| `min` | `number` | The bottom of the scale: the `from` of the first stop. Defaults to the first stop's own `from`. |
+| `max` | `number` | The top of the scale. |
+| `formatValue` | `((value: number) => string)` | The text of a boundary. |
+| `readOnly` | `boolean` | Preview only: the row of swatches, with nothing to edit. |
+| `name` | `string` | Form field name: the value is sent as JSON. |
+| `id` | `string` |  |
+| `defaultValue` | `readonly Threshold[]` | The stops to start from, and what the reset button goes back to (in controlled use too). |
+| `step` | `number` | The distance between two boundaries. |
+| `minStops` | `number` | Fewest stops: the remove buttons are disabled at this number. |
+| `maxStops` | `number` | Most stops: the add button is disabled at this number. |
+| `stopLabel` | `string` | The word for one stop: "Stop 2". |
+| `fromLabel` | `string` | Names the boundary field of a stop. |
+| `colorLabel` | `string` | Names the colour choice of a stop. |
+| `nameLabel` | `string` | Names the label field of a stop, and is its placeholder. |
+| `removeLabel` | `string` |  |
+| `addLabel` | `string` |  |
+| `resetLabel` | `string` |  |
+| `trackLabel` | `string` | Names the track with the boundary handles. |
+| `toneLabels` | `Partial<Record<"default" \| ThresholdTone \| "custom", string>>` | The names of the colour choices. |
+| `formatAnnouncement` | `((change: ColorScaleChange) => string)` | What a screen reader hears after a stop is added or removed, and after a reset. |
+
+**Parts**: `preview`, `track`, `stops`, `actions`.
+
+**Blocks**: `ColorScaleEditor.Root`, `ColorScaleEditor.Preview`, `ColorScaleEditor.Track`, `ColorScaleEditor.Stops`, `ColorScaleEditor.Actions`.
+
 ## Columns
 
 Shares its width among its children. Below the minimum window it shows one child at a time.
@@ -731,6 +786,63 @@ A search over everything the app can do or open, in a dialog near the top of the
 **Parts**: `searchIcon`, `item`, `sectionHeader`, `empty`, `footer`.
 
 **Blocks**: none.
+
+## Comparison
+
+Two sides compared on a list of metrics: a value on each side of every label, with bars from the centre.
+
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-comparison-bar-height` | `0.25rem` |
+| `--umbra-comparison-border` | `--umbra-color-base-border-subtle` (#2e2440) |
+| `--umbra-comparison-color` | `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-comparison-font` | `--umbra-font-label` |
+| `--umbra-comparison-leader-size` | `0.375rem` |
+| `--umbra-comparison-row-height` | `--umbra-density-table-row` (26px at the default density) |
+| `--umbra-comparison-row-padding` | `--umbra-space-2` (4px) |
+| `--umbra-comparison-secondary-color` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-comparison-strip-bg` | `color-mix(in oklab, #000 var(--umbra-state-press-darken-strong), transparent)` |
+| `--umbra-comparison-summary-font` | `--umbra-font-display` |
+| `--umbra-comparison-track` | `color-mix(in oklab, currentColor 12%, transparent)` |
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `sides` (required) | `readonly [ComparisonSide, ComparisonSide]` | The two things compared: the first at the start of each row, the second at its end. |
+| `rows` (required) | `readonly ComparisonRow[]` | One row per metric. |
+| `summary` | `ComparisonSummary` | A large pair of values in the middle of the header, with a caption. |
+| `showBars` | `boolean` | Draws each row's two values as bars that grow from the centre. |
+| `highlightLeader` | `boolean` | Marks the side that leads each row, by weight and a mark. |
+| `formatValue` | `((value: number, row: ComparisonRow) => ReactNode)` | Text of a value. |
+| `emptyLabel` | `ReactNode` | Shown in place of a value that is missing. |
+| `metricLabel` | `string` | The header of the label column, for assistive technology. |
+| `summaryLabel` | `string` | The name of the summary row for assistive technology, when it has no caption. |
+| `leaderLabel` | `string` | What assistive technology reads with a leading value. |
+| `skeletonRows` | `number` | Number of placeholder rows while `loading`. |
+| `aria-label` | `string` | Names the comparison for assistive technology. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `variant` | `"strip" \| "table"` | `strip` is one line: the two names around one pair of values. |
+| `size` | `number \| "content"` | Share of the parent's space: a weight, or `"content"` to take the size of the content. Default 1. |
+| `label` | `string` | Tab label when a parent `Columns` shows one child at a time. |
+| `priority` | `number` | Which child gives way first when space runs out. Higher stays longer; ties give way from the end. Default 0. |
+| `minWidth` | `number` | The width the child needs. When the children of a `Columns` cannot all have theirs, the `Columns` shows one child at a time, with tabs, as it does below the minimum window. |
+| `minHeight` | `number` | Below this height a parent `Stack` may collapse the child to its header. |
+| `height` | `FillHeight` | `fill` (default) takes the slot's height, `content` its own, a number that many pixels. |
+| `loading` | `boolean` | Shows skeletons in the final layout and marks the component busy. |
+| `empty` | `ReactNode \| DataStateContent` | Shown when there is no data: text, a node, or `{ title, description, icon, action }`. Defaults to a short English text. |
+| `error` | `ReactNode \| DataStateContent` | Shown in place of the data when set: text, a node, `{ title, description, icon, action }`, or `true` for a default text. |
+| `onRetry` | `(() => void)` | Adds a retry button to the error state. |
+| `retryLabel` | `string` | Label of the retry button. |
+| `highlightChanges` | `boolean` | A changed value flashes softly once: green when a number rose, red when it fell, neutral otherwise. A sign shows the direction without colour. No flash under reduced motion; the sign stays. The value is never counted up or down. |
+| `increasedLabel` | `string` | What a screen reader hears with the sign of a value that rose or fell. |
+| `decreasedLabel` | `string` |  |
+
+**Parts**: `header`, `side`, `summary`, `row`, `label`, `value`, `bars`, `strip`, `skeleton`, `state`.
+
+**Blocks**: `Comparison.Root`, `Comparison.Table`, `Comparison.Header`, `Comparison.Side`, `Comparison.Summary`, `Comparison.Body`, `Comparison.Row`, `Comparison.Label`, `Comparison.Value`, `Comparison.Bars`, `Comparison.Strip`.
 
 ## ConfirmDialog
 
@@ -1616,6 +1728,67 @@ The content of one row of a list: a title with optional lines, and leading and t
 
 **Blocks**: `ListItem.Root`, `ListItem.Leading`, `ListItem.Content`, `ListItem.Overline`, `ListItem.Title`, `ListItem.Description`, `ListItem.End`, `ListItem.Side`, `ListItem.Center`, `ListItem.Meta`, `ListItem.Unread`, `ListItem.Trailing`.
 
+## MediaCard
+
+A card for one article or item: a picture, a title, a few quiet details, and its own link.
+
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-focus-color` | `--umbra-color-fixed-focus-ring` (#ffb3f5) |
+| `--umbra-media-card-bg` | `--umbra-context-card-tint` |
+| `--umbra-media-card-border` | `--umbra-color-base-border-subtle` (#2e2440) |
+| `--umbra-media-card-color` | `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-media-card-focus-offset` | `calc(-1 * var(--umbra-state-focus-ring-width))` |
+| `--umbra-media-card-gap` | `--umbra-space-3` (8px) or `--umbra-space-2` (4px) |
+| `--umbra-media-card-image-min-height` | `3rem` |
+| `--umbra-media-card-image-ratio` | `16 / 9` |
+| `--umbra-media-card-padding` | `--umbra-density-card-padding` (16px at the default density) |
+| `--umbra-media-card-placeholder-bg` | `color-mix(in oklab, var(--umbra-context) 30%, var(--umbra-color-base-surface2))` |
+| `--umbra-media-card-placeholder-fg` | `color-mix(in oklab, var(--umbra-context) 45%, var(--umbra-color-base-surface3))` |
+| `--umbra-media-card-radius` | `--umbra-radius-card` (8px) |
+| `--umbra-media-card-scrim` | `--umbra-color-base-scrim` (rgba(5, 2, 10, 0.72)) |
+| `--umbra-media-card-secondary-color` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-media-card-thumb-size` | `3.5rem` |
+| `--umbra-media-card-title-font` | `--umbra-font-body` or `--umbra-font-title` |
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `variant` | `"compact" \| "hero"` | Default `compact`; `pair` when `opposite` is set. |
+| `image` | `ReactNode` | The picture, as any node: an `<img>`, an `<svg>`, a chart. Wins over `src`. |
+| `src` | `string` | The address of the picture. When there is none, or it fails to load, a drawn placeholder shows. |
+| `alt` | `string` | What the picture shows. Leave empty for a picture that only decorates the title. |
+| `title` | `ReactNode` | The headline. In a `pair` card, the title of the first side. |
+| `headingLevel` | `4 \| 3 \| 2 \| 5 \| 6` |  |
+| `titleLines` | `number` | The most lines the title wraps to. |
+| `description` | `ReactNode` | A paragraph under the title. |
+| `descriptionLines` | `number` | The most lines the description wraps to. |
+| `category` | `ReactNode` | A category: text becomes a `Tag`, a node is drawn as it is. |
+| `meta` | `ReactNode` | A quiet line: a time, a source. |
+| `actions` | `ReactNode` | Controls of the card: they stay separate from the card's own link. |
+| `side` | `Omit<MediaCardSide, "title">` | `pair`: the icon and the value of the first side, whose title is `title`. |
+| `opposite` | `MediaCardSide` | `pair`: the second side. Sets the `pair` variant. |
+| `center` | `ReactNode` | `pair`: what stands between the two sides. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `aria-label` | `string` | Names a card that has no title. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `loading` | `boolean` | Marks the card busy for assistive technology. |
+| `size` | `number \| "content"` | Share of the parent's space: a weight, or `"content"` to take the size of the content. Default 1. |
+| `label` | `string` | Tab label when a parent `Columns` shows one child at a time. |
+| `priority` | `number` | Which child gives way first when space runs out. Higher stays longer; ties give way from the end. Default 0. |
+| `minWidth` | `number` | The width the child needs. When the children of a `Columns` cannot all have theirs, the `Columns` shows one child at a time, with tabs, as it does below the minimum window. |
+| `minHeight` | `number` | Below this height a parent `Stack` may collapse the child to its header. |
+| `imagePlacement` | `"above" \| "behind"` | `hero` only: the image above the text, or behind it under a scrim. |
+| `href` | `string` | Makes the whole card a link. |
+| `renderLink` | `((props: LinkRenderProps) => ReactNode)` | Plugs in the app's router link for `href`. Defaults to a plain `<a>`. |
+| `onPress` | `(() => void)` | Makes the whole card a button. |
+
+**Parts**: `image`, `category`, `title`, `description`, `meta`, `actions`, `pair`, `skeleton`.
+
+**Blocks**: `MediaCard.Root`, `MediaCard.Image`, `MediaCard.Content`, `MediaCard.Title`, `MediaCard.Description`, `MediaCard.Footer`, `MediaCard.Meta`, `MediaCard.Category`, `MediaCard.Actions`, `MediaCard.Pair`.
+
 ## Menu
 
 A list of actions or links that opens from a control. One tab stop; arrow keys, type-ahead, and submenus that open with the arrow keys.
@@ -2421,6 +2594,44 @@ Chooses one option, or several with `multiple`, from a list that opens under a b
 
 **Blocks**: `Select.Root`, `Select.Trigger`, `Select.Value`, `Select.Popover`, `Select.Option`, `Select.Section`.
 
+## SequenceDots
+
+A short ordered row of small marks, one per recent outcome: dots with a shape per tone, or thin bars by value.
+
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-sequence-dots-bar-height` | `1rem`; `0.75rem`; `1.5rem` |
+| `--umbra-sequence-dots-bar-width` | `0.3125rem`; `0.25rem`; `0.4375rem` |
+| `--umbra-sequence-dots-empty-color` | `--umbra-color-base-text-muted` (#948da2) |
+| `--umbra-sequence-dots-focus-offset` | `calc(-1 * var(--umbra-state-focus-ring-width))` |
+| `--umbra-sequence-dots-gap` | `--umbra-space-2` (4px) or `--umbra-space-1` (2px) |
+| `--umbra-sequence-dots-size` | `0.625rem`; `0.5rem`; `0.875rem` |
+| `--umbra-sequence-dots-target-size` | `1.5rem` |
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `items` | `readonly SequenceDotsItem[] \| null` | The sequence, oldest first. `null` or nothing means there is no value. |
+| `max` | `number` | The most marks shown: the newest ones. Fewer are shown when they do not fit. |
+| `range` | `readonly [number, number]` | `bars` only: the values of an empty and of a full bar. Default: 0 to the largest value. |
+| `formatSummary` | `((items: readonly SequenceDotsItem[]) => string)` | The text assistive technology reads, from the items (all of them up to `max`, whatever fits). |
+| `loading` | `boolean` | Shows a placeholder of the sequence's size. |
+| `loadingLabel` | `string` | What assistive technology reads while loading, when there is no `aria-label`. |
+| `emptyLabel` | `ReactNode` | Shown when there is no value. |
+| `noValueLabel` | `string` | What assistive technology reads when there is no value. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `aria-label` | `string` | What assistive technology reads for the whole sequence. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `variant` | `"dots" \| "bars"` | `dots`: one small shape per item. `bars`: one thin bar per item, as tall as its `value`. |
+| `size` | `"sm" \| "md" \| "lg"` | `sm` fits a table cell, `md` a list row, `lg` a header. |
+| `onAction` | `((id: SequenceDotsId) => void)` | Makes each mark a button: one tab stop, arrow keys between the marks. |
+
+**Parts**: `mark`, `skeleton`, `empty`.
+
+**Blocks**: `SequenceDots.Root`, `SequenceDots.Mark`.
+
 ## ShortcutBar
 
 The user's pinned shortcuts, at the end of the `SubNav`. One tab stop; arrow keys move between the chips. Chips that do not fit move into a "+N" menu.
@@ -2457,6 +2668,54 @@ The user's pinned shortcuts, at the end of the `SubNav`. One tab stop; arrow key
 
 **Blocks**: `ShortcutBar.Item`.
 
+## ShortcutsSheet
+
+The help overlay: every shortcut of the provider's registry that has a label, with its keys written for the platform, in groups, with a search. Opened by `?` and by the app. A `Modal`: focus stays inside, Escape closes it and focus returns to where it was.
+
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-shortcuts-sheet-border` | `--umbra-color-base-border-subtle` (#2e2440) |
+| `--umbra-shortcuts-sheet-column-gap` | `--umbra-space-7` (24px) |
+| `--umbra-shortcuts-sheet-column-width` | `260px` |
+| `--umbra-shortcuts-sheet-key-bg` | `--umbra-color-base-surface3` (#261b38) |
+| `--umbra-shortcuts-sheet-row-height` | `--umbra-density-table-row` (26px at the default density) |
+| `--umbra-shortcuts-sheet-section-color` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-shortcuts-sheet-section-font` | `--umbra-font-label` |
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `open` | `boolean` | Controlled state. |
+| `defaultOpen` | `boolean` |  |
+| `onOpenChange` | `((open: boolean) => void)` |  |
+| `trigger` | `ReactNode` | A button that opens the sheet. Leave out to open it with the key, or with `open`. |
+| `shortcut` | `string \| null` | Id of the shortcut that opens and closes the sheet. `null` binds none. |
+| `defaultQuery` | `string` | The search text the sheet opens with: a help button can open it on one topic. |
+| `extra` | `ShortcutsSheetSectionData[]` | Sections for keys that are not in the registry, listed after it. |
+| `variant` | `"dialog" \| "drawer"` | `dialog`: a panel in the middle of the window. `drawer`: a sheet attached to an edge. |
+| `side` | `"start" \| "end" \| "bottom"` | The edge a `drawer` is attached to. |
+| `size` | `ModalSize` | Width, as for a `Modal`. |
+| `height` | `"auto" \| "fill"` | `fill` keeps the full height while the list is filtered. |
+| `title` | `ReactNode` |  |
+| `description` | `ReactNode` | A line under the title. |
+| `headingLevel` | `4 \| 3 \| 1 \| 2 \| 5` | Heading level of the title; the sections are one level below. |
+| `searchLabel` | `string` | Accessible name and placeholder of the search field. |
+| `searchPlaceholder` | `string` |  |
+| `clearLabel` | `string` |  |
+| `closeLabel` | `string` |  |
+| `emptyLabel` | `string` | Shown when the search matches nothing. |
+| `ungroupedLabel` | `string` | Heading of the app's shortcuts that have no `group`. |
+| `reservedLabel` | `string` | Heading of the library's own shortcuts. |
+| `orLabel` | `string` | The word between two alternatives of one line. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+
+**Parts**: `header`, `search`, `section`, `item`, `empty`.
+
+**Blocks**: `ShortcutsSheet.Columns`, `ShortcutsSheet.Section`, `ShortcutsSheet.Item`, `ShortcutsSheet.Keys`.
+
 ## Skeleton
 
 A grey placeholder in the shape of content that is still loading. Hidden from assistive technology.
@@ -2483,6 +2742,67 @@ A grey placeholder in the shape of content that is still loading. Hidden from as
 
 **Blocks**: none.
 
+## Slider
+
+Chooses a number, or a range with two thumbs, by dragging along a track. The `scrubber` variant is a position on a timeline.
+
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-focus-color` | `--umbra-color-fixed-focus-ring` (#ffb3f5) |
+| `--umbra-focus-offset` | `2px` |
+| `--umbra-slider-fill` | `--umbra-color-fixed-accent-text` (#f77bf0) |
+| `--umbra-slider-hatch` | `color-mix(in oklab, var(--umbra-color-base-surface1) 75%, transparent)` |
+| `--umbra-slider-length` | `100%` |
+| `--umbra-slider-mark-width` | `4ch` |
+| `--umbra-slider-output-fg` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-slider-scrubber-thumb-size` | `14px` |
+| `--umbra-slider-scrubber-track-height` | `2px` |
+| `--umbra-slider-small-thumb-size` | `12px` |
+| `--umbra-slider-small-track-height` | `3px` |
+| `--umbra-slider-thumb-bg` | `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-slider-thumb-border` | `--umbra-color-fixed-selected` (#6a1fd6) |
+| `--umbra-slider-thumb-size` | `16px` |
+| `--umbra-slider-tick-color` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-slider-track-bg` | `--umbra-color-base-border-control` (#7a6e91) |
+| `--umbra-slider-track-height` | `4px` |
+| `--umbra-slider-width` | `200px` |
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `showValue` | `boolean` | Shows the value as text beside the track. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `invalid` | `boolean` |  |
+| `value` | `T` | Controlled value: a number, or `[from, to]` for a range with two thumbs. |
+| `onChange` | `((value: T) => void)` | Called while the value changes. |
+| `aria-label` | `string` | Accessible name, when no `FormField` names it. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `variant` | `"default" \| "scrubber"` | `scrubber`: a thin track with the value in a box before it, for a position on a timeline. |
+| `orientation` | `"vertical" \| "horizontal"` |  |
+| `size` | `"default" \| "small"` | `small` is for table cells and dense toolbars. |
+| `disabled` | `boolean` |  |
+| `min` | `number` |  |
+| `max` | `number` |  |
+| `thresholds` | `ThresholdList` | Colours the fill by the band the value is in, with the band's pattern and label. One thumb only. |
+| `lowerIsBetter` | `boolean` | The scale is one where low is good: the looks of the bands are mirrored. |
+| `formatValue` | `((value: number) => string)` | The text of a value: in the output, the bubble and for a screen reader. |
+| `readOnly` | `boolean` | Focusable, but cannot be changed. |
+| `name` | `string` | Form field name. A range sends two values under it. |
+| `id` | `string` |  |
+| `defaultValue` | `T` |  |
+| `step` | `number` |  |
+| `onChangeEnd` | `((value: T) => void)` | Called once when a drag or a key press ends. |
+| `marks` | `readonly (number \| SliderMark)[]` | Ticks on the track: values, or values with a label. |
+| `bubble` | `boolean` | Shows the value over the thumb while it is hovered, focused or dragged. |
+| `startLabel` | `string` | The name of the first thumb of a range. |
+| `endLabel` | `string` | The name of the second thumb of a range. |
+
+**Parts**: `track`, `output`, `marks`.
+
+**Blocks**: `Slider.Root`, `Slider.Track`, `Slider.Thumb`, `Slider.Output`, `Slider.Marks`.
+
 ## Slot
 
 Gives `size`, `priority`, `minWidth`, `minHeight` and `label` to content that is not an umbra-ui component. The content fills the slot.
@@ -2507,6 +2827,103 @@ Gives `size`, `priority`, `minWidth`, `minHeight` and `label` to content that is
 **Parts**: none.
 
 **Blocks**: none.
+
+## SplitButton
+
+A main action with a caret beside it that opens a menu of related actions. One control to look at, two buttons to use: each is a tab stop.
+
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-split-button-caret-width` | `max(24px, calc(var(--height) * 0.8))` |
+| `--umbra-split-button-divider` | `color-mix(in oklab, var(--fg) 40%, transparent)` |
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `items` | `MenuEntry[]` | The related actions: the entries `Menu` takes (rows, sections, separators, submenus). |
+| `onAction` | `((id: string) => void)` | Called with the id of the menu row the user chose. |
+| `menuLabel` | `string` | The accessible name and tooltip of the caret button. |
+| `menuPlacement` | `OverlayPlacement` |  |
+| `open` | `boolean` | Controlled state of the menu. |
+| `defaultOpen` | `boolean` |  |
+| `onOpenChange` | `((open: boolean) => void)` |  |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `aria-label` | `string` | Names the pair, when the action's own text is not enough. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `variant` | `ButtonVariant` | The look of both halves: the variants of `Button`. |
+| `size` | `"default" \| "small"` | `small` is for use inside table cells. Otherwise the height follows the density level. |
+| `disabled` | `boolean` | Disables the action and the menu. |
+| `fullWidth` | `boolean` |  |
+| `children` | `ReactNode` | The label. |
+| `href` | `string` | Renders a link that looks like a button. |
+| `loading` | `boolean` | Shows the spinner and blocks presses of the action. The menu stays usable. |
+| `onPress` | `(() => void)` |  |
+| `type` | `"button" \| "submit" \| "reset"` |  |
+| `loadingLabel` | `string` | What a screen reader hears while `loading`. |
+| `shortcut` | `string` | Id of a shortcut in the provider's list: binds the key and shows the hint in the tooltip. |
+| `iconStart` | `ReactNode` |  |
+
+**Parts**: `action`, `menu`, `iconStart`, `label`, `caret`.
+
+**Blocks**: `SplitButton.Root`, `SplitButton.Action`, `SplitButton.Menu`.
+
+## Spotlight
+
+Dims everything but one element and explains it in a callout beside it: a coach mark, or with `steps` a tour. Nothing but the callout can be used unless the target is `interactive`.
+
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-focus-color` | `--umbra-color-fixed-focus-ring` (#ffb3f5) |
+| `--umbra-spotlight-callout-bg` | `--umbra-color-base-surface2` (#1b1329) |
+| `--umbra-spotlight-callout-border` | `--umbra-color-base-border-strong` (#47395e) |
+| `--umbra-spotlight-callout-padding` | `--umbra-density-card-padding` (16px at the default density) |
+| `--umbra-spotlight-callout-radius` | `--umbra-radius-card` (8px) |
+| `--umbra-spotlight-callout-width` | `320px` |
+| `--umbra-spotlight-dim` | `--umbra-color-base-scrim` (rgba(5, 2, 10, 0.72)) |
+| `--umbra-spotlight-duration` | `--umbra-motion-duration-slow` (240ms) |
+| `--umbra-spotlight-radius` | `--umbra-radius-card` (8px) |
+| `--umbra-spotlight-ring-color` | `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-spotlight-ring-width` | `calc(2 * var(--umbra-border-width))` |
+| `--umbra-spotlight-title-font` | `--umbra-font-card-title` |
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `title` | `ReactNode` |  |
+| `children` | `ReactNode` | The text of the callout. |
+| `actions` | `ReactNode` | Buttons in place of the built-in ones. |
+| `steps` | `SpotlightStep[]` | A tour: one target, title and text per step, with Back, Next and Skip. |
+| `step` | `number` | The step shown, from 0. Controlled. |
+| `defaultStep` | `number` |  |
+| `onStepChange` | `((step: number) => void)` |  |
+| `onFinish` | `(() => void)` | Called when the last step, or a spotlight without steps, is ended with its button. |
+| `headingLevel` | `4 \| 3 \| 1 \| 2 \| 5 \| 6` | Heading level of the title. |
+| `nextLabel` | `string` |  |
+| `backLabel` | `string` |  |
+| `skipLabel` | `string` |  |
+| `doneLabel` | `string` | The button of the last step, and of a spotlight without steps. |
+| `progressLabel` | `((current: number, total: number) => string)` | The text that says where the tour is: "2 of 5". |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `open` | `boolean` | Controlled state. |
+| `defaultOpen` | `boolean` |  |
+| `interactive` | `boolean` | Whether the target can be used. By default nothing but the callout can: the target is shown, not offered. With `true` the target takes presses and keys, and what it opens is above the dim. |
+| `target` | `SpotlightTarget` | The element to light. |
+| `onOpenChange` | `((open: boolean) => void)` |  |
+| `padding` | `number` | Space between the target and the ring, in pixels. |
+| `dismissable` | `boolean` | Escape and a press on the dim close the spotlight. |
+| `radius` | `string \| number` | Corner radius of the cut-out: pixels or any CSS length. Defaults to the card radius. |
+| `aria-label` | `string` | Accessible name, when there is no title. |
+| `placement` | `OverlayPlacement` | Side of the target and alignment along it. It flips to the other side to stay in the window. |
+| `offset` | `number` | Gap between the ring and the callout, in pixels. |
+
+**Parts**: `title`, `body`, `progress`, `actions`.
+
+**Blocks**: `Spotlight.Root`, `Spotlight.Callout`, `Spotlight.Title`, `Spotlight.Body`, `Spotlight.Footer`.
 
 ## Stack
 
@@ -2534,6 +2951,54 @@ Shares its height among its children.
 **Parts**: none.
 
 **Blocks**: none.
+
+## StarRating
+
+A rating out of a number of stars. With `readOnly` it is a picture of any value, halves and other fractions included; otherwise a control with the semantics of a radio group.
+
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-focus-color` | `--umbra-color-fixed-focus-ring` (#ffb3f5) |
+| `--umbra-star-rating-color` | `--umbra-color-semantic-warning` (#f2b23a) |
+| `--umbra-star-rating-empty-color` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-star-rating-gap` | `2px`; `1px`; `3px` |
+| `--umbra-star-rating-large-size` | `24px` |
+| `--umbra-star-rating-size` | `18px` |
+| `--umbra-star-rating-small-size` | `14px` |
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `showValue` | `boolean` | Shows the value as a number after the stars. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `invalid` | `boolean` |  |
+| `value` | `number \| null` | Controlled value, from 0 to `max`. `null` is no rating. Display mode draws any fraction. |
+| `onChange` | `((value: number \| null) => void)` | Called with the chosen value, or `null` when a `clearable` rating is cleared. |
+| `aria-label` | `string` | Accessible name, when no `FormField` names it. In display mode the value's text is added. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `icon` | `ReactNode` | Replaces the star, full and empty: any node. The full one is filled with the colour. |
+| `loading` | `boolean` | Shows placeholders in the final layout. |
+| `size` | `StarRatingSize` | `small` is for table cells, `large` for a header. |
+| `disabled` | `boolean` |  |
+| `emptyLabel` | `string` | Shown in display mode when there is no value. |
+| `max` | `number` | How many stars. |
+| `formatValue` | `((value: number, max: number) => string)` | The text of a value: the name of the picture in display mode, and of each choice. |
+| `noValueLabel` | `string` | What a screen reader hears in display mode when there is no value. |
+| `readOnly` | `boolean` | Display mode: a picture of the value with a text name, not a control. For tables and lists. |
+| `required` | `boolean` |  |
+| `name` | `string` | Form field name. The value is sent as a number; no rating sends nothing. |
+| `id` | `string` |  |
+| `defaultValue` | `number \| null` |  |
+| `clearable` | `boolean` | Adds "no rating" as a choice: the first stop of the arrow keys, and a press on the chosen star. |
+| `clearLabel` | `string` | The name of the "no rating" choice. |
+| `step` | `1 \| 0.5` | What a user can choose: whole stars, or halves. |
+| `emptyIcon` | `ReactNode` | Replaces the empty star alone. |
+
+**Parts**: `stars`, `star`, `value`.
+
+**Blocks**: `StarRating.Root`, `StarRating.Stars`, `StarRating.Star`, `StarRating.Value`.
 
 ## StatusIndicator
 
@@ -2607,6 +3072,56 @@ A large value with its label, and optional unit, trend, caption and meter.
 **Parts**: `icon`, `label`, `value`, `unit`, `trend`, `caption`, `meter`, `skeleton`.
 
 **Blocks**: `StatValue.Root`, `StatValue.Label`, `StatValue.Figure`, `StatValue.Value`, `StatValue.Unit`, `StatValue.Trend`, `StatValue.Caption`, `StatValue.Meter`.
+
+## Stepper
+
+Previous and next around one value, with a row of segments for the position. It walks through a list of options (`options`), or through numbers (`min`, `max`, `step`).
+
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-focus-color` | `--umbra-color-fixed-focus-ring` (#ffb3f5) |
+| `--umbra-stepper-button-fg` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-stepper-height` | `--umbra-density-control-height` (36px at the default density) |
+| `--umbra-stepper-indicator-gap` | `3px` |
+| `--umbra-stepper-radius` | `--umbra-radius-control` (4px) |
+| `--umbra-stepper-segment-color` | `--umbra-color-base-text-muted` (#948da2) |
+| `--umbra-stepper-segment-current-color` | `--umbra-color-fixed-accent-text` (#f77bf0) |
+| `--umbra-stepper-segment-width` | `12px` |
+| `--umbra-stepper-value-fg` | `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-stepper-width` | `200px` |
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `invalid` | `boolean` |  |
+| `value` | `T \| null` | Controlled value: an option's `id`, or a number. `null` is no value. |
+| `onChange` | `((value: T) => void)` |  |
+| `aria-label` | `string` | Accessible name, when no `FormField` names it. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `size` | `"default" \| "small"` | `small` is for table cells and dense toolbars. |
+| `disabled` | `boolean` |  |
+| `wrap` | `boolean` | After the last comes the first, and the other way. Defaults to on for options and off for numbers. |
+| `emptyLabel` | `string` | Shown while there is no value. |
+| `min` | `number` | Numeric mode: the lowest value. |
+| `max` | `number` | Numeric mode: the highest value. |
+| `formatValue` | `((value: number) => string)` | Numeric mode: the text of a value. |
+| `readOnly` | `boolean` | Focusable, but cannot be changed. |
+| `required` | `boolean` |  |
+| `name` | `string` | Form field name: the option's `id` or the number is sent. |
+| `id` | `string` |  |
+| `defaultValue` | `T \| null` |  |
+| `options` | `readonly StepperOption[]` | Options mode: the choices, in order. The value is the `id` of one. Leave it out for numeric mode. |
+| `step` | `number` | Numeric mode: the distance between two values. |
+| `showIndicator` | `boolean` | The row of segments that shows the position. Defaults to shown for up to 12 positions. |
+| `previousLabel` | `string` |  |
+| `nextLabel` | `string` |  |
+
+**Parts**: `previous`, `value`, `next`, `indicator`.
+
+**Blocks**: `Stepper.Root`, `Stepper.Previous`, `Stepper.Value`, `Stepper.Next`, `Stepper.Indicator`.
 
 ## SubNav
 
