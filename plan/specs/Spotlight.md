@@ -69,7 +69,7 @@ Global token added: `layer.spotlight` (1250), between `layer.modal` and `layer.p
 | `offset` | pixels | 12 | Gap between ring and callout |
 | `headingLevel` | 1 to 6 | 2 | |
 | `aria-label` | string | — | Name of the dialog without a title |
-| `nextLabel`, `backLabel`, `skipLabel`, `doneLabel` | string | "Next", "Back", "Skip", "Done" | |
+| `nextLabel`, `previousLabel`, `skipLabel`, `doneLabel` | string | "Next", "Back", "Skip", "Done" | `previousLabel` and `nextLabel` are the pair of every component that steps through a sequence (`backLabel` is for the history) |
 | `progressLabel` | function (current, total) → string | "2 of 5" | |
 
 ### 3. Parts

@@ -251,7 +251,7 @@ export const InModal: Story = {
 
 /**
  * Parts changed by a function (the title, the progress), replaced by a node (the buttons) and hidden
- * with `null` (the text); translated button texts are props (`nextLabel`, `backLabel`, `skipLabel`,
+ * with `null` (the text); translated button texts are props (`nextLabel`, `previousLabel`, `skipLabel`,
  * `doneLabel`, `progressLabel`).
  */
 export const Parts: Story = {
