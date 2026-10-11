@@ -1,0 +1,269 @@
+/*
+ * A size container, so the rows show less as the editor narrows. It fills its slot; where the slot is
+ * as wide as its content it asks for `--umbra-color-scale-editor-width`.
+ */
+.root {
+  --ink: var(
+    --umbra-color-scale-editor-hatch,
+    color-mix(in oklab, var(--umbra-color-base-surface1) 75%, transparent)
+  );
+  --hatch: transparent 0 3px, var(--ink) 3px 5px;
+  --handle: 10px;
+
+  container-type: inline-size;
+  contain-intrinsic-inline-size: var(--umbra-color-scale-editor-width, 480px);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--umbra-color-scale-editor-gap, var(--umbra-space-3));
+  inline-size: 100%;
+  min-inline-size: 0;
+  min-block-size: 0;
+  max-block-size: 100%;
+  color: var(--umbra-color-base-text-primary);
+  font: var(--umbra-font-body);
+}
+
+/* The preview alone is as wide as its swatches. */
+.root[data-readonly] {
+  container-type: normal;
+  contain-intrinsic-inline-size: none;
+  display: inline-flex;
+  inline-size: auto;
+  max-inline-size: 100%;
+}
+
+.root[data-disabled] :is(.preview, .track, .number) {
+  opacity: var(--umbra-state-disabled-opacity);
+}
+
+.preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--umbra-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.swatch {
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-space-2);
+  min-inline-size: 0;
+  padding: var(--umbra-space-1) var(--umbra-space-3) var(--umbra-space-1) var(--umbra-space-1);
+  border: var(--umbra-border-width) solid var(--umbra-color-base-border-control);
+  border-radius: var(--umbra-color-scale-editor-swatch-radius, var(--umbra-radius-control));
+  background: var(--umbra-color-base-surface1);
+  font: var(--umbra-font-label);
+}
+
+.root[data-invalid] .swatch {
+  border-color: var(--umbra-color-semantic-danger);
+}
+
+.from {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.label {
+  overflow: hidden;
+  color: var(--umbra-color-base-text-secondary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* A stop's colour under the pattern the meters draw for a band at its position. */
+.chip,
+.band {
+  background: var(--pattern, none), var(--paint, var(--umbra-color-base-border-strong));
+}
+
+.chip {
+  flex: none;
+  inline-size: var(--umbra-color-scale-editor-chip-size, 16px);
+  block-size: var(--umbra-color-scale-editor-chip-size, 16px);
+  border-radius: 3px;
+}
+
+:is(.chip, .band)[data-pattern='diagonal'] {
+  --pattern: repeating-linear-gradient(45deg, var(--hatch));
+}
+
+:is(.chip, .band)[data-pattern='vertical'] {
+  --pattern: repeating-linear-gradient(90deg, var(--hatch));
+}
+
+:is(.chip, .band)[data-pattern='reverse'] {
+  --pattern: repeating-linear-gradient(-45deg, var(--hatch));
+}
+
+/* The track: 24px tall for the pointer, with the bar of bands in its middle. */
+.track {
+  flex: none;
+  padding-inline: calc(var(--handle) / 2);
+}
+
+.rail {
+  position: relative;
+  block-size: 24px;
+}
+
+.bands {
+  position: absolute;
+  inset-inline: 0;
+  inset-block: 6px;
+  overflow: hidden;
+  border-radius: var(--umbra-radius-control);
+}
+
+.band {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: calc(var(--from) * 100%);
+  inline-size: calc((var(--to) - var(--from)) * 100%);
+}
+
+.handle {
+  top: 50%;
+  box-sizing: border-box;
+  inline-size: var(--handle);
+  block-size: 24px;
+  border: 2px solid var(--umbra-color-base-surface1);
+  border-radius: 4px;
+  background: var(--umbra-color-scale-editor-handle-bg, var(--umbra-color-base-text-primary));
+  cursor: ew-resize;
+}
+
+/* The pointer target of a handle is 24px wide. */
+.handle::after {
+  content: '';
+  position: absolute;
+  inset: -2px calc((var(--handle) - 24px) / 2 - 2px);
+}
+
+.handle[data-hovered] {
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--umbra-color-base-text-primary) 18%, transparent);
+}
+
+.handle[data-dragging] {
+  background: color-mix(in oklab, var(--umbra-color-base-text-primary), #000 var(--umbra-state-press-darken));
+}
+
+.handle[data-focus-visible] {
+  outline: var(--umbra-state-focus-ring-width) solid
+    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-fixed-focus-ring)));
+  outline-offset: var(--umbra-focus-offset, var(--focus-offset, 2px));
+  z-index: 1;
+}
+
+.handle[data-disabled] {
+  cursor: default;
+}
+
+/* The rows scroll inside the editor when its slot is shorter than they are. */
+.stops {
+  display: grid;
+  gap: var(--umbra-space-2);
+  min-block-size: 0;
+  /* Room for the focus rings of the fields, which the scrolling would cut. */
+  margin: -3px;
+  padding: 3px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.stop {
+  display: grid;
+  grid-template-columns: 44px minmax(64px, 96px) minmax(120px, 1fr) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--umbra-space-3);
+  min-inline-size: 0;
+}
+
+.number {
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-space-2);
+  color: var(--umbra-color-base-text-secondary);
+  font: var(--umbra-font-label);
+  font-variant-numeric: tabular-nums;
+}
+
+.fromField,
+.nameField {
+  display: flex;
+  min-inline-size: 0;
+}
+
+.colorField {
+  display: flex;
+  gap: var(--umbra-space-2);
+  min-inline-size: 0;
+}
+
+/* The browser's own colour field, sized as the controls beside it. */
+.color {
+  flex: none;
+  inline-size: var(--umbra-density-control-height);
+  block-size: var(--umbra-density-control-height);
+  padding: 2px;
+  border: var(--umbra-border-width) solid var(--umbra-color-base-border-control);
+  border-radius: var(--umbra-radius-control);
+  background: var(--umbra-color-base-surface1);
+  cursor: pointer;
+}
+
+.color:focus-visible {
+  outline: var(--umbra-state-focus-ring-width) solid
+    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-fixed-focus-ring)));
+  outline-offset: var(--umbra-focus-offset, var(--focus-offset, 2px));
+}
+
+.color:disabled {
+  opacity: var(--umbra-state-disabled-opacity);
+  cursor: default;
+}
+
+.actions {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  gap: var(--umbra-space-3);
+}
+
+/* Step 1: the label fields give way; a label is extra, a boundary and a colour are the value. */
+@container (max-width: 439px) {
+  .stop {
+    grid-template-columns: 44px minmax(64px, 96px) minmax(0, 1fr) auto;
+  }
+
+  .nameField {
+    display: none;
+  }
+}
+
+/* Step 2: the track gives way too. Each boundary still has its number field. */
+@container (max-width: 299px) {
+  .track {
+    display: none;
+  }
+
+  .stop {
+    grid-template-columns: minmax(56px, 80px) minmax(0, 1fr) auto;
+  }
+
+  .number {
+    display: none;
+  }
+}
+
+.spoken {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

@@ -1,0 +1,91 @@
+/* The sheet is a Modal; this file styles what is inside its body. */
+.search {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+}
+
+.search > * {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* As many columns as fit: three in a wide sheet, one in a narrow one. A section is never split. */
+.columns {
+  column-width: var(--umbra-shortcuts-sheet-column-width, 260px);
+  column-gap: var(--umbra-shortcuts-sheet-column-gap, var(--umbra-space-7));
+}
+
+.section {
+  break-inside: avoid;
+  padding-block-end: var(--umbra-space-5);
+}
+
+.sectionTitle {
+  margin: 0 0 var(--umbra-space-2);
+  font: var(--umbra-shortcuts-sheet-section-font, var(--umbra-font-label));
+  font-weight: 700;
+  color: var(--umbra-shortcuts-sheet-section-color, var(--umbra-color-base-text-secondary));
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--umbra-space-4);
+  min-height: var(--umbra-shortcuts-sheet-row-height, var(--umbra-density-table-row));
+  padding-block: var(--umbra-space-1);
+  border-block-end: var(--umbra-border-width) solid
+    var(--umbra-shortcuts-sheet-border, var(--umbra-color-base-border-subtle));
+}
+
+/* The label gives way; the keys are always whole. */
+.label {
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.keys {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--umbra-space-2);
+  font: var(--umbra-font-label);
+  color: var(--umbra-color-base-text-secondary);
+}
+
+.combination {
+  display: inline-flex;
+  gap: var(--umbra-space-1);
+  font: inherit;
+}
+
+.combination > kbd {
+  min-width: 1.75em;
+  text-align: center;
+  background: var(--umbra-shortcuts-sheet-key-bg, var(--umbra-color-base-surface3));
+}
+
+.status:empty {
+  display: none;
+}
+
+.empty {
+  padding: var(--umbra-space-7) 0;
+  text-align: center;
+  font: var(--umbra-font-label);
+  color: var(--umbra-color-base-text-secondary);
+}
