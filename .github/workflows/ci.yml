@@ -22,6 +22,8 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+      # A Button-only app must not carry the table engine or the charts, and dist/ holds no story code.
+      - run: npm run check:package
       # The examples import the built package, so this checks the published entries and types.
       - run: npm run build --workspaces --if-present
 

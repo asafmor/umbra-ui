@@ -7,6 +7,5 @@
     "rootDir": "src",
     "outDir": "dist"
   },
-  "include": ["src"],
-  "exclude": ["src/stories", "src/**/*.stories.tsx", "src/**/*.test.ts", "src/**/*.test.tsx"]
+  "include": ["src/index.ts", "src/charts/index.ts"]
 }

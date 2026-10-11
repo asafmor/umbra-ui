@@ -44,6 +44,7 @@
     "version": "changeset version",
     "release": "npm run lint && npm run typecheck && npm test && npm run build && changeset publish",
     "prepare": "npm run build",
+    "check:package": "node scripts/check-treeshake.mjs",
     "docs:tables": "npm run tokens && node scripts/build-customisation.mjs",
     "docs:check": "npm run tokens && node scripts/check-docs.mjs",
     "test:examples": "npm run build && npm run build --workspaces --if-present && playwright test -c playwright.examples.config.ts"
@@ -75,6 +76,7 @@
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.2",
+    "esbuild": "^0.28.2",
     "eslint": "^10.12.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-storybook": "^10.6.1",
