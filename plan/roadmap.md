@@ -50,4 +50,4 @@ Order inside this milestone is decided by demand.
 2. Stories for every variant and state, including loading, empty and error.
 3. Shrink behaviour defined and covered by visual tests at several sizes.
 4. Keyboard and screen-reader checks pass: the automated accessibility test passes on every tint, and an interaction test covers the component's keys and focus.
-5. Works on every context tint and all three density levels: captured at all three densities, and once on each other tint.
+5. Works on every context tint and all three density levels: no page scroll at any size and density, the images of `plan/decisions/06-docs-and-testing.md` ("Baseline images") captured, one story of the component captured on each other tint (its first, or the one tagged `tints`), and the accessibility test passing on every tint.

@@ -94,6 +94,7 @@ export const InPage: Story = {
 
 /** The three tones, and a band in a colour of the app's choice: the text is light or dark to suit it. */
 export const Tones: Story = {
+  tags: ['tints'],
   render: () => (
     <div style={column}>
       {(
