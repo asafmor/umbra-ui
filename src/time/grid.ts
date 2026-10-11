@@ -134,7 +134,8 @@ export function useDateGrid<E extends HTMLElement>(options: DateGridOptions = {}
     }
     const cell = activeCell();
     setTabStop(cell);
-    const lost = !document.activeElement || document.activeElement === document.body;
+    // Lost, or left on the grid's own element, which held it as the empty or error state.
+    const lost = focusLost() || document.activeElement === el;
     if (hasFocus.current && cell && lost) cell.focus({ preventScroll: true });
   });
 

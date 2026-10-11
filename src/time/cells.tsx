@@ -147,18 +147,13 @@ function HiddenItems({
   // On the element around the button, so the tip also answers to the focus of the day's cell.
   const tip = useHoverTip(ref, text);
   return (
-    <span ref={ref} className={styles.hiddenHolder}>
+    // A press on the mark or in its list is theirs: it does not also press the day around them (the
+    // list is drawn elsewhere on the page, and still a child of the cell to React).
+    <span ref={ref} className={styles.hiddenHolder} onClick={(event) => event.stopPropagation()}>
       <Popover
         aria-label={text}
         trigger={
-          // The press is the button's: it does not also press the day around it.
-          <button
-            type="button"
-            aria-label={text}
-            data-part="hiddenItems"
-            className={styles.hiddenItems}
-            onClick={(event) => event.stopPropagation()}
-          >
+          <button type="button" aria-label={text} data-part="hiddenItems" className={styles.hiddenItems}>
             +{items.length}
           </button>
         }

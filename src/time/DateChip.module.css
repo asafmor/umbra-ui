@@ -30,27 +30,28 @@
   padding: 0 var(--umbra-date-chip-padding-x, var(--umbra-space-2));
 }
 
-/*
- * One line is shown, and it is the last: where the weekday and the number do not fit side by side (a
- * longer name in another locale, a larger font from a token), the number wraps to a line of its own,
- * and the line above it, with the weekday, is cut off. So the weekday gives way and the number is
- * never drawn cut, whatever the steps below assume.
- */
 .text {
   display: inline-flex;
-  flex-wrap: wrap;
-  place-content: flex-end center;
   gap: 0.35em;
   min-width: 0;
-  max-height: 1lh;
   overflow: hidden;
 }
 
+/*
+ * Where the two do not fit side by side in spite of the steps below (a longer name in another locale,
+ * a larger font from a token), the weekday is what is shortened, with an ellipsis. The number keeps
+ * its width: a number cut short would read as another day.
+ */
 .weekday {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
   font-weight: 500;
+  text-overflow: ellipsis;
 }
 
 .day {
+  flex: none;
   font-variant-numeric: tabular-nums;
 }
 
