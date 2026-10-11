@@ -24,7 +24,7 @@ import {
   SubmenuTrigger,
   type Key,
 } from 'react-aria-components';
-import { OverflowMenuContext, type OverflowRowProps } from '../internal/contexts';
+import { OverflowMenuContext, staysInRow, type OverflowRowProps } from '../internal/contexts';
 import { CheckMark, Hint } from '../internal/menuRow';
 import { Icon, IconSlot } from '../provider/icons';
 import { useScopeAttributes } from '../provider/UmbraProvider';
@@ -40,6 +40,7 @@ import {
   type OverlayPlacement,
 } from './shared';
 import { defined } from '../utils/defined';
+import { passThrough, rootRender, withoutPassThrough, type RootAttributes } from '../utils/passThrough';
 
 /** One row of a menu. `items` inside it makes a submenu. */
 export interface MenuItemData {
@@ -351,6 +352,7 @@ function Surface({
   className,
   style,
   children,
+  ...rest
 }: Omit<PanelProps, 'entries' | 'shared' | 'aria-label'> & { children: ReactNode }) {
   const scope = useScopeAttributes();
   const layer = useOverlayLayer('popover');
@@ -358,6 +360,7 @@ function Surface({
   const root = useRootMenuState(!!open, onOpenChange);
   const popover = (
     <AriaPopover
+      {...rootRender('div', rest)}
       {...scope}
       {...defined(layer)}
       ref={flipWhenCut}
@@ -415,7 +418,7 @@ const pressable = (trigger: ReactNode) =>
     trigger
   );
 
-export interface MenuProps {
+export interface MenuProps extends RootAttributes {
   /** The rows, as data. */
   items?: MenuEntry[] | undefined;
   /** The rows, as `Menu.Item`, `Menu.Section`, `Menu.Separator` and `Menu.Sub` blocks. */
@@ -566,6 +569,7 @@ function Context({
   };
   return (
     <div
+      {...passThrough({ ...menu, 'aria-label': undefined })}
       data-umbra="menu-context"
       className={cx(styles.context, className)}
       style={style}
@@ -590,7 +594,8 @@ function Context({
         style={{ left: point?.x, top: point?.y }}
       />
       <Menu
-        {...menu}
+        {...withoutPassThrough(menu)}
+        aria-label={menu['aria-label']}
         anchorRef={anchor}
         open={!!point}
         onOpenChange={(next) => {
@@ -615,11 +620,12 @@ Menu.Context = Context;
 /**
  * A menu can only hold rows, and one plain element among them makes React Aria drop the rows after it.
  * So a plain wrapper (`<div>`, `<span>`) gives way to what it holds, and text is left out. A component
- * stays: it is expected to render a `Button`, an `IconButton` or a `Menu`.
+ * stays: it is expected to render a `Button`, an `IconButton` or a `Menu`. A control that says it
+ * cannot be a row (`staysInRow`) is left out: `ActionsOverflow` keeps it beside the "more" button.
  */
 function rowsOnly(children: ReactNode): ReactNode {
   return Children.map(children, (child) => {
-    if (!isValidElement<{ children?: ReactNode | undefined }>(child)) return null;
+    if (!isValidElement<{ children?: ReactNode | undefined }>(child) || staysInRow(child)) return null;
     const plain = typeof child.type === 'string' || child.type === Fragment;
     return plain ? rowsOnly(child.props.children) : child;
   });

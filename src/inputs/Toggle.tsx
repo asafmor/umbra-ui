@@ -6,6 +6,7 @@ import { SlotDescription, SlotLabel, TextSlotsProvider, useTextSlots, type Block
 import styles from './Toggle.module.css';
 import { useFieldControl } from './useField';
 import { defined } from '../utils/defined';
+import { rootRender } from '../utils/passThrough';
 
 export interface ToggleRootProps extends BlockProps {
   /** Controlled state. */
@@ -43,6 +44,7 @@ function Root({
   className,
   style,
   children,
+  ...rest
 }: ToggleRootProps) {
   const slots = useTextSlots();
   const control = useFieldControl({
@@ -53,6 +55,7 @@ function Root({
   });
   return (
     <AriaSwitch
+      {...rootRender('label', rest)}
       data-umbra="toggle"
       data-size={size}
       data-label-position={labelPosition}
@@ -129,6 +132,8 @@ export function Toggle({ children, description, parts, ...root }: ToggleProps) {
   );
 }
 
+/** Not a row of a menu: among actions that overflow it stays in the row (`ActionsOverflow`). */
+Toggle.staysInRow = true;
 Toggle.Root = Root;
 Toggle.Track = Track;
 Toggle.Label = Label;

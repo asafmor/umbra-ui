@@ -24,6 +24,7 @@ import {
   type StripRow,
 } from './strip';
 import { defined } from '../utils/defined';
+import { rootRender, type RootAttributes } from '../utils/passThrough';
 
 /** One segment, as data. */
 export interface SegmentedFilterItem {
@@ -73,7 +74,7 @@ interface MultipleSelection {
   defaultValue?: never | undefined;
 }
 
-interface RootBase {
+interface RootBase extends RootAttributes {
   /** Adds a first segment that stands for "no filter". Choosing it clears the others. */
   all?: boolean | undefined;
   /** Label of the "All" segment. */
@@ -150,6 +151,7 @@ function Root(props: SegmentedFilterRootProps) {
     <MultipleContext value={multiple}>
       <StripItemsContext value={items}>
         <ToggleButtonGroup
+          {...rootRender('div', { ...props, 'aria-label': undefined, 'aria-labelledby': undefined })}
           ref={ref}
           selectionMode={multiple ? 'multiple' : 'single'}
           disallowEmptySelection={!multiple}
@@ -271,5 +273,7 @@ export function SegmentedFilter({ items, parts, children, ...root }: SegmentedFi
   );
 }
 
+/** Not a row of a menu: among actions that overflow it stays in the row (`ActionsOverflow`). */
+SegmentedFilter.staysInRow = true;
 SegmentedFilter.Root = Root;
 SegmentedFilter.Item = Item;

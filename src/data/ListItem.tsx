@@ -8,6 +8,7 @@ import {
 } from '../internal/ChangeHighlight';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './ListItem.module.css';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
 interface BlockProps {
   className?: string | undefined;
@@ -15,7 +16,7 @@ interface BlockProps {
   children?: ReactNode | undefined;
 }
 
-export interface ListItemRootProps extends BlockProps {
+export interface ListItemRootProps extends BlockProps, RootAttributes {
   /**
    * `message`: sender and tag on the first line, title and time on the second. `pair`: two sides that
    * mirror each other around a centre (set by `opposite`).
@@ -45,9 +46,11 @@ function Root({
   className,
   style,
   children,
+  ...rest
 }: ListItemRootProps) {
   return (
     <div
+      {...passThrough(rest)}
       data-umbra="list-item"
       data-variant={variant}
       data-size={size}

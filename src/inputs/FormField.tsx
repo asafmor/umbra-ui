@@ -11,6 +11,7 @@ import {
 } from './fieldParts';
 import styles from './FormField.module.css';
 import { FieldContext, useField, type FieldState } from './useField';
+import { passThrough } from '../utils/passThrough';
 
 export interface FormFieldRootProps extends BlockProps {
   /**
@@ -53,6 +54,7 @@ function Root({
   className,
   style,
   children,
+  ...rest
 }: FormFieldRootProps) {
   const auto = useId();
   const slots = useTextSlots();
@@ -76,6 +78,7 @@ function Root({
   );
   return (
     <div
+      {...passThrough(rest)}
       data-umbra="form-field"
       data-layout={layout}
       data-surface={surface || undefined}

@@ -19,6 +19,7 @@ import styles from './CommandPalette.module.css';
 import { Hint } from './Menu';
 import { useOpenState, useReturnFocusOnClose } from './shared';
 import { defined } from '../utils/defined';
+import { rootRender, type RootAttributes } from '../utils/passThrough';
 
 /** One entry of the palette: a page to go to, a thing to open, or an action. */
 export interface Command {
@@ -52,7 +53,7 @@ export interface CommandItemPartProps {
   children: ReactNode;
 }
 
-export interface CommandPaletteProps {
+export interface CommandPaletteProps extends RootAttributes {
   /** A fixed list. The palette filters and ranks it as the user types. */
   commands?: Command[] | undefined;
   /**
@@ -516,6 +517,7 @@ export function CommandPalette({
       style={scope.style}
     >
       <Modal
+        {...rootRender('div', { ...panel, 'aria-label': undefined })}
         data-umbra="command-palette"
         // Opened over a modal it is not inside that modal: React Aria leaves what carries this
         // reachable, and does not pull focus back into the modal below. On the panel, not the scrim:

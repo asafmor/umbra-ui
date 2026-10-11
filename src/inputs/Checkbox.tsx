@@ -18,6 +18,7 @@ import {
 } from './fieldParts';
 import { FieldContext, noField, useFieldControl } from './useField';
 import { defined } from '../utils/defined';
+import { rootRender } from '../utils/passThrough';
 
 export interface CheckboxRootProps extends BlockProps {
   /** Controlled state. */
@@ -68,6 +69,7 @@ function Root({
   className,
   style,
   children,
+  ...rest
 }: CheckboxRootProps) {
   const slots = useTextSlots();
   const slot = useContext(CheckboxSlotContext);
@@ -81,6 +83,7 @@ function Root({
   });
   return (
     <AriaCheckbox
+      {...rootRender('label', rest)}
       {...defined({ slot })}
       data-umbra="checkbox"
       data-size={size}
@@ -180,6 +183,8 @@ export function Checkbox({ children, description, error, parts, ...root }: Check
   );
 }
 
+/** Not a row of a menu: among actions that overflow it stays in the row (`ActionsOverflow`). */
+Checkbox.staysInRow = true;
 Checkbox.Root = Root;
 Checkbox.Box = Box;
 Checkbox.Label = Label;
@@ -223,6 +228,7 @@ function GroupRoot({
   className,
   style,
   children,
+  ...rest
 }: CheckboxGroupRootProps) {
   const slots = useTextSlots();
   const control = useFieldControl({
@@ -235,6 +241,7 @@ function GroupRoot({
   });
   return (
     <AriaCheckboxGroup
+      {...rootRender('div', rest)}
       data-umbra="checkbox-group"
       data-orientation={orientation}
       {...defined({ className: cx(groupClass, className), style, value, defaultValue, onChange })}

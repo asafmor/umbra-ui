@@ -49,6 +49,7 @@ import type { BlockProps } from './fieldParts';
 import styles from './Select.module.css';
 import { useField, useFieldControl } from './useField';
 import { defined } from '../utils/defined';
+import { rootRender } from '../utils/passThrough';
 
 /** One choice of a select. */
 export interface SelectOption {
@@ -235,6 +236,7 @@ function Root({
   className,
   style,
   children,
+  ...rest
 }: SelectRootProps) {
   const control = useFieldControl({ id, disabled, invalid, required });
   // The browser's own message when the form is submitted with a required select left empty. A field
@@ -279,6 +281,7 @@ function Root({
       : { style };
   return (
     <AriaSelect
+      {...rootRender('div', rest)}
       {...defined(tone)}
       ref={box}
       data-umbra="select"
@@ -815,6 +818,8 @@ export function Select({
   );
 }
 
+/** Not a row of a menu: among actions that overflow it stays in the row (`ActionsOverflow`). */
+Select.staysInRow = true;
 Select.Root = Root;
 Select.Trigger = Trigger;
 Select.Value = Value;

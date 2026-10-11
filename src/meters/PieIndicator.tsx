@@ -16,6 +16,7 @@ import { tooNarrow } from './fit';
 import styles from './PieIndicator.module.css';
 import { describe, outOfRange, thirdsThresholds, toFraction, type MeterTone } from './scale';
 import tones from './tone.module.css';
+import { passThrough, rootRender, type RootAttributes } from '../utils/passThrough';
 
 /** What `formatValue` receives besides the value. `percent` is not clamped. */
 export interface PieIndicatorScale {
@@ -50,7 +51,7 @@ interface BlockProps {
   style?: CSSProperties | undefined;
 }
 
-export interface PieIndicatorRootProps extends BlockProps {
+export interface PieIndicatorRootProps extends BlockProps, RootAttributes {
   /** The current value. `null` or nothing means there is no value: the disc is empty, and says so. */
   value?: number | null | undefined;
   min?: number | undefined;
@@ -107,6 +108,7 @@ function Root({
   tooltip = true,
   className,
   style,
+  'aria-label': ariaLabel,
   ...rest
 }: PieIndicatorRootProps) {
   const ref = useRef<HTMLDivElement>(null);
@@ -163,11 +165,12 @@ function Root({
     return (
       <div
         ref={ref}
+        {...passThrough(rest)}
         {...shared}
         data-loading
         aria-busy="true"
-        role={rest['aria-label'] ? 'group' : undefined}
-        aria-label={rest['aria-label']}
+        role={ariaLabel ? 'group' : undefined}
+        aria-label={ariaLabel}
       >
         {content}
       </div>
@@ -177,12 +180,13 @@ function Root({
     <>
       <AriaMeter
         ref={ref}
+        {...rootRender('div', rest)}
         {...defined(shared)}
         value={value}
         minValue={min}
         maxValue={range ? max : min + 1}
         valueLabel={spoken}
-        {...defined({ 'aria-label': rest['aria-label'] })}
+        {...defined({ 'aria-label': ariaLabel })}
       >
         {content}
       </AriaMeter>

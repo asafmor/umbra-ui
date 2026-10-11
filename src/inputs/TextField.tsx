@@ -11,6 +11,7 @@ import type { BlockProps } from './fieldParts';
 import styles from './TextField.module.css';
 import { useFieldControl } from './useField';
 import { defined } from '../utils/defined';
+import { rootRender } from '../utils/passThrough';
 
 interface TextFieldContextValue {
   multiline: boolean;
@@ -77,6 +78,7 @@ function Root({
   className,
   style,
   children,
+  ...rest
 }: TextFieldRootProps) {
   const [uncontrolled, setUncontrolled] = useState(defaultValue);
   const current = value ?? uncontrolled;
@@ -88,6 +90,7 @@ function Root({
   };
   return (
     <AriaTextField
+      {...rootRender('div', rest)}
       data-umbra="text-field"
       data-size={size}
       data-multiline={multiline || undefined}
@@ -230,6 +233,8 @@ export function TextField({ prefix, suffix, clearable = false, clearLabel, parts
   );
 }
 
+/** Not a row of a menu: among actions that overflow it stays in the row (`ActionsOverflow`). */
+TextField.staysInRow = true;
 TextField.Root = Root;
 TextField.Prefix = Prefix;
 TextField.Input = Input;

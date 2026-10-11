@@ -6,8 +6,9 @@ import { cx, renderPart, type Part } from '../utils/parts';
 import { toAriaPlacement, useOverlayLayer, type OverlayPlacement } from './shared';
 import styles from './Tooltip.module.css';
 import { defined } from '../utils/defined';
+import { rootRender, type RootAttributes } from '../utils/passThrough';
 
-export interface TooltipProps {
+export interface TooltipProps extends RootAttributes {
   /** The control the tooltip describes: any umbra-ui control, or a plain focusable element. */
   children: ReactNode;
   /** The text. Nothing is shown when it is empty (and there is no `title` or `shortcut`). */
@@ -71,6 +72,7 @@ export function Tooltip({
   parts,
   className,
   style,
+  ...rest
 }: TooltipProps) {
   const scope = useScopeAttributes();
   const layer = useOverlayLayer('tooltip');
@@ -112,6 +114,7 @@ export function Tooltip({
     >
       {trigger}
       <AriaTooltip
+        {...rootRender('div', rest)}
         {...scope}
         {...defined(layer)}
         placement={toAriaPlacement(placement)}

@@ -41,16 +41,40 @@ The same idea has the same name in every component. New components follow this l
 | A changing value | `value` / `defaultValue` / `onChange`. Other state: `<name>` / `default<Name>` / `on<Name>Change` (`collapsed`, `open`). |
 | Lists of ids | `<what>Ids`: `selectedIds`, `hiddenIds`, `expandedIds`. Items are identified by `id`; the type of one is `<Component>Id` (`ListId`). The change callback names the idea, not the prop: `onSelectionChange`, `onHiddenChange`, `onExpandedChange` (recorded 2026-10-11; `List`, `Menu`, `DataTable`, `Legend`, the charts and `VerticalNav` already agree). |
 | Heading level | `headingLevel` |
+| Stepping through a sequence | `previousLabel` / `nextLabel`, and the parts `previous` / `next`: `Stepper`, `EntitySwitcher`, `HorizontalScroller`, the `Planner` toolbar, the steps of a `Spotlight` (its `backLabel` became `previousLabel`, 2026-10-11). The history is another idea and keeps `backLabel` / `forwardLabel` (`HistoryButtons`, `TopBar`, `PageHeader`, the pages of the `CommandPalette`). |
+| What did not fit | The menu of actions that do not fit: `moreLabel` (`Card`, `SectionTitle`, `PageHeader`, `GroupHeader`, `TopBar`, and since 2026-10-11 `MediaCard` and the `Planner` toolbar). A count of things left out: `hidden<What>Label(count)` (`hiddenColumnsLabel` of `DataTable`, `hiddenItemsLabel` of `Planner` and `WeekStrip`). |
 | A built-in string | `<what>Label` with an English default: `moreLabel`, `closeLabel`, `emptyLabel`, `retryLabel` |
 | Text of a number | `formatValue` |
-| Size | `size` is the share of the parent's space on a layout child, and the control size elsewhere. A layout child that also has a control size names it for the part: `tabSize`, `itemSize`. |
+| Size | `size` is the share of the parent's space on a layout child, and the control size elsewhere. A layout child that also has a control size names it for the part: `tabSize`, `itemSize`. Values: a control is `default` / `small` (and `large`); a mark that sits in text or in a row (`Avatar`, `EntityIcon`, `StatValue`, `SequenceDots`) is `sm` / `md` / `lg` (recorded 2026-10-11: two scales, by kind, already so in tier 1). |
 | Colour by meaning | `tone`; a free colour is `color`. `variant` is the shape or look. |
 | Router link | `renderLink(props)`. `props` is one exported type, `LinkRenderProps`, on every component that has it. |
 | Accessible name of an element with no visible name | `aria-label` (and `aria-labelledby` where another element names it). On every component: the charts, `Menu`, `Popover` and `ScrollArea` took `label` until 2026-10-11. `label` is kept for text that is also shown (a `Button`, a `FormField`, a tab of `Columns`) and for the names of inner controls (`closeLabel`, `moreLabel`). |
-| Number of placeholder rows while loading | `skeletonRows` (`List`, `DataTable`, `KeyValueList`, `Legend`) |
+| Number of placeholder rows while loading | `skeletonRows` (`List`, `DataTable`, `KeyValueList`, `Legend`, `Comparison`, `EntitySwitcher`). Where the placeholders are not rows (cards of a `WidgetBoard`, items of a `HorizontalScroller`): `skeletonItems` (recorded 2026-10-11). |
 | Height of a component that fills its slot | `height`: `fill` (default; the content's height where there is none to fill), `content`, or pixels. `DataTable`, `List`, the charts (`src/internal/height.ts`). |
 | Loading, empty, error | `loading`, `empty`, `error`, `onRetry`, `retryLabel` (`src/internal/dataState.tsx`) |
 | Colour by value | `thresholds`: one shape on every component, and `lowerIsBetter` for a scale where low is good (decided 2026-10-11, below). |
+
+## Root attributes (decided 2026-10-11, integration pass of Milestone 2)
+
+Every component hands `id`, every `data-*` and every `aria-*` attribute it is given to its root element, the one that carries `data-umbra`. TypeScript accepts such attributes on any component, so dropping them was silent: a `Spotlight` step that targeted `[data-tour]` on a `Card` was skipped.
+
+| Piece | Decision |
+|---|---|
+| Helper | One: `passThrough(props)` (`src/utils/passThrough.ts`). Spread first on the root, so the component's own `data-umbra`, state attributes and managed ARIA win. |
+| `id` | `RootAttributes` adds it to the root props of a component that had none. A field keeps its `id` on the focusable element, as before, where the `<label>` points. |
+| Named ARIA props | An `aria-label`, `aria-labelledby` or `aria-describedby` that a component takes as a prop goes where it went (the focusable element of a field, the image of a chart). The pass-through carries the rest. |
+| Check | `tests/visual/root-attributes.spec.ts` renders every exported component with an attribute and looks for it on the root; a unit test fails when an exported component is missing from its list. |
+
+## Controls among actions that overflow (decided 2026-10-11, integration pass of Milestone 2)
+
+A row of actions that no longer fits moves into a "more" menu (`ActionsOverflow`). A menu holds rows only: a `Button`, an `IconButton`, a `Menu`, a `SplitButton`. Anything else drawn into it broke the menu and the page (a `Stepper` or a `Slider` in a card header).
+
+| Piece | Decision |
+|---|---|
+| Mark | A control that cannot be a row carries a static `staysInRow = true` on its component: `Stepper`, `Slider`, `StarRating`, `ColorScaleEditor`, `EntitySwitcher`, `Select`, `TextField`, `SearchField`, `Toggle`, `Checkbox`, `SegmentedFilter`. |
+| Behaviour | It stays in the row, before the "more" button, as the same element: its state and the focus survive the change. With nothing but such controls there is no button. If they still do not fit, the row clips them. |
+| Inside an app's component | The row cannot see into a component of the app. A `Stepper` or `Slider` that arrives in the menu that way draws nothing there. The other marked controls are not guarded yet (open, see `plan/reviews/milestone-2.md`). |
+| Hosts | Every host renders its actions through `ActionsOverflow` always, with `shrunk`; a host without a row of its own to measure uses `ActionsRow` (`MediaCard`, the `Planner` toolbar). |
 
 ## Thresholds (decided 2026-10-11)
 

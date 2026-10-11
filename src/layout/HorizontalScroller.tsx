@@ -6,6 +6,7 @@ import {
   useState,
   type CSSProperties,
   type ReactNode,
+  isValidElement,
 } from 'react';
 import { IconButton } from '../basics/IconButton';
 import { Skeleton } from '../basics/Skeleton';
@@ -18,6 +19,7 @@ import layout from './layout.module.css';
 import { ScrollArea } from './ScrollArea';
 import { gapStyle, type SpaceToken } from './Stack';
 import { LayoutProvider, useSlot, type SlotProps } from './useSlot';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
 /** What `previous` and `next` receive. */
 export interface HorizontalScrollerButtonProps {
@@ -25,7 +27,7 @@ export interface HorizontalScrollerButtonProps {
   onPress: () => void;
 }
 
-export interface HorizontalScrollerRootProps extends SlotProps, DataStateProps {
+export interface HorizontalScrollerRootProps extends SlotProps, DataStateProps, RootAttributes {
   /** The width of every item: pixels, or any CSS length. Without it each item keeps its own width. */
   itemWidth?: number | string | undefined;
   /** Overrides the gap between items, which otherwise follows the density level. */
@@ -201,6 +203,7 @@ function Root({
 
   return (
     <div
+      {...passThrough(slot)}
       {...props}
       ref={ref}
       data-umbra="horizontal-scroller"
@@ -302,7 +305,14 @@ export type HorizontalScrollerProps = HorizontalScrollerRootProps;
 export function HorizontalScroller({ children, ...root }: HorizontalScrollerProps) {
   return (
     <Root {...root}>
-      {Children.map(children, (child) => child != null && child !== false && <Item>{child}</Item>)}
+      {Children.map(
+        children,
+        (child) =>
+          child != null &&
+          child !== false &&
+          // An item the app wrapped itself (for a width of its own) is not wrapped again.
+          (isValidElement(child) && child.type === Item ? child : <Item>{child}</Item>),
+      )}
     </Root>
   );
 }

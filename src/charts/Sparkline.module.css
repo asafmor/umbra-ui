@@ -1,10 +1,14 @@
 /* A tiny chart: as wide as its container and one short line high. Its drawing is absolute, so it can
-   never push a table cell or a tile wider. */
+   never push a table cell or a tile wider. Where the container takes its width from its content (the
+   trailing slot of a list row, an item of a flex row) that would be no width at all: the sparkline
+   then has a width of its own, which only counts there. */
 .root {
   position: relative;
   display: block;
   width: 100%;
   min-width: 0;
+  contain: inline-size;
+  contain-intrinsic-inline-size: var(--umbra-sparkline-width, 4rem);
   height: var(--umbra-sparkline-height, 20px);
   overflow: hidden;
   border-radius: var(--umbra-radius-control);

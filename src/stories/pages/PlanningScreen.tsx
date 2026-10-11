@@ -28,7 +28,7 @@ import {
   type SpotlightStep,
   type Tone,
 } from '../../index';
-import { useNarrow } from '../../internal/useNarrow';
+import { useNarrow } from '../../index';
 import { sampleItems } from '../../time/samples';
 import { person } from './data';
 import { PageHelp } from './help';

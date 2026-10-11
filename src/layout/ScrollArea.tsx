@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode, type Ref } from 'react';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './ScrollArea.module.css';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
-export interface ScrollAreaProps {
+export interface ScrollAreaProps extends RootAttributes {
   axis?: 'vertical' | 'horizontal' | 'both' | undefined;
   /** `hover` shows the thumb only while the pointer or focus is inside the area. */
   scrollbar?: 'auto' | 'hover' | undefined;
@@ -112,7 +113,7 @@ export function ScrollArea({
 
   return (
     <div
-      {...data}
+      {...passThrough(data)}
       ref={ref}
       data-umbra="scroll-area"
       data-axis={axis}

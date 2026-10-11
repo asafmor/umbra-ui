@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from 'react';
 import { Skeleton } from '../basics/Skeleton';
+import { ActionsRow } from '../internal/ActionsRow';
 import { useHoverTip } from '../internal/TruncatedText';
 import { useSlot, type SlotProps } from '../layout/useSlot';
 import type { LinkRenderProps } from '../utils/link';
@@ -16,7 +17,8 @@ import { cx, renderPart, type Part } from '../utils/parts';
 import { ListItem } from './ListItem';
 import styles from './MediaCard.module.css';
 import { Tag } from './Tag';
-import { useFitLevel } from './useFitLevel';
+import { useFitLevel } from '../internal/useFitLevel';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
 interface BlockProps {
   className?: string | undefined;
@@ -27,7 +29,7 @@ interface BlockProps {
 /** The id of the title, so the card is named by it. */
 const TitleId = createContext<string | undefined>(undefined);
 
-export interface MediaCardRootProps extends BlockProps, SlotProps {
+export interface MediaCardRootProps extends BlockProps, SlotProps, RootAttributes {
   /**
    * `hero`: a large image with a large title. `compact`: a small image at the side. `pair`: two sides
    * around a centre, as the `pair` row of `ListItem`.
@@ -39,6 +41,8 @@ export interface MediaCardRootProps extends BlockProps, SlotProps {
   interactive?: boolean | undefined;
   /** Marks the card busy for assistive technology. */
   loading?: boolean | undefined;
+  /** The card is the chosen one of its set: the selected fill and an edge, and `aria-current`. */
+  selected?: boolean | undefined;
   /** Names a card that has no title. */
   'aria-label'?: string | undefined;
 }
@@ -48,6 +52,7 @@ function Root({
   imagePlacement = 'above',
   interactive,
   loading,
+  selected,
   'aria-label': label,
   className,
   style,
@@ -60,6 +65,7 @@ function Root({
   const level = useFitLevel(ref, loading ? 0 : 4, variant);
   return (
     <article
+      {...passThrough(slotProps)}
       aria-labelledby={label ? undefined : titleId}
       {...props}
       ref={ref}
@@ -68,6 +74,8 @@ function Root({
       data-image={variant === 'hero' ? imagePlacement : undefined}
       data-interactive={interactive || undefined}
       data-level={level || undefined}
+      data-selected={selected || undefined}
+      aria-current={selected || undefined}
       aria-label={label}
       aria-busy={loading || undefined}
       className={cx(styles.root, className)}
@@ -125,7 +133,20 @@ const Content = block('content', styles.content);
 const Footer = block('footer', styles.footer);
 const Category = block('category', styles.category);
 const Meta = block('meta', styles.meta);
-const Actions = block('actions', styles.actions);
+
+export interface MediaCardActionsProps extends BlockProps {
+  /** Accessible name of the menu the controls move into when they do not fit. */
+  moreLabel?: string | undefined;
+}
+
+/** The controls of the card. They move into one "more" menu when the line is too narrow for them. */
+function Actions({ moreLabel = 'More actions', className, style, children }: MediaCardActionsProps) {
+  return (
+    <ActionsRow moreLabel={moreLabel} size="small" className={cx(styles.actions, className)} style={style}>
+      {children}
+    </ActionsRow>
+  );
+}
 
 interface LinkProps {
   /** Makes the whole card a link. */
@@ -267,8 +288,10 @@ export interface MediaCardProps
   category?: ReactNode | undefined;
   /** A quiet line: a time, a source. */
   meta?: ReactNode | undefined;
-  /** Controls of the card: they stay separate from the card's own link. */
+  /** Controls of the card: they stay separate from the card's own link. They move into a menu when they do not fit. */
   actions?: ReactNode | undefined;
+  /** Accessible name of that menu's button. */
+  moreLabel?: string | undefined;
   /** `pair`: the icon and the value of the first side, whose title is `title`. */
   side?: Omit<MediaCardSide, 'title'> | undefined;
   /** `pair`: the second side. Sets the `pair` variant. */
@@ -283,7 +306,7 @@ export interface MediaCardProps
         title?: Part<MediaCardTitleProps> | undefined;
         description?: Part<MediaCardDescriptionProps> | undefined;
         meta?: Part<{ children: ReactNode }> | undefined;
-        actions?: Part<{ children: ReactNode }> | undefined;
+        actions?: Part<MediaCardActionsProps> | undefined;
         pair?: Part<MediaCardPairProps> | undefined;
         skeleton?: Part | undefined;
       }
@@ -304,6 +327,7 @@ export function MediaCard({
   category,
   meta,
   actions,
+  moreLabel,
   side,
   opposite,
   center,
@@ -333,7 +357,7 @@ export function MediaCard({
           </Category>
         ))}
       {actions != null &&
-        renderPart(parts?.actions, { children: actions }, (p) => <Actions>{p.children}</Actions>)}
+        renderPart(parts?.actions, { children: actions, moreLabel }, (p) => <Actions {...p} />)}
     </Footer>
   );
   if (root.loading) {

@@ -8,12 +8,14 @@ import {
   type ReactNode,
 } from 'react';
 import { Button as AriaButton } from 'react-aria-components';
+import { useInOverflowMenu } from '../internal/contexts';
 import { rowKeys, useDirection } from '../internal/direction';
 import { Icon } from '../provider/icons';
 import { defined } from '../utils/defined';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './Stepper.module.css';
 import { useFieldControl } from './useField';
+import { passThrough } from '../utils/passThrough';
 
 /** One choice of a stepper in options mode. */
 export interface StepperOption {
@@ -121,6 +123,7 @@ function Root<T extends string | number = string | number>({
   className,
   style,
   children,
+  ...rest
 }: StepperRootProps<T>) {
   const valueId = useId();
   const [own, setOwn] = useState<T | null>(defaultValue ?? null);
@@ -182,6 +185,7 @@ function Root<T extends string | number = string | number>({
   };
   return (
     <div
+      {...passThrough(rest)}
       data-umbra="stepper"
       data-size={size}
       data-disabled={control.disabled || undefined}
@@ -333,6 +337,7 @@ export interface StepperProps<T extends string | number = string | number> exten
  * of options (`options`), or through numbers (`min`, `max`, `step`).
  */
 export function Stepper<T extends string | number = string | number>({ parts, ...root }: StepperProps<T>) {
+  if (useInOverflowMenu()) return null;
   return (
     <Root {...root}>
       {renderPart(parts?.previous, {}, (p) => (
@@ -351,6 +356,8 @@ export function Stepper<T extends string | number = string | number>({ parts, ..
   );
 }
 
+/** Not a row of a menu: among actions that overflow it stays in the row (`ActionsOverflow`). */
+Stepper.staysInRow = true;
 Stepper.Root = Root;
 Stepper.Previous = Previous;
 Stepper.Value = Value;

@@ -69,7 +69,7 @@ Global token added: `layer.spotlight` (1250), between `layer.modal` and `layer.p
 | `offset` | pixels | 12 | Gap between ring and callout |
 | `headingLevel` | 1 to 6 | 2 | |
 | `aria-label` | string | — | Name of the dialog without a title |
-| `nextLabel`, `backLabel`, `skipLabel`, `doneLabel` | string | "Next", "Back", "Skip", "Done" | |
+| `nextLabel`, `previousLabel`, `skipLabel`, `doneLabel` | string | "Next", "Back", "Skip", "Done" | `previousLabel` and `nextLabel` are the pair of every component that steps through a sequence (`backLabel` is for the history) |
 | `progressLabel` | function (current, total) → string | "2 of 5" | |
 
 ### 3. Parts
@@ -83,7 +83,7 @@ Global token added: `layer.spotlight` (1250), between `layer.modal` and `layer.p
 ## Behaviour as space shrinks
 
 1. The callout is on the `placement` side; when that side has too little room it flips to the opposite side.
-2. When neither side has room it stays inside the window, 8px from the edge, and covers part of the target.
+2. When neither side has room it goes below the target, or above, where one of the two has the room; where none has, it stays inside the window, 8px from the edge, over the edge of the target.
 3. The callout is at most 320px wide and never wider than the window; its text wraps, its buttons wrap under the progress, and it scrolls inside when it is taller than the window.
 4. A target larger than the window is ringed where it is visible; the ring is cut by the window's edge.
 
@@ -118,6 +118,7 @@ Resolved 2026-10-11 (under the owner's delegation):
 
 Weaker than it could be:
 
-- A target that moves without a resize, a scroll or a transition (an app that sets `left` from a timer) is followed at the next of those events, not at once.
-- When neither side has room the callout covers part of the target instead of trying above and below.
 - If the document itself scrolls (the library's pages never do), React Aria closes a dismissable callout.
+- **The target is followed every frame** (integration pass, 2026-10-11): one rectangle is read per frame while the spotlight is open, so a target that an app moves with no resize, scroll or transition is followed at once. It was followed at the next of those events.
+- **With no room at either side the callout goes below the target, or above** (integration pass, 2026-10-11), where one of the two has the room; it covered part of the target. Where none has, it stays over the target's edge, inside the window.
+- **A target that is not in the page is said in development** (integration pass, 2026-10-11): one warning per target. Not covered by a browser test: the built Storybook is a production build.

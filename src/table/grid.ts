@@ -4,25 +4,13 @@
 // an element or an index, so it survives sorting, column hiding and virtualised scrolling. Columns are
 // read from the DOM (so spanning cells need no model); rows come from the DOM too, unless the
 // virtualised table supplies its own list, because most of its rows are not in the DOM.
-import { createContext, useContext, useEffect, useLayoutEffect, useRef } from 'react';
+import { createContext, useContext, useLayoutEffect, useRef } from 'react';
+import { CELL, SIMPLE_WIDGET, TABBABLE, useCellListeners, widgetsOf } from '../internal/gridCells';
 
-export const CELL = '[data-cell]';
-const TABBABLE = 'a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])';
-const WIDGET =
-  'a[href], button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]';
-/** Widgets that have no use for the arrow keys: from them, the arrows still move through the grid. */
-const SIMPLE_WIDGET = 'a, button, input[type="checkbox"], input[type="radio"]';
+export { CELL, widgetsOf };
+
 /** A click on one of these is the control's own, not the row's. */
 export const INTERACTIVE = 'a, button, input, select, textarea, label, [role="button"], [contenteditable]';
-
-/**
- * The controls of a cell. What is hidden from assistive technology is not one: a `Select` keeps a
- * native `<select>` there for forms and autofill.
- */
-export const widgetsOf = (cell: Element) =>
-  [...cell.querySelectorAll<HTMLElement>(WIDGET)].filter(
-    (el) => !el.matches(CELL) && !el.closest('[aria-hidden="true"]'),
-  );
 
 /** What a row does when it is activated or selected from the keyboard. Set by `DataTable.Row`. */
 export interface RowHandlers {
@@ -164,31 +152,7 @@ export function useGrid() {
     if (hasFocus.current && cell && lost) cell.focus({ preventScroll: true });
   });
 
-  useEffect(() => {
-    const down = (event: PointerEvent) => {
-      pointer.current = true;
-      if (!table.current?.contains(event.target as Node)) hasFocus.current = false;
-    };
-    // Escape (or F2) on a control inside a cell returns to the cell. Heard on the window, on the way
-    // down: a tooltip that is open on the control takes Escape for itself at the document.
-    const key = (event: KeyboardEvent) => {
-      pointer.current = false;
-      if (event.key !== 'Escape' && event.key !== 'F2') return;
-      const target = event.target as HTMLElement;
-      const cell = target.closest?.<HTMLElement>(CELL);
-      if (!cell || cell === target || !table.current?.contains(cell)) return;
-      // A control that has something of its own open (a menu, a list) closes that first.
-      if (target.getAttribute('aria-expanded') === 'true') return;
-      cell.focus({ preventScroll: true });
-      event.preventDefault();
-    };
-    document.addEventListener('pointerdown', down, true);
-    window.addEventListener('keydown', key, true);
-    return () => {
-      document.removeEventListener('pointerdown', down, true);
-      window.removeEventListener('keydown', key, true);
-    };
-  }, []);
+  useCellListeners(table, pointer, hasFocus);
 
   const keys = () =>
     latest.current?.keys ??

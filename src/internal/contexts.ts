@@ -1,4 +1,13 @@
-import { createContext, type ReactNode } from 'react';
+import { createContext, isValidElement, useContext, type ReactNode } from 'react';
+
+/**
+ * A control that cannot be a row of a menu (a `Stepper`, a `Slider`, a field) says so with a static
+ * `staysInRow = true` on its component. Among actions that no longer fit, it stays in the row beside the
+ * "more" button, and it is never rendered into the menu: a menu holds rows only, and anything else
+ * drawn there breaks it.
+ */
+export const staysInRow = (child: ReactNode) =>
+  isValidElement(child) && !!(child.type as { staysInRow?: boolean | undefined }).staysInRow;
 
 /** What a `Button` or `IconButton` hands to the overflow menu, to be drawn as one of its rows. */
 export interface OverflowRowProps {
@@ -22,6 +31,13 @@ export interface OverflowRowProps {
  * as a submenu. The menu supplies the row, so a button does not carry the menu item's code.
  */
 export const OverflowMenuContext = createContext<((row: OverflowRowProps) => ReactNode) | null>(null);
+
+/**
+ * True inside the overflow menu. A control that stays in the row is a direct child of the actions; one
+ * that an app's own component renders cannot be seen there and arrives in the menu, where it draws
+ * nothing rather than break the menu.
+ */
+export const useInOverflowMenu = () => useContext(OverflowMenuContext) !== null;
 
 /** Set by a container (the TopBar) to make buttons with `collapseTo="icon"` show their icon only. */
 export const ForceCollapseContext = createContext(false);

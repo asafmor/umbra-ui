@@ -13,6 +13,7 @@ import shared from './shared.module.css';
 import type { Tone } from './tone';
 import { rampSteps, valueLevel, type ValueLevelOptions } from './valueLevel';
 import styles from './ValuePill.module.css';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
 interface BlockProps {
   className?: string | undefined;
@@ -20,7 +21,7 @@ interface BlockProps {
   children?: ReactNode | undefined;
 }
 
-export interface ValuePillRootProps extends BlockProps {
+export interface ValuePillRootProps extends BlockProps, RootAttributes {
   /** The step of the value ramp, 1 (worst) to 5 (best). `null` is the look of "no value". */
   level?: number | null | undefined;
   /** A colour by meaning in place of a ramp step. Wins over `level`. */
@@ -48,10 +49,12 @@ function Root({
   className,
   style,
   children,
+  ...rest
 }: ValuePillRootProps) {
   const custom = color && { '--fill': color, '--ink': textColourOn(color)?.colour };
   return (
     <span
+      {...passThrough(rest)}
       data-umbra="value-pill"
       data-level={color || tone ? 'none' : (level ?? 'none')}
       data-tone={color ? 'custom' : tone}
@@ -151,6 +154,7 @@ export function ValuePill({
   if (loading) {
     return renderPart(parts?.skeleton, {}, () => (
       <span
+        {...passThrough(root)}
         data-umbra="value-pill"
         data-part="skeleton"
         data-loading=""

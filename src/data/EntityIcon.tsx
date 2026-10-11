@@ -2,6 +2,7 @@ import { useState, type CSSProperties, type ReactNode } from 'react';
 import { cx, renderPart, type Part } from '../utils/parts';
 import { colourOf, initialsOf } from './entity';
 import styles from './EntityIcon.module.css';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
 export type EntityIconSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 export type EntityIconShape = 'rounded' | 'circle' | 'square';
@@ -11,16 +12,17 @@ interface BlockProps {
   style?: CSSProperties | undefined;
 }
 
-export interface EntityIconRootProps extends BlockProps {
+export interface EntityIconRootProps extends BlockProps, RootAttributes {
   /** Fixed size of the mark. Without it the mark follows the size of the text around it. */
   size?: EntityIconSize | undefined;
   shape?: EntityIconShape | undefined;
   children?: ReactNode | undefined;
 }
 
-function Root({ size, shape = 'rounded', className, style, children }: EntityIconRootProps) {
+function Root({ size, shape = 'rounded', className, style, children, ...rest }: EntityIconRootProps) {
   return (
     <span
+      {...passThrough(rest)}
       data-umbra="entity-icon"
       data-size={size ?? 'text'}
       data-shape={shape}

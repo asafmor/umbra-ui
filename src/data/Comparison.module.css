@@ -14,6 +14,12 @@
 }
 
 /* `height="content"`, and what `fill` falls back to by itself in a parent without a height. */
+/* A content-sized card has no height to fill: when its stack squeezes it, the card's body scrolls and
+   the comparison keeps its rows. Its steps by height are for a slot that gives it a height. */
+[data-umbra-slot][data-size='content']
+  > [data-part='body']
+  > [data-part='viewport']
+  > .root[data-height='fill'],
 .root[data-height='content'] {
   height: auto;
 }

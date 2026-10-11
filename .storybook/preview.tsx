@@ -30,6 +30,8 @@ const preview: Preview = {
           'Overlays',
           'Meters',
           'Charts',
+          'Time',
+          'Integration',
         ],
       },
     },

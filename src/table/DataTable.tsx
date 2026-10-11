@@ -62,6 +62,7 @@ import {
   type ColumnSize,
 } from './logic';
 import { defined } from '../utils/defined';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
 interface BlockProps {
   className?: string | undefined;
@@ -182,7 +183,7 @@ const srOnly = styles.srOnly;
 const pinStyle = (pin: DataTablePin | undefined, offset: number | undefined, style?: CSSProperties) =>
   pin ? { [pin === 'start' ? 'insetInlineStart' : 'insetInlineEnd']: offset ?? 0, ...style } : style;
 
-export interface DataTableRootProps extends BlockProps {
+export interface DataTableRootProps extends BlockProps, RootAttributes {
   /** Accessible name of the table. Give this, `aria-labelledby` or `caption`. */
   'aria-label'?: string | undefined;
   'aria-labelledby'?: string | undefined;
@@ -241,6 +242,7 @@ function Root({
   className,
   style,
   children,
+  ...rest
 }: DataTableRootProps) {
   const captionId = useId();
   const own = useRef<HTMLDivElement>(null);
@@ -294,6 +296,7 @@ function Root({
 
   return (
     <div
+      {...passThrough(rest)}
       ref={root}
       data-umbra="data-table"
       data-dividers={dividers || undefined}
@@ -938,7 +941,7 @@ interface Col<Row> {
   index: number;
 }
 
-export interface DataTableProps<Row> extends DataStateProps {
+export interface DataTableProps<Row> extends DataStateProps, RootAttributes {
   /** The rows. Keep the array stable between renders (state or a memo): a new array is sorted again. */
   data: Row[];
   /** A stable, unique id for a row. Selection, highlight, focus and change highlighting are kept by it. */
@@ -2057,6 +2060,7 @@ export function DataTable<Row>({
   return (
     <GridAdapterContext value={adapter}>
       <Root
+        {...passThrough(states)}
         elementRef={root}
         aria-label={ariaLabel}
         aria-labelledby={ariaLabelledby}

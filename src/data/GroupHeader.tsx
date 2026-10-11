@@ -5,6 +5,7 @@ import { ActionsOverflow } from '../internal/ActionsOverflow';
 import { Icon, IconSlot } from '../provider/icons';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './GroupHeader.module.css';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
 interface BlockProps {
   className?: string | undefined;
@@ -12,7 +13,7 @@ interface BlockProps {
   children?: ReactNode | undefined;
 }
 
-export interface GroupHeaderRootProps extends BlockProps {
+export interface GroupHeaderRootProps extends BlockProps, RootAttributes {
   /** Sticks to the top of the scroll area while its group scrolls. The header and its rows must share a parent element. */
   sticky?: boolean | undefined;
   /** `strip` is a full-width band (a date above its messages); `plain` has no fill (a label above a few rows). */
@@ -37,9 +38,11 @@ function Root({
   className,
   style,
   children,
+  ...rest
 }: GroupHeaderRootProps) {
   return (
     <div
+      {...passThrough(rest)}
       ref={ref}
       data-umbra="group-header"
       data-variant={variant}
@@ -212,13 +215,9 @@ export function GroupHeader({
       {actions &&
         renderPart(parts?.actions, { children: actions }, (p) => (
           <Actions>
-            {inMenu ? (
-              <ActionsOverflow label={moreLabel} size="small">
-                {p.children}
-              </ActionsOverflow>
-            ) : (
-              p.children
-            )}
+            <ActionsOverflow shrunk={inMenu} label={moreLabel} size="small">
+              {p.children}
+            </ActionsOverflow>
           </Actions>
         ))}
     </Root>

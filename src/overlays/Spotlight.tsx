@@ -18,9 +18,11 @@ import { Button } from '../basics/Button';
 import { focusableIn, focusLost } from '../internal/focus';
 import { useScopeAttributes } from '../provider/UmbraProvider';
 import { defined } from '../utils/defined';
+import { warn } from '../utils/dev';
 import { cx, renderPart, type Part } from '../utils/parts';
 import { toAriaPlacement, useOpenState, useOverlayLayer, type OverlayPlacement } from './shared';
 import styles from './Spotlight.module.css';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
 /** What a spotlight points at: a ref, a CSS selector, or a function that returns the element. */
 export type SpotlightTarget = RefObject<Element | null> | string | (() => Element | null | undefined);
@@ -100,7 +102,7 @@ interface BlockProps {
   children?: ReactNode | undefined;
 }
 
-export interface SpotlightRootProps extends BlockProps {
+export interface SpotlightRootProps extends BlockProps, RootAttributes {
   /** The element to light. */
   target?: SpotlightTarget | undefined;
   /** Controlled state. */
@@ -142,6 +144,7 @@ function Root({
   className,
   style,
   children,
+  ...rest
 }: SpotlightRootProps) {
   const scope = useScopeAttributes();
   const layer = useOverlayLayer('spotlight');
@@ -168,28 +171,30 @@ function Root({
     if (moved) measureNow.current?.();
   });
 
-  // Follows the target: its place is read once per frame, and only after something that can move it.
+  // Follows the target: its place is read once per frame for as long as the spotlight is open. Not
+  // only after a resize, a scroll or a transition: an app can move it with none of them (from a timer).
+  // One rectangle per frame, and no render while it is the same.
   useEffect(() => {
     if (!isOpen) return;
     const opener = document.activeElement as HTMLElement | null;
     let frame = 0;
     let el: Element | null = null;
     let lostFor: SpotlightTarget | undefined | null = null;
-    const soon = () => {
-      frame ||= requestAnimationFrame(measure);
-    };
-    const observer = new ResizeObserver(soon);
     const measure = () => {
-      frame = 0;
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(measure);
       const wanted = latest.current.target;
       const next = resolveTarget(wanted);
       if (!next?.isConnected || next.getClientRects().length === 0) {
-        observer.disconnect();
         el = null;
         setFound(null);
         // Once per target: an app that keeps the spotlight open is not asked again and again.
         if (lostFor !== wanted) {
           lostFor = wanted;
+          // A selector with a typing mistake, or an attribute the target's component does not pass on.
+          warn(
+            `Spotlight: the target ${typeof wanted === 'string' ? `"${wanted}" ` : ''}is not in the page, or is not shown.`,
+          );
           (latest.current.onTargetLost ?? (() => latest.current.setOpen(false)))();
         }
         return;
@@ -197,10 +202,6 @@ function Root({
       lostFor = null;
       if (next !== el) {
         el = next;
-        observer.disconnect();
-        // The window's size (the root element) and the target's own.
-        observer.observe(document.documentElement);
-        observer.observe(next);
         // The page never scrolls, but the target may be out of sight inside a scroll area.
         next.scrollIntoView({ block: 'nearest', inline: 'nearest' });
       }
@@ -224,21 +225,9 @@ function Root({
     };
     measureNow.current = measure;
     measure();
-    const options = { capture: true, passive: true };
-    window.addEventListener('resize', soon);
-    // Caught on the way down: a scroll does not bubble, and the target may be in any scroll area.
-    document.addEventListener('scroll', soon, options);
-    // A card that collapses beside the target moves it without resizing it.
-    document.addEventListener('transitionend', soon, options);
-    document.addEventListener('animationend', soon, options);
     return () => {
       measureNow.current = undefined;
-      observer.disconnect();
       cancelAnimationFrame(frame);
-      window.removeEventListener('resize', soon);
-      document.removeEventListener('scroll', soon, options);
-      document.removeEventListener('transitionend', soon, options);
-      document.removeEventListener('animationend', soon, options);
       setFound(null);
       // Focus goes back to where it was. In the next frame: by then the page is usable again.
       requestAnimationFrame(() => {
@@ -300,6 +289,7 @@ function Root({
     : [{ inset: 0 }];
   return createPortal(
     <div
+      {...passThrough(rest)}
       {...scope}
       data-umbra-layer={layer['data-umbra-layer']}
       data-react-aria-top-layer={layer['data-react-aria-top-layer']}
@@ -390,7 +380,16 @@ function Callout({
       const shift = (start: number, end: number, size: number) =>
         Math.max(EDGE - start, 0) + Math.min(size - EDGE - end, 0);
       const x = shift(box.left, box.right, window.innerWidth);
-      const y = shift(box.top, box.bottom, window.innerHeight);
+      let y = shift(box.top, box.bottom, window.innerHeight);
+      // Moved back in along the line, it lies over the target: it goes below it, or above, where one
+      // of the two has the room. Where none has, it stays over the target's edge.
+      const target = spotlight.ring.current?.getBoundingClientRect();
+      if (x && target && box.top + y < target.bottom && box.bottom + y > target.top) {
+        const below = target.bottom + offset;
+        const above = target.top - offset - box.height;
+        if (below + box.height <= window.innerHeight - EDGE) y = below - box.top;
+        else if (above >= EDGE) y = above - box.top;
+      }
       if (x || y) el.style.translate = `${x}px ${y}px`;
     };
     keepInside();
@@ -522,7 +521,7 @@ export interface SpotlightProps
   /** Heading level of the title. */
   headingLevel?: 1 | 2 | 3 | 4 | 5 | 6 | undefined;
   nextLabel?: string | undefined;
-  backLabel?: string | undefined;
+  previousLabel?: string | undefined;
   skipLabel?: string | undefined;
   /** The button of the last step, and of a spotlight without steps. */
   doneLabel?: string | undefined;
@@ -563,7 +562,7 @@ export function Spotlight({
   'aria-label': ariaLabel,
   headingLevel,
   nextLabel = 'Next',
-  backLabel = 'Back',
+  previousLabel = 'Back',
   skipLabel = 'Skip',
   doneLabel = 'Done',
   progressLabel = (current, total) => `${current} of ${total}`,
@@ -649,7 +648,7 @@ export function Spotlight({
                   )}
                   {current && index > 0 && (
                     <Button size="small" onPress={() => go(index - 1)}>
-                      {backLabel}
+                      {previousLabel}
                     </Button>
                   )}
                   <Button

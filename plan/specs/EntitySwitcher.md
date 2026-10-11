@@ -109,3 +109,5 @@ Resolved 2026-10-11 (under the owner's delegation):
 - **Placement**: `SubNav` gets a `start` slot (`SubNav.Start`); `PageHeader` takes the switcher as its `title`, with the mark in `media`; in a `TopBar` it goes in `TopBar.Start` or replaces the `logo` part.
 - **No shortcut hint**: the registry has no reserved keys for stepping, and an app that wants them binds its own to `onChange`.
 - **Stacked chevrons need 48px**: they are stacked where there is room and side by side in the 32px `SubNav`, instead of two 16px targets.
+- **One order for the picker and the steppers** (stated integration pass, 2026-10-11): the items group by group, the groups in the order they first appear in `items`. "Previous" and "next" are the rows above and below the current one in the picker, which is not the order of `items` when the entities of a group are not listed together.
+- **Among actions that overflow it stays in the row** (integration pass, 2026-10-11): it cannot be a row of a menu (`staysInRow`).

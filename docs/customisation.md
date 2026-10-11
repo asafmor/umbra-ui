@@ -201,8 +201,9 @@ A state attribute is present while the state holds and absent otherwise. A few c
 - Prefer a token to a rule. A rule on `[data-part]` works until that piece is rearranged; a token is
   part of the component's contract.
 - Do not change `display`, `position`, sizes or `overflow` on a root. The layout system relies on them.
-- A `data-` attribute of your own on a component is not passed to its element, and TypeScript does not
-  say so. For a hook of your own (the target of a `Spotlight` step, a test) use `className`.
+- An `id`, a `data-` attribute and an `aria-` attribute of your own on a component are passed to its
+  root element (the one with `data-umbra`): a hook for a test, the target of a `Spotlight` step. The
+  component's own attributes win where the names are the same.
 
 ## Reading the generated tables
 

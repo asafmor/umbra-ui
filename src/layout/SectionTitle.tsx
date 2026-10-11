@@ -4,8 +4,9 @@ import { useShrinkLevel } from '../internal/useShrinkLevel';
 import type { LinkRenderProps } from '../utils/link';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './SectionTitle.module.css';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
-export interface SectionTitleProps {
+export interface SectionTitleProps extends RootAttributes {
   /** The title. */
   children?: ReactNode | undefined;
   /** `link` is chosen automatically when `href` or `onOpen` is set. */
@@ -49,6 +50,7 @@ export function SectionTitle({
   parts,
   className,
   style,
+  ...rest
 }: SectionTitleProps) {
   const ref = useRef<HTMLDivElement>(null);
   const shrunk = useShrinkLevel(ref, actions ? 1 : 0) === 1;
@@ -64,6 +66,7 @@ export function SectionTitle({
   );
   return (
     <div
+      {...passThrough(rest)}
       ref={ref}
       data-umbra="section-title"
       data-variant={look}
@@ -83,7 +86,9 @@ export function SectionTitle({
       {actions &&
         renderPart(parts?.actions, { children: actions }, (p) => (
           <div data-part="actions" className={styles.actions}>
-            {shrunk ? <ActionsOverflow label={moreLabel}>{p.children}</ActionsOverflow> : p.children}
+            <ActionsOverflow shrunk={shrunk} label={moreLabel}>
+              {p.children}
+            </ActionsOverflow>
           </div>
         ))}
     </div>

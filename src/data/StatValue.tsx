@@ -17,6 +17,7 @@ import {
 } from '../internal/ChangeHighlight';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './StatValue.module.css';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
 export type StatValueTone = 'default' | 'accent' | 'success' | 'warning' | 'danger' | 'muted';
 
@@ -29,7 +30,7 @@ interface BlockProps {
   children?: ReactNode | undefined;
 }
 
-export interface StatValueRootProps extends BlockProps {
+export interface StatValueRootProps extends BlockProps, RootAttributes {
   /** Size of the value: `md` is the title font, `lg` the display font, `xl` larger still. */
   size?: 'md' | 'lg' | 'xl' | undefined;
   /** Colour of the value. A tone that carries meaning needs a second cue: a `trend`, an icon or the label. */
@@ -50,6 +51,7 @@ function Root({
   className,
   style,
   children,
+  ...rest
 }: StatValueRootProps) {
   const labelId = useId();
   // The label can be left out or hidden through `parts`; the group is only named by one that exists.
@@ -58,6 +60,7 @@ function Root({
   useLayoutEffect(() => setHasLabel(!!document.getElementById(labelId)));
   return (
     <div
+      {...passThrough(rest)}
       role="group"
       aria-labelledby={ariaLabel || !hasLabel ? undefined : labelId}
       aria-label={ariaLabel}

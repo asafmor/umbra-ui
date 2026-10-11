@@ -1,6 +1,16 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import {
+  Children,
+  cloneElement,
+  Fragment,
+  isValidElement,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
 import { ButtonBase } from '../basics/Button';
 import { Icon } from '../provider/icons';
+import { staysInRow } from './contexts';
 
 type OverflowMenu = typeof import('../overlays/Menu').OverflowMenu;
 
@@ -20,7 +30,10 @@ const load = () =>
 
 /**
  * Internal: a "more" button that opens `children` as a menu, for actions that no longer fit in a row.
- * Each `Button` and `IconButton` among them renders as a menu item, and each `Menu` as a submenu.
+ * Each `Button` and `IconButton` among them renders as a menu item, and each `Menu` as a submenu. A
+ * control that cannot be a row (`staysInRow`: a `Stepper`, a `Slider`, a field) stays where it was,
+ * before the button; with nothing but such controls there is no button. The host renders it always and
+ * says with `shrunk` whether the actions still fit.
  *
  * The button is drawn here, at once, and stays the same element when the menu's code arrives: it keeps
  * the focus and its place in the row that `useShrinkLevel` measures. The code is asked for when the
@@ -28,6 +41,39 @@ const load = () =>
  * menu opens when it arrives, with the focus where that press would have put it.
  */
 export function ActionsOverflow({
+  shrunk,
+  children,
+  ...more
+}: {
+  /** The actions no longer fit. While false the children are drawn as they are, in their row. */
+  shrunk: boolean;
+  label: string;
+  size?: 'default' | 'small' | undefined;
+  children: ReactNode;
+}) {
+  // One flat list with the same keys in both states: a control that stays in the row is the same
+  // element before and after, so it keeps its state and the focus.
+  const items: { node: ReactNode; kept: boolean }[] = [];
+  const sort = (nodes: ReactNode) =>
+    Children.forEach(nodes, (child) => {
+      if (isValidElement<{ children?: ReactNode | undefined }>(child) && child.type === Fragment)
+        return sort(child.props.children);
+      items.push({
+        node: isValidElement(child) ? cloneElement(child, { key: items.length }) : child,
+        kept: !shrunk || staysInRow(child),
+      });
+    });
+  sort(children);
+  const rows = items.filter((item) => !item.kept).map((item) => item.node);
+  return (
+    <>
+      {items.filter((item) => item.kept).map((item) => item.node)}
+      {rows.length > 0 && <More {...more}>{rows}</More>}
+    </>
+  );
+}
+
+function More({
   label,
   size,
   children,

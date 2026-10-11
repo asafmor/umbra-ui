@@ -78,3 +78,12 @@
 .state {
   min-width: 0;
 }
+
+/* The mark of a day with more items than slots. It keeps its width: the date beside it gives way. */
+.hiddenItems {
+  flex: none;
+  margin-inline-start: var(--umbra-space-1);
+  color: var(--umbra-week-strip-hidden-items-color, var(--umbra-color-base-text-secondary));
+  font: var(--umbra-font-label);
+  font-variant-numeric: tabular-nums;
+}

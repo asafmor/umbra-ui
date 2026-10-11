@@ -14,6 +14,7 @@ import { Button } from '../basics/Button';
 import { IconButton } from '../basics/IconButton';
 import shared from '../data/shared.module.css';
 import { Select } from '../inputs/Select';
+import { ActionsRow } from '../internal/ActionsRow';
 import { dataState, type DataStateProps } from '../internal/dataState';
 import { heightProps, type FillHeight } from '../internal/height';
 import layout from '../layout/layout.module.css';
@@ -44,6 +45,7 @@ import styles from './Planner.module.css';
 import { placeItems, type ScheduleItem } from './ScheduleSlot';
 import strip from './WeekStrip.module.css';
 import { useSelectedDate } from './WeekStrip';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
 interface PlannerContextValue {
   month: IsoMonth;
@@ -67,7 +69,7 @@ function usePlanner() {
   return planner;
 }
 
-export interface PlannerRootProps extends SlotProps {
+export interface PlannerRootProps extends SlotProps, RootAttributes {
   /** The month shown, as `'2026-10'`. Controlled. */
   month?: IsoMonth | undefined;
   /** The month shown at first. Defaults to the month of `today`. */
@@ -136,6 +138,7 @@ function Root({
   const fill = heightProps(height);
   return (
     <div
+      {...passThrough(slotProps)}
       {...props}
       ref={ref}
       data-umbra="planner"
@@ -162,8 +165,10 @@ export interface PlannerToolbarProps {
   previousLabel?: string | undefined;
   nextLabel?: string | undefined;
   todayLabel?: string | undefined;
-  /** More controls of the app, at the end of the bar before "Today". */
+  /** More controls of the app, at the end of the bar before "Today". They move into a menu when they do not fit. */
   actions?: ReactNode | undefined;
+  /** Accessible name of that menu's button. */
+  moreLabel?: string | undefined;
   className?: string | undefined;
   style?: CSSProperties | undefined;
 }
@@ -176,6 +181,7 @@ function Toolbar({
   nextLabel = 'Next month',
   todayLabel = 'Today',
   actions,
+  moreLabel = 'More actions',
   className,
   style,
 }: PlannerToolbarProps) {
@@ -214,7 +220,7 @@ function Toolbar({
         onPress={() => setMonth(next)}
       />
       <span className={styles.spacer} />
-      {actions}
+      {actions != null && <ActionsRow moreLabel={moreLabel}>{actions}</ActionsRow>}
       {/* Never disabled: on the month of today it still scrolls the day into view, and it keeps the focus. */}
       <Button
         onPress={() => {
@@ -265,6 +271,8 @@ export interface PlannerGridProps extends DataStateProps {
   emptyWeekLabel?: ReactNode | undefined;
   /** What assistive technology reads for a free slot. */
   freeLabel?: string | undefined;
+  /** Names the mark of a day with more items than `slotsPerDay`: "+2" beside its date, read as "2 more" and the items. */
+  hiddenItemsLabel?: ((count: number) => string) | undefined;
   /** The names of the weekdays above the grid. `auto` shortens them as the columns narrow. */
   weekdayFormat?: WeekdayFormat | 'auto' | undefined;
   slotSize?: 'default' | 'small' | undefined;
@@ -301,6 +309,7 @@ function Grid({
   weekLabel = 'Week',
   emptyWeekLabel = 'Nothing planned',
   freeLabel = 'Free',
+  hiddenItemsLabel = (count) => `${count} more`,
   weekdayFormat = 'auto',
   slotSize = 'default',
   slotDisplay = 'auto',
@@ -436,6 +445,7 @@ function Grid({
                 chip={(date) => ({ showMonth: date === first || 'auto' })}
                 slot={{ size: slotSize, display: collapsed ? 'icon' : slotDisplay }}
                 freeLabel={freeLabel}
+                hiddenItemsLabel={hiddenItemsLabel}
                 parts={parts}
                 empty={
                   isEmpty
@@ -485,7 +495,7 @@ export interface PlannerProps
   extends
     Omit<PlannerRootProps, 'children'>,
     Omit<PlannerGridProps, 'parts' | 'className' | 'style'>,
-    Pick<PlannerToolbarProps, 'monthLabel' | 'previousLabel' | 'nextLabel' | 'todayLabel'> {
+    Pick<PlannerToolbarProps, 'monthLabel' | 'previousLabel' | 'nextLabel' | 'todayLabel' | 'moreLabel'> {
   /** Replace or hide named pieces. */
   parts?:
     | (NonNullable<PlannerGridProps['parts']> & {
@@ -517,17 +527,19 @@ export function Planner({
   previousLabel,
   nextLabel,
   todayLabel,
+  moreLabel,
   parts,
   ...grid
 }: PlannerProps) {
   const { toolbar, ...gridParts } = parts ?? {};
   return (
     <Root
+      {...passThrough(grid)}
       {...{ month, defaultMonth, onMonthChange, minMonth, maxMonth, today, weekStartsOn, height }}
       {...{ size, priority, minWidth, minHeight, label, className, style }}
       aria-label={ariaLabel}
     >
-      {renderPart(toolbar, { monthLabel, previousLabel, nextLabel, todayLabel }, (p) => (
+      {renderPart(toolbar, { monthLabel, previousLabel, nextLabel, todayLabel, moreLabel }, (p) => (
         <Toolbar {...p} />
       ))}
       <Grid {...grid} parts={gridParts} />

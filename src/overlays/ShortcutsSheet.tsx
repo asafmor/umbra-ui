@@ -8,6 +8,7 @@ import { cx, renderPart, type Part } from '../utils/parts';
 import { Modal, type ModalHeaderProps, type ModalSize } from './Modal';
 import { useOpenState } from './shared';
 import styles from './ShortcutsSheet.module.css';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
 interface BlockProps {
   className?: string | undefined;
@@ -115,7 +116,7 @@ export interface ShortcutsSheetSearchProps {
   clearLabel?: string | undefined;
 }
 
-export interface ShortcutsSheetProps extends BlockProps {
+export interface ShortcutsSheetProps extends BlockProps, RootAttributes {
   /** Controlled state. */
   open?: boolean | undefined;
   defaultOpen?: boolean | undefined;
@@ -316,7 +317,7 @@ export function ShortcutsSheet({
     >
       {trigger && <Modal.Trigger>{trigger}</Modal.Trigger>}
       <Modal.Overlay>
-        <Modal.Content className={cx(styles.root, className)} style={style}>
+        <Modal.Content {...passThrough(panel)} className={cx(styles.root, className)} style={style}>
           <Panel {...panel} headingLevel={headingLevel} />
         </Modal.Content>
       </Modal.Overlay>

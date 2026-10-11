@@ -4,6 +4,7 @@ import { ScopeProvider, useScope, type ContextTint } from '../provider/UmbraProv
 import { useShell } from '../shell/AppShell';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './Page.module.css';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
 interface BlockProps {
   className?: string | undefined;
@@ -11,14 +12,14 @@ interface BlockProps {
   children?: ReactNode | undefined;
 }
 
-export interface PageRootProps extends BlockProps {
+export interface PageRootProps extends BlockProps, RootAttributes {
   /** Context tint for this page: a preset name or a colour. Defaults to the provider's. */
   context?: ContextTint | undefined;
   /** `none` for edge-to-edge content. */
   padding?: 'default' | 'none' | undefined;
 }
 
-function Root({ context, padding = 'default', className, style, children }: PageRootProps) {
+function Root({ context, padding = 'default', className, style, children, ...rest }: PageRootProps) {
   const scope = useScope({ context });
   const setPageContext = useShell()?.setPageContext;
   useLayoutEffect(() => {
@@ -28,6 +29,7 @@ function Root({ context, padding = 'default', className, style, children }: Page
   return (
     <ScopeProvider value={scope}>
       <div
+        {...passThrough(rest)}
         {...scope}
         data-umbra="page"
         data-padding={padding}

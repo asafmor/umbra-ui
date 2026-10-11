@@ -527,3 +527,6 @@ export type {
   HorizontalScrollerItemProps,
   HorizontalScrollerButtonProps,
 } from './layout/HorizontalScroller';
+
+// True below the minimum window, where `Columns` shows one child at a time: for an app that shows less then.
+export { useNarrow } from './internal/useNarrow';

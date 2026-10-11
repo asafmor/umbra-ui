@@ -8,6 +8,7 @@ import { cx, renderPart, type Part } from '../utils/parts';
 import shared from './shared.module.css';
 import styles from './SequenceDots.module.css';
 import { toneProps, type Tone } from './tone';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
 export type SequenceDotsId = string;
 
@@ -48,7 +49,7 @@ interface SequenceContext {
 }
 const Context = createContext<SequenceContext | null>(null);
 
-export interface SequenceDotsRootProps {
+export interface SequenceDotsRootProps extends RootAttributes {
   /** `dots`: one small shape per item. `bars`: one thin bar per item, as tall as its `value`. */
   variant?: 'dots' | 'bars' | undefined;
   /** `sm` fits a table cell, `md` a list row, `lg` a header. */
@@ -79,6 +80,7 @@ function Root({
   className,
   style,
   children,
+  ...rest
 }: SequenceDotsRootProps) {
   const attributes = {
     'data-umbra': 'sequence-dots',
@@ -95,13 +97,19 @@ function Root({
     <Toolbar
       {...defined(attributes)}
       ref={ref as Ref<HTMLDivElement>}
-      render={(props) => <div {...props} aria-busy={loading || undefined} />}
+      render={(props) => <div {...passThrough(rest)} {...defined(props)} aria-busy={loading || undefined} />}
     >
       {content}
     </Toolbar>
   ) : (
     // One image named by the summary: the marks inside are its drawing.
-    <span {...attributes} role="img" aria-busy={loading || undefined} ref={ref as Ref<HTMLSpanElement>}>
+    <span
+      {...passThrough(rest)}
+      {...attributes}
+      role="img"
+      aria-busy={loading || undefined}
+      ref={ref as Ref<HTMLSpanElement>}
+    >
       {content}
     </span>
   );
@@ -256,6 +264,7 @@ export function SequenceDots({
   if (!listed.length) {
     return renderPart(parts?.empty, { children: emptyLabel }, (p) => (
       <span
+        {...passThrough(root)}
         data-umbra="sequence-dots"
         data-part="empty"
         data-size={root.size ?? 'md'}

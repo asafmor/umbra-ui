@@ -5,8 +5,9 @@ import { cx, renderPart, type Part } from '../utils/parts';
 import { IconPart, type IconPartProps } from './IconPart';
 import styles from './Link.module.css';
 import shared from './shared.module.css';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
-export interface LinkRootProps {
+export interface LinkRootProps extends RootAttributes {
   /** Where it goes. Without it the link is a button that calls `onPress`. */
   href?: string | undefined;
   onPress?: (() => void) | undefined;
@@ -37,8 +38,10 @@ function Root({
   className,
   style,
   children,
+  ...rest
 }: LinkRootProps) {
   const common = {
+    ...passThrough(rest),
     'data-umbra': 'link',
     'data-variant': variant,
     'data-tone': tone,

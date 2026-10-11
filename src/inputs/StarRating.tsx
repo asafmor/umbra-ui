@@ -17,6 +17,7 @@ import { defined } from '../utils/defined';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './StarRating.module.css';
 import { useFieldControl } from './useField';
+import { passThrough, rootRender } from '../utils/passThrough';
 
 export type StarRatingSize = 'small' | 'default' | 'large';
 
@@ -115,6 +116,7 @@ function Root({
   className,
   style,
   children,
+  ...rest
 }: StarRatingRootProps) {
   const ownId = useId();
   const ref = useRef<HTMLElement>(null);
@@ -152,7 +154,7 @@ function Root({
   const rootClass = cx(styles.root, className);
   if (loading)
     return (
-      <span {...common} className={rootClass} aria-busy="true" data-loading>
+      <span {...passThrough(rest)} {...common} className={rootClass} aria-busy="true" data-loading>
         <span data-part="skeleton" className={styles.skeleton}>
           <Skeleton shape="block" width="100%" height="100%" />
         </span>
@@ -163,6 +165,7 @@ function Root({
     const named = [ariaLabel, missing ? noValueLabel : text(value)].filter(Boolean).join(': ');
     return (
       <span
+        {...passThrough(rest)}
         {...common}
         className={rootClass}
         ref={ref}
@@ -187,6 +190,7 @@ function Root({
   }
   return (
     <AriaRadioGroup
+      {...rootRender('div', rest)}
       {...common}
       ref={ref as React.RefObject<HTMLDivElement>}
       orientation="horizontal"
@@ -355,6 +359,8 @@ export function StarRating({ showValue = false, parts, ...root }: StarRatingProp
   );
 }
 
+/** Not a row of a menu: among actions that overflow it stays in the row (`ActionsOverflow`). */
+StarRating.staysInRow = true;
 StarRating.Root = Root;
 StarRating.Stars = Stars;
 StarRating.Star = Star;

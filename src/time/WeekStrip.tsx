@@ -15,8 +15,9 @@ import {
 import { useDateGrid } from './grid';
 import { placeItems, type ScheduleItem } from './ScheduleSlot';
 import styles from './WeekStrip.module.css';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
-export interface WeekStripRootProps {
+export interface WeekStripRootProps extends RootAttributes {
   /** An empty or error state, shown in place of the grid by the same element. */
   state?: ReactNode | undefined;
   /** The day that holds the tab stop until the user moves: today, or the chosen day. */
@@ -40,18 +41,25 @@ function Root({
   className,
   style,
   children,
+  ...rest
 }: WeekStripRootProps) {
   const [ref, handlers] = useDateGrid<HTMLDivElement>({ initial: initialDate });
   // The same element holds the empty or error state, so the focus has somewhere to go when it leaves.
   if (state) {
     return (
-      <div data-umbra="week-strip" className={cx(styles.state, className)} style={style}>
+      <div
+        {...passThrough(rest)}
+        data-umbra="week-strip"
+        className={cx(styles.state, className)}
+        style={style}
+      >
         {state}
       </div>
     );
   }
   return (
     <div
+      {...passThrough(rest)}
       {...handlers}
       ref={ref}
       role="grid"
@@ -117,6 +125,8 @@ export interface WeekStripProps
   onDayAction?: ((date: IsoDate) => void) | undefined;
   /** What assistive technology reads for a free slot. */
   freeLabel?: string | undefined;
+  /** Names the mark of a day with more items than `slotsPerDay`: "+2" beside its date, read as "2 more" and the items. */
+  hiddenItemsLabel?: ((count: number) => string) | undefined;
   /** Replace or hide named pieces. */
   parts?:
     | (ScheduleParts & {
@@ -144,6 +154,7 @@ export function WeekStrip({
   onAction,
   onDayAction,
   freeLabel = 'Free',
+  hiddenItemsLabel = (count) => `${count} more`,
   loading = false,
   empty,
   error,
@@ -196,6 +207,7 @@ export function WeekStrip({
         })}
         slot={{ size: slotSize, display: slotDisplay }}
         freeLabel={freeLabel}
+        hiddenItemsLabel={hiddenItemsLabel}
         parts={parts}
         columnHeaders
       />

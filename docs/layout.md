@@ -128,8 +128,8 @@ scroll, they do, inside their slot.
 - A widget is as tall as its content, so content that fills (a chart, a table, a list) needs a height of
   its own inside one: `height={200}` or `height="content"`
   ([below](#tables-lists-and-charts-where-there-is-no-height-to-fill)).
-- Pass the children of a `HorizontalScroller` as they are. `HorizontalScroller.Item` is for
-  `HorizontalScroller.Root`, the block that does not wrap them for you.
+- Pass the children of a `HorizontalScroller` as they are: each becomes an item. Wrap one in
+  `HorizontalScroller.Item` yourself to give it a width of its own; it is not wrapped again.
 - A board has no drag to reorder: the order is the order of its children. Keep `collapsedIds` wherever
   you keep the user's settings.
 - Inside a `Stack` of cards, give cards that must show their whole content a `minHeight`, not

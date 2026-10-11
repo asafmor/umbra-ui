@@ -8,6 +8,7 @@ import type { LinkRenderProps } from '../utils/link';
 import { cx, renderPart, type Part } from '../utils/parts';
 import type { IsoDate } from './dates';
 import styles from './ScheduleSlot.module.css';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
 interface BlockProps {
   className?: string | undefined;
@@ -18,7 +19,7 @@ interface BlockProps {
 /** A colour of the series palette (`--umbra-color-series-1` to `-8`), for categories without a meaning. */
 export type ScheduleSlotSeries = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
-export interface ScheduleSlotRootProps extends BlockProps {
+export interface ScheduleSlotRootProps extends BlockProps, RootAttributes {
   /** What the colour means. */
   tone?: Tone | undefined;
   /** A free colour (any CSS colour) for a category of the app. Replaces `tone`. */
@@ -81,6 +82,7 @@ function Root({
   className,
   style,
   children,
+  ...rest
 }: ScheduleSlotRootProps) {
   // The element is the app's own when `renderLink` draws it, so it is found from a marker inside it.
   const marker = useRef<HTMLSpanElement>(null);
@@ -95,6 +97,7 @@ function Root({
   );
   const tip = useHoverTip(element, tooltip, labelCut);
   const common = {
+    ...passThrough(rest),
     ...toneProps(tone, color ?? (series && `var(--umbra-color-series-${series})`), style),
     'data-umbra': 'schedule-slot',
     'data-variant': variant,
@@ -183,6 +186,7 @@ export function ScheduleSlot({
   if (loading) {
     return renderPart(parts?.skeleton, {}, () => (
       <span
+        {...passThrough({ ...root, 'aria-label': undefined })}
         data-umbra="schedule-slot"
         data-part="skeleton"
         data-loading=""
@@ -231,18 +235,22 @@ export interface ScheduleItem {
   disabled?: boolean | undefined;
 }
 
-/** The items of each day, placed in its slots: `undefined` is a free slot. */
+/**
+ * The items of each day, placed in its slots: `undefined` is a free slot. `rest` holds, per day, the
+ * items that found no slot: the day's header says how many, and names them.
+ */
 export function placeItems(items: readonly ScheduleItem[], days: readonly IsoDate[], slotsPerDay: number) {
   const byDay = new Map<IsoDate, (ScheduleItem | undefined)[]>(
     days.map((day) => [day, Array.from<ScheduleItem | undefined>({ length: slotsPerDay })]),
   );
+  const rest = new Map<IsoDate, ScheduleItem[]>();
   // Items that name their slot first, so the others fill what is left.
   for (const item of [...items].sort((a, b) => Number(b.slot !== undefined) - Number(a.slot !== undefined))) {
     const slots = byDay.get(item.date);
     if (!slots) continue;
     const at = item.slot !== undefined && !slots[item.slot] ? item.slot : slots.indexOf(undefined);
-    // A day with more items than slots drops the rest: `slotsPerDay` is the app's to raise.
     if (at >= 0 && at < slotsPerDay) slots[at] = item;
+    else rest.set(item.date, [...(rest.get(item.date) ?? []), item]);
   }
-  return byDay;
+  return Object.assign(byDay, { rest });
 }

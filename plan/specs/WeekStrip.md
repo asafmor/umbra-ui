@@ -112,3 +112,4 @@ Resolved 2026-10-11 (under the owner's delegation):
 - **Free slots are drawn**, as dashed boxes with a name for screen readers, so a day's lines stay aligned across the week.
 - **`startDate` is taken as given**: an app that wants "the next seven days" gets them without a week boundary.
 - **No shrink by height**: the reference hides the second line of slots in a short card. Here the card body scrolls instead, since which line matters is the app's to say.
+- **A day with more items than `slotsPerDay` says so** (integration pass, 2026-10-11): "+N" beside its date, named by `hiddenItemsLabel(count)`; see `plan/specs/Planner.md`. Token `--umbra-week-strip-hidden-items-color`.

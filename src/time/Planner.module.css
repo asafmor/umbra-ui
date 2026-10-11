@@ -21,9 +21,10 @@
   min-width: 0;
 }
 
+/* Not to nothing: the app's actions move into their menu before the list of months is unreadable. */
 .month {
-  flex: 0 1 auto;
-  min-width: 0;
+  flex: 0 1000 auto;
+  min-width: min(100%, 6rem);
 }
 
 .title {

@@ -31,6 +31,7 @@ import {
   type MeterTone,
 } from './scale';
 import { defined } from '../utils/defined';
+import { passThrough, rootRender, type RootAttributes } from '../utils/passThrough';
 
 /** One step of a named scale. */
 export interface LevelMeterLevel {
@@ -71,7 +72,7 @@ interface BlockProps {
   style?: CSSProperties | undefined;
 }
 
-export interface LevelMeterRootProps extends BlockProps {
+export interface LevelMeterRootProps extends BlockProps, RootAttributes {
   /** Where the marker sits. Leave it out to show only a `range`. */
   value?: LevelMeterValue | null | undefined;
   min?: number | undefined;
@@ -143,6 +144,7 @@ function Root({
   tooltip = true,
   className,
   style,
+  'aria-label': ariaLabel,
   ...rest
 }: LevelMeterRootProps) {
   const ref = useRef<HTMLDivElement>(null);
@@ -239,11 +241,12 @@ function Root({
     return (
       <div
         ref={ref}
+        {...passThrough(rest)}
         {...shared}
         data-loading
         aria-busy="true"
-        role={rest['aria-label'] ? 'group' : undefined}
-        aria-label={rest['aria-label']}
+        role={ariaLabel ? 'group' : undefined}
+        aria-label={ariaLabel}
       >
         {content}
       </div>
@@ -253,13 +256,14 @@ function Root({
     <>
       <AriaMeter
         ref={ref}
+        {...rootRender('div', rest)}
         {...defined(shared)}
         // A meter that shows only a range still needs a value: the middle of the range.
         value={value ?? (low !== undefined && high !== undefined ? (low + high) / 2 : min)}
         minValue={min}
         maxValue={max > min ? max : min + 1}
         valueLabel={spoken}
-        {...defined({ 'aria-label': rest['aria-label'] })}
+        {...defined({ 'aria-label': ariaLabel })}
       >
         {content}
       </AriaMeter>

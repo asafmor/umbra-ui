@@ -100,3 +100,4 @@ Resolved 2026-10-11:
 - `SummaryTile` needs nothing new: it takes any node (`caption`, `trend`); story `Charts/Sparkline`, "In summary tile".
 - The focus tooltip of an interactive sparkline is not announced value by value (the name is the summary); an app that needs every value read uses a chart.
 - Fuller option taken: four variants, three curves, markers, reference line and band, thresholds, the interactive tooltip with keyboard, the column helper.
+- **A width of its own where the container has none to give** (integration pass, 2026-10-11): in a container that is as wide as its content (the `trend` slot of a `SummaryTile`, the `trailing` slot of a list row, an item of a flex row) a sparkline was zero pixels wide. It now counts as `--umbra-sparkline-width` (4rem) there, through size containment (`contain-intrinsic-inline-size`), which changes nothing where the container has a width.

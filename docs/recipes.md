@@ -1367,8 +1367,9 @@ export function App() {
   content.
 - There is no drag and no built-in copy and paste: they are buttons of yours in `renderWeek`, or in
   the toolbar (`parts={{ toolbar: (p) => <Planner.Toolbar {...p} actions={…} /> }}`).
-- A day draws `slotsPerDay` items and no more: a further item of that day is not shown. Set it for
-  your busiest day, or count what is left out in `renderWeek`.
+- A day draws `slotsPerDay` items. A further item of that day is counted beside the date ("+2"), with
+  the items it stands for in its name and its tooltip (`hiddenItemsLabel`). Set `slotsPerDay` for your
+  busiest day.
 - The grid is one tab stop. Arrow keys move between days and slots, Page Up and Page Down change the
   month, Enter activates a slot or goes into the side column.
 - Slots show an icon and a label, then the icon alone when a day is too narrow (`slotDisplay`). A slot
@@ -1512,8 +1513,9 @@ export function App() {
   `div`, so it cannot stand inside a `<p>`.
 - A `StarRating` with `readOnly` is a picture with a text name, not a control: it draws any fraction.
   Without `readOnly` it is a radio group, and `step={0.5}` lets the user choose halves.
-- In a `SummaryTile`, a `Sparkline` goes in `caption`: it is as wide as its container, and the `trend`
-  slot is only as wide as its content.
+- A `Sparkline` is as wide as its container. Where the container is only as wide as its content (the
+  `trend` slot of a `SummaryTile`, the `trailing` slot of a list row) it has a width of its own,
+  `--umbra-sparkline-width` (4rem).
 
 ## 16. A board of widgets
 
@@ -1719,8 +1721,8 @@ The tour:
   lets the user press the target itself.
 - Escape and a press on the dim close it (`dismissable={false}` turns that off). `onFinish` runs only
   when the last step is ended with its button: that is the moment to remember that the user has seen it.
-- A step whose target is not in the page is skipped. Mark targets with `className`: a `data-` attribute
-  of yours is not passed on by a component.
+- A step whose target is not in the page is skipped, with a warning in development. A target can be
+  marked with a `data-` attribute of yours: a component passes it to its root element.
 - Without `steps` it is one coach mark: `target`, `title` and the text as children.
 - It is drawn on `layer-spotlight`, above a modal and below the command palette, so a step can point
   into an open modal.

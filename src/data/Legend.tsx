@@ -24,6 +24,7 @@ import { useShrinkLevel } from '../internal/useShrinkLevel';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './Legend.module.css';
 import { defined } from '../utils/defined';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
 export type LegendMarker = SeriesMarkerKind;
 export type LegendMarkerProps = SeriesMarkerProps;
@@ -71,7 +72,7 @@ function useHidden({ hiddenIds, defaultHiddenIds = [], onHiddenChange }: HiddenP
   return { hidden, change };
 }
 
-export interface LegendRootProps extends HiddenProps {
+export interface LegendRootProps extends HiddenProps, RootAttributes {
   orientation?: 'horizontal' | 'vertical' | undefined;
   /** Where the items sit along the legend. A vertical legend with values always fills its width. */
   align?: 'start' | 'center' | 'end' | undefined;
@@ -129,12 +130,14 @@ function Root({
       ref={ref as React.Ref<HTMLDivElement>}
       orientation={orientation}
       // React Aria's toolbar drops `aria-busy`; it is put back on its element.
-      render={(props) => <div {...props} aria-busy={loading || undefined} />}
+      render={(props) => (
+        <div {...passThrough(hiddenProps)} {...defined(props)} aria-busy={loading || undefined} />
+      )}
     >
       {content}
     </Toolbar>
   ) : (
-    <ul {...shared} role="list" ref={ref as React.Ref<HTMLUListElement>}>
+    <ul {...passThrough(hiddenProps)} {...shared} role="list" ref={ref as React.Ref<HTMLUListElement>}>
       {content}
     </ul>
   );

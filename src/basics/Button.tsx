@@ -12,6 +12,7 @@ import { useShortcut } from '../provider/UmbraProvider';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './Button.module.css';
 import { defined } from '../utils/defined';
+import { rootRender, type RootAttributes } from '../utils/passThrough';
 
 export type ButtonVariant = 'primary' | 'accent' | 'neutral' | 'ghost' | 'danger';
 
@@ -78,6 +79,7 @@ export function ButtonBase({
   className,
   style,
   children,
+  ...rest
 }: BaseProps) {
   const row = useContext(OverflowMenuContext);
   if (row) {
@@ -108,6 +110,7 @@ export function ButtonBase({
   };
   const element = href ? (
     <AriaLink
+      {...rootRender('a', rest)}
       {...defined(shared)}
       ref={elementRef as React.RefObject<HTMLAnchorElement>}
       href={href}
@@ -117,6 +120,7 @@ export function ButtonBase({
     </AriaLink>
   ) : (
     <AriaButton
+      {...rootRender('button', rest)}
       {...defined(shared)}
       ref={elementRef as React.RefObject<HTMLButtonElement>}
       type={type}
@@ -151,7 +155,7 @@ export function Spinner({ label }: { label: string }) {
   );
 }
 
-export interface ButtonProps {
+export interface ButtonProps extends RootAttributes {
   /** The label. */
   children?: ReactNode | undefined;
   /** `primary`: the single main action of a screen. `accent`: the confirming action of a group. */

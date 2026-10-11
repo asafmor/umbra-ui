@@ -3,6 +3,7 @@ import { useShrinkLevel } from '../internal/useShrinkLevel';
 import { BareIcon, IconSlot } from '../provider/icons';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './EmptyState.module.css';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
 interface BlockProps {
   className?: string | undefined;
@@ -10,7 +11,7 @@ interface BlockProps {
   children?: ReactNode | undefined;
 }
 
-export interface EmptyStateRootProps extends BlockProps {
+export interface EmptyStateRootProps extends BlockProps, RootAttributes {
   /** `block` is centred in its slot; `inline` is one line of text. */
   variant?: 'block' | 'inline' | undefined;
   /** `error` marks a failure: a danger-coloured icon, the built-in one unless `icon` is given. */
@@ -33,6 +34,7 @@ function Root({
   className,
   style,
   children,
+  ...rest
 }: EmptyStateRootProps) {
   const ref = useRef<HTMLDivElement>(null);
   // `useShrinkLevel` starts again when the element gets wider; a block also has to when it gets taller.
@@ -52,6 +54,7 @@ function Root({
   const level = useShrinkLevel(ref, 2, grown, { overflowing: overflows });
   return (
     <div
+      {...passThrough(rest)}
       ref={ref}
       role={role}
       data-umbra="empty-state"

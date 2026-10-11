@@ -24,6 +24,7 @@ import { GroupHeader, type GroupHeaderProps } from './GroupHeader';
 import styles from './List.module.css';
 import { ListItem, type ListItemProps } from './ListItem';
 import { defined } from '../utils/defined';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
 /** The controls of a group header that the keyboard can reach. */
 const HEADER_CONTROL = 'button:not(:disabled), a[href]';
@@ -93,7 +94,7 @@ function useList() {
   return list;
 }
 
-export interface ListRootProps extends DataStateProps {
+export interface ListRootProps extends DataStateProps, RootAttributes {
   /** `List.Item` and `List.Group` elements. */
   children?: ReactNode | undefined;
   /** `single` and `multiple` let the user select rows. */
@@ -268,6 +269,7 @@ function Root({
   );
   return (
     <div
+      {...passThrough(data)}
       data-umbra="list"
       data-dividers={dividers || undefined}
       data-striped={striped || undefined}
@@ -303,7 +305,7 @@ function Root({
   );
 }
 
-export interface ListEntryProps extends Omit<ListItemProps, 'selected' | 'interactive'> {
+export interface ListEntryProps extends Omit<ListItemProps, 'selected' | 'interactive' | 'id'> {
   /** The row's key: what selection and `onAction` report. Unique in the list. */
   id: ListId;
   /** Plain text of the row, for type-ahead and assistive technology. Defaults to a text `title`. */

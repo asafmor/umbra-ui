@@ -29,6 +29,7 @@ import {
   type StripRow,
 } from './strip';
 import styles from './Tabs.module.css';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
 export type TabsVariant = 'underline' | 'pill' | 'button-group';
 
@@ -88,7 +89,7 @@ interface BlockProps {
   children?: ReactNode | undefined;
 }
 
-export interface TabsRootProps extends TabsOptions, BlockProps, SlotProps {
+export interface TabsRootProps extends TabsOptions, BlockProps, SlotProps, RootAttributes {
   /** The selected tab. */
   value?: string | null | undefined;
   defaultValue?: string | null | undefined;
@@ -155,6 +156,7 @@ function Root({
       {/* Layout children inside the tabs belong to the tabs, not to the Stack or Columns around them. */}
       <LayoutProvider value={null}>
         <div
+          {...passThrough(slot)}
           {...props}
           ref={ref}
           data-umbra="tabs"

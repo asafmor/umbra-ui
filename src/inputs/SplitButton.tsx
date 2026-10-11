@@ -9,6 +9,7 @@ import { useShortcut } from '../provider/UmbraProvider';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './SplitButton.module.css';
 import { useFieldControl } from './useField';
+import { passThrough, withoutPassThrough, type RootAttributes } from '../utils/passThrough';
 
 interface Shared {
   variant: ButtonVariant;
@@ -23,7 +24,7 @@ function useSplit(block: string) {
   return shared;
 }
 
-export interface SplitButtonRootProps {
+export interface SplitButtonRootProps extends RootAttributes {
   /** The look of both halves: the variants of `Button`. */
   variant?: ButtonVariant | undefined;
   /** `small` is for use inside table cells. Otherwise the height follows the density level. */
@@ -48,6 +49,7 @@ function Root({
   className,
   style,
   children,
+  ...rest
 }: SplitButtonRootProps) {
   const inMenu = useContext(OverflowMenuContext);
   const control = useFieldControl({ disabled });
@@ -56,6 +58,7 @@ function Root({
   if (inMenu) return content;
   return (
     <div
+      {...passThrough(rest)}
       // The field's label points here; the id and the state tell a checker whose label it is.
       id={control.id}
       role="group"
@@ -256,6 +259,7 @@ export function SplitButton({
 }: SplitButtonProps) {
   return (
     <Root
+      {...passThrough(action)}
       variant={variant}
       size={size}
       disabled={disabled}
@@ -267,7 +271,7 @@ export function SplitButton({
       {renderPart(
         parts?.action,
         {
-          ...action,
+          ...withoutPassThrough(action),
           iconStart: renderPart(parts?.iconStart, { children: iconStart }, (p) => p.children),
           children: renderPart(parts?.label, { children }, (p) => p.children),
         },

@@ -1,8 +1,9 @@
 import type { CSSProperties } from 'react';
 import { cx } from '../utils/parts';
 import styles from './Skeleton.module.css';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
-export interface SkeletonProps {
+export interface SkeletonProps extends RootAttributes {
   /** `text` for lines of text, `block` for any rectangle, `circle` for avatars and icons. */
   shape?: 'text' | 'block' | 'circle' | undefined;
   /** Number of lines, for `text`. The last line is shorter. */
@@ -26,9 +27,11 @@ export function Skeleton({
   animation = 'pulse',
   className,
   style,
+  ...rest
 }: SkeletonProps) {
   return (
     <div
+      {...passThrough(rest)}
       aria-hidden="true"
       data-umbra="skeleton"
       data-shape={shape}

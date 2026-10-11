@@ -11,6 +11,7 @@ import {
   type IsoDate,
   type WeekdayFormat,
 } from './dates';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
 interface BlockProps {
   className?: string | undefined;
@@ -41,7 +42,7 @@ function useDate() {
   return date;
 }
 
-export interface DateChipRootProps extends BlockProps {
+export interface DateChipRootProps extends BlockProps, RootAttributes {
   /** The day, as `'2026-10-11'`. */
   date: IsoDate;
   /** Marks the current day: the primary fill, a heavier weight and a bar under the text. */
@@ -70,11 +71,13 @@ function Root({
   className,
   style,
   children,
+  ...rest
 }: DateChipRootProps) {
   const { locale } = useLocale();
   const spoken = [formatFull(date, locale), today && todayLabel, selected && selectedLabel].filter(Boolean);
   return (
     <time
+      {...passThrough(rest)}
       dateTime={date}
       data-umbra="date-chip"
       data-today={today || undefined}

@@ -32,6 +32,7 @@ import type { BlockProps } from './fieldParts';
 import styles from './SearchField.module.css';
 import { useFieldControl } from './useField';
 import { defined } from '../utils/defined';
+import { passThrough } from '../utils/passThrough';
 
 /** One row of the list under the field. */
 export interface SearchSuggestion {
@@ -172,6 +173,7 @@ function Root({
   className,
   style,
   children,
+  ...rest
 }: SearchFieldRootProps) {
   const control = useFieldControl({ id, disabled, invalid, required });
   const rootRef = useRef<HTMLDivElement>(null);
@@ -342,6 +344,7 @@ function Root({
   );
   return (
     <div
+      {...passThrough(rest)}
       ref={rootRef}
       role={landmark ? 'search' : undefined}
       aria-label={landmark ? label : undefined}
@@ -720,6 +723,8 @@ export function SearchField({
   );
 }
 
+/** Not a row of a menu: among actions that overflow it stays in the row (`ActionsOverflow`). */
+SearchField.staysInRow = true;
 SearchField.Root = Root;
 SearchField.Icon = SearchIcon;
 SearchField.Input = Input;

@@ -125,3 +125,4 @@ Resolved 2026-10-11 (under the owner's delegation):
 - **The strip is a group, not a table**: one line of text in reading order says the same with less.
 - **`highlightChanges` on the values** (a comparison is often live): the shared hook, per value.
 - **Side colours default to the first two series colours**, the palette already checked against every tint.
+- **In a content-sized card it keeps its rows** (integration pass, 2026-10-11): such a card has no height to fill, so when a stack squeezes it the card's body scrolls. The comparison used to step down to its strip there and stay on it with room left over. Its steps by height are for a slot that gives it a height, and there they are a function of that height alone.

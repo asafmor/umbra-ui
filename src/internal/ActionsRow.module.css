@@ -1,0 +1,16 @@
+/* Shrinks only once its siblings have (the host gives them a far larger shrink factor), and clips, so
+   that controls which do not fit can be measured. The rings of its controls are drawn inside them, as in every row
+   that clips. */
+.row {
+  display: flex;
+  flex: 0 1 auto;
+  align-items: center;
+  gap: var(--umbra-space-2);
+  min-width: 0;
+  overflow: hidden;
+  --focus-offset: calc(-1 * var(--umbra-state-focus-ring-width));
+}
+
+.row > * {
+  flex: none;
+}

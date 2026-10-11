@@ -26,6 +26,7 @@ import { addStop, boundsOf, moveStop, normalizeStops, removeStop, sameStops, typ
 import { Select, type SelectEntry } from './Select';
 import { TextField } from './TextField';
 import { FieldContext, noField, useFieldControl } from './useField';
+import { passThrough } from '../utils/passThrough';
 
 /** A change the editor tells a screen reader about. `index` counts the stops from 0. */
 export interface ColorScaleChange {
@@ -171,6 +172,7 @@ function Root({
   className,
   style,
   children,
+  ...rest
 }: ColorScaleEditorRootProps) {
   const root = useRef<HTMLDivElement>(null);
   const control = useFieldControl({ id, invalid, disabled });
@@ -246,6 +248,7 @@ function Root({
   };
   return (
     <div
+      {...passThrough(rest)}
       ref={root}
       id={control.id}
       role="group"
@@ -558,6 +561,8 @@ export function ColorScaleEditor({ parts, ...root }: ColorScaleEditorProps) {
   );
 }
 
+/** Not a row of a menu: among actions that overflow it stays in the row (`ActionsOverflow`). */
+ColorScaleEditor.staysInRow = true;
 ColorScaleEditor.Root = Root;
 ColorScaleEditor.Preview = Preview;
 ColorScaleEditor.Track = Track;
