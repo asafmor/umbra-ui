@@ -231,6 +231,61 @@
   scale: var(--umbra-chart-point-scale, 1);
 }
 
+/* A bubble is see-through, so the ones it overlaps still show; its edge is the full colour. */
+.bubble {
+  fill-opacity: var(--umbra-scatter-bubble-opacity, 0.55);
+  stroke: currentColor;
+  stroke-width: var(--umbra-chart-outline-width, 1.5px);
+}
+
+/* A cell of the heatmap. Its edge has 3:1 against the card, so the lowest step can be told from no cell. */
+.cell {
+  stroke: var(--umbra-heatmap-cell-border, var(--umbra-color-base-border-control));
+  stroke-width: var(--umbra-heatmap-cell-border-width, var(--umbra-border-width));
+  rx: var(--umbra-heatmap-cell-radius, 2px);
+}
+
+/* Over a backdrop the cells let it show through. */
+[data-part='backdrop'] ~ [data-part='cells'] .cell {
+  opacity: var(--umbra-heatmap-backdrop-opacity, 0.8);
+}
+
+/* Text drawn on marks or over a backdrop: an outline in the surface colour keeps it readable on any fill. */
+.svg .cellLabel,
+.svg .pointLabel {
+  fill: var(--strong);
+  stroke: var(--umbra-chart-label-halo, var(--umbra-color-base-surface1));
+  stroke-width: 3px;
+  stroke-linejoin: round;
+  paint-order: stroke;
+  pointer-events: none;
+}
+
+/* What the app draws behind the marks. */
+.backdrop {
+  pointer-events: none;
+}
+
+.backdropBody {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* The legend of a colour scale: its steps between the names of its two ends. */
+.scaleLegend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--umbra-space-3);
+  min-width: 0;
+}
+
+.scaleLegend > :not(span) {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
 /* The track shows how far the scale goes. Its fill is quiet (about 1.2:1 against the card), so it has
    an edge line with 3:1. The line is drawn inside the ring (the path is clipped to itself, which hides
    the outer half of the stroke), so the value covers it and it does not thicken the ring. */

@@ -1,5 +1,5 @@
 // The overview: an inbox, a wide summary card and a stack of small neutral cards.
-import { TrendingUp } from 'lucide-react';
+import { ClipboardList, Coffee, SearchCheck, Truck, TrendingUp } from 'lucide-react';
 import { useMemo, useState, type CSSProperties } from 'react';
 import { RadarChart } from '../../charts';
 import {
@@ -24,6 +24,8 @@ import {
   type DataTableColumn,
   type Status,
 } from '../../index';
+import type { ScheduleItem } from '../../index';
+import { WeekStrip } from '../../index';
 import {
   deliveries,
   insightAxes,
@@ -259,39 +261,25 @@ function SummaryCard({ go }: { go: (place: Place) => void }) {
   );
 }
 
-const slotStatus: Status[] = ['info', 'success', 'warning', 'neutral'];
-
-function WeekStrip() {
-  return (
-    <div
-      style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(7, minmax(0, 1fr))',
-        gap: 'var(--umbra-space-2)',
-      }}
-    >
-      {week.map(({ day, today, slots }) => (
-        <div key={day} style={{ display: 'grid', gap: 'var(--umbra-space-2)', justifyItems: 'center' }}>
-          {today ? (
-            <Tag size="small" variant="solid" tone="accent">
-              {day}
-            </Tag>
-          ) : (
-            <span style={{ font: 'var(--umbra-font-label)' }}>{day}</span>
-          )}
-          {slots.map((kind, i) => (
-            <StatusIndicator
-              key={i}
-              variant="dot"
-              status={slotStatus[kind]!}
-              aria-label={`${day}, slot ${i + 1}: ${slotKinds[kind]}`}
-            />
-          ))}
-        </div>
-      ))}
-    </div>
-  );
-}
+// The week of the overview: Monday 5 to Sunday 11 October 2026, with "today" on the Saturday.
+const WEEK_START = '2026-10-05';
+const WEEK_TODAY = '2026-10-10';
+// Each kind has its own icon, so none is told from the others by colour alone.
+const slotLooks: Pick<ScheduleItem, 'tone' | 'variant' | 'icon'>[] = [
+  { tone: 'info', icon: <SearchCheck /> },
+  { tone: 'success', icon: <Truck /> },
+  { tone: 'warning', icon: <ClipboardList /> },
+  { variant: 'empty', icon: <Coffee /> },
+];
+const weekItems: ScheduleItem[] = week.flatMap(({ slots }, day) =>
+  slots.map((kind, slot) => ({
+    id: `${day}-${slot}`,
+    date: `2026-10-${String(5 + day).padStart(2, '0')}`,
+    slot,
+    label: slotKinds[kind]!,
+    ...slotLooks[kind]!,
+  })),
+);
 
 function StatusStack() {
   const [notice, setNotice] = useState(true);
@@ -349,7 +337,13 @@ function StatusStack() {
       </Card>
       <Card title="This week" tone="neutral" priority={0}>
         <div style={flow}>
-          <WeekStrip />
+          <WeekStrip
+            aria-label="This week"
+            startDate={WEEK_START}
+            today={WEEK_TODAY}
+            items={weekItems}
+            dayHeader="weekday"
+          />
           {notice && (
             <Banner
               tone="warning"

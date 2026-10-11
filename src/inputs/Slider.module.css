@@ -1,0 +1,318 @@
+/*
+ * The root is a size container, so the mark labels and the output give way by container queries. Its
+ * own width cannot come from its content then: it fills its slot, and where the slot is as wide as its
+ * content (the control cell of a `FormField` row) it asks for `--umbra-slider-width`.
+ */
+.root {
+  --thumb: var(--umbra-slider-thumb-size, 16px);
+  --rail: var(--umbra-slider-track-height, 4px);
+  --ink: var(--umbra-slider-hatch, color-mix(in oklab, var(--umbra-color-base-surface1) 75%, transparent));
+  --hatch: transparent 0 3px, var(--ink) 3px 5px;
+
+  container-type: inline-size;
+  contain-intrinsic-inline-size: var(--umbra-slider-width, 200px);
+  display: grid;
+  grid-template:
+    'track output' auto
+    'marks .' auto / minmax(0, 1fr) auto;
+  align-items: center;
+  inline-size: 100%;
+  min-inline-size: 0;
+  color: var(--umbra-color-base-text-primary);
+  font: var(--umbra-font-body);
+}
+
+.root[data-size='small'] {
+  --thumb: var(--umbra-slider-small-thumb-size, 12px);
+  --rail: var(--umbra-slider-small-track-height, 3px);
+  font: var(--umbra-font-label);
+}
+
+/* The track is at least 24px across, the smallest pointer target, whatever the rail's thickness. */
+.track {
+  grid-area: track;
+  position: relative;
+  block-size: max(24px, var(--thumb));
+  /* A thumb at either end stays inside the slider. */
+  margin-inline: calc(var(--thumb) / 2);
+  cursor: pointer;
+}
+
+.rail {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: calc(50% - var(--rail) / 2);
+  block-size: var(--rail);
+  border-radius: var(--umbra-radius-pill);
+  background: var(--umbra-slider-track-bg, var(--umbra-color-base-border-control));
+}
+
+/* Painted in two layers, as a `ProgressBar` fill: the band's pattern over its colour. */
+.fill {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: calc(var(--from) * 100%);
+  inline-size: calc((var(--to) - var(--from)) * 100%);
+  border-radius: inherit;
+  background:
+    var(--pattern, none), var(--paint, var(--umbra-slider-fill, var(--umbra-color-fixed-accent-text)));
+}
+
+.fill[data-pattern='diagonal'] {
+  --pattern: repeating-linear-gradient(45deg, var(--hatch));
+}
+
+.fill[data-pattern='vertical'] {
+  --pattern: repeating-linear-gradient(90deg, var(--hatch));
+}
+
+.fill[data-pattern='reverse'] {
+  --pattern: repeating-linear-gradient(-45deg, var(--hatch));
+}
+
+.tick,
+.boundary {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: calc(var(--at) * 100%);
+  inline-size: var(--umbra-border-width);
+  block-size: calc(var(--rail) + 6px);
+  margin-block-start: calc((var(--rail) + 6px) / -2);
+  margin-inline-start: calc(var(--umbra-border-width) / -2);
+  background: var(--umbra-slider-tick-color, var(--umbra-color-base-text-secondary));
+  pointer-events: none;
+}
+
+/* Where a band starts the tick is taller and thicker. */
+.boundary {
+  inline-size: 2px;
+  block-size: calc(var(--rail) + 10px);
+  margin-block-start: calc((var(--rail) + 10px) / -2);
+  margin-inline-start: -1px;
+  background: var(--umbra-color-base-text-primary);
+}
+
+.thumb {
+  top: 50%;
+  box-sizing: border-box;
+  inline-size: var(--thumb);
+  block-size: var(--thumb);
+  border: 2px solid var(--umbra-slider-thumb-border, var(--umbra-color-fixed-selected));
+  border-radius: 50%;
+  background: var(--umbra-slider-thumb-bg, var(--umbra-color-base-text-primary));
+  cursor: grab;
+  transition: box-shadow var(--umbra-motion-duration-fast);
+}
+
+/* The pointer target of a thumb is 24px. */
+.thumb::after {
+  content: '';
+  position: absolute;
+  inset: min(0px, (var(--thumb) - 24px) / 2 - 2px);
+}
+
+.thumb[data-hovered] {
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--umbra-color-base-text-primary) 18%, transparent);
+}
+
+.thumb[data-dragging] {
+  background: color-mix(
+    in oklab,
+    var(--umbra-slider-thumb-bg, var(--umbra-color-base-text-primary)),
+    #000 var(--umbra-state-press-darken)
+  );
+  cursor: grabbing;
+}
+
+.thumb[data-focus-visible] {
+  outline: var(--umbra-state-focus-ring-width) solid
+    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-fixed-focus-ring)));
+  outline-offset: var(--umbra-focus-offset, var(--focus-offset, 2px));
+}
+
+.bubble {
+  position: absolute;
+  inset-block-end: calc(100% + 6px);
+  left: 50%;
+  translate: -50% 0;
+  padding: 0 var(--umbra-space-2);
+  border: var(--umbra-border-width) solid var(--umbra-color-base-border-strong);
+  border-radius: var(--umbra-radius-control);
+  background: var(--umbra-color-base-surface3);
+  color: var(--umbra-color-base-text-primary);
+  font: var(--umbra-font-label);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--umbra-motion-duration-fast);
+}
+
+.thumb:is([data-hovered], [data-dragging], [data-focus-visible]) > .bubble {
+  opacity: 1;
+}
+
+.output {
+  grid-area: output;
+  min-inline-size: 3ch;
+  margin-inline-start: var(--umbra-space-4);
+  color: var(--umbra-slider-output-fg, var(--umbra-color-base-text-secondary));
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+  white-space: nowrap;
+}
+
+.marks {
+  grid-area: marks;
+  position: relative;
+  block-size: 1lh;
+  margin-inline: calc(var(--thumb) / 2);
+  color: var(--umbra-color-base-text-secondary);
+  font: var(--umbra-font-label);
+}
+
+.markLabel {
+  position: absolute;
+  inset-inline-start: calc(var(--at) * 100%);
+  translate: calc(-50% * var(--umbra-dir, 1)) 0;
+  white-space: nowrap;
+}
+
+/* The labels at the two ends stay inside the track. */
+.markLabel[data-edge='start'] {
+  translate: 0;
+}
+
+.markLabel[data-edge='end'] {
+  translate: calc(-100% * var(--umbra-dir, 1)) 0;
+}
+
+/* Scrubber: a position on a timeline. A thin line, a bar for a thumb, and the value in a box before it. */
+.root[data-variant='scrubber'] {
+  --thumb: var(--umbra-slider-scrubber-thumb-size, 14px);
+  --rail: var(--umbra-slider-scrubber-track-height, 2px);
+
+  grid-template:
+    'output track' auto
+    '. marks' auto / auto minmax(0, 1fr);
+}
+
+.root[data-variant='scrubber'] .thumb {
+  inline-size: 6px;
+  border: 0;
+  border-radius: 2px;
+}
+
+.root[data-variant='scrubber'] .output {
+  margin-inline: 0 var(--umbra-space-3);
+  padding: 0 var(--umbra-space-2);
+  border: var(--umbra-border-width) solid var(--umbra-color-base-border-control);
+  border-radius: var(--umbra-radius-control);
+  background: var(--umbra-color-base-surface1);
+  color: var(--umbra-color-base-text-primary);
+  text-align: center;
+}
+
+/* Vertical: as tall as its slot (`--umbra-slider-length`), the low end at the bottom. */
+.root[data-orientation='vertical'] {
+  container-type: normal;
+  contain-intrinsic-inline-size: none;
+  display: inline-grid;
+  grid-template:
+    'track marks' minmax(0, 1fr)
+    'output output' auto / auto auto;
+  justify-items: center;
+  inline-size: auto;
+  block-size: var(--umbra-slider-length, 100%);
+  min-block-size: 96px;
+}
+
+.root[data-orientation='vertical'] .track {
+  inline-size: max(24px, var(--thumb));
+  block-size: auto;
+  align-self: stretch;
+  margin: calc(var(--thumb) / 2) 0;
+}
+
+.root[data-orientation='vertical'] .rail {
+  inset-block: 0;
+  inset-inline-start: calc(50% - var(--rail) / 2);
+  inline-size: var(--rail);
+  block-size: auto;
+}
+
+.root[data-orientation='vertical'] .fill {
+  inset-inline: 0;
+  inset-block: auto calc(var(--from) * 100%);
+  inline-size: auto;
+  block-size: calc((var(--to) - var(--from)) * 100%);
+}
+
+.root[data-orientation='vertical'] :is(.tick, .boundary) {
+  inset-block: auto calc(var(--at) * 100%);
+  inset-inline-start: 50%;
+  inline-size: calc(var(--rail) + 6px);
+  block-size: var(--umbra-border-width);
+  margin: 0;
+  translate: calc(-50% * var(--umbra-dir, 1)) 50%;
+}
+
+.root[data-orientation='vertical'] .boundary {
+  inline-size: calc(var(--rail) + 10px);
+  block-size: 2px;
+}
+
+.root[data-orientation='vertical'] .thumb {
+  left: 50%;
+}
+
+.root[data-orientation='vertical'] .bubble {
+  inset-block: 50% auto;
+  inset-inline-start: calc(100% + 8px);
+  left: auto;
+  translate: 0 -50%;
+}
+
+.root[data-orientation='vertical'] .output {
+  margin: var(--umbra-space-1) 0 0;
+  text-align: center;
+}
+
+.root[data-orientation='vertical'] .marks {
+  align-self: stretch;
+  inline-size: var(--umbra-slider-mark-width, 4ch);
+  block-size: auto;
+  margin: calc(var(--thumb) / 2) 0;
+}
+
+.root[data-orientation='vertical'] .markLabel {
+  inset-block-end: calc(var(--at) * 100%);
+  inset-inline-start: var(--umbra-space-2);
+  translate: 0 50%;
+}
+
+.root[data-invalid] .rail {
+  box-shadow: 0 0 0 var(--umbra-border-width) var(--umbra-color-semantic-danger);
+}
+
+.root[data-disabled] {
+  opacity: var(--umbra-state-disabled-opacity);
+}
+
+.root:is([data-disabled], [data-readonly]) :is(.track, .thumb) {
+  cursor: default;
+}
+
+/* Step 1: no room for labels that do not run into each other. */
+@container (max-width: 199px) {
+  .marks {
+    display: none;
+  }
+}
+
+/* Step 2: the track keeps what is left; a thumb still says its value. */
+@container (max-width: 119px) {
+  .output {
+    display: none;
+  }
+}

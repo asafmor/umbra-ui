@@ -1,0 +1,87 @@
+/* A tiny chart: as wide as its container and one short line high. Its drawing is absolute, so it can
+   never push a table cell or a tile wider. */
+.root {
+  position: relative;
+  display: block;
+  width: 100%;
+  min-width: 0;
+  height: var(--umbra-sparkline-height, 20px);
+  overflow: hidden;
+  border-radius: var(--umbra-radius-control);
+  color: var(--umbra-color-base-text-secondary);
+  font: var(--umbra-font-label);
+}
+
+.root[data-interactive] {
+  cursor: default;
+}
+
+/* The ring is drawn inwards: a table cell or a tile clips what is outside. */
+.root:focus-visible {
+  outline: var(--umbra-state-focus-ring-width) solid
+    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-fixed-focus-ring)));
+  outline-offset: calc(-1 * var(--umbra-state-focus-ring-width));
+}
+
+/* Like the charts, the drawing does not mirror in a right-to-left page: the run reads left to right. */
+.svg {
+  position: absolute;
+  inset: 0;
+  display: block;
+  direction: ltr;
+}
+
+.line {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: var(--umbra-sparkline-line-width, 1.5px);
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.area {
+  fill: currentColor;
+  opacity: var(--umbra-sparkline-area-opacity, 0.22);
+}
+
+.dot {
+  fill: currentColor;
+}
+
+/* The markers stand out from the line by their colour and by an edge in the surface colour. */
+.marker {
+  fill: var(--umbra-sparkline-marker, var(--umbra-color-base-text-primary));
+  stroke: var(--umbra-color-base-surface1);
+  stroke-width: 1px;
+}
+
+.reference {
+  color: var(--umbra-sparkline-reference, var(--umbra-color-base-text-muted));
+}
+
+.reference line {
+  stroke: currentColor;
+  stroke-width: var(--umbra-border-width);
+  stroke-dasharray: 2 2;
+  shape-rendering: crispEdges;
+}
+
+.reference rect {
+  fill: currentColor;
+  opacity: 0.16;
+}
+
+/* The skeleton and the "no value" text take the place of the drawing, at its height. */
+.state {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  color: var(--umbra-color-base-text-muted);
+}
+
+.state .skeleton[data-umbra] {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}

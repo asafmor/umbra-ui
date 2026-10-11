@@ -1,0 +1,45 @@
+/* The paint of a tone, shared by PieIndicator and DivergingMeter. Set on the element that is painted;
+   the `default` tone is each component's own token. */
+.tone[data-tone='neutral'] {
+  --paint: var(--umbra-color-base-text-primary);
+}
+
+.tone[data-tone='success'] {
+  --paint: var(--umbra-color-semantic-success);
+}
+
+.tone[data-tone='warning'] {
+  --paint: var(--umbra-color-semantic-warning);
+}
+
+.tone[data-tone='danger'] {
+  --paint: var(--umbra-color-semantic-danger);
+}
+
+.tone[data-tone='info'] {
+  --paint: var(--umbra-color-semantic-info);
+}
+
+.tone[data-tone='accent'] {
+  --paint: var(--umbra-color-fixed-selected);
+}
+
+.tone[data-tone='ramp-1'] {
+  --paint: var(--umbra-color-value-ramp-1);
+}
+
+.tone[data-tone='ramp-2'] {
+  --paint: var(--umbra-color-value-ramp-2);
+}
+
+.tone[data-tone='ramp-3'] {
+  --paint: var(--umbra-color-value-ramp-3);
+}
+
+.tone[data-tone='ramp-4'] {
+  --paint: var(--umbra-color-value-ramp-4);
+}
+
+.tone[data-tone='ramp-5'] {
+  --paint: var(--umbra-color-value-ramp-5);
+}

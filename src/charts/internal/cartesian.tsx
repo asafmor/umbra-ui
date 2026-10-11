@@ -1,4 +1,5 @@
-// Axes, grid and annotations for the charts with two axes (line and bar).
+// Axes, grid, annotations and the backdrop for the charts with two axes.
+import type { ReactNode } from 'react';
 import styles from '../Chart.module.css';
 import { useFrame, type FrameModel } from './Frame';
 import { labelsThatFit, textWidth, thin, truncate, type Measure } from './scales';
@@ -221,5 +222,28 @@ export function Annotations() {
         );
       })}
     </g>
+  );
+}
+
+/**
+ * What the app draws behind the marks, sized to the plot area: a diagram, a floor plan, a map. HTML or
+ * an `<svg>` of its own; it is decoration, so it is hidden from assistive technology and takes no
+ * pointer. Renders nothing without `children`.
+ */
+export function Backdrop({ children }: { children?: ReactNode | undefined }) {
+  const { box } = useFrame<CartesianModel>().model;
+  if (children === undefined || children === null || children === false) return null;
+  return (
+    <foreignObject
+      data-part="backdrop"
+      aria-hidden="true"
+      className={styles.backdrop}
+      x={box.left}
+      y={box.top}
+      width={box.right - box.left}
+      height={box.bottom - box.top}
+    >
+      <div className={styles.backdropBody}>{children}</div>
+    </foreignObject>
   );
 }

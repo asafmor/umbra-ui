@@ -27,6 +27,7 @@ import {
   type MeterTone,
 } from './scale';
 import { defined } from '../utils/defined';
+import { tooNarrow } from './fit';
 
 /** One coloured part of a stacked bar. */
 export interface ProgressBarStackItem {
@@ -117,21 +118,6 @@ export interface ProgressBarRootProps extends BlockProps {
   tooltip?: boolean | undefined;
   /** Names a bar that has no visible label. */
   'aria-label'?: string | undefined;
-}
-
-/** True when the label, the value and (on one line) the shortest bar do not fit side by side. */
-function tooNarrow(root: HTMLElement) {
-  const part = (name: string) => root.querySelector<HTMLElement>(`:scope > [data-part="${name}"]`);
-  const value = part('value');
-  if (!value) return false;
-  const gap = parseFloat(getComputedStyle(root).columnGap) || 0;
-  const label = part('label');
-  const track = root.dataset.layout === 'inline' ? part('track') : null;
-  const needed =
-    value.offsetWidth +
-    (label ? label.scrollWidth + gap : 0) +
-    (track ? (parseFloat(getComputedStyle(track).minWidth) || 0) + gap : 0);
-  return needed > root.clientWidth + 1;
 }
 
 function Root({

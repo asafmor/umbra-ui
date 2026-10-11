@@ -6,7 +6,7 @@ import { CommandPalette } from '../overlays/CommandPalette';
 import { Log, sections } from '../stories/placeholders';
 import { HistoryButtons } from './HistoryButtons';
 import { PrimaryNav } from './PrimaryNav';
-import { commands, SamplePrimaryAction } from './samples';
+import { commands, SampleContext, SamplePrimaryAction } from './samples';
 import { TopBar, type TopBarProps } from './TopBar';
 
 const meta = {
@@ -17,13 +17,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const context = (
-  <>
-    <b>Sat 10 Oct 2026</b>
-    <br />
-    Quarter close in 6 days
-  </>
-);
+const context = <SampleContext />;
 
 /** A bar with every slot filled. The line below it shows what its callbacks did. */
 function Bar(props: TopBarProps) {

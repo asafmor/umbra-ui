@@ -1,0 +1,153 @@
+.slot {
+  --line: color-mix(in oklab, var(--tone) 55%, transparent);
+  --fill: color-mix(in oklab, var(--tone) 22%, var(--umbra-color-base-surface2));
+  --ink: var(--umbra-color-base-text-primary);
+  --stripe: var(--umbra-schedule-slot-stripe-width, 3px);
+  --height: var(--umbra-schedule-slot-height, calc(var(--umbra-density-table-row) + 2px));
+  --icon-size: 1.15em;
+
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--umbra-schedule-slot-gap, var(--umbra-space-2));
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  height: var(--height);
+  margin: 0;
+  padding: 0 var(--umbra-schedule-slot-padding-x, var(--umbra-space-3));
+  border: var(--umbra-border-width) solid var(--umbra-schedule-slot-border, var(--line));
+  border-inline-start: var(--stripe) solid var(--umbra-schedule-slot-stripe, var(--tone));
+  border-radius: var(--umbra-schedule-slot-radius, var(--umbra-radius-control));
+  background: var(--umbra-schedule-slot-bg, var(--fill));
+  color: var(--umbra-schedule-slot-fg, var(--ink));
+  font: var(--umbra-schedule-slot-font, var(--umbra-font-label));
+  text-align: start;
+  text-decoration: none;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.slot[data-full-width] {
+  display: flex;
+  width: 100%;
+}
+
+.slot[data-size='small'] {
+  --height: var(--umbra-schedule-slot-height, max(16px, calc(var(--umbra-density-table-row) - 6px)));
+  --icon-size: 1em;
+
+  padding: 0 var(--umbra-schedule-slot-padding-x, var(--umbra-space-2));
+  font-size: calc(var(--umbra-density-label-size) - 1px);
+}
+
+/* The border alone carries the colour. */
+.slot[data-variant='outlined'] {
+  --line: var(--tone);
+  --fill: transparent;
+
+  border-inline-start-width: var(--umbra-border-width);
+  border-inline-start-color: var(--umbra-schedule-slot-border, var(--line));
+}
+
+/* Free or rest time: dashed and quiet, whatever its tone. */
+.slot[data-variant='empty'] {
+  --line: var(--umbra-color-base-border-strong);
+  --fill: transparent;
+  --ink: var(--umbra-color-base-text-muted);
+
+  border-style: dashed;
+  border-inline-start-width: var(--umbra-border-width);
+  border-inline-start-color: var(--umbra-schedule-slot-border, var(--line));
+}
+
+.label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Selected: a ring in the text colour, as a shape, since the fill already carries the category. */
+.slot[data-selected] {
+  box-shadow: inset 0 0 0 var(--umbra-state-focus-ring-width)
+    var(--umbra-schedule-slot-selected-ring, var(--umbra-color-base-text-primary));
+}
+
+.slot[data-interactive] {
+  /* Never under 24px: the smallest pointer target (WCAG 2.5.8). */
+  min-height: 24px;
+  cursor: pointer;
+  transition: background-color var(--umbra-motion-duration-fast);
+}
+
+.slot[data-interactive]:hover {
+  background: color-mix(
+    in oklab,
+    var(--umbra-schedule-slot-bg, var(--fill)),
+    var(--umbra-color-base-text-primary) var(--umbra-state-hover-lighten)
+  );
+}
+
+.slot[data-interactive]:active {
+  background: color-mix(
+    in oklab,
+    var(--umbra-schedule-slot-bg, var(--fill)),
+    #000 var(--umbra-state-press-darken)
+  );
+}
+
+/* The slot often sits in a cell that clips, so its ring is drawn inwards. */
+.slot[data-interactive]:focus-visible {
+  outline-offset: calc(-1 * var(--umbra-state-focus-ring-width));
+}
+
+.slot[data-disabled] {
+  opacity: var(--umbra-state-disabled-opacity);
+  cursor: default;
+  pointer-events: none;
+}
+
+/*
+ * Icon only. The label stays in the page for assistive technology, so the slot keeps its name; a slot
+ * without an icon keeps its label, which is then its only cue.
+ */
+.slot[data-display='icon']:has(> [data-part='icon']) {
+  justify-content: center;
+  padding: 0;
+}
+
+.slot[data-display='icon']:has(> [data-part='icon']) > .label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  clip-path: inset(50%);
+}
+
+/*
+ * `auto`: icon only when the day around the slot (the container `umbra-schedule`, set by WeekStrip and
+ * Planner) is too narrow for a label. The width is literal: a container query cannot read a property.
+ */
+@container umbra-schedule (max-width: 64px) {
+  .slot[data-display='auto']:has(> [data-part='icon']) {
+    justify-content: center;
+    padding: 0;
+  }
+
+  .slot[data-display='auto']:has(> [data-part='icon']) > .label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    clip-path: inset(50%);
+  }
+}
+
+.skeleton {
+  width: 6em;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
+.skeleton[data-full-width] {
+  width: 100%;
+}

@@ -216,11 +216,3 @@
   font: var(--umbra-font-label);
   color: var(--umbra-color-base-text-secondary);
 }
-
-.hint > kbd {
-  padding: 0 var(--umbra-space-2);
-  border: var(--umbra-border-width) solid var(--umbra-color-base-border-control);
-  border-radius: var(--umbra-radius-control);
-  font: inherit;
-  color: var(--umbra-color-base-text-primary);
-}

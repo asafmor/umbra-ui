@@ -19,6 +19,7 @@ Nearly every screenshot: a bold section label, a divider, sentence-case items wi
 
 | Part | Content | Default |
 |---|---|---|
+| `start` | a slot before the label, for an `EntitySwitcher` (31, 33, 40) | shown when given |
 | `label` | the section name | shown when given |
 | `items` | page links, optionally with dropdowns | shown |
 | `end` | free slot, normally a `ShortcutBar`; any node works. Its content is never clipped | hidden |
@@ -37,6 +38,7 @@ Item states are the same as `PrimaryNav`.
 
 | Prop | Type | Default | Purpose |
 |---|---|---|---|
+| `start` | node | — | An `EntitySwitcher`. It stays when the label hides |
 | `label` | node | — | |
 | `items` | same shape as `PrimaryNav` | — | |
 | `value` / `onChange` | id / function | — | |
@@ -47,11 +49,11 @@ Item states are the same as `PrimaryNav`.
 
 ### 3. Parts
 
-`label`, `item`, `indicator`, `more`, `end`.
+`start`, `label`, `item`, `indicator`, `more`, `end`.
 
 ### 4. Blocks
 
-`SubNav.Root`, `SubNav.Label`, `SubNav.Item`, `SubNav.Menu`, `SubNav.End`.
+`SubNav.Root`, `SubNav.Start`, `SubNav.Label`, `SubNav.Item`, `SubNav.Menu`, `SubNav.End`.
 
 ## Behaviour as space shrinks
 
@@ -59,7 +61,7 @@ Item states are the same as `PrimaryNav`.
 |---|---|
 | 1 | The `ShortcutBar` in `end` gives way first: its labels hide (when every shortcut has an icon), then its items move into its "+N" menu, until only that chip is left |
 | 2 | Items move into a "More" menu, last first; the active item stays |
-| 3 | `label` hides |
+| 3 | `label` hides, and an `EntitySwitcher` in `start` shows its icon only (its name is its tooltip and accessible name) |
 
 The end slot never shrinks below what its content needs, and clips nothing: a control in it is fully visible or not there. Content other than a `ShortcutBar` keeps its full width, so step 1 is skipped for it. After step 3 nothing more gives way and the list of items clips at its end (below about 220px with a `ShortcutBar`). When the bar grows again, the shortcuts come back before anything else.
 
@@ -70,6 +72,10 @@ Same as `PrimaryNav`, including the dropdowns and "More" as a `Menu`, the named 
 ## Open questions
 
 None.
+
+Resolved 2026-10-11 (Milestone 2):
+
+- **A `start` slot for the `EntitySwitcher`** (`SubNav.Start`, the `start` prop and part). It was the smallest change that keeps the switcher when the bar is narrow: the `label` is removed at the last step, and a switcher that went with it could no longer be used. The slot is never hidden; at the step where the label hides, the bar tells what is in the slot to collapse (the shared `ForceCollapseContext`, as the `TopBar` does for its primary action), and the switcher shows its icon alone. With a `start` and no `label` the step still exists. The bar is 32px high, too low for two stacked 24px targets, so the slot sets the private `--entity-switcher-stepper-direction: row`: the steppers sit side by side, and the app's `--umbra-entity-switcher-stepper-direction` still wins.
 
 Resolved 2026-10-11 (review 2):
 

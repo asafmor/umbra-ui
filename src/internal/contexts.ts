@@ -27,6 +27,12 @@ export const OverflowMenuContext = createContext<((row: OverflowRowProps) => Rea
 export const ForceCollapseContext = createContext(false);
 
 /**
+ * Set by the `TopBar`: how many of its own steps the `ContextBlock` in the bar has to take (0 to 2)
+ * before the bar hides the block altogether.
+ */
+export const ContextShrinkContext = createContext(0);
+
+/**
  * Set by a `Modal`: its backdrop element. Overlays opened from inside the modal (tooltip, menu, select
  * list, popover) render into it instead of `<body>`. They are then above the modal, and inside what the
  * modal leaves reachable: everything outside it is inert.

@@ -38,7 +38,8 @@ The layout system is the library's main feature: the app fills the window, never
 3. **`size="content"` hugs.** The child takes the size of its content and the rest is shared by the others.
 4. **Gaps come from the density level**, not from props.
 5. **A component that fills takes its content's height where there is none to fill** (decided 2026-10-11). `DataTable`, `List` and the charts fill their slot. In a parent without a height of its own (flowing content in a card body, the popover of a collapsed card, a modal body, an accordion panel) they are as tall as their content instead of zero pixels. The shared `height` prop makes it explicit: `fill` (default), `content`, or a number of pixels.
-6. **Nothing overflows its slot.** A child can always shrink (`min-width: 0; min-height: 0`); what it does when small is decided by the rules below.
+6. **One recorded exception: in a `WidgetBoard` a card hugs its content** (decided 2026-10-11, Milestone 2). Everywhere else a card fills its slot and its body scrolls. On a board each card is as tall as its header plus its content (`size="content"`), the cards are packed in columns counted from the board's own width, and it is the board that fills its slot and scrolls inside. A `HorizontalScroller` is the same idea sideways: its items keep their width, the row fills its slot's width and scrolls inside, and it is as tall as its items unless it is given a share of the height. Both start a new layout context: a `Stack` around them does not count or collapse what is inside.
+7. **Nothing overflows its slot.** A child can always shrink (`min-width: 0; min-height: 0`); what it does when small is decided by the rules below.
 
 ## What happens as space shrinks
 

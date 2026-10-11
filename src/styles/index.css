@@ -23,6 +23,23 @@
   z-index: var(--umbra-layer-tooltip) !important;
 }
 
+[data-umbra-layer='spotlight'] {
+  z-index: var(--umbra-spotlight-z-index, var(--umbra-layer-spotlight));
+}
+
+/*
+ * While a `Spotlight` is open, what its target opens (a menu, a select list, a tooltip) is above the
+ * dim. The spotlight marks the document for that time; it is rendered into the modal its target is
+ * in, so the same rule holds inside a modal's layer.
+ */
+[data-umbra-spotlight] [data-umbra-layer='popover'] {
+  z-index: calc(var(--umbra-spotlight-z-index, var(--umbra-layer-spotlight)) + 1) !important;
+}
+
+[data-umbra-spotlight] [data-umbra-layer='tooltip'] {
+  z-index: calc(var(--umbra-spotlight-z-index, var(--umbra-layer-spotlight)) + 2) !important;
+}
+
 /*
  * Direction as a number, for what CSS has no logical form of: the side of an inset stripe, the turn of
  * a caret. 1 left to right, -1 right to left. The provider's root and every portal carry `dir`.

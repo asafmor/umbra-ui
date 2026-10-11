@@ -19,6 +19,7 @@ import { defaultIcons, type IconMap } from './icons';
 import {
   formatKeys,
   isTypingTarget,
+  listShortcuts,
   ownedShortcut,
   resolveShortcuts,
   shortcutForEvent,
@@ -80,6 +81,24 @@ interface UmbraContextValue {
   registry: ShortcutRegistry;
   /** Handlers bound by mounted components; they take precedence over a shortcut's own `action`. */
   bound: Map<string, () => void>;
+  /** Tells the lists of shortcuts that `bound` changed: components bind and unbind as they mount. */
+  bindings: { subscribe: (listener: () => void) => () => void; version: () => number; changed: () => void };
+}
+
+function createBindings(): UmbraContextValue['bindings'] {
+  const listeners = new Set<() => void>();
+  let version = 0;
+  return {
+    subscribe: (listener) => {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
+    version: () => version,
+    changed: () => {
+      version += 1;
+      listeners.forEach((listener) => listener());
+    },
+  };
 }
 
 const UmbraContext = createContext<UmbraContextValue | null>(null);
@@ -186,10 +205,11 @@ export function UmbraProvider({
   const attributes = useScope({ density: 'default', context: 'violet', ...scope }, extra);
 
   const [bound] = useState(() => new Map<string, () => void>());
+  const [bindings] = useState(createBindings);
   const registry = useMemo(() => resolveShortcuts(shortcuts), [shortcuts]);
   const value = useMemo<UmbraContextValue>(
-    () => ({ icons: { ...defaultIcons, ...icons }, registry, bound }),
-    [icons, registry, bound],
+    () => ({ icons: { ...defaultIcons, ...icons }, registry, bound, bindings }),
+    [icons, registry, bound, bindings],
   );
 
   // Once per conflict, and never during render.
@@ -242,7 +262,7 @@ const noSubscription = () => () => {};
  * another shortcut.
  */
 export function useShortcut(id: string | undefined, handler: (() => void) | undefined) {
-  const { registry, bound } = useUmbra();
+  const { registry, bound, bindings } = useUmbra();
   const latest = useRef(handler);
   useEffect(() => {
     latest.current = handler;
@@ -254,42 +274,53 @@ export function useShortcut(id: string | undefined, handler: (() => void) | unde
     if (!known) return warn(`shortcut "${id}" is not in the provider's shortcut list.`);
     const run = () => latest.current?.();
     bound.set(id, run);
+    bindings.changed();
     return () => {
-      if (bound.get(id) === run) bound.delete(id);
+      if (bound.get(id) !== run) return;
+      bound.delete(id);
+      bindings.changed();
     };
-  }, [id, enabled, known, bound]);
+  }, [id, enabled, known, bound, bindings]);
   const shortcut = ownedShortcut(registry, id);
   return shortcut ? formatKeys(shortcut.keys) : undefined;
 }
 
-/** One registered shortcut as the command palette lists it. */
+/** One registered shortcut as the command palette and the shortcuts sheet list it. */
 export interface ListedShortcut {
   id: string;
   label: string;
   /** The key hint, for example "Ctrl+K". */
   keys: string;
+  /** The combination as it was registered (`Mod+K`), for drawing the keys one by one. */
+  combination: string;
+  /** The heading it is listed under; undefined for an app shortcut without a `group`. */
+  group: string | undefined;
+  /** One of the library's own shortcuts. */
+  reserved: boolean;
   /** Whether anything would run now: the shortcut has an `action`, or a mounted component bound it. */
   canRun: () => boolean;
   /** Runs what the keys would run. */
   run: () => void;
 }
 
-/** Internal: the shortcuts that own their keys and have a label, for the command palette. */
+/**
+ * Internal: the shortcuts that own their keys and have a label. The one source of the command palette
+ * (`includeShortcuts`) and the shortcuts sheet, so both list the same shortcuts with the same keys.
+ */
 export function useShortcutList(): ListedShortcut[] {
-  const { registry, bound } = useUmbra();
+  const { registry, bound, bindings } = useUmbra();
+  // A new list whenever a component binds or unbinds a shortcut, so what `canRun` says is drawn again.
+  const version = useSyncExternalStore(bindings.subscribe, bindings.version, bindings.version);
   return useMemo(
     () =>
-      [...registry.owners.values()]
-        .map((id) => registry.shortcuts.get(id)!)
-        .filter((s) => s.label)
-        .map((s) => ({
-          id: s.id,
-          label: s.label,
-          keys: formatKeys(s.keys),
-          // Looked up when asked: components bind and unbind as they mount.
-          canRun: () => !!(bound.get(s.id) ?? s.action),
-          run: () => (bound.get(s.id) ?? s.action)?.(),
-        })),
-    [registry, bound],
+      listShortcuts(registry).map(({ action, ...s }) => ({
+        ...s,
+        keys: formatKeys(s.keys),
+        combination: s.keys,
+        canRun: () => !!(bound.get(s.id) ?? action),
+        run: () => (bound.get(s.id) ?? action)?.(),
+      })),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `version` stands for the content of `bound`
+    [registry, bound, version],
   );
 }

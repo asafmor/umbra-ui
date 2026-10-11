@@ -1,0 +1,84 @@
+/* Colour and font come from where the block sits: the bar's text colour, on any brand. */
+.root {
+  display: flex;
+  min-width: 0;
+  max-width: var(--umbra-context-block-max-width, none);
+  color: inherit;
+}
+
+.control {
+  flex: 0 1 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-context-block-gap, var(--umbra-space-4));
+  min-width: 0;
+  margin: 0;
+  padding: var(--umbra-space-2) var(--umbra-space-3);
+  border: 0;
+  border-radius: var(--umbra-radius-control);
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: end;
+  text-decoration: none;
+  transition: background-color var(--umbra-motion-duration-fast);
+}
+
+/* Plain text needs no room for a hover fill. */
+.control[data-plain] {
+  padding: 0;
+}
+
+.root[data-interactive] > .control {
+  cursor: pointer;
+}
+
+.root[data-interactive] > .control:hover {
+  background: var(--umbra-context-block-hover-bg, color-mix(in oklab, currentColor 12%, transparent));
+}
+
+.root[data-interactive] > .control:active {
+  background: color-mix(in oklab, currentColor 20%, transparent);
+}
+
+.root[data-disabled] > .control {
+  opacity: var(--umbra-state-disabled-opacity);
+}
+
+.text {
+  flex: 0 1 auto;
+  min-width: 0;
+  display: grid;
+}
+
+.primary,
+.secondary {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.primary {
+  font: var(--umbra-context-block-primary-font, var(--umbra-font-label));
+  font-weight: 700;
+}
+
+/* Quieter by weight, not by opacity: the bar's contrast holds for both lines. */
+.secondary {
+  font: var(--umbra-context-block-secondary-font, var(--umbra-font-label));
+  font-weight: 400;
+}
+
+.chip {
+  flex: none;
+  padding: var(--umbra-context-block-chip-padding-y, var(--umbra-space-1))
+    var(--umbra-context-block-chip-padding-x, var(--umbra-space-3));
+  border: var(--umbra-border-width) solid var(--umbra-context-block-chip-border, currentColor);
+  border-radius: var(--umbra-context-block-chip-radius, var(--umbra-radius-control));
+  background: var(--umbra-context-block-chip-bg, transparent);
+  font: var(--umbra-context-block-chip-font, var(--umbra-font-label));
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}

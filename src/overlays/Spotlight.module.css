@@ -1,0 +1,108 @@
+/*
+ * The spotlight covers the window and takes no presses itself: the shields do. It appears with a
+ * fade and nothing moves, so reduced motion changes nothing (plan/interaction.md).
+ */
+.root {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  animation: appear var(--umbra-spotlight-duration, var(--umbra-motion-duration-slow))
+    var(--umbra-motion-easing-enter);
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Transparent: it stops presses on what is dimmed. The dim itself is painted by the ring. */
+.shield {
+  position: absolute;
+  pointer-events: auto;
+}
+
+/*
+ * The cut-out. It is empty and takes no presses, so an interactive target under it is used as usual.
+ * Two shadows: the crisp ring around the hole, and the dim, spread over the rest of the window. A
+ * shadow follows the corner radius, which four rectangles could not, and needs no mask.
+ */
+.ring {
+  position: absolute;
+  pointer-events: none;
+  border-radius: var(--umbra-spotlight-radius, var(--umbra-radius-card));
+  box-shadow:
+    0 0 0 var(--umbra-spotlight-ring-width, calc(2 * var(--umbra-border-width)))
+      var(--umbra-spotlight-ring-color, var(--umbra-color-base-text-primary)),
+    0 0 0 100vmax var(--umbra-spotlight-dim, var(--umbra-color-base-scrim));
+}
+
+.callout {
+  --pad: var(--umbra-spotlight-callout-padding, var(--umbra-density-card-padding));
+
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--umbra-space-3);
+  width: min(var(--umbra-spotlight-callout-width, 320px), calc(100vw - 2 * var(--umbra-space-5)));
+  padding: var(--pad);
+  border: var(--umbra-border-width) solid
+    var(--umbra-spotlight-callout-border, var(--umbra-color-base-border-strong));
+  border-radius: var(--umbra-spotlight-callout-radius, var(--umbra-radius-card));
+  background: var(--umbra-spotlight-callout-bg, var(--umbra-color-base-surface2));
+  color: var(--umbra-color-base-text-primary);
+  box-shadow: var(--umbra-elevation-overlay);
+  font: var(--umbra-font-body);
+  overflow: auto;
+  outline: none;
+}
+
+/*
+ * React Aria ends a popover with a hidden "Dismiss" button for screen readers. In a spotlight that
+ * cannot be dismissed it would do nothing, so it is not there.
+ */
+.callout:not([data-dismissable]) > :last-child {
+  display: none;
+}
+
+/* The callout takes focus at every step. The ring is drawn inside, where nothing clips it. */
+.callout:focus-visible {
+  outline: var(--umbra-state-focus-ring-width) solid
+    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-fixed-focus-ring)));
+  outline-offset: calc(-1 * var(--umbra-state-focus-ring-width));
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--umbra-space-2);
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  font: var(--umbra-spotlight-title-font, var(--umbra-font-card-title));
+  text-transform: var(--umbra-font-card-title-transform);
+  letter-spacing: 0.01em;
+  overflow-wrap: anywhere;
+}
+
+.body {
+  color: var(--umbra-color-base-text-secondary);
+  overflow-wrap: anywhere;
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--umbra-space-3);
+}
+
+.progress {
+  margin-inline-end: auto;
+  font: var(--umbra-font-label);
+  color: var(--umbra-color-base-text-secondary);
+  white-space: nowrap;
+}

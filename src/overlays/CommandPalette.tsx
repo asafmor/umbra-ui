@@ -10,6 +10,7 @@ import {
 import { Dialog, Modal, ModalOverlay } from 'react-aria-components';
 import { Skeleton } from '../basics/Skeleton';
 import { dataState } from '../internal/dataState';
+import { Kbd } from '../internal/Kbd';
 import { Icon, IconSlot } from '../provider/icons';
 import { useScopeAttributes, useShortcut, useShortcutList } from '../provider/UmbraProvider';
 import { cx, renderPart, type Part } from '../utils/parts';
@@ -317,7 +318,7 @@ function Panel({
   );
   const hint = (keys: string, text: string) => (
     <span className={styles.hint}>
-      <kbd>{keys}</kbd> {text}
+      <Kbd>{keys}</Kbd> {text}
     </span>
   );
   let index = -1;
