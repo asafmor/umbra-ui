@@ -11,7 +11,7 @@ import {
 import { IconButton } from '../basics/IconButton';
 import { Skeleton } from '../basics/Skeleton';
 import { dataState, type DataStateProps } from '../internal/dataState';
-import { focusableIn } from '../internal/focus';
+import { focusableIn, holdFocus } from '../internal/focus';
 import { Icon } from '../provider/icons';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './HorizontalScroller.module.css';
@@ -61,9 +61,12 @@ export interface HorizontalScrollerRootProps extends SlotProps, DataStateProps, 
   children?: ReactNode | undefined;
 }
 
-/** Controls that use the arrow keys themselves: the row leaves the keys to them. */
+/**
+ * Controls that use the arrow keys themselves: the row leaves the keys to them. A checkbox or a switch
+ * is an `input` that does not; the trigger of a `Select` is a button that does.
+ */
 const OWN_ARROWS =
-  'input, textarea, select, [contenteditable], [role="slider"], [role="spinbutton"], [role="tab"], [role="radio"], [role="menuitem"], [role="option"], [role="row"], [role="gridcell"], [role="combobox"]';
+  'input:not([type="checkbox"]), textarea, select, [contenteditable], [role="slider"], [role="spinbutton"], [role="tab"], [role="radio"], [role="menuitem"], [role="option"], [role="row"], [role="gridcell"], [role="combobox"], [aria-haspopup="listbox"]';
 
 function Root({
   itemWidth,
@@ -92,18 +95,14 @@ function Root({
   // State, not a ref: the list comes and goes with the empty and error states, and the effect follows it.
   const [list, setList] = useState<HTMLDivElement | null>(null);
   const [more, setMore] = useState({ start: false, end: false });
-  /** The button that takes the focus as soon as it is drawn (see `hand` below). */
-  const handTo = useRef<'previous' | 'next' | null>(null);
+  // A button that goes when its edge is reached hands the focus on (`holdFocus`): to the other button,
+  // else into the row. Whatever the button is: the default one, or the app's own through `parts`.
+  const refocus = useRef<(() => void) | null>(null);
+  const shown = useRef(more);
   useLayoutEffect(() => {
-    const part = handTo.current;
-    handTo.current = null;
-    if (!part || !list) return;
-    const target =
-      ref.current?.querySelector<HTMLElement>(`:scope > [data-part="${part}"] button`) ??
-      focusableIn(list)[0] ??
-      list.parentElement;
-    target?.focus({ preventScroll: true });
-  }, [more, list, ref]);
+    refocus.current?.();
+    refocus.current = null;
+  }, [more]);
   const state = dataState(
     { loading, empty, error, onRetry, retryLabel },
     { isEmpty: Children.count(children) === 0, variant: 'inline', part: true },
@@ -116,18 +115,14 @@ function Root({
     const measure = () => {
       const position = Math.abs(view.scrollLeft);
       const next = { start: position > 1, end: position < view.scrollWidth - view.clientWidth - 1 };
-      // A button that is about to go hands the focus on: to the other button, else into the row. The
-      // other one may not be drawn yet (both changed in one scroll): it is then focused once it is.
-      const control = (part: string) => root.querySelector<HTMLElement>(`:scope > [data-part="${part}"]`);
-      const hand = (leaving: 'previous' | 'next', other: 'previous' | 'next', otherStays: boolean) => {
-        if (!control(leaving)?.contains(document.activeElement)) return;
-        const target = control(other)?.querySelector('button');
-        if (target || !otherStays) (target ?? focusableIn(list)[0] ?? view).focus({ preventScroll: true });
-        else handTo.current = other;
-      };
-      if (!next.start) hand('previous', 'next', next.end);
-      if (!next.end) hand('next', 'previous', next.start);
-      setMore((prev) => (prev.start === next.start && prev.end === next.end ? prev : next));
+      if (shown.current.start === next.start && shown.current.end === next.end) return;
+      shown.current = next;
+      // Asked once the buttons have been drawn again: the one that is left is outside the list.
+      refocus.current ??= holdFocus(
+        root,
+        () => focusableIn(root).find((el) => !view.contains(el)) ?? focusableIn(list)[0] ?? view,
+      );
+      setMore(next);
     };
     // Arrow keys move between items, on top of the natural tab order. A native listener: it is on a list.
     const onKeyDown = (event: KeyboardEvent) => {
