@@ -4,16 +4,19 @@
 //    A small component must stay small, and no import may carry code it does not use.
 // 2. Production: the development warnings are gone from a production bundle.
 // 3. The tarball: no story, sample or test file; every declaration is reachable and resolvable.
-// 4. Names: components keep their names, blocks have a displayName, source maps are shipped,
-//    and every module starts with "use client".
+// 4. Names: components keep their names, blocks have a displayName, and every module starts with
+//    "use client".
+// 4b. Source maps: every module has one, with every source embedded and under src/, and the name of
+//    every function and every `throw` in the built files resolves to its line of the source.
 // 5. Server rendering: a page renders with react-dom/server in Node, without a window.
 // 6. Types: a consumer project type-checks against the tarball under `bundler`, `node16` and
 //    `nodenext` with `skipLibCheck: false` and `exactOptionalPropertyTypes`; a wrong prop is an error
 //    under each, and optional props take an explicit `undefined`.
 import { build as esbuild } from 'esbuild';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { SourceMap } from 'node:module';
+import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { gzipSync } from 'node:zlib';
 import { build as vite } from 'vite';
@@ -163,9 +166,13 @@ if (!sizesOnly) {
   const unwanted = /(^|[/.])(samples|storyKit|storyParts|stories|placeholders)\b|\.stories\.|\.test\./i;
   for (const file of packed) {
     if (unwanted.test(file)) fail(`${file}: story or test code is published`);
-    // The two entries only re-export, so they have nothing to map.
-    if (file.endsWith('.js') && !/^dist\/(index|charts)\.js$/.test(file) && !packed.includes(`${file}.map`))
-      fail(`${file}: no source map`);
+    if (file.endsWith('.js') && !packed.includes(`${file}.map`)) {
+      // The two entries have no map, and need none while they hold nothing but imports and exports.
+      const code = readFileSync(join(installed, file), 'utf8').replace(/\/\*.*?\*\//g, '');
+      const onlyExports =
+        /^(\s*(['"]use client['"];|import\s[^;]+;|export\s*\{[^}]*\}(\s*from\s*['"][^'"]+['"])?;))*\s*$/;
+      if (!/^dist\/(index|charts)\.js$/.test(file) || !onlyExports.test(code)) fail(`${file}: no source map`);
+    }
     if (!file.endsWith('.d.ts')) continue;
     const text = readFileSync(join(installed, file), 'utf8');
     if (/@tanstack|react-aria|d3-/.test(text)) fail(`${file}: a third-party type is in the public types`);
@@ -180,8 +187,68 @@ if (!sizesOnly) {
     if (!/^['"]use client['"];/.test(readFileSync(join(installed, file), 'utf8')))
       fail(`${file}: does not start with "use client"`);
   }
-  const map = JSON.parse(readFileSync(join(installed, 'dist/layout/Card.js.map'), 'utf8'));
-  if (!map.sourcesContent?.[0]) fail('dist/layout/Card.js.map: the source is not embedded');
+  // --- 4b. Source maps -----------------------------------------------------------------------------
+
+  // What a developer gets from a map: a frame of an error stack, or a breakpoint, lands on the line of
+  // the `.tsx` it came from. Checked at every position that can be recognised in both files without
+  // parsing: the name of each top-level function, and each `throw`.
+  const known = [
+    [/^(?:export )?(?:async )?function (\w+?)(?:\$\d+)?\(/, (name) => new RegExp(`\\bfunction ${name}\\b`)],
+    [/\b(throw) /, () => /\bthrow\b/],
+  ];
+  let positions = 0;
+  const located = new Set();
+  for (const file of packed.filter((f) => f.endsWith('.js.map'))) {
+    const js = file.slice(0, -'.map'.length);
+    if (!packed.includes(js)) {
+      fail(`${file}: a map without its module`);
+      continue;
+    }
+    const code = readFileSync(join(installed, js), 'utf8');
+    if (!code.trimEnd().endsWith(`//# sourceMappingURL=${file.split('/').pop()}`))
+      fail(`${js}: does not end with a sourceMappingURL for its map`);
+    const map = JSON.parse(readFileSync(join(installed, file), 'utf8'));
+    if (!map.sources?.length) fail(`${file}: names no source`);
+    const sources = (map.sources ?? []).map((source, i) => {
+      const path = relative(installed, resolve(dirname(join(installed, file)), source));
+      const text = map.sourcesContent?.[i];
+      if (isAbsolute(source) || /^\w+:/.test(source))
+        fail(`${file}: the source path is absolute (${source})`);
+      else if (!path.startsWith('src/') || path.includes('node_modules'))
+        fail(`${file}: a source is outside src/ (${source})`);
+      else if (unwanted.test(path)) fail(`${file}: maps story or test code (${source})`);
+      if (typeof text !== 'string' || !text) fail(`${file}: the source of ${source} is not embedded`);
+      // The embedded source is the file in the repository, so a line number is a line a developer can open.
+      else if (
+        path.startsWith('src/') &&
+        (!existsSync(join(root, path)) || text !== readFileSync(join(root, path), 'utf8'))
+      )
+        fail(`${file}: the embedded source is not ${path} as it is now. Run "npm run build".`);
+      return { path, lines: (text ?? '').split('\n') };
+    });
+    // A CSS module is a list of class names: nothing in it to map.
+    if (/\.module\.js$/.test(js)) continue;
+    const mappings = new SourceMap(map);
+    code.split('\n').forEach((line, i) => {
+      for (const [pattern, original] of known) {
+        const match = pattern.exec(line);
+        if (!match) continue;
+        const entry = mappings.findEntry(i, line.indexOf(match[1], match.index));
+        const source = sources[map.sources.indexOf(entry.originalSource)] ?? sources[0];
+        positions++;
+        located.add(js);
+        if (!original(match[1]).test(source.lines[entry.originalLine] ?? ''))
+          fail(
+            `${js}:${i + 1} (${match[1]}) maps to ${source.path}:${entry.originalLine + 1}, which is another line: ` +
+              JSON.stringify((source.lines[entry.originalLine] ?? '').trim().slice(0, 60)),
+          );
+      }
+    });
+  }
+  console.log(`source maps: ${positions} positions in ${located.size} modules resolve to their source line`);
+  // So that a changed build output cannot make the check pass by recognising nothing.
+  if (positions < 300 || located.size < 60)
+    fail(`source maps: only ${positions} positions in ${located.size} modules were checked`);
 
   const lib = await import(pathToFileURL(join(installed, 'dist/index.js')).href);
   const charts = await import(pathToFileURL(join(installed, 'dist/charts.js')).href);

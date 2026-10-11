@@ -68,7 +68,7 @@
   transform-origin: top right;
 }
 
-.chip[data-icon-only] > [data-umbra='badge']:dir(rtl) {
+.chip[data-icon-only] > [data-umbra='badge']:is([dir='rtl'], [dir='rtl'] *) {
   transform-origin: top left;
 }
 

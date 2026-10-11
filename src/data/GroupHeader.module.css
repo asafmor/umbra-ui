@@ -90,6 +90,6 @@
   rotate: -90deg;
 }
 
-.toggle[aria-expanded='false']:dir(rtl) > * {
+.toggle[aria-expanded='false']:is([dir='rtl'], [dir='rtl'] *) > * {
   rotate: 90deg;
 }

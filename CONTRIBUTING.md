@@ -53,6 +53,14 @@ The rules for building a component (the four customisation layers, tokens, state
 naming) are in [`plan/prompts/component-brief.md`](plan/prompts/component-brief.md). Read it before
 adding one; it is short.
 
+### Browsers
+
+The tests run in Chromium. Firefox 121 and Safari 16.2 are supported too, so `npm run lint` fails when
+the CSS or the code uses a feature newer than the minimum versions (`scripts/check-browsers.mjs`). When
+it does: use an older form, or add a fallback and a note in that file saying what happens without the
+feature. A right-to-left rule is written `.x:is([dir='rtl'], [dir='rtl'] *)`, not `.x:dir(rtl)`.
+If you can, open your story in Firefox and Safari: [what to look at](docs/browser-checks.md).
+
 ### Adding a changeset
 
 ```sh
