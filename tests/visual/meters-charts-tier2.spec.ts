@@ -1333,7 +1333,7 @@ test.describe('Review 2', () => {
     const small = page.locator('[data-tile="small"]');
     await expect(small.getByRole('img')).toHaveAttribute(
       'aria-label',
-      '4 values, first 10, last 20, lowest 10, highest 30, rising',
+      '3 values, first 10, last 20, lowest 10, highest 30, rising',
     );
     const meters = small.locator('[role="meter"], [role="progressbar"]');
     await expect(meters).toHaveCount(5);

@@ -261,6 +261,16 @@
   padding: var(--umbra-space-2) var(--pad) var(--pad);
 }
 
+/*
+ * A chart, table or list that fills (`height="fill"`) beside other content: the body is as tall as its
+ * content, and a height of 100% of that is the whole body, so the two together were taller than it and
+ * the body scrolled. In a column the one that fills gives way to what is beside it.
+ */
+.body > [data-part='viewport']:has(> [data-height='fill']) {
+  display: flex;
+  flex-direction: column;
+}
+
 .nav + .body > [data-part='viewport'] {
   padding-inline-start: var(--umbra-space-5);
 }
