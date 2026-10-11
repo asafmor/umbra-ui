@@ -498,3 +498,32 @@ export type {
   DivergingMeterScale,
   DivergingMeterDirection,
 } from './meters/DivergingMeter';
+export { ContextBlock } from './shell/ContextBlock';
+export type { ContextBlockProps, ContextBlockRootProps, ContextBlockChipProps } from './shell/ContextBlock';
+export { EntitySwitcher } from './shell/EntitySwitcher';
+export type {
+  EntitySwitcherProps,
+  EntitySwitcherRootProps,
+  EntitySwitcherItem,
+  EntitySwitcherId,
+  EntitySwitcherRowPartProps,
+} from './shell/EntitySwitcher';
+export { WidgetBoard } from './layout/WidgetBoard';
+export type {
+  WidgetBoardProps,
+  WidgetBoardRootProps,
+  WidgetBoardGridProps,
+  WidgetBoardItemProps,
+  WidgetBoardItemState,
+  WidgetBoardWidgetProps,
+  WidgetBoardCollapseAllProps,
+  WidgetBoardCollapseAllPartProps,
+  WidgetBoardId,
+} from './layout/WidgetBoard';
+export { HorizontalScroller } from './layout/HorizontalScroller';
+export type {
+  HorizontalScrollerProps,
+  HorizontalScrollerRootProps,
+  HorizontalScrollerItemProps,
+  HorizontalScrollerButtonProps,
+} from './layout/HorizontalScroller';

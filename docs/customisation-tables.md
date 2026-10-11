@@ -39,10 +39,12 @@ translate a component. A name followed by brackets can also be a function of wha
 | [`DateChip`](#datechip) | `selectedLabel`, `todayLabel` |
 | [`DivergingMeter`](#divergingmeter) | `noValueLabel`, `increasedLabel`, `decreasedLabel` |
 | [`DonutChart`](#donutchart) | `retryLabel`, `allHiddenLabel`, `pointsLabel`, `legendLabel`, `valueLabel` |
+| [`EntitySwitcher`](#entityswitcher) | `emptyLabel`, `searchLabel`, `noResultsLabel`, `previousLabel`, `nextLabel` |
 | [`FormField`](#formfield) | `requiredLabel`, `optionalLabel` |
 | [`GroupHeader`](#groupheader) | `moreLabel`, `collapseLabel`, `expandLabel` |
 | [`Heatmap`](#heatmap) | `retryLabel`, `allHiddenLabel`, `pointsLabel`, `legendLabel`, `lowLabel`, `highLabel` |
 | [`HistoryButtons`](#historybuttons) | `backLabel`, `forwardLabel`, `entriesLabel` |
+| [`HorizontalScroller`](#horizontalscroller) | `previousLabel`, `nextLabel`, `retryLabel` |
 | [`IconButton`](#iconbutton) | `loadingLabel` |
 | [`KeyValue`](#keyvalue) | `increasedLabel`, `decreasedLabel` |
 | [`KeyValueList`](#keyvaluelist) | `increasedLabel`, `decreasedLabel`, `retryLabel` |
@@ -89,6 +91,7 @@ translate a component. A name followed by brackets can also be a function of wha
 | [`ValuePill`](#valuepill) | `levelLabel(level, steps)`, `increasedLabel`, `decreasedLabel` |
 | [`VerticalNav`](#verticalnav) | `collapseLabel`, `expandLabel` |
 | [`WeekStrip`](#weekstrip) | `freeLabel`, `retryLabel` |
+| [`WidgetBoard`](#widgetboard) | `collapseAllLabel`, `expandAllLabel`, `retryLabel` |
 
 ## Accordion
 
@@ -885,6 +888,33 @@ The confirm step before an action that cannot be undone. An alert dialog: it ope
 
 **Blocks**: none.
 
+## ContextBlock
+
+The two-line status of a `TopBar`, with a short value in a chip, usually the time.
+
+**Tokens**: none of its own.
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `primary` | `ReactNode` | The main line. |
+| `secondary` | `ReactNode` | The quieter second line. |
+| `chip` | `ReactNode` | The chip's content: any short value. Wins over `time`. |
+| `time` | `string \| number \| Date` | A moment, shown in the chip in the provider's locale: a `Date`, an ISO string or milliseconds. |
+| `timeFormat` | `Intl.DateTimeFormatOptions` | How `time` is written. Defaults to hour and minute. |
+| `live` | `boolean` | Makes the chip a clock: it starts at `time`, or at the device's time, and moves on each minute. Nothing is announced. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `renderLink` | `((props: LinkRenderProps) => ReactNode)` | Plugs in the app's router link. Defaults to a plain `<a>`. |
+| `aria-label` | `string` | Replaces the name a button or link takes from its lines. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `href` | `string` | Makes the block a link. |
+| `disabled` | `boolean` |  |
+| `onPress` | `(() => void)` | Makes the block a button. |
+
+**Parts**: `primary`, `secondary`, `chip`.
+
+**Blocks**: `ContextBlock.Root`, `ContextBlock.Text`, `ContextBlock.Primary`, `ContextBlock.Secondary`, `ContextBlock.Chip`.
+
 ## DataTable
 
 A table of rows and columns that fills its slot and scrolls inside it: sorting, selection, groups, pinned columns, and columns that hide by priority as it narrows.
@@ -1249,6 +1279,57 @@ A small mark for an entity (a logo, a flag, a category glyph), with an optional 
 
 **Blocks**: `EntityIcon.Root`, `EntityIcon.Mark`, `EntityIcon.Label`.
 
+## EntitySwitcher
+
+The current entity of a header, with steps to its siblings and a searchable picker.
+
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-entity-switcher-gap` | `--umbra-space-2` (4px) |
+| `--umbra-entity-switcher-hover-bg` | `color-mix(in oklab, currentColor 12%, transparent)` |
+| `--umbra-entity-switcher-icon-size` | `1.25em` |
+| `--umbra-entity-switcher-name-min-width` | `4ch` |
+| `--umbra-entity-switcher-padding-x` | `--umbra-space-2` (4px) |
+| `--umbra-entity-switcher-picker-width` | `280px` |
+| `--umbra-entity-switcher-radius` | `--umbra-radius-control` (4px) |
+| `--umbra-entity-switcher-stepper-direction` | `column` |
+| `--umbra-entity-switcher-stepper-size` | `24px` |
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `value` | `string` | Controlled: the id of the current entity. |
+| `onChange` | `((id: EntitySwitcherId) => void)` | Called with the id when another entity is chosen, by a row or a stepper. |
+| `renderLink` | `((props: LinkRenderProps) => ReactNode)` | Plugs in the app's router link for the rows of items with `href`. Defaults to a plain `<a>`. |
+| `aria-label` | `string` | Accessible name of the picker and of the group of steppers. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `open` | `boolean` | Controlled state of the picker. |
+| `defaultOpen` | `boolean` |  |
+| `loading` | `boolean` | Shows skeleton rows in the picker. |
+| `disabled` | `boolean` |  |
+| `wrap` | `boolean` | Stepping past the last entity goes to the first. Otherwise the stepper at an end is disabled. |
+| `emptyLabel` | `string` |  |
+| `defaultValue` | `string` |  |
+| `placeholder` | `ReactNode` | Shown in place of the name while no entity is current. |
+| `onOpenChange` | `((open: boolean) => void)` |  |
+| `onSearchChange` | `((text: string) => void)` | Called with the search text, for an app that loads the matches itself. |
+| `searchable` | `boolean` | Shows the search field in the picker. |
+| `searchLabel` | `string` |  |
+| `noResultsLabel` | `string` |  |
+| `onAction` | `((id: EntitySwitcherId) => void)` | Called with the id for every choice, also when it is the current entity. |
+| `previousLabel` | `string` | Built-in strings. |
+| `nextLabel` | `string` |  |
+| `items` (required) | `EntitySwitcherItem[]` | The entities to choose from. |
+| `stepperPosition` | `"start" \| "end"` | `start` puts the steppers before the name, for a page title beside its mark. |
+| `skeletonRows` | `number` | Number of skeleton rows shown while `loading`. |
+
+**Parts**: `icon`, `name`, `caret`, `steppers`, `search`, `row`.
+
+**Blocks**: `EntitySwitcher.Root`, `EntitySwitcher.Trigger`, `EntitySwitcher.Steppers`, `EntitySwitcher.Picker`.
+
 ## FormField
 
 Pairs a label, a description and an error message with one control: a row of a form or settings list.
@@ -1467,6 +1548,52 @@ Back and forward. On their own they drive the browser history; with `onBack` and
 **Parts**: `backIcon`, `forwardIcon`, `entriesIcon`.
 
 **Blocks**: none.
+
+## HorizontalScroller
+
+A row of cards or tiles that scrolls sideways inside itself. Each child is one item.
+
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-horizontal-scroller-button-size` | `--umbra-density-control-height` (36px at the default density) |
+| `--umbra-horizontal-scroller-fade-size` | `--umbra-space-8` (32px) |
+| `--umbra-horizontal-scroller-gap` | `--umbra-density-gap` (20px at the default density) |
+| `--umbra-horizontal-scroller-item-width` | `auto` or `160px` |
+| `--umbra-horizontal-scroller-skeleton-height` | `72px` |
+| `--umbra-layout-gap` | `--umbra-density-gap` (20px at the default density) |
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `itemWidth` | `string \| number` | The width of every item: pixels, or any CSS length. Without it each item keeps its own width. |
+| `gap` | `0 \| 4 \| 3 \| 1 \| 2 \| 5 \| 6 \| 7 \| 8 \| 9` | Overrides the gap between items, which otherwise follows the density level. |
+| `scrollbar` | `"none" \| "auto" \| "hover"` | `none` draws no thumb at all; `hover` and `auto` are the thin thumb of a `ScrollArea`. |
+| `snap` | `boolean` | Scrolling comes to rest at the start of an item. |
+| `fade` | `boolean` | Fades the items out at an edge that has more. It is a mask, so it is right on any background. |
+| `onReachEnd` | `(() => void)` | Called when the far edge is reached, for loading more. Once each time it is reached. |
+| `skeletonItems` | `number` | Number of placeholder items shown while `loading`. |
+| `previousLabel` | `string` | Accessible names of the two buttons. |
+| `nextLabel` | `string` |  |
+| `aria-label` | `string` | Accessible name of the list. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `children` | `ReactNode` | `HorizontalScroller.Item` elements. |
+| `size` | `number \| "content"` | Share of the parent's space: a weight, or `"content"` to take the size of the content. Default 1. |
+| `priority` | `number` | Which child gives way first when space runs out. Higher stays longer; ties give way from the end. Default 0. |
+| `minWidth` | `number` | The width the child needs. When the children of a `Columns` cannot all have theirs, the `Columns` shows one child at a time, with tabs, as it does below the minimum window. |
+| `minHeight` | `number` | Below this height a parent `Stack` may collapse the child to its header. |
+| `label` | `string` | Tab label when a parent `Columns` shows one child at a time. |
+| `loading` | `boolean` | Shows skeletons in the final layout and marks the component busy. |
+| `empty` | `ReactNode \| DataStateContent` | Shown when there is no data: text, a node, or `{ title, description, icon, action }`. Defaults to a short English text. |
+| `error` | `ReactNode \| DataStateContent` | Shown in place of the data when set: text, a node, `{ title, description, icon, action }`, or `true` for a default text. |
+| `onRetry` | `(() => void)` | Adds a retry button to the error state. |
+| `retryLabel` | `string` | Label of the retry button. |
+
+**Parts**: `previous`, `next`, `skeleton`.
+
+**Blocks**: `HorizontalScroller.Root`, `HorizontalScroller.Item`.
 
 ## IconButton
 
@@ -4222,3 +4349,47 @@ Seven days side by side, each with its slots: a week at a glance, small enough f
 **Parts**: `day`, `slot`, `placeholder`, `skeleton`, `state`.
 
 **Blocks**: `WeekStrip.Root`, `WeekStrip.Row`, `WeekStrip.Cell`.
+
+## WidgetBoard
+
+A packed board of collapsible cards of different heights. It scrolls inside itself.
+
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-layout-gap` | `--umbra-density-gap` (20px at the default density) |
+| `--umbra-widget-board-gap` | `--umbra-density-gap` (20px at the default density) |
+| `--umbra-widget-board-min-column-width` | `280px` |
+| `--umbra-widget-board-toolbar-gap` | `--umbra-space-3` (8px) |
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `skeletonItems` | `number` | Number of placeholder cards shown while `loading`. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `children` | `ReactNode` | `WidgetBoard.Widget` and `WidgetBoard.Item` elements. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `size` | `number \| "content"` | Share of the parent's space: a weight, or `"content"` to take the size of the content. Default 1. |
+| `label` | `string` | Tab label when a parent `Columns` shows one child at a time. |
+| `priority` | `number` | Which child gives way first when space runs out. Higher stays longer; ties give way from the end. Default 0. |
+| `minWidth` | `number` | The width the child needs. When the children of a `Columns` cannot all have theirs, the `Columns` shows one child at a time, with tabs, as it does below the minimum window. |
+| `minHeight` | `number` | Below this height a parent `Stack` may collapse the child to its header. |
+| `onCollapsedChange` | `((ids: WidgetBoardId[]) => void)` |  |
+| `height` | `FillHeight` | `fill` (default) takes the slot and scrolls inside; `content` is as tall as the widgets; or pixels. |
+| `collapsedIds` | `string[]` | Controlled: the ids of the collapsed widgets. |
+| `defaultCollapsedIds` | `string[]` |  |
+| `aria-label` | `string` | Accessible name of the list of widgets. |
+| `columns` | `number` | A fixed number of columns. Wins over `minColumnWidth`. |
+| `minColumnWidth` | `number` | The board has as many columns as fit at this width or more, in pixels. |
+| `collapseAllLabel` | `string` |  |
+| `expandAllLabel` | `string` |  |
+| `loading` | `boolean` | Shows skeletons in the final layout and marks the component busy. |
+| `empty` | `ReactNode \| DataStateContent` | Shown when there is no data: text, a node, or `{ title, description, icon, action }`. Defaults to a short English text. |
+| `error` | `ReactNode \| DataStateContent` | Shown in place of the data when set: text, a node, `{ title, description, icon, action }`, or `true` for a default text. |
+| `onRetry` | `(() => void)` | Adds a retry button to the error state. |
+| `retryLabel` | `string` | Label of the retry button. |
+
+**Parts**: `toolbar`, `collapseAll`, `skeleton`.
+
+**Blocks**: `WidgetBoard.Root`, `WidgetBoard.Toolbar`, `WidgetBoard.CollapseAll`, `WidgetBoard.Grid`, `WidgetBoard.Item`, `WidgetBoard.Widget`.
