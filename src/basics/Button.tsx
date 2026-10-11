@@ -8,7 +8,7 @@ import {
 } from 'react-aria-components';
 import { ForceCollapseContext, OverflowMenuContext } from '../internal/contexts';
 import { useShrinkLevel } from '../internal/useShrinkLevel';
-import { CheckMark, Hint } from '../overlays/Menu';
+import { CheckMark, Hint } from '../internal/menuRow';
 import menuStyles from '../overlays/Menu.module.css';
 import { Tooltip } from '../overlays/Tooltip';
 import { Icon, IconSlot } from '../provider/icons';

@@ -31,7 +31,7 @@
   ],
   "scripts": {
     "tokens": "node scripts/build-tokens.mjs",
-    "build": "npm run tokens && vite build && tsc -p tsconfig.build.json",
+    "build": "npm run tokens && vite build && tsc -p tsconfig.build.json && node scripts/fix-types.mjs",
     "typecheck": "npm run tokens && tsc --noEmit",
     "lint": "eslint . && prettier --check . && node scripts/build-customisation.mjs --check && npm run docs:check",
     "format": "prettier --write .",
@@ -88,5 +88,24 @@
     "typescript-eslint": "^8.71.1",
     "vite": "^8.3.4",
     "vitest": "^5.0.3"
-  }
+  },
+  "homepage": "https://github.com/asafmor/umbra-ui#readme",
+  "bugs": {
+    "url": "https://github.com/asafmor/umbra-ui/issues"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "keywords": [
+    "react",
+    "components",
+    "ui",
+    "design-system",
+    "dashboard",
+    "data-table",
+    "charts",
+    "layout",
+    "accessibility",
+    "dark-theme"
+  ]
 }
