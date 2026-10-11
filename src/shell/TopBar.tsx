@@ -140,7 +140,11 @@ function Actions({ pinned, className, style, children }: TopBarActionsProps) {
   return (
     <div data-part="actions" className={cx(styles.actions, className)} style={style}>
       {pinned}
-      {children && level >= 2 ? <ActionsOverflow label={moreLabel}>{children}</ActionsOverflow> : children}
+      {children && (
+        <ActionsOverflow shrunk={level >= 2} label={moreLabel}>
+          {children}
+        </ActionsOverflow>
+      )}
     </div>
   );
 }

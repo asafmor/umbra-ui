@@ -129,6 +129,8 @@ export function Toggle({ children, description, parts, ...root }: ToggleProps) {
   );
 }
 
+/** Not a row of a menu: among actions that overflow it stays in the row (`ActionsOverflow`). */
+Toggle.staysInRow = true;
 Toggle.Root = Root;
 Toggle.Track = Track;
 Toggle.Label = Label;

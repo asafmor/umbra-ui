@@ -180,6 +180,8 @@ export function Checkbox({ children, description, error, parts, ...root }: Check
   );
 }
 
+/** Not a row of a menu: among actions that overflow it stays in the row (`ActionsOverflow`). */
+Checkbox.staysInRow = true;
 Checkbox.Root = Root;
 Checkbox.Box = Box;
 Checkbox.Label = Label;

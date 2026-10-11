@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from 'react';
 import { Button as AriaButton } from 'react-aria-components';
+import { useInOverflowMenu } from '../internal/contexts';
 import { rowKeys, useDirection } from '../internal/direction';
 import { Icon } from '../provider/icons';
 import { defined } from '../utils/defined';
@@ -333,6 +334,7 @@ export interface StepperProps<T extends string | number = string | number> exten
  * of options (`options`), or through numbers (`min`, `max`, `step`).
  */
 export function Stepper<T extends string | number = string | number>({ parts, ...root }: StepperProps<T>) {
+  if (useInOverflowMenu()) return null;
   return (
     <Root {...root}>
       {renderPart(parts?.previous, {}, (p) => (
@@ -351,6 +353,8 @@ export function Stepper<T extends string | number = string | number>({ parts, ..
   );
 }
 
+/** Not a row of a menu: among actions that overflow it stays in the row (`ActionsOverflow`). */
+Stepper.staysInRow = true;
 Stepper.Root = Root;
 Stepper.Previous = Previous;
 Stepper.Value = Value;

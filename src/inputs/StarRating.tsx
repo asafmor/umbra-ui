@@ -355,6 +355,8 @@ export function StarRating({ showValue = false, parts, ...root }: StarRatingProp
   );
 }
 
+/** Not a row of a menu: among actions that overflow it stays in the row (`ActionsOverflow`). */
+StarRating.staysInRow = true;
 StarRating.Root = Root;
 StarRating.Stars = Stars;
 StarRating.Star = Star;

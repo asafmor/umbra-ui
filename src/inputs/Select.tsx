@@ -815,6 +815,8 @@ export function Select({
   );
 }
 
+/** Not a row of a menu: among actions that overflow it stays in the row (`ActionsOverflow`). */
+Select.staysInRow = true;
 Select.Root = Root;
 Select.Trigger = Trigger;
 Select.Value = Value;

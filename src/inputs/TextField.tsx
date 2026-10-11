@@ -230,6 +230,8 @@ export function TextField({ prefix, suffix, clearable = false, clearLabel, parts
   );
 }
 
+/** Not a row of a menu: among actions that overflow it stays in the row (`ActionsOverflow`). */
+TextField.staysInRow = true;
 TextField.Root = Root;
 TextField.Prefix = Prefix;
 TextField.Input = Input;

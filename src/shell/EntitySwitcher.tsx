@@ -519,6 +519,8 @@ export function EntitySwitcher(props: EntitySwitcherProps) {
   );
 }
 
+/** Not a row of a menu: among actions that overflow it stays in the row (`ActionsOverflow`). */
+EntitySwitcher.staysInRow = true;
 EntitySwitcher.Root = Root;
 EntitySwitcher.Trigger = Trigger;
 EntitySwitcher.Steppers = Steppers;

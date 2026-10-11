@@ -83,7 +83,9 @@ export function SectionTitle({
       {actions &&
         renderPart(parts?.actions, { children: actions }, (p) => (
           <div data-part="actions" className={styles.actions}>
-            {shrunk ? <ActionsOverflow label={moreLabel}>{p.children}</ActionsOverflow> : p.children}
+            <ActionsOverflow shrunk={shrunk} label={moreLabel}>
+              {p.children}
+            </ActionsOverflow>
           </div>
         ))}
     </div>

@@ -14,6 +14,7 @@ import { Button } from '../basics/Button';
 import { IconButton } from '../basics/IconButton';
 import shared from '../data/shared.module.css';
 import { Select } from '../inputs/Select';
+import { ActionsRow } from '../internal/ActionsRow';
 import { dataState, type DataStateProps } from '../internal/dataState';
 import { heightProps, type FillHeight } from '../internal/height';
 import layout from '../layout/layout.module.css';
@@ -162,8 +163,10 @@ export interface PlannerToolbarProps {
   previousLabel?: string | undefined;
   nextLabel?: string | undefined;
   todayLabel?: string | undefined;
-  /** More controls of the app, at the end of the bar before "Today". */
+  /** More controls of the app, at the end of the bar before "Today". They move into a menu when they do not fit. */
   actions?: ReactNode | undefined;
+  /** Accessible name of that menu's button. */
+  moreLabel?: string | undefined;
   className?: string | undefined;
   style?: CSSProperties | undefined;
 }
@@ -176,6 +179,7 @@ function Toolbar({
   nextLabel = 'Next month',
   todayLabel = 'Today',
   actions,
+  moreLabel = 'More actions',
   className,
   style,
 }: PlannerToolbarProps) {
@@ -214,7 +218,7 @@ function Toolbar({
         onPress={() => setMonth(next)}
       />
       <span className={styles.spacer} />
-      {actions}
+      {actions != null && <ActionsRow moreLabel={moreLabel}>{actions}</ActionsRow>}
       {/* Never disabled: on the month of today it still scrolls the day into view, and it keeps the focus. */}
       <Button
         onPress={() => {
@@ -485,7 +489,7 @@ export interface PlannerProps
   extends
     Omit<PlannerRootProps, 'children'>,
     Omit<PlannerGridProps, 'parts' | 'className' | 'style'>,
-    Pick<PlannerToolbarProps, 'monthLabel' | 'previousLabel' | 'nextLabel' | 'todayLabel'> {
+    Pick<PlannerToolbarProps, 'monthLabel' | 'previousLabel' | 'nextLabel' | 'todayLabel' | 'moreLabel'> {
   /** Replace or hide named pieces. */
   parts?:
     | (NonNullable<PlannerGridProps['parts']> & {
@@ -517,6 +521,7 @@ export function Planner({
   previousLabel,
   nextLabel,
   todayLabel,
+  moreLabel,
   parts,
   ...grid
 }: PlannerProps) {
@@ -527,7 +532,7 @@ export function Planner({
       {...{ size, priority, minWidth, minHeight, label, className, style }}
       aria-label={ariaLabel}
     >
-      {renderPart(toolbar, { monthLabel, previousLabel, nextLabel, todayLabel }, (p) => (
+      {renderPart(toolbar, { monthLabel, previousLabel, nextLabel, todayLabel, moreLabel }, (p) => (
         <Toolbar {...p} />
       ))}
       <Grid {...grid} parts={gridParts} />

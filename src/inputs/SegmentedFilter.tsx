@@ -271,5 +271,7 @@ export function SegmentedFilter({ items, parts, children, ...root }: SegmentedFi
   );
 }
 
+/** Not a row of a menu: among actions that overflow it stays in the row (`ActionsOverflow`). */
+SegmentedFilter.staysInRow = true;
 SegmentedFilter.Root = Root;
 SegmentedFilter.Item = Item;

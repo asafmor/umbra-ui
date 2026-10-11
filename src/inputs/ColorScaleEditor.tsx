@@ -558,6 +558,8 @@ export function ColorScaleEditor({ parts, ...root }: ColorScaleEditorProps) {
   );
 }
 
+/** Not a row of a menu: among actions that overflow it stays in the row (`ActionsOverflow`). */
+ColorScaleEditor.staysInRow = true;
 ColorScaleEditor.Root = Root;
 ColorScaleEditor.Preview = Preview;
 ColorScaleEditor.Track = Track;

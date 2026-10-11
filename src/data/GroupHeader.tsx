@@ -212,13 +212,9 @@ export function GroupHeader({
       {actions &&
         renderPart(parts?.actions, { children: actions }, (p) => (
           <Actions>
-            {inMenu ? (
-              <ActionsOverflow label={moreLabel} size="small">
-                {p.children}
-              </ActionsOverflow>
-            ) : (
-              p.children
-            )}
+            <ActionsOverflow shrunk={inMenu} label={moreLabel} size="small">
+              {p.children}
+            </ActionsOverflow>
           </Actions>
         ))}
     </Root>

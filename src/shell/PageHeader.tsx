@@ -296,7 +296,9 @@ function Actions({ moreLabel = 'More actions', className, style, children }: Pag
   const header = useHeader();
   return (
     <div data-part="actions" className={cx(styles.actions, className)} style={style}>
-      {header.taken('actions') ? <ActionsOverflow label={moreLabel}>{children}</ActionsOverflow> : children}
+      <ActionsOverflow shrunk={header.taken('actions')} label={moreLabel}>
+        {children}
+      </ActionsOverflow>
     </div>
   );
 }

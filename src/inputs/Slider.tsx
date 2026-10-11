@@ -18,6 +18,7 @@ import { bandBoundaries, bandPattern, toFraction } from '../meters/scale';
 import { defined } from '../utils/defined';
 import { cx, renderPart, type Part } from '../utils/parts';
 import { resolveThreshold, type ThresholdBand, type ThresholdList } from '../utils/thresholds';
+import { useInOverflowMenu } from '../internal/contexts';
 import { bandColour } from './bandColour';
 import styles from './Slider.module.css';
 import { useFieldControl } from './useField';
@@ -364,6 +365,7 @@ export function Slider<T extends SliderValue = SliderValue>({
   parts,
   ...root
 }: SliderProps<T>) {
+  if (useInOverflowMenu()) return null;
   return (
     <Root {...root}>
       {showValue && renderPart(parts?.output, {}, (p) => <Output {...p} />)}
@@ -377,6 +379,8 @@ export function Slider<T extends SliderValue = SliderValue>({
   );
 }
 
+/** Not a row of a menu: among actions that overflow it stays in the row (`ActionsOverflow`). */
+Slider.staysInRow = true;
 Slider.Root = Root;
 Slider.Track = Track;
 Slider.Thumb = Thumb;

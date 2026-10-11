@@ -104,8 +104,9 @@
   min-height: var(--umbra-space-7);
 }
 
+/* Gives way before the actions do: they shrink (and move into their menu) only once this is cut. */
 .meta {
-  flex: 0 1 auto;
+  flex: 0 1000 auto;
   min-width: 0;
   overflow: hidden;
   color: var(--secondary);
@@ -125,10 +126,6 @@
 .actions {
   position: relative;
   z-index: 1;
-  flex: none;
-  display: flex;
-  align-items: center;
-  gap: var(--umbra-space-2);
   margin-inline-start: auto;
 }
 

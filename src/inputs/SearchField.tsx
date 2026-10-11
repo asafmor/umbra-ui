@@ -720,6 +720,8 @@ export function SearchField({
   );
 }
 
+/** Not a row of a menu: among actions that overflow it stays in the row (`ActionsOverflow`). */
+SearchField.staysInRow = true;
 SearchField.Root = Root;
 SearchField.Icon = SearchIcon;
 SearchField.Input = Input;
