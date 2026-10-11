@@ -63,6 +63,7 @@ export const Inline: Story = {
 
 /** Every status tone has its own icon. `emphasis="strong"` fills the bar, for a status that needs an answer. */
 export const Status: Story = {
+  tags: ['tints'],
   render: () => (
     <div style={column}>
       {(['neutral', 'info', 'success', 'warning', 'danger'] as ActionBarTone[]).map((tone) => (

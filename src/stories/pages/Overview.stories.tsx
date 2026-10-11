@@ -9,4 +9,7 @@ export default meta;
  * priority. The navigation, the history buttons and the command palette (Mod+K) move between the
  * three pages.
  */
-export const Overview: StoryObj<typeof meta> = { tags: ['narrow'], args: { initial: 'overview/summary' } };
+export const Overview: StoryObj<typeof meta> = {
+  tags: ['narrow', 'tints'],
+  args: { initial: 'overview/summary' },
+};
