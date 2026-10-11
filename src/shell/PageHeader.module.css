@@ -26,7 +26,13 @@
       --umbra-page-header-border,
       color-mix(in oklab, var(--umbra-context) 30%, var(--umbra-color-base-border-subtle))
     );
-  background: var(--umbra-page-header-bg, var(--umbra-context-card-tint-strong));
+  background: color-mix(
+    in srgb,
+    var(--umbra-page-header-bg, var(--umbra-context-card-tint-strong))
+      calc(var(--umbra-surface-opacity) * 100%),
+    transparent
+  );
+  backdrop-filter: var(--umbra-surface-backdrop);
 }
 
 /*

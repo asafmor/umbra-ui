@@ -124,12 +124,19 @@
   );
 }
 
-/* The current page: the selected colour, with an edge stripe and weight so it is not colour alone. */
+/*
+ * The current page: the selected colour, and weight so it is not colour alone. No edge stripe: that
+ * belongs to rows of data (plan/interaction.md, "Selected").
+ */
 .item[data-current] {
   background: var(--umbra-color-interaction);
   color: var(--umbra-color-on-interaction);
-  box-shadow: inset calc(var(--umbra-dir, 1) * var(--umbra-space-1)) 0 0 currentColor;
   font-weight: 700;
+}
+
+/* The highlight on the current row: its own fill one step darker, so both states still read. */
+.item[data-current]:is([data-focused], [data-hovered]) {
+  background: color-mix(in oklab, var(--umbra-color-interaction), #000 var(--umbra-state-hover-darken));
 }
 
 .item[data-disabled] {

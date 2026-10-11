@@ -292,7 +292,7 @@
   outline-offset: calc(-1 * var(--umbra-state-focus-ring-width));
 }
 
-/* Chosen: the violet tint and edge stripe of a selected list row, plus the check. */
+/* Chosen: the tint of the interaction colour, and the check (or the checked box) as the cue that is not colour. */
 .option[data-selected] {
   --selected-bg: var(
     --umbra-select-option-selected-bg,
@@ -300,8 +300,6 @@
   );
 
   background: var(--selected-bg);
-  box-shadow: inset calc(var(--umbra-dir, 1) * var(--umbra-select-option-stripe-width, 3px)) 0
-    var(--umbra-color-interaction);
 }
 
 .option[data-selected]:is([data-focused], [data-hovered]) {

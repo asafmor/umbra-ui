@@ -62,7 +62,12 @@
   border: var(--umbra-border-width) solid
     var(--umbra-accordion-border, var(--umbra-card-border, var(--umbra-color-base-border-subtle)));
   border-radius: var(--umbra-card-radius, var(--umbra-radius-card));
-  background: var(--umbra-card-bg, var(--umbra-context-card-tint));
+  background: color-mix(
+    in srgb,
+    var(--umbra-card-bg, var(--umbra-context-card-tint)) calc(var(--umbra-surface-opacity) * 100%),
+    transparent
+  );
+  backdrop-filter: var(--umbra-surface-backdrop);
 }
 
 .header {

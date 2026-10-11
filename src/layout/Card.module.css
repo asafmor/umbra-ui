@@ -14,7 +14,12 @@
   overflow: hidden;
   border: var(--umbra-border-width) solid var(--border);
   border-radius: var(--umbra-card-radius, var(--umbra-radius-card));
-  background: var(--bg);
+  /*
+   * The surface, as opaque as the app asks (plan/decisions/08-theming.md, "Surface opacity"): mixed
+   * with transparent, never `opacity`, so what is on the card stays opaque.
+   */
+  background: color-mix(in srgb, var(--bg) calc(var(--umbra-surface-opacity) * 100%), transparent);
+  backdrop-filter: var(--umbra-surface-backdrop);
   box-shadow: var(--umbra-elevation-card);
   /* Every slot has a definite size, so content can use container queries on width and height. */
   container-type: size;

@@ -153,13 +153,12 @@
 }
 
 /*
- * The row the arrow keys are on: the selected colour, with an edge stripe so it is not colour alone.
- * Focus itself stays in the input.
+ * The row the arrow keys are on: a highlight, one surface step lighter, as in a menu. It is not a
+ * selection, so it does not take the interaction colour. Focus itself stays in the input.
  */
 .item[data-active] {
-  background: var(--umbra-command-palette-active-bg, var(--umbra-color-interaction));
-  color: var(--umbra-command-palette-active-fg, var(--umbra-color-on-interaction));
-  box-shadow: inset calc(var(--umbra-dir, 1) * var(--umbra-space-1)) 0 0 currentColor;
+  background: var(--umbra-command-palette-active-bg, var(--umbra-color-base-surface3));
+  color: var(--umbra-command-palette-active-fg, var(--umbra-color-base-text-primary));
 }
 
 .item[data-disabled] {
