@@ -43,7 +43,7 @@ States: hover, pressed and focus per half; the caret stays pressed while its men
 | `children` | node | — | The label of the action |
 | `variant`, `size` | as `Button` | `neutral`, `default` | |
 | `iconStart` | node | — | |
-| `onPress` | function | — | The main action |
+| `onPress` | `() => void` | — | The main action. Called with nothing (decision 07) |
 | `items` | `MenuEntry[]` | — | The related actions, in the shape `Menu` takes |
 | `onAction` | `(id) => void` | — | A menu row was chosen |
 | `menuLabel` | string | "More options" | Name and tooltip of the caret, and name of the menu |
@@ -86,3 +86,4 @@ Resolved 2026-10-11 (under the owner's delegation):
 - **`ButtonBase` got one optional prop**, `part` (`data-part`), so the halves carry `data-part="action"` and `data-part="caret"`. Nothing else in `Button` changed, and `Button` does not import the menu: only `SplitButton` does.
 - **A disabled caret has no tooltip**: `Tooltip` wraps a disabled control in a stand-in element, which would part the halves.
 - **No blocks for the inner pieces of the action** (icon, label, spinner): as in `Button`, they are parts.
+- **Review 1 of Milestone 2** (2026-10-11): the root takes `id` (I-9: the field's id replaced it with nothing outside a field); `onPress` is called with no argument (I-16: the button's press event came through); two menu rows with one id are both drawn (I-6, in `Menu`).
