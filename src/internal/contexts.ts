@@ -1,10 +1,27 @@
-import { createContext } from 'react';
+import { createContext, type ReactNode } from 'react';
+
+/** What a `Button` or `IconButton` hands to the overflow menu, to be drawn as one of its rows. */
+export interface OverflowRowProps {
+  /** Accessible name, when the content is not text. */
+  label?: string | undefined;
+  /** The label as text, for type-ahead. */
+  text?: string | undefined;
+  href?: string | undefined;
+  disabled: boolean;
+  /** A toggle: the row is a checkbox item. */
+  pressed?: boolean | undefined;
+  /** Id of a shortcut: its keys are shown at the end of the row. */
+  shortcut?: string | undefined;
+  onPress?: (() => void) | undefined;
+  className?: string | undefined;
+  children: ReactNode;
+}
 
 /**
- * True inside the menu that holds actions which did not fit in their row. There, a `Button` or
- * `IconButton` renders as a menu item with its icon and label, and a `Menu` as a submenu.
+ * Set inside the menu that holds actions which did not fit in their row: what draws a row. There, a `Button` or `IconButton` renders as a menu item with its icon and label, and a `Menu`
+ * as a submenu. The menu supplies the row, so a button does not carry the menu item's code.
  */
-export const OverflowMenuContext = createContext(false);
+export const OverflowMenuContext = createContext<((row: OverflowRowProps) => ReactNode) | null>(null);
 
 /** Set by a container (the TopBar) to make buttons with `collapseTo="icon"` show their icon only. */
 export const ForceCollapseContext = createContext(false);

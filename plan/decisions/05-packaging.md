@@ -35,4 +35,37 @@ Found by the Milestone 1 and release reviews; `npm run check:package` (`scripts/
 | Declarations: relative imports carry `.js`, stylesheet imports are removed, and only files the two entries reach are published (`scripts/fix-types.mjs`) | Without extensions the types did not resolve under `node16` and `nodenext` (an error with `skipLibCheck: false`, silently `any` with it on). No declaration bundler was added: the fix is a 50-line script. |
 | `process.env.NODE_ENV` stays in the output | The app's bundler replaces it; the development warnings (`[umbra-ui] …`) are gone from a production bundle under esbuild and Vite. |
 
-`CheckMark` and `Hint`, the two pieces of a menu row that `Button` draws, moved from `Menu.tsx` to `src/internal/menuRow.tsx`, so a `Button` no longer imports `Menu`. A `Button` still holds React Aria's menu item, because it renders as one inside an overflow menu.
+`CheckMark` and `Hint`, the two pieces of a menu row, are in `src/internal/menuRow.tsx`.
+
+## Loaded on demand (2026-10-11)
+
+The Milestone 1 review measured `Card` at about 70 KB gzip: its header imported the overflow menu, and a card that a stack collapses imported `Popover`. Decided: both are loaded with `import()`, the first time they are needed.
+
+| Import | Before (esbuild / Vite, KB gzip) | After | What changed |
+|---|---|---|---|
+| `Card`, what loads first | 69.2 / 74.6 | 35.3 (Vite) | The menu and the popover are chunks of their own |
+| `Card`, everything in one file | 69.2 / 74.6 | 73.6 (esbuild without code splitting) | Nothing is split, and the loader adds a little |
+| `Button` | 34.8 / 37.5 | 26.3 / 26.9 | The overflow menu draws the row; the button no longer holds React Aria's menu item |
+| `Skeleton` | 0.4 / 0.5 | 0.4 / 0.5 | |
+
+What the 69 KB was (minified, before gzip, 211 KB in all): React Aria's selection, collections, menu and focus scope with React Stately's selection and collections, 69 KB, for the menu (the focus scope for the popover too); React Aria's overlays and `Popover`, 21 KB, of which the tooltip keeps 10; its interactions and utilities, 47 KB, of which `Button` and `Tooltip` keep 32; the library's `Menu` and `Popover`, 12 KB; `Card` itself, 8 KB. What loads first now is 88 KB minified: interactions 19, utilities 13, the tooltip's positioning 10, `Card` 8, and small pieces.
+
+| Mechanism | Detail |
+|---|---|
+| The overflow menu | `src/internal/ActionsOverflow.tsx` draws the "more" button at once and holds the open state; it is the same element before and after the menu's code arrives, so it keeps the focus and its place in the row that `useShrinkLevel` measures. The code (`OverflowMenu` in `src/overlays/Menu.tsx`) is asked for when the button appears, not when it is pressed. A press that comes first is kept as the open state (`aria-expanded` is already true, so the row does not restart under it), and the menu opens when the code arrives, on the first row for a keyboard press and on the menu for a pointer. `Card`, `SectionTitle`, `PageHeader`, `TopBar` and `GroupHeader` all use it. |
+| The popover of a collapsed card | `Card` asks for `Popover` when a stack first collapses it. The open state was already the card's own, so a press that comes first is kept the same way. |
+| A button as a menu row | The menu supplies the row through `OverflowMenuContext` (a function that draws it from the button's props). `Button` no longer imports React Aria's menu item. |
+| A failed request | The next header that overflows, or the next press, asks again. |
+| Server rendering | Nothing is requested on the server (the requests are in effects), and the markup is the same with and without the code, so hydration matches. |
+| The build | One file per module still holds: `dist/internal/ActionsOverflow.js` has `import("../overlays/Menu.js")`, and every file starts with `"use client"`. |
+
+**By bundler.** Rollup, and so Vite, makes a chunk of what is loaded on demand: this is what `check:package` measures and asserts (the menu and the popover are not in what loads first, and are in a chunk that is). **esbuild does not**, and this is a limit of esbuild, not of the package: its code splitting decides what two entries share file by file, before tree shaking, so a module that a barrel file (`dist/index.js`, and `react-aria-components` itself) also re-exports lands in a chunk that loads first. Measured:
+
+| esbuild | Before | After |
+|---|---|---|
+| Without code splitting (its default, and what `check:package` runs) | `Card` 69.2, `Skeleton` 0.4 | `Card` 73.6, `Skeleton` 0.4: one file, tree-shaken as before |
+| With `splitting: true` | `Card` 69.3, `Skeleton` 0.4 | Any import, `Skeleton` alone included, loads about 65 KB first: the menu and the popover sit in a chunk every entry imports |
+
+An app that uses a card, a menu or a popover loads that code anyway, so the second line costs a real app little; an esbuild app that splits and wants only small components would need entries of its own (`umbra-ui/card`, …), which is a change to the public surface and was not made. Webpack was not measured.
+
+Not done: `Tooltip` is what keeps `Button` at 26 KB (React Aria's overlay positioning, 10 KB minified, and part of its utilities). Loading it on demand would cut `Button` further, but a tooltip that appears a moment late on first hover is a change to the experience, so it is left for a decision.

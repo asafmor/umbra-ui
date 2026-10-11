@@ -78,7 +78,7 @@ States: `collapsed`, `loading`, `empty`, `error`, `focus-within`.
 
 | Step | Trigger | Result |
 |---|---|---|
-| 1 | Header narrower than its content | `subtitle` hides, then `actions` move into an overflow menu; `title` truncates last |
+| 1 | Header narrower than its content | `subtitle` hides, then `actions` move into an overflow menu (its code is loaded then); `title` truncates last |
 | 2 | Body taller than the slot | Body scrolls inside the card |
 | 2a | `size="content"` in a `Stack` | The card is as tall as its header plus its content (a card without a header: its content plus the padding). When the stack cannot give that much, the card gets what is left after the minimums of the others and its body scrolls inside. It is never collapsed by the layout. |
 | 3 | The cards of a `Stack` cannot all have their `minHeight` | While they all fit, each open card is held at its `minHeight` or more. When they do not, the parent `Stack` collapses the card to its header; clicking the header opens the body in a `Popover` anchored to it. A layout-collapsed card shows a small "expand" hint icon in its header, so it looks different from a user-collapsed card (which shows the caret and expands in place). |
@@ -136,6 +136,7 @@ Resolved 2026-10-10:
 - 2026-10-11: a `PageHeader` given as the `header` part and an `ActionBar` given as the `footer` part are spaced by the card: a plain header gets the card padding (above and at the sides), the body after any header that is not the card's own gets the padding above, a tinted or band header runs edge to edge with one rule below, and the bar gets the footer's padding and rule (a `strong` bar keeps its own). `--umbra-page-header-padding` and `--umbra-action-bar-padding-x/-y` still override.
 - 2026-10-11: `size="content"` sizes the card by its header plus its body. Before, the body had no height of its own and the card showed only its header.
 - 2026-10-10 (review item 6): the popover moves the content, it does not repeat it. The overflow of `actions` is a `Menu`.
+- 2026-10-11 (Milestone 2): **the menu and the popover are loaded on demand.** A card cost about 70 KB gzip because its header imported the menu and its collapsed state the popover. The menu's code is now asked for the first time a header does not fit, and the popover's the first time a stack collapses the card (`import()`; mechanism and numbers in `plan/decisions/05-packaging.md`, "Loaded on demand"). A card whose header fits never asks for either: what loads first is 35 KB gzip under Vite, from 75. Nothing the user sees changes: the "more" button appears in the same frame as before, and a press that comes before the code is kept, so the menu or popover opens when it arrives, with the focus where that press would have put it, and focus never leaves the button in between. The "more" button is now drawn by the header's overflow itself (`src/internal/ActionsOverflow.tsx`): it opens on a press, on `ArrowDown` (first row) and on `ArrowUp` (last row), and stays pressed while the menu is open. Tests: `tests/visual/card-menu.spec.ts`.
 
 Resolved 2026-10-11 (review 2):
 

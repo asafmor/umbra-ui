@@ -64,7 +64,8 @@
   background: color-mix(in oklab, var(--bg), #fff 10%);
 }
 
-.button[data-pressed] {
+/* The button of an open menu stays pressed for as long as the menu is open. */
+.button:is([data-pressed], [aria-haspopup][aria-expanded='true']) {
   background: color-mix(in oklab, var(--bg), #000 var(--umbra-state-press-darken));
 }
 
@@ -81,6 +82,7 @@
 }
 
 .button[data-variant='ghost'][data-pressed],
+.button[data-variant='ghost'][aria-haspopup][aria-expanded='true'],
 .button[data-variant='ghost'][aria-pressed='true'] {
   background: color-mix(in oklab, currentColor var(--umbra-state-hover-lighten), transparent);
 }

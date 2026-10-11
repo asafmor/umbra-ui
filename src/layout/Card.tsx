@@ -2,6 +2,7 @@ import {
   createContext,
   createElement,
   useContext,
+  useEffect,
   useId,
   useLayoutEffect,
   useMemo,
@@ -14,18 +15,16 @@ import {
 import { createPortal, flushSync } from 'react-dom';
 import { ButtonBase } from '../basics/Button';
 import { Skeleton } from '../basics/Skeleton';
+import { ActionsOverflow } from '../internal/ActionsOverflow';
 import { dataState, isContent, type DataStateProps } from '../internal/dataState';
 import { useNarrow } from '../internal/useNarrow';
 import { useShrinkLevel } from '../internal/useShrinkLevel';
-import { ActionsOverflow } from '../overlays/Menu';
-import { Popover } from '../overlays/Popover';
 import { textColourOn } from '../provider/contrast';
 import { Icon, IconSlot } from '../provider/icons';
 import type { LinkRenderProps } from '../utils/link';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './Card.module.css';
 import { ScrollArea, type ScrollAreaProps } from './ScrollArea';
-import { MoreButton } from './SectionTitle';
 import { LayoutProvider, slotMinHeight, useSlot, type SlotProps } from './useSlot';
 
 interface CardContextValue {
@@ -50,6 +49,7 @@ interface CardContextValue {
   expandLabel: string;
 }
 const CardContext = createContext<CardContextValue | null>(null);
+type PopoverContent = typeof import('../overlays/Popover').Popover.Content;
 /** The header element: what the card collapses to, and the anchor of its popover. */
 const HeaderRefContext = createContext<RefObject<HTMLDivElement | null> | null>(null);
 function useCard() {
@@ -138,6 +138,9 @@ function Root({
   // eslint-disable-next-line react-hooks/exhaustive-deps -- checked after every render on purpose; an equal value does not render again
   useLayoutEffect(() => setHasTitle(!!document.getElementById(titleId)));
   const [popover, setPopover] = useState<HTMLElement | null>(null);
+  // The popover's code is loaded when a stack first collapses the card (`collapsedBy`, below), not
+  // with the card. A press that comes first is kept in `popoverOpen`: the popover opens when it arrives.
+  const [PopoverContent, setPopoverContent] = useState<PopoverContent>();
 
   // Collapsed with the caret, the card is as tall as its header plus its own borders. An open plain
   // header has less padding below than above; collapsed, the two are equal, so the difference is added
@@ -227,6 +230,14 @@ function Root({
   }, [userCollapsed]);
 
   const collapsedBy = userCollapsed ? 'user' : layoutCollapsed ? 'layout' : null;
+  useEffect(() => {
+    if (!layoutCollapsed || PopoverContent) return;
+    import('../overlays/Popover').then(
+      (module) => setPopoverContent(() => module.Popover.Content),
+      // Not loaded: the next time a stack collapses the card asks again.
+      () => {},
+    );
+  }, [layoutCollapsed, PopoverContent]);
   // The popover belongs to the layout-collapsed state: it closes when the card opens again or is hidden
   // behind a tab (entering or leaving tab mode), so it cannot come back by itself or stay without its anchor.
   const narrow = useNarrow();
@@ -293,8 +304,8 @@ function Root({
         <LayoutProvider value={null}>
           <CardContext value={card}>{children}</CardContext>
         </LayoutProvider>
-        {collapsedBy === 'layout' && (
-          <Popover.Content
+        {collapsedBy === 'layout' && PopoverContent && (
+          <PopoverContent
             // Named like the card: its title as text (the tab label), or the card's own name.
             aria-label={slot.label ?? ariaLabel ?? expandLabel}
             anchorRef={header}
@@ -304,7 +315,7 @@ function Root({
             className={styles.popover}
           >
             <div ref={setPopover} className={styles.popoverContent} />
-          </Popover.Content>
+          </PopoverContent>
         )}
       </section>
     </HeaderRefContext>
@@ -476,9 +487,7 @@ function Header({
             renderPart(parts?.actions, { children: actions }, (p) => (
               <Actions>
                 {gone('actions') ? (
-                  <ActionsOverflow label={moreLabel} trigger={<MoreButton label={moreLabel} />}>
-                    {p.children}
-                  </ActionsOverflow>
+                  <ActionsOverflow label={moreLabel}>{p.children}</ActionsOverflow>
                 ) : (
                   p.children
                 )}

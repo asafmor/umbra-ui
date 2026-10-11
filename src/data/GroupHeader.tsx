@@ -1,7 +1,7 @@
 import { createElement, useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { ButtonBase } from '../basics/Button';
 import { useShrinkLevel } from '../internal/useShrinkLevel';
-import { ActionsOverflow } from '../overlays/Menu';
+import { ActionsOverflow } from '../internal/ActionsOverflow';
 import { Icon, IconSlot } from '../provider/icons';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './GroupHeader.module.css';
@@ -213,14 +213,7 @@ export function GroupHeader({
         renderPart(parts?.actions, { children: actions }, (p) => (
           <Actions>
             {inMenu ? (
-              <ActionsOverflow
-                label={moreLabel}
-                trigger={
-                  <ButtonBase umbra="icon-button" variant="ghost" size="small" iconOnly label={moreLabel}>
-                    <Icon name="more" />
-                  </ButtonBase>
-                }
-              >
+              <ActionsOverflow label={moreLabel} size="small">
                 {p.children}
               </ActionsOverflow>
             ) : (

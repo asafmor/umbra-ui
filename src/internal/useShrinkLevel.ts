@@ -64,9 +64,23 @@ function apply(updates: Update[]) {
 // A restart waits while a menu opened from any row is showing: restarting unmounts its trigger. When
 // the menu has gone, focus is on nothing for a frame or two before it is given back to the trigger;
 // the wait for that is bounded, in case it never is. One wait for all rows, so they restart once.
+// `waited` is also set when the focus leaves a menu for nothing, until it lands somewhere (`focusMoved`):
+// a restart that is first asked for in that moment, by a font that arrives just then, would otherwise
+// draw a new trigger while the focus is on nothing, and the focus would never come back.
 let frame = 0;
 let waited = false;
 let lost = 0;
+const focusMoved = (event: FocusEvent) => {
+  if (event.type === 'focusin') {
+    waited = false;
+    // The focus is back while a restart waits for it: restart now, not in the next frame. A key
+    // pressed in that frame would go to a trigger that is about to be drawn again, and be lost.
+    if (frame) queueMicrotask(restartAll);
+  } else if (!event.relatedTarget && (event.target as Element).closest?.(overlay)) {
+    waited = true;
+    lost = 0;
+  }
+};
 function restartAll() {
   cancelAnimationFrame(frame);
   frame = 0;
@@ -89,7 +103,11 @@ function addRow(row: Row) {
     else apply(updates as Update[]);
   });
   // Text measured before a web font arrived may have been wider; start again when fonts finish loading.
-  if (!rows.size) document.fonts?.addEventListener('loadingdone', restartAll);
+  if (!rows.size) {
+    document.fonts?.addEventListener('loadingdone', restartAll);
+    document.addEventListener('focusout', focusMoved, true);
+    document.addEventListener('focusin', focusMoved, true);
+  }
   rows.add(row);
   for (const target of row.targets) {
     observed.set(target, (observed.get(target) ?? 0) + 1);
@@ -107,6 +125,8 @@ function addRow(row: Row) {
     }
     if (!rows.size) {
       document.fonts?.removeEventListener('loadingdone', restartAll);
+      document.removeEventListener('focusout', focusMoved, true);
+      document.removeEventListener('focusin', focusMoved, true);
       cancelAnimationFrame(frame);
     }
   };

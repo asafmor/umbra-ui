@@ -1,8 +1,6 @@
 import { createElement, useRef, type CSSProperties, type ReactNode } from 'react';
-import { ButtonBase } from '../basics/Button';
+import { ActionsOverflow } from '../internal/ActionsOverflow';
 import { useShrinkLevel } from '../internal/useShrinkLevel';
-import { ActionsOverflow } from '../overlays/Menu';
-import { Icon } from '../provider/icons';
 import type { LinkRenderProps } from '../utils/link';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './SectionTitle.module.css';
@@ -35,15 +33,6 @@ export interface SectionTitleProps {
     | undefined;
   className?: string | undefined;
   style?: CSSProperties | undefined;
-}
-
-/** Internal: the "more" button used by overflow menus in headers. */
-export function MoreButton({ label }: { label: string }) {
-  return (
-    <ButtonBase umbra="icon-button" variant="ghost" iconOnly label={label}>
-      <Icon name="more" />
-    </ButtonBase>
-  );
 }
 
 /** A heading for one section of content inside a card or page, with optional controls on the same line. */
@@ -94,13 +83,7 @@ export function SectionTitle({
       {actions &&
         renderPart(parts?.actions, { children: actions }, (p) => (
           <div data-part="actions" className={styles.actions}>
-            {shrunk ? (
-              <ActionsOverflow label={moreLabel} trigger={<MoreButton label={moreLabel} />}>
-                {p.children}
-              </ActionsOverflow>
-            ) : (
-              p.children
-            )}
+            {shrunk ? <ActionsOverflow label={moreLabel}>{p.children}</ActionsOverflow> : p.children}
           </div>
         ))}
     </div>
