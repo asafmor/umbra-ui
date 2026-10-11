@@ -22,14 +22,14 @@ Two mirrored lists of the same ten metrics, one per side, each value in a small 
 | Part | Content | Default |
 |---|---|---|
 | `header` | the two sides, and the summary between them | shown |
-| `side` | one side: its mark and its name (asked for once per side) | shown |
+| `side` | one side: its mark and its name (asked for once per side). Both carry `data-part="side"`; `data-side` is `side` or `opposite`, as on a `value`. | shown |
 | `summary` | a large pair of values with a caption under it | shown when `summary` is set |
 | `row` | one metric | one per row |
 | `label` | the metric's name, in the middle | shown |
 | `value` | one side's value (asked for twice per row), with the leader mark | shown |
 | `bars` | two bars back to back, one per side | shown when `showBars` |
 | `strip` | the one-line form | shown in the `strip` variant, and when the rows do not fit |
-| `skeleton` | placeholder rows while loading | shown when `loading` |
+| `skeleton` | placeholder rows while loading; in the `strip` variant, the strip with placeholders for its two values | shown when `loading` |
 | `state` | the empty or error state | shown when empty or failed |
 
 Inside these: `icon` and `name` (in a side), `caption` (in the summary and the strip), `leader` (the mark in a leading value), `bar` (one bar), `table` and `body` (the table and its rows).
@@ -55,7 +55,7 @@ States: loading, empty, error; a changed value (`highlightChanges`).
 
 | Prop | Type | Default | Purpose |
 |---|---|---|---|
-| `sides` | `[{ name, icon?, color? }, { … }]` | — | The two sides. `icon` is any node: an `EntityIcon`, an `Avatar`. |
+| `sides` | `[{ name, icon?, color? }, { … }]` | — | The two sides. `icon` is any node: an `EntityIcon`, an `Avatar`. The name is beside it, so the mark takes no name of its own (`alt=""`), or the header reads the name twice. |
 | `rows` | `{ id, label, values: [a, b], lowerIsBetter?, formatValue?, max? }[]` | — | One metric per row. A value is a number, or `null` for none. |
 | `summary` | `{ values: [a, b], caption?, separator? }` | — | The large pair in the header |
 | `variant` | see above | `table` | |
@@ -64,7 +64,7 @@ States: loading, empty, error; a changed value (`highlightChanges`).
 | `formatValue` | `(value, row) => node` | the number as it is | Text of a value; a row's own `formatValue` wins |
 | `emptyLabel` | node | "—" | In place of a missing value |
 | `height` | `fill` \| `content` \| number | `fill` | As `List` and the charts (`src/internal/height.ts`) |
-| `loading`, `empty`, `error`, `onRetry`, `retryLabel` | the shared data state props | — | `src/internal/dataState.tsx`; the empty text defaults to "Nothing to compare" |
+| `loading`, `empty`, `error`, `onRetry`, `retryLabel` | the shared data state props | — | `src/internal/dataState.tsx`; the empty text defaults to "Nothing to compare". Empty is no rows; a `strip` with a `summary` is not empty without rows. |
 | `skeletonRows` | number | 5 | Placeholder rows while loading |
 | `highlightChanges`, `increasedLabel`, `decreasedLabel` | boolean, string, string | off | A value that changes flashes once, with a sign (`plan/interaction.md`, "Live updates") |
 | `metricLabel` / `summaryLabel` / `leaderLabel` | string | "Metric" / "Summary" / "Leading" | For assistive technology: the header of the label column, the name of a summary without a caption, the text with a leading value |
@@ -85,7 +85,7 @@ By its width (a container query):
 
 | Step | Trigger | Result |
 |---|---|---|
-| 1 | Any width | The two values of a row keep their whole text. The label has the room between them and ends in an ellipsis when it is short; the whole label is then in a tooltip. A side's name does the same in the header. |
+| 1 | Any width | The two values of a row keep their whole text, each up to two fifths of the width; a longer value ends in an ellipsis, with the whole of it in a tooltip. The label has the room between them and ends in an ellipsis when it is short; the whole label is then in a tooltip. A side's name does the same in the header. |
 | 2 | Narrower than 240px | The bars hide |
 | 3 | Narrower than 180px | The marks of the two sides hide |
 
@@ -96,7 +96,7 @@ By its height, when its slot is shorter than its rows (measured, `useFitLevel`; 
 | 1 | The rows are taller than the slot | The bars hide |
 | 2 | The rows without bars are still taller | The strip replaces the table |
 
-In the strip, by width: the caption hides under 320px, the marks under 260px, and the names end in an ellipsis; the two values stay whole. Growing starts again from everything, so each size gives the same result on the way down and on the way up.
+In the strip, by width: the caption hides at 320px or less, the marks at 260px or less (the comparison has no padding, so this is its own width), and the names end in an ellipsis; the two values stay whole. Growing starts again from everything, so each size gives the same result on the way down and on the way up.
 
 ## Interaction and accessibility
 
@@ -108,7 +108,7 @@ In the strip, by width: the caption hides under 320px, the marks under 260px, an
 - The bars are a drawing of the two numbers beside them, so they are hidden from assistive technology.
 - The strip is a group named by `aria-label`, read in the order it is drawn: first side, the two values, second side, caption.
 - Right to left mirrors the sides: the first side is at the right, and each bar still grows from the centre.
-- Loading sets `aria-busy`, keeps the header (the two sides are known) and shows placeholder rows in the rows' layout. An error is an alert with a retry button; when the retry removes it while it holds the focus, the focus moves to the comparison.
+- Loading sets `aria-busy`, keeps the header (the two sides are known) and shows placeholder rows in the rows' layout, each as tall as a row of values. A loading strip is the strip: the two sides around two placeholders. An error is an alert with a retry button; when the retry removes it while it holds the focus, the focus moves to the comparison.
 
 ## Open questions
 
@@ -126,3 +126,4 @@ Resolved 2026-10-11 (under the owner's delegation):
 - **`highlightChanges` on the values** (a comparison is often live): the shared hook, per value.
 - **Side colours default to the first two series colours**, the palette already checked against every tint.
 - **In a content-sized card it keeps its rows** (integration pass, 2026-10-11): such a card has no height to fill, so when a stack squeezes it the card's body scrolls. The comparison used to step down to its strip there and stay on it with room left over. Its steps by height are for a slot that gives it a height, and there they are a function of that height alone.
+- **The strip stays one centred group** (examined after the integration pass, 2026-10-11): in a wide slot there is empty room at both sides of it, and under it when it stands in for the table. The names are not pushed to the edges: they belong with the pair of values between them, and at the edges of a wide card they would read as two separate labels. An app that wants a line across the whole width uses the table with a `summary`.

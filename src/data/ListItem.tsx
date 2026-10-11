@@ -1,4 +1,4 @@
-import { useRef, type CSSProperties, type ReactNode } from 'react';
+import { useContext, useRef, type CSSProperties, type ReactNode } from 'react';
 import { useTruncatedTip } from '../internal/TruncatedText';
 import {
   ChangeHighlight,
@@ -6,6 +6,8 @@ import {
   splitChange,
   type ChangeHighlightProps,
 } from '../internal/ChangeHighlight';
+import { RowsOnlyContext } from '../internal/contexts';
+import { warn } from '../utils/dev';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './ListItem.module.css';
 import { passThrough, type RootAttributes } from '../utils/passThrough';
@@ -48,6 +50,14 @@ function Root({
   children,
   ...rest
 }: ListItemRootProps) {
+  // A bare `ListItem` among the rows of a `List` is not a row: the list cannot draw it (an icon in it
+  // used to throw, from deep inside React). It is left out, with a warning that says what to write.
+  if (useContext(RowsOnlyContext)) {
+    warn(
+      'A ListItem placed directly in a List is not a row and is not drawn. Use List.Item, which takes the same props and an `id`.',
+    );
+    return null;
+  }
   return (
     <div
       {...passThrough(rest)}

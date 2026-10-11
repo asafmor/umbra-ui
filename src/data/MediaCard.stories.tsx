@@ -25,8 +25,12 @@ const text =
 const save = <IconButton icon={<Bookmark />} label="Save for later" variant="ghost" />;
 const pair = {
   title: 'Region A',
-  side: { leading: <EntityIcon name="Region A" size="sm" letters={2} />, meta: '12' },
-  opposite: { title: 'Region B', leading: <EntityIcon name="Region B" size="sm" letters={2} />, meta: '9' },
+  side: { leading: <EntityIcon name="Region A" alt="" size="sm" letters={2} />, meta: '12' },
+  opposite: {
+    title: 'Region B',
+    leading: <EntityIcon name="Region B" alt="" size="sm" letters={2} />,
+    meta: '9',
+  },
   center: 'to',
 };
 
@@ -86,7 +90,7 @@ export const Variants: Story = {
   ),
 };
 
-/** Loading in each layout, a picture that fails or is missing (the drawn placeholder), and no picture. */
+/** Loading in each layout, a picture that fails or is missing (the drawn placeholder), no picture, and the chosen card of a set. */
 export const States: Story = {
   render: () => (
     <Columns style={{ height: '100%' }}>
@@ -110,6 +114,7 @@ export const States: Story = {
           description="parts.image is null."
           parts={{ image: null }}
         />
+        <MediaCard size="content" selected title="The chosen card of a set" meta="selected" />
       </Stack>
     </Columns>
   ),
