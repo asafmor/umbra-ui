@@ -241,7 +241,10 @@ describe('column state', () => {
   });
 
   it('draws pinned columns at their edge, whatever the order says', () => {
-    const result = applyColumnState(defs, { order: ['c', 'actions', 'b', 'name', 'a'], pins: { b: 'start' } });
+    const result = applyColumnState(defs, {
+      order: ['c', 'actions', 'b', 'name', 'a'],
+      pins: { b: 'start' },
+    });
     expect(ids(result.columns)).toEqual(['b', 'name', 'c', 'a', 'actions']);
     expect(ids(applyColumnState(defs, { pins: { name: 'none', a: 'end' } }).columns)).toEqual([
       'name',

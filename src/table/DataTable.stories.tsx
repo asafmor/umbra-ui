@@ -25,6 +25,7 @@ import {
   DataTable,
   numberColumn,
   type DataTableColumn,
+  type DataTableColumnState,
   type DataTableRowAccent,
   type DataTableSort,
 } from './DataTable';
@@ -1455,3 +1456,90 @@ export const HiddenColumns: Story = {
     </div>
   ),
 };
+
+// --- The end user's columns ------------------------------------------------------------------------------
+
+const everyColumn: DataTableColumn<Person>[] = [
+  {
+    id: 'name',
+    header: 'Name',
+    accessor: 'name',
+    rowHeader: true,
+    pin: 'start',
+    priority: 'always',
+    sortable: true,
+    width: { min: 120 },
+  },
+  { id: 'id', header: 'Id', accessor: 'id', priority: 1, width: 64 },
+  { id: 'team', header: 'Team', accessor: 'team', priority: 5, sortable: true, width: { min: 96 } },
+  { id: 'role', header: 'Role', accessor: 'role', priority: 4, sortable: true, width: { min: 96 } },
+  {
+    id: 'status',
+    header: 'Status',
+    accessor: 'status',
+    priority: 3,
+    width: { min: 110 },
+    cell: (person) => (
+      <StatusIndicator status={statusOf[person.status].status}>
+        {statusOf[person.status].label}
+      </StatusIndicator>
+    ),
+  },
+  numberColumn({ id: 'tasks', header: 'Tasks', accessor: 'tasks', priority: 2, sortable: true, width: 72 }),
+  numberColumn({ id: 'level', header: 'Level', accessor: 'level', priority: 1, width: 72 }),
+  numberColumn({ id: 'change', header: 'Change', accessor: 'change', priority: 1, width: 80 }),
+  numberColumn({ id: 'progress', header: 'Progress', accessor: 'progress', priority: 2, width: 88 }),
+  numberColumn({
+    id: 'score',
+    header: 'Score',
+    accessor: 'score',
+    priority: 6,
+    sortable: true,
+    width: 72,
+    footer: (rows) => sum(rows.map((row) => row.score)),
+  }),
+];
+
+function ColumnsCard() {
+  // The app keeps the state: here in memory, in an app wherever it likes (docs/recipes.md).
+  const [state, setState] = useState<DataTableColumnState>({});
+  return (
+    <div style={{ display: 'flex', gap: 16, height: '100%', minWidth: 0 }}>
+      <Card
+        title="People"
+        padding="none"
+        style={{ flex: '1 1 0', minWidth: 0 }}
+        parts={footer(<Log>Columns: {JSON.stringify(state)}</Log>)}
+      >
+        <DataTable
+          aria-label="People"
+          data={forty}
+          getRowId={(person) => person.id}
+          columns={everyColumn}
+          columnMenu
+          columnState={state}
+          onColumnStateChange={setState}
+          selectionMode="multiple"
+          striped
+        />
+      </Card>
+      <Box width={360} height={240} label="By default: the button comes with the first hidden column">
+        <DataTable
+          aria-label="Narrow people"
+          data={five}
+          getRowId={(person) => person.id}
+          columns={narrowColumns}
+        />
+      </Box>
+    </div>
+  );
+}
+
+/**
+ * The end user's columns. The columns button at the end of the header row opens a list of every
+ * column: tick to show or hide (a column the table hid says "No room"; ticking it overrules the
+ * table), drag a handle or press Alt + Arrow Up or Down to move, and "Reset". Every header has a menu
+ * ("more", a right click, Shift+F10) to sort, move, pin, hide and resize; the edge of a header drags to
+ * resize and fits to content on a double click. The state is one JSON value, which the app saves.
+ */
+export const ColumnControls: Story = { render: () => <ColumnsCard /> };

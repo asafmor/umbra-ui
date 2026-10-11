@@ -595,3 +595,216 @@
 .root [data-part='changeSign'][data-direction='down'] {
   color: var(--umbra-table-change-down, var(--umbra-change-down, var(--umbra-color-semantic-danger)));
 }
+
+/* --- The end user's column controls ------------------------------------------------------------------ */
+
+/* The columns button fills its narrow header cell: "+3", or the columns icon. */
+.columnsButton {
+  display: inline-grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  min-height: 24px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.columnsButton:hover,
+.columnsButton[aria-expanded='true'] {
+  color: var(--umbra-table-header-active-color, var(--umbra-color-base-text-primary));
+}
+
+/*
+ * The "more" button of a header takes no room: it lies over the end of the cell (over the start of an
+ * end-aligned one, whose label ends at the edge), and shows when the header is pointed at, has the
+ * keyboard focus, or has its menu open.
+ */
+.headerMenuButton {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: 12px;
+  display: none;
+  place-items: center;
+  width: 24px;
+  margin-block: auto;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--umbra-radius-sm);
+  background: var(--umbra-table-header-bg, var(--surface));
+  color: var(--umbra-table-header-active-color, var(--umbra-color-base-text-primary));
+  cursor: pointer;
+}
+
+.headerCell[data-align='end'] > .headerMenuButton {
+  inset-inline: 12px auto;
+}
+
+.headerCell:is(:hover, :focus-visible, [data-menu-open]) > .headerMenuButton,
+.headerMenuButton:focus-visible {
+  display: grid;
+}
+
+.headerMenuButton:hover,
+.headerMenuButton[aria-expanded='true'] {
+  background: color-mix(in oklab, var(--umbra-color-base-text-primary) 12%, var(--surface));
+}
+
+/*
+ * The resize handle: 12px at the end of its own header and 12px at the start of the next, which is a
+ * pointer target of 24px across the border. Its line shows on hover, on focus and while it is dragged.
+ */
+.resizeHandle {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: 0;
+  width: 12px;
+  cursor: col-resize;
+  touch-action: none;
+  outline: none;
+}
+
+.resizeHandle[data-side='start'] {
+  inset-inline: 0 auto;
+}
+
+.resizeHandle::after {
+  content: '';
+  position: absolute;
+  inset-block: 2px;
+  inset-inline-end: 0;
+  width: 2px;
+  background: var(--umbra-table-resize-color, var(--umbra-color-fixed-focus-ring));
+  opacity: 0;
+}
+
+.resizeHandle[data-side='start']::after {
+  inset-inline: 0 auto;
+}
+
+.resizeHandle:is(:hover, :focus, [data-resizing])::after {
+  opacity: 1;
+}
+
+/* The column menu: a bar of actions, then one row per column. */
+.columnPopover {
+  width: var(--umbra-table-column-menu-width, 280px);
+}
+
+.columnMenu {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  max-height: min(60vh, 420px);
+}
+
+.columnMenuBar {
+  flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--umbra-space-2);
+  padding: 0 var(--umbra-space-3) var(--umbra-space-2);
+}
+
+.columnMenuBar > :first-child:not(.columnMenuActions) {
+  flex: 1 1 100%;
+}
+
+.columnMenuActions {
+  display: flex;
+  gap: var(--umbra-space-2);
+  margin-inline-start: auto;
+}
+
+.columnList {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  margin: 0;
+  padding: 0 var(--umbra-space-2) var(--umbra-space-2);
+  overflow-y: auto;
+  list-style: none;
+}
+
+.columnList[data-dragging] {
+  user-select: none;
+  cursor: grabbing;
+}
+
+.columnMenuItem {
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-space-2);
+  min-height: 28px;
+  border-radius: var(--umbra-radius-sm);
+}
+
+.columnMenuItem[data-dragging] {
+  opacity: var(--umbra-state-disabled-opacity);
+}
+
+.columnHandle {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--umbra-radius-sm);
+  background: none;
+  color: var(--umbra-color-base-text-muted);
+  touch-action: none;
+  --icon-size: 14px;
+}
+
+button.columnHandle {
+  cursor: grab;
+}
+
+button.columnHandle:is(:hover, [aria-expanded='true']) {
+  background: color-mix(in oklab, var(--umbra-color-base-text-primary) 12%, transparent);
+  color: var(--umbra-color-base-text-primary);
+}
+
+.columnCheck {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.columnLabel {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* What the table did to the column: "No room", or its pin. */
+.columnNote {
+  flex: none;
+  display: inline-flex;
+  margin-inline-start: var(--umbra-space-2);
+  color: var(--umbra-color-base-text-muted);
+  font: var(--umbra-font-label);
+  --icon-size: 12px;
+}
+
+.columnMenuEmpty {
+  margin: 0;
+  padding: var(--umbra-space-3);
+  color: var(--umbra-color-base-text-muted);
+}
+
+/* The line that shows where a dragged column lands. */
+.dropIndicator {
+  position: absolute;
+  inset-inline: var(--umbra-space-2);
+  height: 2px;
+  margin-top: -1px;
+  background: var(--umbra-table-drop-color, var(--umbra-color-fixed-focus-ring));
+  pointer-events: none;
+}

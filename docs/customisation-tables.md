@@ -35,7 +35,7 @@ translate a component. A name followed by brackets can also be a function of wha
 | [`CommandPalette`](#commandpalette) | `label`, `placeholder`, `emptyLabel`, `errorLabel`, `retryLabel`, `loadingLabel`, `recentLabel`, `shortcutsLabel`, `resultsLabel`, `backLabel`, `moveHint`, `enterKeyLabel`, `backspaceKeyLabel`, `escapeKeyLabel`, `runHint`, `backHint`, `closeHint` |
 | [`Comparison`](#comparison) | `metricLabel`, `summaryLabel`, `leaderLabel`, `retryLabel`, `increasedLabel`, `decreasedLabel` |
 | [`ConfirmDialog`](#confirmdialog) | `confirmLabel`, `cancelLabel`, `loadingLabel` |
-| [`DataTable`](#datatable) | `selectRowLabel(row)`, `selectAllLabel`, `highlightLabel`, `collapseGroupLabel`, `expandGroupLabel`, `showDetailsLabel`, `hideDetailsLabel`, `hiddenColumnsLabel(count)`, `loadingMoreLabel`, `increasedLabel`, `decreasedLabel`, `retryLabel` |
+| [`DataTable`](#datatable) | `selectRowLabel(row)`, `selectAllLabel`, `highlightLabel`, `collapseGroupLabel`, `expandGroupLabel`, `showDetailsLabel`, `hideDetailsLabel`, `hiddenColumnsLabel(count)`, `columnsLabel`, `showAllColumnsLabel`, `resetColumnsLabel`, `searchColumnsLabel`, `noColumnsLabel`, `noRoomLabel`, `moveColumnLabel`, `moveUpLabel`, `moveDownLabel`, `moveLeftLabel`, `moveRightLabel`, `pinStartLabel`, `pinEndLabel`, `unpinLabel`, `hideColumnLabel`, `sortAscendingLabel`, `sortDescendingLabel`, `clearSortLabel`, `resizeColumnLabel`, `autosizeColumnLabel`, `resetWidthLabel`, `columnOptionsLabel`, `columnMovedLabel(label, position, count)`, `columnWidthLabel(label, width)`, `loadingMoreLabel`, `increasedLabel`, `decreasedLabel`, `retryLabel` |
 | [`DateChip`](#datechip) | `selectedLabel`, `todayLabel` |
 | [`DivergingMeter`](#divergingmeter) | `noValueLabel`, `increasedLabel`, `decreasedLabel` |
 | [`DonutChart`](#donutchart) | `retryLabel`, `allHiddenLabel`, `pointsLabel`, `legendLabel`, `valueLabel` |
@@ -951,8 +951,10 @@ A table of rows and columns that fills its slot and scrolls inside it: sorting, 
 | `--umbra-table-change-neutral` | `var(--umbra-change-neutral, var(--umbra-color-base-text-primary))` |
 | `--umbra-table-change-up` | `var(--umbra-change-up, var(--umbra-color-semantic-success))` |
 | `--umbra-table-color` | `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-table-column-menu-width` | `280px` |
 | `--umbra-table-control-size` | `calc(var(--row-h) - 2px)` |
 | `--umbra-table-detail-bg` | `color-mix(in oklab, #000 var(--umbra-state-press-darken), var(--surface))` |
+| `--umbra-table-drop-color` | `--umbra-color-fixed-focus-ring` (#ffb3f5) |
 | `--umbra-table-edge-padding-x` | `--umbra-density-card-padding` (16px at the default density) |
 | `--umbra-table-focus-offset` | `calc(-1 * var(--umbra-state-focus-ring-width))` |
 | `--umbra-table-font` | `--umbra-font-table-cell` |
@@ -968,6 +970,7 @@ A table of rows and columns that fills its slot and scrolls inside it: sorting, 
 | `--umbra-table-highlight-marker` | `--umbra-color-fixed-accent-text` (#f77bf0) |
 | `--umbra-table-hover-bg` | `color-mix(in oklab, var(--umbra-color-base-text-primary) 8%, var(--bg))` |
 | `--umbra-table-pin-border-color` | `--umbra-color-base-border-strong` (#47395e) |
+| `--umbra-table-resize-color` | `--umbra-color-fixed-focus-ring` (#ffb3f5) |
 | `--umbra-table-row-bg` | `var(--umbra-scroll-fade-color, var(--scroll-fade-color, var(--umbra-context-card-tint)))` |
 | `--umbra-table-row-height` | `--umbra-density-table-row` (26px at the default density) |
 | `--umbra-table-selected-bg` | `color-mix(in oklab, var(--umbra-color-fixed-selected) 32%, var(--surface))` |
@@ -1014,6 +1017,36 @@ A table of rows and columns that fills its slot and scrolls inside it: sorting, 
 | `showDetailsLabel` | `string` | Accessible names of that control. |
 | `hideDetailsLabel` | `string` |  |
 | `hiddenColumnsLabel` | `((count: number) => string)` | Accessible name of the mark in the header that says columns are hidden ("+3"), from their number. The mark is shown while columns are hidden and rows cannot show them (no `expandableHidden`). |
+| `columnState` | `ColumnState` | Controlled: what the end user did to the columns (order, shown or hidden, widths, pins). Plain JSON: save it where you like and hand it back. Keep it stable between renders. |
+| `defaultColumnState` | `ColumnState` | The state the table starts from, and the one "Reset" returns to (in the controlled case too). Default: none. |
+| `onColumnStateChange` | `((state: DataTableColumnState) => void)` |  |
+| `columnMenu` | `boolean \| "auto"` | The end user's column controls: a columns button at the end of the header row, and a menu on every column header. `auto` (default) shows the button only while a column is not shown; `true` always; `false` removes the button and the menus. |
+| `resizableColumns` | `boolean` | A handle on the edge of every column header resizes the column. Default `true`. |
+| `reorderableColumns` | `boolean` | The end user can move columns, from the column menu and from a header's menu. Default `true`. |
+| `columnsLabel` | `string` | Name of the columns button while every column is shown, title of the column menu, and its row in a header's menu. |
+| `showAllColumnsLabel` | `string` |  |
+| `resetColumnsLabel` | `string` |  |
+| `searchColumnsLabel` | `string` |  |
+| `noColumnsLabel` | `string` | Shown in the column menu when the search matches no column. |
+| `noRoomLabel` | `string` | Beside a column the table hid for lack of width. |
+| `moveColumnLabel` | `string` | Accessible name of a column's handle in the column menu; the column's label is added. |
+| `moveUpLabel` | `string` |  |
+| `moveDownLabel` | `string` |  |
+| `moveLeftLabel` | `string` |  |
+| `moveRightLabel` | `string` |  |
+| `pinStartLabel` | `string` |  |
+| `pinEndLabel` | `string` |  |
+| `unpinLabel` | `string` |  |
+| `hideColumnLabel` | `string` |  |
+| `sortAscendingLabel` | `string` |  |
+| `sortDescendingLabel` | `string` |  |
+| `clearSortLabel` | `string` |  |
+| `resizeColumnLabel` | `string` | The row of a header's menu, and (with the column's label) the accessible name of its resize handle. |
+| `autosizeColumnLabel` | `string` |  |
+| `resetWidthLabel` | `string` |  |
+| `columnOptionsLabel` | `string` | Accessible name of a header's "more" button and of its menu; the column's label is added. |
+| `columnMovedLabel` | `((label: string, position: number, count: number) => string)` | What assistive technology hears after a column is moved. |
+| `columnWidthLabel` | `((label: string, width: number) => string)` | What assistive technology hears after a column is resized, with its width in pixels. |
 | `skeletonRows` | `number` | Number of skeleton rows shown while `loading`. |
 | `height` | `number \| "content" \| "fill"` | `fill` (default) takes the height of the parent, and falls back to the content's height in a parent that has none (flowing content, a popover, a modal body, an accordion panel). `content` is always as tall as the content, and shows every row (no virtualisation). A number is a height in pixels. |
 | `loadingMore` | `boolean` | Shows a skeleton row after the last row while more rows load. |
@@ -1037,9 +1070,9 @@ A table of rows and columns that fills its slot and scrolls inside it: sorting, 
 | `retryLabel` | `string` | Label of the retry button. |
 | `id` | `string` | The `id` of the root element. |
 
-**Parts**: `header`, `headerCell`, `sortIndicator`, `hiddenIndicator`, `row`, `cell`, `groupHeader`, `detail`, `footer`, `skeleton`, `empty`, `error`.
+**Parts**: `header`, `headerCell`, `sortIndicator`, `hiddenIndicator`, `columnMenu`, `columnMenuItem`, `headerMenu`, `resizeHandle`, `row`, `cell`, `groupHeader`, `detail`, `footer`, `skeleton`, `empty`, `error`.
 
-**Blocks**: `DataTable.Root`, `DataTable.Header`, `DataTable.HeaderCell`, `DataTable.SortIndicator`, `DataTable.Body`, `DataTable.Row`, `DataTable.Cell`, `DataTable.GroupRow`, `DataTable.Footer`.
+**Blocks**: `DataTable.Root`, `DataTable.Header`, `DataTable.HeaderCell`, `DataTable.SortIndicator`, `DataTable.Body`, `DataTable.Row`, `DataTable.Cell`, `DataTable.GroupRow`, `DataTable.Footer`, `DataTable.ResizeHandle`, `DataTable.ColumnMenu`.
 
 ## DateChip
 
@@ -1496,6 +1529,7 @@ A grid of cells coloured by value: two categories against each other, or points 
 
 | Prop | Type | Purpose |
 |---|---|---|
+| `columns` | `string[]` | The names of the columns. |
 | `parts` | `see Parts` | Replace or hide named pieces. |
 | `aria-label` | `string` | Accessible name of the chart. Required unless `aria-labelledby` is set. |
 | `className` | `string` |  |
@@ -1507,7 +1541,6 @@ A grid of cells coloured by value: two categories against each other, or points 
 | `hiddenIds` | `readonly string[]` | Ids of the series that are switched off (controlled). |
 | `defaultHiddenIds` | `readonly string[]` |  |
 | `onHiddenChange` | `((hiddenIds: string[]) => void)` |  |
-| `columns` | `string[]` | The names of the columns. |
 | `rows` | `string[]` | The names of the rows, from the top down. |
 | `thresholds` | `ThresholdList` | Colours cells by the band of their value in place of the scale: an ascending list of `{ from, tone?, color?, label? }`, or plain numbers as boundaries on the value ramp. The band's `label` joins the value in the tooltip and for screen readers, and names the band in the legend. |
 | `lowerIsBetter` | `boolean` | For a scale where low is good: mirrors the colours over the steps or bands. The labels stay. |
@@ -1721,6 +1754,7 @@ A group of labels with their values, in rows, columns or a grid.
 | `children` | `ReactNode` | The rows as `KeyValue` elements. |
 | `skeletonRows` | `number` | Number of skeleton rows. |
 | `parts` | `see Parts` | Replace or hide named pieces. `item` receives the props of each row built from `items`. |
+| `columns` | `number` | Most columns of the `grid` layout. Fewer are used when the list is narrow. |
 | `aria-label` | `string` | Names the list for assistive technology. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
@@ -1732,7 +1766,6 @@ A group of labels with their values, in rows, columns or a grid.
 | `increasedLabel` | `string` | What a screen reader hears with the sign of a value that rose or fell. |
 | `decreasedLabel` | `string` |  |
 | `layout` | `"columns" \| "rows" \| "grid"` | `rows`: one row per item, sharing one label column. `columns`: side by side. `grid`: in `columns` columns. |
-| `columns` | `number` | Most columns of the `grid` layout. Fewer are used when the list is narrow. |
 | `striped` | `boolean` | Shades every other row (`rows` layout). |
 | `dividers` | `boolean` | Draws a line between items (`rows` and `columns` layouts). |
 | `labelWidth` | `string \| number` | Width of the shared label column in the `rows` layout: pixels or any CSS length. Default: as wide as the longest label, at most 60%. |
@@ -4468,8 +4501,8 @@ A packed board of collapsible cards of different heights. It scrolls inside itse
 | `height` | `FillHeight` | `fill` (default) takes the slot and scrolls inside; `content` is as tall as the widgets; or pixels. |
 | `collapsedIds` | `string[]` | Controlled: the ids of the collapsed widgets. |
 | `defaultCollapsedIds` | `string[]` |  |
-| `aria-label` | `string` | Accessible name of the list of widgets. |
 | `columns` | `number` | A fixed number of columns. Wins over `minColumnWidth`. |
+| `aria-label` | `string` | Accessible name of the list of widgets. |
 | `minColumnWidth` | `number` | The board has as many columns as fit at this width or more, in pixels. |
 | `collapseAllLabel` | `string` |  |
 | `expandAllLabel` | `string` |  |

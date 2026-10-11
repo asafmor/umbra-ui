@@ -36,12 +36,20 @@ import { ChangeHighlight } from '../internal/ChangeHighlight';
 import { dataState, type DataStateProps } from '../internal/dataState';
 import { heightProps } from '../internal/height';
 import { ScrollArea } from '../layout/ScrollArea';
-import { Menu, type MenuEntry } from '../overlays/Menu';
+import { Menu, type MenuEntry, type MenuProps } from '../overlays/Menu';
+import { Popover } from '../overlays/Popover';
 import { Icon } from '../provider/icons';
 import { useUmbra } from '../provider/UmbraProvider';
 import { minWindow } from '../styles/tokens.generated';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './DataTable.module.css';
+import {
+  ColumnMenu,
+  ResizeHandle,
+  type DataTableColumnMenuItem,
+  type DataTableColumnMenuProps,
+  type DataTableResizeHandleProps,
+} from './columns';
 import {
   GridAdapterContext,
   INTERACTIVE,
@@ -51,7 +59,13 @@ import {
   type GridAdapter,
 } from './grid';
 import {
+  applyColumnState,
+  BASE_FONT_SIZE,
+  clampWidth,
   defaultWidthMetrics,
+  MAX_COLUMN_WIDTH,
+  MIN_COLUMN_WIDTH,
+  moveColumn,
   resolveWidth,
   fitColumns,
   offsetsOf,
@@ -60,7 +74,14 @@ import {
   windowRange,
   type SelectionMemo,
   type ColumnSize,
+  type ColumnState,
 } from './logic';
+
+export type {
+  DataTableColumnMenuItem,
+  DataTableColumnMenuProps,
+  DataTableResizeHandleProps,
+} from './columns';
 import { defined } from '../utils/defined';
 import { passThrough, type RootAttributes } from '../utils/passThrough';
 
@@ -73,6 +94,13 @@ interface BlockProps {
 export type DataTableAlign = 'start' | 'center' | 'end';
 export type DataTablePin = 'start' | 'end';
 export type DataTableSortDirection = 'asc' | 'desc';
+
+/**
+ * What the end user did to the columns: their order, which are shown, their widths and their pins.
+ * Plain JSON, so an app can save it; every member is optional and a missing entry means "as the
+ * columns are defined".
+ */
+export type DataTableColumnState = ColumnState;
 
 /** One entry of the sort order: a column id and a direction. */
 export interface DataTableSort {
@@ -150,6 +178,15 @@ export interface DataTableColumn<Row> {
   aggregate?: ((rows: Row[]) => ReactNode) | undefined;
   /** Marks the column's cells as the header of their row. */
   rowHeader?: boolean | undefined;
+  /** `false`: the end user cannot hide the column. Default `true`. */
+  hideable?: boolean | undefined;
+  /** `false`: the end user cannot move the column. Default `true`. */
+  reorderable?: boolean | undefined;
+  /** `false`: the end user cannot resize the column. Default `true`. */
+  resizable?: boolean | undefined;
+  /** The limits of a resize by the end user, in the pixels of `width`. Default 48 and 800. */
+  minWidth?: number | undefined;
+  maxWidth?: number | undefined;
 }
 
 /** A header that spans several columns, in a row above the column headers. */
@@ -460,6 +497,17 @@ export interface DataTableHeaderCellProps extends BlockProps, CellLayoutProps {
   hideLabel?: boolean | undefined;
   /** `colgroup` for a header that spans several columns. */
   scope?: 'col' | 'colgroup' | undefined;
+  /**
+   * Adds a "more" button, shown on hover and focus, and is called with the header cell on its press,
+   * on Shift+F10, on the context-menu key and on a right click: open the column's menu against it.
+   */
+  onMenu?: ((anchor: HTMLElement) => void) | undefined;
+  /** Accessible name of the "more" button. */
+  menuLabel?: string | undefined;
+  /** The menu is open: the button stays shown. */
+  menuOpen?: boolean | undefined;
+  /** A `DataTable.ResizeHandle` on the cell's edge. */
+  resizeHandle?: ReactNode | undefined;
 }
 
 function HeaderCell({
@@ -479,6 +527,10 @@ function HeaderCell({
   tooltip,
   hideLabel,
   scope = 'col',
+  onMenu,
+  menuLabel,
+  menuOpen,
+  resizeHandle,
   className,
   style,
   children,
@@ -501,6 +553,7 @@ function HeaderCell({
       data-pin={pin}
       data-pin-edge={pinEdge || undefined}
       data-sort={sort}
+      data-menu-open={menuOpen || undefined}
       data-tip={tooltip}
       data-tip-always={tooltip ? '' : undefined}
       aria-sort={sort === 'asc' ? 'ascending' : sort === 'desc' ? 'descending' : sort}
@@ -513,6 +566,23 @@ function HeaderCell({
       tabIndex={-1}
       className={cx(styles.headerCell, className)}
       style={pinStyle(pin, pinOffset, style)}
+      onContextMenu={
+        onMenu &&
+        ((event) => {
+          event.preventDefault();
+          onMenu(event.currentTarget);
+        })
+      }
+      onKeyDown={
+        onMenu &&
+        ((event) => {
+          if (event.target !== event.currentTarget) return;
+          if (event.key !== 'ContextMenu' && !(event.shiftKey && event.key === 'F10')) return;
+          event.preventDefault();
+          event.stopPropagation();
+          onMenu(event.currentTarget);
+        })
+      }
     >
       {sort ? (
         <button
@@ -532,6 +602,24 @@ function HeaderCell({
           {description}
         </span>
       )}
+      {onMenu && (
+        // Not a control of the cell for the grid: Enter on the header still sorts. Keys open the menu
+        // from the cell itself.
+        <button
+          type="button"
+          tabIndex={-1}
+          data-grid-ignore=""
+          data-part="headerMenuButton"
+          aria-label={menuLabel}
+          aria-haspopup="menu"
+          aria-expanded={!!menuOpen}
+          className={styles.headerMenuButton}
+          onClick={(event) => onMenu(event.currentTarget.closest('th')!)}
+        >
+          <Icon name="more" />
+        </button>
+      )}
+      {resizeHandle}
     </th>
   );
 }
@@ -914,6 +1002,13 @@ const VIRTUAL_FROM = 200;
 const defaultSelectRowLabel = () => 'Select row';
 const defaultHiddenColumnsLabel = (count: number) =>
   count === 1 ? '1 column hidden' : `${count} columns hidden`;
+const defaultColumnMovedLabel = (label: string, position: number, count: number) =>
+  `${label} moved to position ${position} of ${count}`;
+const defaultColumnWidthLabel = (label: string, width: number) => `${label} width ${width} pixels`;
+const noColumnState: DataTableColumnState = {};
+
+const labelOf = <Row,>(column: DataTableColumn<Row>) =>
+  typeof column.header === 'string' ? column.header : (column.headerLabel ?? column.id);
 
 const valueOf = <Row,>(column: DataTableColumn<Row>, row: Row): unknown =>
   typeof column.accessor === 'function'
@@ -1019,6 +1114,57 @@ export interface DataTableProps<Row> extends DataStateProps, RootAttributes {
    */
   hiddenColumnsLabel?: ((count: number) => string) | undefined;
 
+  /**
+   * Controlled: what the end user did to the columns (order, shown or hidden, widths, pins). Plain
+   * JSON: save it where you like and hand it back. Keep it stable between renders.
+   */
+  columnState?: DataTableColumnState | undefined;
+  /** The state the table starts from, and the one "Reset" returns to (in the controlled case too). Default: none. */
+  defaultColumnState?: DataTableColumnState | undefined;
+  onColumnStateChange?: ((state: DataTableColumnState) => void) | undefined;
+  /**
+   * The end user's column controls: a columns button at the end of the header row, and a menu on every
+   * column header. `auto` (default) shows the button only while a column is not shown; `true` always;
+   * `false` removes the button and the menus.
+   */
+  columnMenu?: boolean | 'auto' | undefined;
+  /** A handle on the edge of every column header resizes the column. Default `true`. */
+  resizableColumns?: boolean | undefined;
+  /** The end user can move columns, from the column menu and from a header's menu. Default `true`. */
+  reorderableColumns?: boolean | undefined;
+  /** Name of the columns button while every column is shown, title of the column menu, and its row in a header's menu. */
+  columnsLabel?: string | undefined;
+  showAllColumnsLabel?: string | undefined;
+  resetColumnsLabel?: string | undefined;
+  searchColumnsLabel?: string | undefined;
+  /** Shown in the column menu when the search matches no column. */
+  noColumnsLabel?: string | undefined;
+  /** Beside a column the table hid for lack of width. */
+  noRoomLabel?: string | undefined;
+  /** Accessible name of a column's handle in the column menu; the column's label is added. */
+  moveColumnLabel?: string | undefined;
+  moveUpLabel?: string | undefined;
+  moveDownLabel?: string | undefined;
+  moveLeftLabel?: string | undefined;
+  moveRightLabel?: string | undefined;
+  pinStartLabel?: string | undefined;
+  pinEndLabel?: string | undefined;
+  unpinLabel?: string | undefined;
+  hideColumnLabel?: string | undefined;
+  sortAscendingLabel?: string | undefined;
+  sortDescendingLabel?: string | undefined;
+  clearSortLabel?: string | undefined;
+  /** The row of a header's menu, and (with the column's label) the accessible name of its resize handle. */
+  resizeColumnLabel?: string | undefined;
+  autosizeColumnLabel?: string | undefined;
+  resetWidthLabel?: string | undefined;
+  /** Accessible name of a header's "more" button and of its menu; the column's label is added. */
+  columnOptionsLabel?: string | undefined;
+  /** What assistive technology hears after a column is moved. */
+  columnMovedLabel?: ((label: string, position: number, count: number) => string) | undefined;
+  /** What assistive technology hears after a column is resized, with its width in pixels. */
+  columnWidthLabel?: ((label: string, width: number) => string) | undefined;
+
   /** Number of skeleton rows shown while `loading`. */
   skeletonRows?: number | undefined;
   /**
@@ -1058,6 +1204,13 @@ export interface DataTableProps<Row> extends DataStateProps, RootAttributes {
         sortIndicator?: Part<DataTableSortIndicatorProps> | undefined;
         /** The mark in the header that says columns are hidden. `null` removes it and its column. */
         hiddenIndicator?: Part<{ count: number; labels: string[]; children: ReactNode }> | undefined;
+        /** The list of the column menu. */
+        columnMenu?: Part<DataTableColumnMenuProps> | undefined;
+        /** One row of that list. `children` is the default row. */
+        columnMenuItem?: Part<{ item: DataTableColumnMenuItem; children: ReactNode }> | undefined;
+        /** The menu of one column header: a `Menu`, whose `items` can be added to. */
+        headerMenu?: Part<MenuProps & { column: DataTableColumn<Row> }> | undefined;
+        resizeHandle?: Part<DataTableResizeHandleProps & { column: DataTableColumn<Row> }> | undefined;
         row?: Part<DataTableRowProps & { row: Row }> | undefined;
         cell?: Part<DataTableCellProps & { row: Row; column: DataTableColumn<Row> }> | undefined;
         groupHeader?: Part<DataTableGroupRowProps> | undefined;
@@ -1081,7 +1234,7 @@ export interface DataTableProps<Row> extends DataStateProps, RootAttributes {
 export function DataTable<Row>({
   data,
   getRowId,
-  columns,
+  columns: columnDefs,
   columnGroups,
   sort: sortProp,
   defaultSort,
@@ -1117,6 +1270,36 @@ export function DataTable<Row>({
   showDetailsLabel = 'Show hidden columns',
   hideDetailsLabel = 'Hide hidden columns',
   hiddenColumnsLabel = defaultHiddenColumnsLabel,
+  columnState: columnStateProp,
+  defaultColumnState,
+  onColumnStateChange,
+  columnMenu = 'auto',
+  resizableColumns = true,
+  reorderableColumns = true,
+  columnsLabel = 'Columns',
+  showAllColumnsLabel,
+  resetColumnsLabel,
+  searchColumnsLabel,
+  noColumnsLabel,
+  noRoomLabel,
+  moveColumnLabel,
+  moveUpLabel,
+  moveDownLabel,
+  moveLeftLabel = 'Move left',
+  moveRightLabel = 'Move right',
+  pinStartLabel = 'Pin to start',
+  pinEndLabel = 'Pin to end',
+  unpinLabel = 'Unpin',
+  hideColumnLabel = 'Hide column',
+  sortAscendingLabel = 'Sort ascending',
+  sortDescendingLabel = 'Sort descending',
+  clearSortLabel = 'Clear sort',
+  resizeColumnLabel = 'Resize',
+  autosizeColumnLabel = 'Fit to content',
+  resetWidthLabel = 'Reset width',
+  columnOptionsLabel = 'Column options',
+  columnMovedLabel = defaultColumnMovedLabel,
+  columnWidthLabel = defaultColumnWidthLabel,
   skeletonRows = 8,
   loadingMore = false,
   loadingMoreLabel = 'Loading more',
@@ -1152,6 +1335,23 @@ export function DataTable<Row>({
     defaultCollapsedGroups ?? [],
     onCollapsedGroupsChange,
   );
+  const [columnState, setColumnState] = useControlled(
+    columnStateProp,
+    defaultColumnState ?? noColumnState,
+    onColumnStateChange,
+  );
+  // The columns as the user arranged them, in the order they are drawn. Everything below reads these.
+  const arranged = useMemo(() => applyColumnState(columnDefs, columnState), [columnDefs, columnState]);
+  const columns = arranged.columns;
+  const userHidden = arranged.hidden;
+  /** The column whose header menu is open. */
+  const [headerMenu, setHeaderMenu] = useState<string | null>(null);
+  const [menuRtl, setMenuRtl] = useState(false);
+  const [columnsOpen, setColumnsOpen] = useState(false);
+  /** What the menu or the column menu opens against. */
+  const menuAnchor = useRef<HTMLElement | null>(null);
+  /** What the live region says: a move or a resize. */
+  const [said, setSaid] = useState('');
   const [expanded, setExpanded] = useState<string[]>([]);
   const [size, setSize] = useState<{ width: number; height: number } | null>(null);
   const [widthMetrics, setWidthMetrics] = useState(defaultWidthMetrics);
@@ -1224,18 +1424,26 @@ export function DataTable<Row>({
   // While columns are hidden one narrow column is added: the carets that show them under each row, or
   // the mark that says how many there are.
   const hiddenUtility = expandableHidden || parts?.hiddenIndicator !== null;
-  const fit = useMemo(() => {
-    const sizes: ColumnSize[] = columns.map((column) => ({
-      id: column.id,
-      priority: column.priority ?? 0,
-      // A sortable header keeps room for its arrow: one line of the font.
-      ...resolveWidth(
-        column.width,
-        widthMetrics,
-        contentChars[column.id],
-        column.sortable ? widthMetrics.fontSize + 4 : 0,
-      ),
-    }));
+  // The columns button has its column whatever the width when it is always shown, or when the user hid
+  // a column; otherwise the column comes with the first column that does not fit, as the mark did.
+  const markFixed =
+    parts?.hiddenIndicator !== null && (columnMenu === true || (!expandableHidden && userHidden.length > 0));
+  const sizes = useMemo(() => {
+    const sizes: ColumnSize[] = columns
+      .filter((column) => !userHidden.includes(column.id))
+      .map((column) => ({
+        id: column.id,
+        priority: column.priority ?? 0,
+        // A width the user set is not shared out again.
+        utility: columnState.widths?.[column.id] !== undefined || undefined,
+        // A sortable header keeps room for its arrow: one line of the font.
+        ...resolveWidth(
+          column.width,
+          widthMetrics,
+          contentChars[column.id],
+          column.sortable ? widthMetrics.fontSize + 4 : 0,
+        ),
+      }));
     if (selectable) {
       sizes.unshift({
         id: SELECT,
@@ -1246,11 +1454,24 @@ export function DataTable<Row>({
         utility: true,
       });
     }
-    return fitColumns(sizes, size?.width ?? null, hiddenUtility ? UTILITY_WIDTH : 0);
-  }, [columns, selectable, hiddenUtility, size?.width, widthMetrics, contentChars]);
+    if (markFixed) {
+      sizes.push({
+        id: HIDDEN,
+        min: UTILITY_WIDTH,
+        max: UTILITY_WIDTH,
+        flex: 0,
+        priority: 'always',
+        utility: true,
+      });
+    }
+    return sizes;
+  }, [columns, userHidden, columnState.widths, selectable, markFixed, widthMetrics, contentChars]);
+  /** Width that is only needed once a column does not fit: the disclosure column, or the columns button. */
+  const reserve = (markFixed ? expandableHidden : hiddenUtility) ? UTILITY_WIDTH : 0;
+  const fit = useMemo(() => fitColumns(sizes, size?.width ?? null, reserve), [sizes, size?.width, reserve]);
   const hiddenKey = fit.hidden.join('\n');
   const showExpander = expandableHidden && fit.hidden.length > 0;
-  const showHiddenMark = !expandableHidden && hiddenUtility && fit.hidden.length > 0;
+  const showHiddenMark = markFixed || (!expandableHidden && hiddenUtility && fit.hidden.length > 0);
 
   // --- Rows: sorting, grouping and selection state come from the engine --------------------------
   const groupKey = useMemo(
@@ -1283,8 +1504,11 @@ export function DataTable<Row>({
     [sort],
   );
   const columnVisibility = useMemo(
-    () => Object.fromEntries([...(hiddenKey ? hiddenKey.split('\n') : []), GROUP].map((id) => [id, false])),
-    [hiddenKey],
+    () =>
+      Object.fromEntries(
+        [...(hiddenKey ? hiddenKey.split('\n') : []), ...userHidden, GROUP].map((id) => [id, false]),
+      ),
+    [hiddenKey, userHidden],
   );
   const rowSelection = useMemo(
     () => Object.fromEntries(selectedIds.map((id) => [id, true as const])),
@@ -1319,7 +1543,9 @@ export function DataTable<Row>({
   });
 
   const cols = useMemo(() => {
-    const visible = columns.filter((column) => !fit.hidden.includes(column.id));
+    const visible = columns.filter(
+      (column) => !fit.hidden.includes(column.id) && !userHidden.includes(column.id),
+    );
     const numeric = (column: DataTableColumn<Row>) =>
       column.numeric ?? (data[0] !== undefined && typeof valueOf(column, data[0]) === 'number');
     const list: Col<Row>[] = [...(selectable ? [SELECT] : []), ...(showExpander ? [EXPAND] : [])].map(
@@ -1356,7 +1582,7 @@ export function DataTable<Row>({
         pin: 'end',
         align: 'center',
         numeric: false,
-        width: UTILITY_WIDTH,
+        width: fit.widths[HIDDEN] ?? UTILITY_WIDTH,
         index: index + 1,
       });
     }
@@ -1377,7 +1603,7 @@ export function DataTable<Row>({
     if (ends.length) ends[ends.length - 1]!.pinEdge = true;
     return list;
     // eslint-disable-next-line react-hooks/exhaustive-deps -- `data[0]` only decides the default alignment
-  }, [columns, fit, selectable, showExpander, showHiddenMark, data[0]]);
+  }, [columns, userHidden, fit, selectable, showExpander, showHiddenMark, data[0]]);
   // Every column, shown or not, and the columns the table adds.
   const columnCount = columns.length + cols.filter((c) => !c.def).length;
   const totalWidth = size ? cols.reduce((sum, c) => sum + c.width, 0) : undefined;
@@ -1385,6 +1611,170 @@ export function DataTable<Row>({
     () => columns.filter((column) => fit.hidden.includes(column.id)),
     [columns, fit],
   );
+  /** Every column that is not drawn: no room, or hidden by the user. */
+  const notShown = useMemo(
+    () => columns.filter((column) => fit.hidden.includes(column.id) || userHidden.includes(column.id)),
+    [columns, fit, userHidden],
+  );
+
+  // --- The end user's column controls ----------------------------------------------------------------
+  /** A pixel of a column's `width` in the pixels drawn: widths are written for the default density. */
+  const scale = widthMetrics.fontSize / BASE_FONT_SIZE;
+  // What the handlers below read when they run. They are kept inside the cached header, so they must
+  // not hold the values of the render that made them.
+  const live = useRef({ columns, columnState, cols, sizes, fit, size, totalWidth, data, widthMetrics });
+  useLayoutEffect(() => {
+    live.current = { columns, columnState, cols, sizes, fit, size, totalWidth, data, widthMetrics };
+  });
+  const headerCells = () => [
+    ...(root.current?.querySelectorAll<HTMLElement>('thead > tr[data-row-key="head"] > [data-cell]') ?? []),
+  ];
+  /** Focus goes to the column's header where it is now, or to the header at `index` when it is gone. */
+  const focusHeader = (id: string, index = 0) => {
+    const cells = headerCells();
+    (cells.find((cell) => cell.dataset.col === id) ?? cells[Math.min(index, cells.length - 1)])?.focus();
+  };
+  /** A change made from a header: applied at once, so the focus can follow the column. */
+  const changeFrom = (id: string, next: DataTableColumnState) => {
+    const index = headerCells().findIndex((cell) => cell.dataset.col === id);
+    flushSync(() => setColumnState(next));
+    focusHeader(id, index);
+  };
+  const moveTo = (id: string, to: number, fromHeader = false) => {
+    const { columns, columnState } = live.current;
+    const ids = columns.map((column) => column.id);
+    const next = moveColumn(ids, id, to, (other) => columns.find((column) => column.id === other)?.pin);
+    if (next === ids) return;
+    if (fromHeader) changeFrom(id, { ...columnState, order: next });
+    else setColumnState({ ...columnState, order: next });
+    setSaid(columnMovedLabel(labelOf(columns[ids.indexOf(id)]!), next.indexOf(id) + 1, ids.length));
+  };
+  const pinTo = (id: string, pin: DataTablePin | 'none') => ({
+    ...live.current.columnState,
+    pins: { ...live.current.columnState.pins, [id]: pin },
+  });
+  const showColumn = (id: string, visible: boolean) => ({
+    ...live.current.columnState,
+    visibility: { ...live.current.columnState.visibility, [id]: visible },
+  });
+  const widthOf = (id: string, width: number | undefined) => {
+    const widths = { ...live.current.columnState.widths };
+    if (width === undefined) delete widths[id];
+    else widths[id] = width;
+    return { ...live.current.columnState, widths };
+  };
+
+  /** Writes column widths straight to the page while a handle moves; `null` puts back what was rendered. */
+  const paint = (widths: Record<string, number> | null) => {
+    const { cols, totalWidth } = live.current;
+    const els = root.current?.querySelectorAll<HTMLElement>('colgroup > col') ?? [];
+    let total = 0;
+    cols.forEach((c, i) => {
+      const width = widths?.[c.id] ?? c.width;
+      total += width;
+      if (els[i]) els[i].style.width = `${width}px`;
+    });
+    const table = root.current?.querySelector('table');
+    if (table) table.style.width = `${widths ? total : (totalWidth ?? total)}px`;
+  };
+  const resize = (id: string) => (width: number, phase: 'move' | 'commit' | 'cancel') => {
+    const { columns, cols, sizes, fit, size, widthMetrics } = live.current;
+    if (phase === 'move') {
+      // The fit rule again, with this one width fixed and no column hidden or shown: that waits for
+      // the release. Only `<col>` widths are written, so no row is rendered while the handle moves.
+      // ponytail: the offsets of pinned columns after a pinned column that is being resized stay as
+      // they were until the release; write them as CSS variables if such a table shows up.
+      const shown = sizes
+        .filter((s) => !fit.hidden.includes(s.id))
+        .map((s) => ({
+          ...s,
+          priority: 'always' as const,
+          ...(s.id === id && { min: width, max: width, flex: 0, utility: true }),
+        }));
+      const others = cols.filter((c) => !shown.some((s) => s.id === c.id));
+      const taken = others.reduce((sum, c) => sum + c.width, 0);
+      return paint(fitColumns(shown, size ? size.width - taken : null).widths);
+    }
+    paint(null);
+    // A handle that had the focus (a resize by keys) gives it back to its header.
+    const byKeys = !!document.activeElement?.matches('[data-part="resizeHandle"]');
+    const column = columns.find((c) => c.id === id);
+    if (phase === 'commit' && column) {
+      const next = widthOf(id, clampWidth(column, (width * BASE_FONT_SIZE) / widthMetrics.fontSize));
+      if (byKeys) changeFrom(id, next);
+      else setColumnState(next);
+      setSaid(columnWidthLabel(labelOf(column), width));
+    } else if (byKeys) focusHeader(id);
+  };
+  /** The width that fits the column's content: its text in every row, or its widest rendered cell. */
+  const autosize = (id: string) => {
+    const { columns, cols, data, widthMetrics: m } = live.current;
+    const column = columns.find((c) => c.id === id);
+    if (!column) return;
+    let width = labelOf(column).length * m.ch + m.padding + (column.sortable ? m.fontSize + 4 : 0);
+    if (!column.cell) {
+      let longest = 0;
+      for (const row of data) longest = Math.max(longest, textOf(column, row).length);
+      width = Math.max(width, longest * m.ch + m.padding);
+    } else {
+      // A cell of its own: the browser says how wide the rendered cells want to be, by laying the
+      // table out by its content for a moment.
+      const table = root.current?.querySelector('table');
+      const index = cols.findIndex((c) => c.id === id);
+      const col = root.current?.querySelectorAll<HTMLElement>('colgroup > col')[index];
+      const cell = headerCells().find((el) => el.dataset.col === id);
+      if (table && col && cell) {
+        table.style.tableLayout = 'auto';
+        table.style.width = 'max-content';
+        col.style.width = '';
+        width = Math.max(width, cell.getBoundingClientRect().width);
+        table.style.tableLayout = '';
+        paint(null);
+      }
+    }
+    resize(id)(Math.ceil(width), 'commit');
+  };
+
+  const openHeaderMenu = (id: string) => (anchor: HTMLElement) => {
+    menuAnchor.current = anchor;
+    // "Left" and "right" are named as the table is drawn.
+    setMenuRtl(getComputedStyle(anchor).direction === 'rtl');
+    setHeaderMenu(id);
+  };
+  const openColumns = (anchor: HTMLElement | null) => {
+    menuAnchor.current = root.current?.querySelector('[data-part="columnsButton"]') ?? anchor;
+    setColumnsOpen(true);
+  };
+  // When a menu closes and what opened it is gone (a hidden column, the button of a table whose columns
+  // are all back), the focus would be left on the page: it goes to the grid's tab stop.
+  const overlayOpen = headerMenu !== null || columnsOpen;
+  const hadOverlay = useRef(false);
+  /** What to do once the open menu has closed and given the focus back. */
+  const afterOverlay = useRef<(() => void) | null>(null);
+  useEffect(() => {
+    if (overlayOpen) {
+      hadOverlay.current = true;
+      return;
+    }
+    if (!hadOverlay.current) return;
+    hadOverlay.current = false;
+    // The overlay gives the focus back a frame after it closes, or after its exit animation: the page
+    // is watched for half a second, and the first time the focus is nowhere it is put on the tab stop.
+    let frames = 0;
+    let frame = requestAnimationFrame(function check() {
+      const then = frames === 1 ? afterOverlay.current : null;
+      if (then) {
+        afterOverlay.current = null;
+        return then();
+      }
+      const el = document.activeElement;
+      if (frames > 1 && (!el || el === document.body || !el.isConnected)) {
+        return root.current?.querySelector<HTMLElement>('[data-cell][tabindex="0"]')?.focus();
+      }
+      if (frames++ < 30) frame = requestAnimationFrame(check);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [overlayOpen]);
 
   useEffect(() => {
     if (size) onHiddenColumnsChange?.(hiddenKey ? hiddenKey.split('\n') : []);
@@ -1587,6 +1977,16 @@ export function DataTable<Row>({
       items,
       cols,
       hiddenColumns,
+      notShown,
+      columnState,
+      headerMenu,
+      columnsOpen,
+      columnMenu,
+      resizableColumns,
+      columnsLabel,
+      columnOptionsLabel,
+      resizeColumnLabel,
+      scale,
       size?.width,
       selectedIds,
       highlightedIds,
@@ -1620,7 +2020,6 @@ export function DataTable<Row>({
     ],
   );
   const once = (key: string, render: () => ReactNode) => {
-    // eslint-disable-next-line react-hooks/immutability -- a cache: filling it does not change what is rendered
     if (!rendered.has(key)) rendered.set(key, render());
     return rendered.get(key);
   };
@@ -1636,7 +2035,34 @@ export function DataTable<Row>({
 
   // --- Header ------------------------------------------------------------------------------------------
   const sortedCount = sort.length;
-  const headerCell = (c: Col<Row>) => {
+  const canResize = (c: Col<Row> | undefined): c is Col<Row> & { def: DataTableColumn<Row> } =>
+    resizableColumns && !!c?.def && c.def.resizable !== false;
+  /**
+   * The handles of a header cell: its own, and the half of the previous column's that lies in this
+   * cell, because a header cell clips and the pointer target is 24px across the border.
+   */
+  const handles = (i: number) =>
+    [cols[i - 1], cols[i]].map((c, own) => {
+      if (!canResize(c)) return null;
+      const props: DataTableResizeHandleProps & { column: DataTableColumn<Row> } = {
+        column: c.def,
+        side: own ? 'end' : 'start',
+        label: `${resizeColumnLabel} ${labelOf(c.def)}`,
+        value: c.width,
+        min: Math.round((c.def.minWidth ?? MIN_COLUMN_WIDTH) * scale),
+        max: Math.round((c.def.maxWidth ?? MAX_COLUMN_WIDTH) * scale),
+        onResize: resize(c.id),
+        onAutosize: () => autosize(c.id),
+      };
+      return (
+        <Fragment key={own}>
+          {renderPart(parts?.resizeHandle, props, (p) => (
+            <ResizeHandle {...without(p, 'column')} />
+          ))}
+        </Fragment>
+      );
+    });
+  const headerCell = (c: Col<Row>, i: number) => {
     if (c.id === SELECT) {
       return (
         <HeaderCell key={c.id} {...layout(c)} label={selectAllLabel}>
@@ -1653,27 +2079,48 @@ export function DataTable<Row>({
       );
     }
     if (c.id === HIDDEN) {
-      const labels = hiddenColumns.map((column) =>
-        typeof column.header === 'string' ? column.header : (column.headerLabel ?? column.id),
-      );
-      const mark = { count: labels.length, labels, children: `+${labels.length}` };
+      const labels = notShown.map(labelOf);
+      const mark = {
+        count: labels.length,
+        labels,
+        children: labels.length ? `+${labels.length}` : <Icon name="columns" />,
+      };
+      const indicator = renderPart(parts?.hiddenIndicator, mark, (p) => (
+        <span data-part="hiddenIndicator" aria-hidden="true">
+          {p.children}
+        </span>
+      ));
+      const name = labels.length ? hiddenColumnsLabel(labels.length) : columnsLabel;
       return (
         <HeaderCell
           key={c.id}
           {...layout(c)}
-          label={hiddenColumnsLabel(labels.length)}
-          tooltip={labels.join(', ')}
+          label={name}
+          tooltip={labels.join(', ') || undefined}
           className={styles.hiddenMark}
+          resizeHandle={handles(i)}
         >
-          {renderPart(parts?.hiddenIndicator, mark, (p) => (
-            <span data-part="hiddenIndicator" aria-hidden="true">
-              {p.children}
-            </span>
-          ))}
+          {columnMenu === false ? (
+            indicator
+          ) : (
+            <button
+              type="button"
+              tabIndex={-1}
+              data-part="columnsButton"
+              aria-label={name}
+              aria-haspopup="dialog"
+              aria-expanded={columnsOpen}
+              className={styles.columnsButton}
+              onClick={() => (columnsOpen ? setColumnsOpen(false) : openColumns(null))}
+            >
+              {indicator}
+            </button>
+          )}
         </HeaderCell>
       );
     }
-    if (!c.def) return <HeaderCell key={c.id} {...layout(c)} label={showDetailsLabel} />;
+    if (!c.def)
+      return <HeaderCell key={c.id} {...layout(c)} label={showDetailsLabel} resizeHandle={handles(i)} />;
     const column = table.getColumn(c.id);
     const direction = column?.getIsSorted() || 'none';
     const sortIndex = sortedCount > 1 && direction !== 'none' ? (column?.getSortIndex() ?? 0) + 1 : undefined;
@@ -1692,6 +2139,10 @@ export function DataTable<Row>({
       tooltip: c.def.tooltip,
       hideLabel: c.def.hideHeader,
       children: c.def.header,
+      onMenu: columnMenu === false ? undefined : openHeaderMenu(c.id),
+      menuLabel: `${columnOptionsLabel} ${labelOf(c.def)}`,
+      menuOpen: headerMenu === c.id,
+      resizeHandle: handles(i),
     };
     return (
       <Fragment key={c.id}>
@@ -2057,6 +2508,160 @@ export function DataTable<Row>({
       );
     });
 
+  // --- The header's menu and the column menu: one of each for the table, opened against a cell ------
+  const menuColumn = cols.find((c) => c.id === headerMenu);
+  const headerMenuProps = (c: Col<Row> & { def: DataTableColumn<Row> }) => {
+    const column = c.def;
+    const id = c.id;
+    const engine = table.getColumn(id);
+    const sorted = engine?.getIsSorted() || 'none';
+    const group = cols.filter((other) => other.def && other.pin === c.pin);
+    const place = group.indexOf(c);
+    const ids = columns.map((other) => other.id);
+    const movable = reorderableColumns && column.reorderable !== false;
+    const resizable = canResize(c);
+    const sections: MenuEntry[][] = [
+      column.sortable
+        ? [
+            {
+              id: 'asc',
+              label: sortAscendingLabel,
+              icon: <Icon name="sortAscending" />,
+              disabled: sorted === 'asc',
+            },
+            {
+              id: 'desc',
+              label: sortDescendingLabel,
+              icon: <Icon name="sortDescending" />,
+              disabled: sorted === 'desc',
+            },
+            { id: 'unsorted', label: clearSortLabel, disabled: sorted === 'none' },
+          ]
+        : [],
+      movable
+        ? [
+            { id: 'before', label: menuRtl ? moveRightLabel : moveLeftLabel, disabled: place <= 0 },
+            {
+              id: 'after',
+              label: menuRtl ? moveLeftLabel : moveRightLabel,
+              disabled: place >= group.length - 1,
+            },
+          ]
+        : [],
+      [
+        ...(c.pin !== 'start' ? [{ id: 'start', label: pinStartLabel }] : []),
+        ...(c.pin !== 'end' ? [{ id: 'end', label: pinEndLabel }] : []),
+        ...(c.pin ? [{ id: 'none', label: unpinLabel }] : []),
+        ...(column.hideable !== false
+          ? [{ id: 'hide', label: hideColumnLabel, disabled: cols.filter((other) => other.def).length <= 1 }]
+          : []),
+      ],
+      resizable
+        ? [
+            { id: 'resize', label: resizeColumnLabel },
+            { id: 'autosize', label: autosizeColumnLabel },
+            { id: 'resetWidth', label: resetWidthLabel, disabled: columnState.widths?.[id] === undefined },
+          ]
+        : [],
+      [{ id: 'columns', label: `${columnsLabel}…` }],
+    ].filter((section) => section.length > 0);
+    const props: MenuProps & { column: DataTableColumn<Row> } = {
+      column,
+      'aria-label': `${columnOptionsLabel} ${labelOf(column)}`,
+      anchorRef: menuAnchor,
+      open: true,
+      onOpenChange: (open) => !open && setHeaderMenu(null),
+      placement: 'bottom start',
+      items: sections.flatMap((section, index) =>
+        index ? [{ type: 'separator' as const }, ...section] : section,
+      ),
+      onAction: (action) => {
+        if (action === 'asc' || action === 'desc') engine?.toggleSorting(action === 'desc', false);
+        else if (action === 'unsorted') engine?.clearSorting();
+        else if (action === 'before') moveTo(id, ids.indexOf(group[place - 1]!.id), true);
+        else if (action === 'after') moveTo(id, ids.indexOf(group[place + 1]!.id), true);
+        else if (action === 'start' || action === 'end' || action === 'none')
+          changeFrom(id, pinTo(id, action));
+        else if (action === 'hide') changeFrom(id, showColumn(id, false));
+        else if (action === 'autosize') autosize(id);
+        else if (action === 'resetWidth') setColumnState(widthOf(id, undefined));
+        else if (action === 'columns') openColumns(menuAnchor.current);
+        else if (action === 'resize') {
+          // Once the menu has closed and given the focus back to the header, it goes to the handle.
+          afterOverlay.current = () =>
+            headerCells()
+              .find((cell) => cell.dataset.col === id)
+              ?.querySelector<HTMLElement>('[role="separator"]')
+              ?.focus();
+        }
+      },
+    };
+    return props;
+  };
+  const columnMenuProps: DataTableColumnMenuProps = {
+    items: columns.map((column) => ({
+      id: column.id,
+      label: labelOf(column),
+      visible: !notShown.includes(column),
+      noRoom: fit.hidden.includes(column.id),
+      pin: column.pin,
+      hideable: column.hideable,
+      reorderable: reorderableColumns && column.reorderable !== false,
+    })),
+    onVisibleChange: (id, visible) => setColumnState(showColumn(id, visible)),
+    onMove: reorderableColumns ? (id, to) => moveTo(id, to) : undefined,
+    onPinChange: (id, pin) => setColumnState(pinTo(id, pin)),
+    onShowAll: () =>
+      setColumnState({
+        ...columnState,
+        visibility: Object.fromEntries(columns.map((column) => [column.id, true])),
+      }),
+    onReset: () => setColumnState(defaultColumnState ?? noColumnState),
+    showAllLabel: showAllColumnsLabel,
+    resetLabel: resetColumnsLabel,
+    searchLabel: searchColumnsLabel,
+    emptyLabel: noColumnsLabel,
+    noRoomLabel,
+    moveLabel: moveColumnLabel,
+    moveUpLabel,
+    moveDownLabel,
+    pinStartLabel,
+    pinEndLabel,
+    unpinLabel,
+    renderItem:
+      parts?.columnMenuItem === undefined
+        ? undefined
+        : (item, children) => (
+            <Fragment key={item.id}>
+              {renderPart(parts.columnMenuItem, { item, children }, (p) => p.children)}
+            </Fragment>
+          ),
+  };
+  const columnControls = columnMenu !== false && (
+    <>
+      {menuColumn?.def &&
+        renderPart(
+          parts?.headerMenu,
+          headerMenuProps(menuColumn as Col<Row> & { def: DataTableColumn<Row> }),
+          (p) => <Menu {...without(p, 'column')} />,
+        )}
+      <Popover
+        anchorRef={menuAnchor}
+        open={columnsOpen}
+        onOpenChange={setColumnsOpen}
+        placement="bottom end"
+        title={columnsLabel}
+        closeButton
+        padding="none"
+        className={styles.columnPopover}
+      >
+        {renderPart(parts?.columnMenu, columnMenuProps, (p) => (
+          <ColumnMenu {...p} />
+        ))}
+      </Popover>
+    </>
+  );
+
   return (
     <GridAdapterContext value={adapter}>
       <Root
@@ -2075,7 +2680,7 @@ export function DataTable<Row>({
         height={height}
         loading={loading}
         state={state || undefined}
-        announcement={loadingMore ? loadingMoreLabel : undefined}
+        announcement={[loadingMore ? loadingMoreLabel : '', said].filter(Boolean).join('. ') || undefined}
         onReachEnd={onReachEnd}
         onSelectAll={selectionMode === 'multiple' ? () => table.toggleAllRowsSelected(true) : undefined}
         className={className}
@@ -2095,6 +2700,7 @@ export function DataTable<Row>({
         )}
         {footer}
       </Root>
+      {columnControls}
     </GridAdapterContext>
   );
 }
@@ -2142,6 +2748,9 @@ export function actionsColumn<Row>({
     align: 'end',
     pin: 'end',
     priority: 'always',
+    hideable: false,
+    reorderable: false,
+    resizable: false,
     width: cell ? 96 : 56,
     // An explicit `undefined` keeps the default.
     ...defined(column),
@@ -2170,3 +2779,5 @@ DataTable.Row = Row;
 DataTable.Cell = Cell;
 DataTable.GroupRow = GroupRow;
 DataTable.Footer = Footer;
+DataTable.ResizeHandle = ResizeHandle;
+DataTable.ColumnMenu = ColumnMenu;
