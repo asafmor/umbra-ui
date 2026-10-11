@@ -9,12 +9,12 @@ export interface ChangeHighlightProps {
    * A sign shows the direction without colour. No flash under reduced motion; the sign stays. The value
    * is never counted up or down.
    */
-  highlightChanges?: boolean;
+  highlightChanges?: boolean | undefined;
   /** What is compared, when the content is not the value itself (a formatted text). Default: the content, when it is text or a number. */
   changeValue?: unknown;
   /** What a screen reader hears with the sign of a value that rose or fell. */
-  increasedLabel?: string;
-  decreasedLabel?: string;
+  increasedLabel?: string | undefined;
+  decreasedLabel?: string | undefined;
 }
 
 const comparable = (node: unknown) =>
@@ -26,8 +26,8 @@ function Mark({
   decreasedLabel = 'decreased',
 }: {
   value: unknown;
-  increasedLabel?: string;
-  decreasedLabel?: string;
+  increasedLabel?: string | undefined;
+  decreasedLabel?: string | undefined;
 }) {
   const { direction, stamp } = useChangeHighlight(value);
   if (!direction) return null;
@@ -60,7 +60,7 @@ export function ChangeHighlight({
   increasedLabel,
   decreasedLabel,
   children,
-}: ChangeHighlightProps & { children?: ReactNode }) {
+}: ChangeHighlightProps & { children?: ReactNode | undefined }) {
   if (!highlightChanges) return null;
   return (
     <Mark

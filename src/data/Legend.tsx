@@ -23,6 +23,7 @@ import {
 import { useShrinkLevel } from '../internal/useShrinkLevel';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './Legend.module.css';
+import { defined } from '../utils/defined';
 
 export type LegendMarker = SeriesMarkerKind;
 export type LegendMarkerProps = SeriesMarkerProps;
@@ -31,20 +32,20 @@ export interface LegendItem {
   id: string;
   label: ReactNode;
   /** Any CSS colour. Without it the item takes the series palette, by its position in `items`. */
-  color?: string;
+  color?: string | undefined;
   /** Shown after the label; a right-aligned column in the vertical orientation. */
-  value?: ReactNode;
+  value?: ReactNode | undefined;
   /** Overrides the legend's `marker` for this item. */
-  marker?: LegendMarker;
+  marker?: LegendMarker | undefined;
   /** Dimmed, and not toggled or highlighted. */
-  disabled?: boolean;
+  disabled?: boolean | undefined;
 }
 
 interface LegendContextValue {
   interactive: boolean;
   hidden: readonly string[];
   toggle: (id: string) => void;
-  onHighlight?: (id: string | null) => void;
+  onHighlight?: ((id: string | null) => void) | undefined;
 }
 const LegendContext = createContext<LegendContextValue | null>(null);
 function useLegend() {
@@ -55,9 +56,9 @@ function useLegend() {
 
 interface HiddenProps {
   /** Ids of the items that are switched off (controlled). */
-  hiddenIds?: readonly string[];
-  defaultHiddenIds?: readonly string[];
-  onHiddenChange?: (hiddenIds: string[]) => void;
+  hiddenIds?: readonly string[] | undefined;
+  defaultHiddenIds?: readonly string[] | undefined;
+  onHiddenChange?: ((hiddenIds: string[]) => void) | undefined;
 }
 
 function useHidden({ hiddenIds, defaultHiddenIds = [], onHiddenChange }: HiddenProps) {
@@ -71,24 +72,24 @@ function useHidden({ hiddenIds, defaultHiddenIds = [], onHiddenChange }: HiddenP
 }
 
 export interface LegendRootProps extends HiddenProps {
-  orientation?: 'horizontal' | 'vertical';
+  orientation?: 'horizontal' | 'vertical' | undefined;
   /** Where the items sit along the legend. A vertical legend with values always fills its width. */
-  align?: 'start' | 'center' | 'end';
+  align?: 'start' | 'center' | 'end' | undefined;
   /** Makes each item a toggle button that switches its series on and off. */
-  interactive?: boolean;
+  interactive?: boolean | undefined;
   /** Called with an item's id while it is hovered or focused, and with `null` when it no longer is. */
-  onHighlight?: (id: string | null) => void;
+  onHighlight?: ((id: string | null) => void) | undefined;
   /** The most rows a horizontal legend wraps to. */
-  maxRows?: number;
+  maxRows?: number | undefined;
   /** Marks the legend busy for assistive technology. */
-  loading?: boolean;
+  loading?: boolean | undefined;
   /** Accessible name of the legend. */
-  'aria-label'?: string;
+  'aria-label'?: string | undefined;
   /** The element, for measuring. */
-  ref?: React.Ref<HTMLElement>;
-  className?: string;
-  style?: CSSProperties;
-  children?: ReactNode;
+  ref?: React.Ref<HTMLElement> | undefined;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
+  children?: ReactNode | undefined;
 }
 
 function Root({
@@ -124,7 +125,7 @@ function Root({
   // Toggle buttons form a toolbar: one tab stop, arrow keys between the items.
   return interactive ? (
     <Toolbar
-      {...shared}
+      {...defined(shared)}
       ref={ref as React.Ref<HTMLDivElement>}
       orientation={orientation}
       // React Aria's toolbar drops `aria-busy`; it is put back on its element.
@@ -142,20 +143,22 @@ function Root({
 export interface LegendItemProps {
   id: string;
   /** The label. */
-  children?: ReactNode;
+  children?: ReactNode | undefined;
   /** Any CSS colour. */
-  color?: string;
-  marker?: LegendMarker;
-  value?: ReactNode;
-  disabled?: boolean;
+  color?: string | undefined;
+  marker?: LegendMarker | undefined;
+  value?: ReactNode | undefined;
+  disabled?: boolean | undefined;
   /** Replace or hide named pieces of the item. */
-  parts?: {
-    marker?: Part<LegendMarkerProps>;
-    label?: Part<{ children: ReactNode }>;
-    value?: Part<{ children: ReactNode }>;
-  };
-  className?: string;
-  style?: CSSProperties;
+  parts?:
+    | {
+        marker?: Part<LegendMarkerProps> | undefined;
+        label?: Part<{ children: ReactNode }> | undefined;
+        value?: Part<{ children: ReactNode }> | undefined;
+      }
+    | undefined;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
 }
 
 function Item({
@@ -212,7 +215,7 @@ function Item({
   // Pressed means the series is shown.
   return (
     <ToggleButton
-      {...shared}
+      {...defined(shared)}
       isSelected={!off}
       isDisabled={disabled}
       onChange={() => legend.toggle(id)}
@@ -226,11 +229,11 @@ function Item({
 
 export interface LegendMoreProps {
   /** The button's text, for example "+3 more". */
-  children?: ReactNode;
+  children?: ReactNode | undefined;
   /** Accessible name of the popover. */
-  label?: string;
+  label?: string | undefined;
   /** The popover's content: the full list. */
-  content?: ReactNode;
+  content?: ReactNode | undefined;
 }
 
 /** The button that stands for the items that did not fit, and opens the full list. */
@@ -262,24 +265,26 @@ function More({ children, label = 'All items', content }: LegendMoreProps) {
 export interface LegendProps extends Omit<LegendRootProps, 'children' | 'ref' | 'loading'>, DataStateProps {
   items: LegendItem[];
   /** The marker of every item that does not set its own. Patterns (`stripes`, `dots`) do not depend on colour. */
-  marker?: LegendMarker;
+  marker?: LegendMarker | undefined;
   /** Number of placeholder items while `loading`. */
-  skeletonRows?: number;
+  skeletonRows?: number | undefined;
   /** Text of the button that stands for the items that did not fit. */
-  moreLabel?: (count: number) => string;
+  moreLabel?: ((count: number) => string) | undefined;
   /** Accessible name of the popover with the full list. */
-  allLabel?: string;
+  allLabel?: string | undefined;
   /** Replace or hide named pieces. */
-  parts?: {
-    item?: Part<LegendItemProps>;
-    marker?: Part<LegendMarkerProps>;
-    label?: Part<{ children: ReactNode }>;
-    value?: Part<{ children: ReactNode }>;
-    more?: Part<LegendMoreProps>;
-    skeleton?: Part;
-    /** The empty or error state. */
-    state?: Part<{ children: ReactNode }>;
-  };
+  parts?:
+    | {
+        item?: Part<LegendItemProps> | undefined;
+        marker?: Part<LegendMarkerProps> | undefined;
+        label?: Part<{ children: ReactNode }> | undefined;
+        value?: Part<{ children: ReactNode }> | undefined;
+        more?: Part<LegendMoreProps> | undefined;
+        skeleton?: Part | undefined;
+        /** The empty or error state. */
+        state?: Part<{ children: ReactNode }> | undefined;
+      }
+    | undefined;
 }
 
 /** The key for a chart or any colour-coded data: one marker and label per series. */

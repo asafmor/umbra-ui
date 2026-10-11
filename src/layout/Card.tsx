@@ -59,9 +59,9 @@ function useCard() {
 }
 
 interface BlockProps {
-  className?: string;
-  style?: CSSProperties;
-  children?: ReactNode;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
+  children?: ReactNode | undefined;
 }
 
 /** How long a collapse by the caret takes: the motion token, and nothing under reduced motion. */
@@ -88,26 +88,26 @@ function heightWithoutBody(element: HTMLElement) {
 
 export interface CardRootProps extends BlockProps, SlotProps {
   /** `tinted` takes more of the context tint; `neutral` ignores it. */
-  tone?: 'default' | 'tinted' | 'neutral';
+  tone?: 'default' | 'tinted' | 'neutral' | undefined;
   /** `band` fills the header with the brand colour, or the header's `bandColor`. */
-  headerStyle?: 'plain' | 'band';
+  headerStyle?: 'plain' | 'band' | undefined;
   /** `none` for edge-to-edge tables and media. */
-  padding?: 'default' | 'none';
+  padding?: 'default' | 'none' | undefined;
   /** Lets the end user collapse the card to its header. */
-  collapsible?: boolean;
+  collapsible?: boolean | undefined;
   /** Controlled collapse state. */
-  collapsed?: boolean;
-  defaultCollapsed?: boolean;
-  onCollapsedChange?: (collapsed: boolean) => void;
+  collapsed?: boolean | undefined;
+  defaultCollapsed?: boolean | undefined;
+  onCollapsedChange?: ((collapsed: boolean) => void) | undefined;
   /** Marks the card busy for assistive technology. */
-  loading?: boolean;
+  loading?: boolean | undefined;
   /** Heading level of the title. */
-  headingLevel?: 2 | 3 | 4 | 5 | 6;
+  headingLevel?: 2 | 3 | 4 | 5 | 6 | undefined;
   /** Accessible name, for a card without a title. */
-  'aria-label'?: string;
+  'aria-label'?: string | undefined;
   /** Accessible names of the collapse caret and of the header of a card the layout has collapsed. */
-  collapseLabel?: string;
-  expandLabel?: string;
+  collapseLabel?: string | undefined;
+  expandLabel?: string | undefined;
 }
 
 function Root({
@@ -313,10 +313,10 @@ function Root({
 
 export interface CardTitleProps extends BlockProps {
   /** Makes the title a link. */
-  href?: string;
+  href?: string | undefined;
   /** Plugs in the app's router link for `href`. Defaults to a plain `<a>`. */
-  renderLink?: (props: LinkRenderProps) => ReactNode;
-  onOpen?: () => void;
+  renderLink?: ((props: LinkRenderProps) => ReactNode) | undefined;
+  onOpen?: (() => void) | undefined;
 }
 
 const plainLink = (props: LinkRenderProps) => <a {...props} />;
@@ -363,31 +363,33 @@ function Actions({ className, style, children }: BlockProps) {
 
 export interface CardHeaderProps extends BlockProps {
   /** Leading icon or image. */
-  icon?: ReactNode;
-  title?: ReactNode;
+  icon?: ReactNode | undefined;
+  title?: ReactNode | undefined;
   /** Second line, in the body font. */
-  subtitle?: ReactNode;
+  subtitle?: ReactNode | undefined;
   /** Trailing controls. They move into an overflow menu when they do not fit. */
-  actions?: ReactNode;
+  actions?: ReactNode | undefined;
   /** Overrides the card's `headerStyle`. */
-  headerStyle?: 'plain' | 'band';
+  headerStyle?: 'plain' | 'band' | undefined;
   /** Colour of the band; defaults to the brand colour. */
-  bandColor?: string;
+  bandColor?: string | undefined;
   /** Makes the title a link. */
-  href?: string;
+  href?: string | undefined;
   /** Plugs in the app's router link for `href`. Defaults to a plain `<a>`. */
-  renderLink?: (props: LinkRenderProps) => ReactNode;
-  onOpen?: () => void;
+  renderLink?: ((props: LinkRenderProps) => ReactNode) | undefined;
+  onOpen?: (() => void) | undefined;
   /** Accessible name of the overflow menu button. */
-  moreLabel?: string;
+  moreLabel?: string | undefined;
   /** Replace or hide named pieces. */
-  parts?: {
-    icon?: Part<{ children: ReactNode }>;
-    title?: Part<CardTitleProps>;
-    subtitle?: Part<{ children: ReactNode }>;
-    actions?: Part<{ children: ReactNode }>;
-    toggle?: Part;
-  };
+  parts?:
+    | {
+        icon?: Part<{ children: ReactNode }> | undefined;
+        title?: Part<CardTitleProps> | undefined;
+        subtitle?: Part<{ children: ReactNode }> | undefined;
+        actions?: Part<{ children: ReactNode }> | undefined;
+        toggle?: Part | undefined;
+      }
+    | undefined;
 }
 
 function Toggle() {
@@ -568,7 +570,7 @@ function Toolbar({ className, style, children }: BlockProps) {
 export interface CardBodyProps
   extends BlockProps, Pick<ScrollAreaProps, 'axis' | 'scrollbar' | 'fade' | 'onReachEnd'> {
   /** Overrides the card's `padding`. */
-  padding?: 'default' | 'none';
+  padding?: 'default' | 'none' | undefined;
 }
 
 function Body({ padding, className, children, ...scroll }: CardBodyProps) {
@@ -601,33 +603,35 @@ export interface CardProps
     CardRootProps,
     Pick<CardHeaderProps, 'icon' | 'subtitle' | 'actions' | 'href' | 'renderLink' | 'onOpen' | 'moreLabel'> {
   /** Header title. The header is shown when it is set. */
-  title?: ReactNode;
+  title?: ReactNode | undefined;
   /** Shows the body skeleton. */
-  loading?: boolean;
+  loading?: boolean | undefined;
   /**
    * Shown in place of the body when set (and not loading or in error): text or a node, or
    * `{ title, description, icon, action }` for the same empty state as the other data components.
    */
-  empty?: DataStateProps['empty'];
+  empty?: DataStateProps['empty'] | undefined;
   /**
    * Shown in place of the body when set: text or a node, `{ title, description, icon, action }`, or
    * `true` for a default text.
    */
-  error?: DataStateProps['error'];
+  error?: DataStateProps['error'] | undefined;
   /** Adds a retry button to the error state. */
-  onRetry?: () => void;
+  onRetry?: (() => void) | undefined;
   /** Label of the retry button. */
-  retryLabel?: string;
+  retryLabel?: string | undefined;
   /** Replace or hide named pieces. `toolbar` and `footer` are empty unless given, as `Card.Toolbar` and `Card.Footer`. */
-  parts?: {
-    header?: Part<CardHeaderProps>;
-    title?: Part<CardTitleProps>;
-    actions?: Part<{ children: ReactNode }>;
-    toolbar?: Part;
-    body?: Part<CardBodyProps>;
-    footer?: Part;
-    skeleton?: Part;
-  };
+  parts?:
+    | {
+        header?: Part<CardHeaderProps> | undefined;
+        title?: Part<CardTitleProps> | undefined;
+        actions?: Part<{ children: ReactNode }> | undefined;
+        toolbar?: Part | undefined;
+        body?: Part<CardBodyProps> | undefined;
+        footer?: Part | undefined;
+        skeleton?: Part | undefined;
+      }
+    | undefined;
 }
 
 /**

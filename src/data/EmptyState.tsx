@@ -5,20 +5,20 @@ import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './EmptyState.module.css';
 
 interface BlockProps {
-  className?: string;
-  style?: CSSProperties;
-  children?: ReactNode;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
+  children?: ReactNode | undefined;
 }
 
 export interface EmptyStateRootProps extends BlockProps {
   /** `block` is centred in its slot; `inline` is one line of text. */
-  variant?: 'block' | 'inline';
+  variant?: 'block' | 'inline' | undefined;
   /** `error` marks a failure: a danger-coloured icon, the built-in one unless `icon` is given. */
-  tone?: 'neutral' | 'error';
+  tone?: 'neutral' | 'error' | undefined;
   /** `alert` announces the content when it appears (for an error); `status` announces it politely. */
-  role?: 'alert' | 'status';
+  role?: 'alert' | 'status' | undefined;
   /** The part this state plays in the component that shows it (`empty`, `error`). */
-  'data-part'?: string;
+  'data-part'?: string | undefined;
 }
 
 /** True when the content is wider or taller than the element. */
@@ -101,20 +101,22 @@ function Action({ className, style, children }: BlockProps) {
 
 export interface EmptyStateProps extends Omit<EmptyStateRootProps, 'children'> {
   /** The short statement: "No orders". */
-  title?: ReactNode;
+  title?: ReactNode | undefined;
   /** One or two sentences that explain the state or say what to do. */
-  description?: ReactNode;
+  description?: ReactNode | undefined;
   /** Decorative icon. Hides first when space is short. */
-  icon?: ReactNode;
+  icon?: ReactNode | undefined;
   /** A control that resolves the state, for example a `Button`. */
-  action?: ReactNode;
+  action?: ReactNode | undefined;
   /** Replace or hide named pieces. */
-  parts?: {
-    icon?: Part<{ children: ReactNode }>;
-    title?: Part<{ children: ReactNode }>;
-    description?: Part<{ children: ReactNode }>;
-    action?: Part<{ children: ReactNode }>;
-  };
+  parts?:
+    | {
+        icon?: Part<{ children: ReactNode }> | undefined;
+        title?: Part<{ children: ReactNode }> | undefined;
+        description?: Part<{ children: ReactNode }> | undefined;
+        action?: Part<{ children: ReactNode }> | undefined;
+      }
+    | undefined;
 }
 
 /** Says that a region has nothing to show, or failed to load, and what to do about it. */

@@ -13,7 +13,9 @@ import {
 
 export interface PrimaryNavRootProps extends NavRootProps {
   /** Replace or hide named pieces. */
-  parts?: { indicator?: Part; more?: Part<{ label: string; children: ReactNode }> };
+  parts?:
+    | { indicator?: Part | undefined; more?: Part<{ label: string; children: ReactNode }> | undefined }
+    | undefined;
 }
 
 function Root({ 'aria-label': label = 'Main', className, style, ...list }: PrimaryNavRootProps) {
@@ -26,9 +28,9 @@ function Root({ 'aria-label': label = 'Main', className, style, ...list }: Prima
 
 export interface PrimaryNavProps extends Omit<PrimaryNavRootProps, 'children' | 'parts'> {
   /** The top-level sections. `items` inside an item makes a dropdown. */
-  items?: NavItem[];
+  items?: NavItem[] | undefined;
   /** Replace or hide named pieces. An `item` function receives each item's props. */
-  parts?: PrimaryNavRootProps['parts'] & { item?: Part<NavItemProps> };
+  parts?: (PrimaryNavRootProps['parts'] & { item?: Part<NavItemProps> | undefined }) | undefined;
 }
 
 /** The top-level sections of the app, inside the `TopBar`. */

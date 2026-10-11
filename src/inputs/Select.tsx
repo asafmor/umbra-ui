@@ -48,31 +48,32 @@ import { cx, renderPart, type Part } from '../utils/parts';
 import type { BlockProps } from './fieldParts';
 import styles from './Select.module.css';
 import { useField, useFieldControl } from './useField';
+import { defined } from '../utils/defined';
 
 /** One choice of a select. */
 export interface SelectOption {
   id: string;
   label: ReactNode;
   /** The label as text, for type-ahead and filtering. Needed when `label` is not a string. */
-  textValue?: string;
+  textValue?: string | undefined;
   /** A second, quieter line. */
-  description?: ReactNode;
-  icon?: ReactNode;
+  description?: ReactNode | undefined;
+  icon?: ReactNode | undefined;
   /** An `Avatar` or any node, shown before the label in place of `icon`. */
-  avatar?: ReactNode;
+  avatar?: ReactNode | undefined;
   /** A colour meaning: a swatch before the label, and the fill of an `inCell` trigger. */
-  tone?: Tone;
+  tone?: Tone | undefined;
   /** A custom colour (any CSS colour). Replaces `tone`. */
-  color?: string;
-  disabled?: boolean;
+  color?: string | undefined;
+  disabled?: boolean | undefined;
   /** Short text at the end of the row: a count, a code. */
-  meta?: ReactNode;
+  meta?: ReactNode | undefined;
 }
 
 /** A group of options under an optional heading. */
 export interface SelectSectionData {
   type: 'section';
-  label?: ReactNode;
+  label?: ReactNode | undefined;
   options: SelectOption[];
 }
 
@@ -97,15 +98,15 @@ const tinted = (option: SelectOption | undefined): option is SelectOption =>
 
 export interface SelectOptionProps extends Omit<SelectOption, 'label'> {
   /** The label. */
-  children?: ReactNode;
+  children?: ReactNode | undefined;
 }
 const Option = (() => null) as (props: SelectOptionProps) => null;
 
 export interface SelectSectionProps {
   /** The heading. */
-  label?: ReactNode;
+  label?: ReactNode | undefined;
   /** `Select.Option`s. */
-  children?: ReactNode;
+  children?: ReactNode | undefined;
 }
 const Section = (() => null) as (props: SelectSectionProps) => null;
 
@@ -159,50 +160,50 @@ function useSelect() {
 
 export interface SelectRootProps extends BlockProps {
   /** The choices, as data. Or pass `Select.Option` and `Select.Section` blocks as children. */
-  options?: SelectEntry[];
+  options?: SelectEntry[] | undefined;
   /** The id of the chosen option; `''` is none. Controlled. */
-  value?: string;
-  defaultValue?: string;
+  value?: string | undefined;
+  defaultValue?: string | undefined;
   /** Called with the id of the chosen option, or `''` when the choice is cleared. */
-  onChange?: (id: string) => void;
+  onChange?: ((id: string) => void) | undefined;
   /** Lets several options be chosen: use `values` and `onValuesChange`. Options show checkboxes. */
-  multiple?: boolean;
+  multiple?: boolean | undefined;
   /** The ids of the chosen options of a `multiple` select. Controlled. */
-  values?: string[];
-  defaultValues?: string[];
-  onValuesChange?: (ids: string[]) => void;
+  values?: string[] | undefined;
+  defaultValues?: string[] | undefined;
+  onValuesChange?: ((ids: string[]) => void) | undefined;
   /** Controlled state of the list. */
-  open?: boolean;
-  defaultOpen?: boolean;
-  onOpenChange?: (open: boolean) => void;
+  open?: boolean | undefined;
+  defaultOpen?: boolean | undefined;
+  onOpenChange?: ((open: boolean) => void) | undefined;
   /** Shown while nothing is chosen. */
-  placeholder?: string;
+  placeholder?: string | undefined;
   /** Shows a button that removes the choice. */
-  clearable?: boolean;
+  clearable?: boolean | undefined;
   /** Accessible name of the clear button. */
-  clearLabel?: string;
-  disabled?: boolean;
+  clearLabel?: string | undefined;
+  disabled?: boolean | undefined;
   /** Focusable, but the choice cannot be changed and the list does not open. */
-  readOnly?: boolean;
+  readOnly?: boolean | undefined;
   /** Shows the danger border and an error icon. Put the message in the `error` of a `FormField`. */
-  invalid?: boolean;
-  required?: boolean;
+  invalid?: boolean | undefined;
+  required?: boolean | undefined;
   /** `small` is for table cells and dense toolbars. Otherwise the height follows the density level. */
-  size?: 'default' | 'small';
+  size?: 'default' | 'small' | undefined;
   /**
    * `ghost` has no border until hovered, for toolbars and headers. `inCell` fills a table cell and takes
    * the `tone` or `color` of the chosen option as its fill.
    */
-  variant?: 'default' | 'ghost' | 'inCell';
+  variant?: 'default' | 'ghost' | 'inCell' | undefined;
   /** Fills the width of its slot. Otherwise it is as wide as its value. */
-  fullWidth?: boolean;
+  fullWidth?: boolean | undefined;
   /** Form field name: the chosen ids are sent with the form. */
-  name?: string;
-  id?: string;
+  name?: string | undefined;
+  id?: string | undefined;
   /** Accessible name of a select that has no `FormField` label. */
-  'aria-label'?: string;
+  'aria-label'?: string | undefined;
   /** Called with the text typed in the filter field of a `searchable` select, and with `''` when it closes. */
-  onSearchChange?: (text: string) => void;
+  onSearchChange?: ((text: string) => void) | undefined;
 }
 
 function Root({
@@ -278,7 +279,7 @@ function Root({
       : { style };
   return (
     <AriaSelect
-      {...tone}
+      {...defined(tone)}
       ref={box}
       data-umbra="select"
       data-size={size}
@@ -286,7 +287,7 @@ function Root({
       data-multiple={multiple || undefined}
       data-readonly={readOnly || undefined}
       data-full-width={fullWidth || undefined}
-      className={cx(shared.tone, styles.root, className)}
+      {...defined({ className: cx(shared.tone, styles.root, className) })}
       selectionMode={multiple ? 'multiple' : 'single'}
       value={multiple ? current : (current[0] ?? null)}
       onChange={(next) => change(next == null ? [] : Array.isArray(next) ? next.map(String) : [String(next)])}
@@ -301,15 +302,16 @@ function Root({
       isDisabled={control.disabled}
       // Only when it is set: a `false` would tell React Aria that the app decides, and silence the
       // select's own validation (required, on submit).
-      isInvalid={control.invalid || undefined}
+      {...defined({ isInvalid: control.invalid || undefined })}
       isRequired={control.required}
-      name={name}
+      {...defined({ name })}
       placeholder={placeholder}
-      aria-label={ariaLabel}
-      aria-labelledby={control.labelledBy}
-      aria-describedby={
-        [control.describedBy, message && !report && messageId].filter(Boolean).join(' ') || undefined
-      }
+      {...defined({
+        'aria-label': ariaLabel,
+        'aria-labelledby': control.labelledBy,
+        'aria-describedby':
+          [control.describedBy, message && !report && messageId].filter(Boolean).join(' ') || undefined,
+      })}
     >
       {message && !report && (
         <span id={messageId} hidden>
@@ -343,7 +345,7 @@ function Root({
 
 export interface SelectTriggerProps extends BlockProps {
   /** The caret. `null` hides it. */
-  icon?: ReactNode;
+  icon?: ReactNode | undefined;
 }
 
 /** The button that opens the list, with the clear button and the caret beside it. Holds a `Select.Value`. */
@@ -367,10 +369,9 @@ function Trigger({ icon, className, style, children }: SelectTriggerProps) {
     <>
       <AriaButton
         ref={button}
-        id={select.id}
+        {...defined({ id: select.id })}
         data-part="trigger"
-        className={cx(styles.trigger, className)}
-        style={style}
+        {...defined({ className: cx(styles.trigger, className), style })}
       >
         {children === undefined ? <Value /> : children}
       </AriaButton>
@@ -411,7 +412,13 @@ function Trigger({ icon, className, style, children }: SelectTriggerProps) {
 }
 
 /** What comes before an option's label: its avatar, its icon, or a swatch of its colour. */
-function Leading({ option, gutter }: { option: SelectOption; gutter?: 'icon' | 'swatch' | false }) {
+function Leading({
+  option,
+  gutter,
+}: {
+  option: SelectOption;
+  gutter?: 'icon' | 'swatch' | false | undefined;
+}) {
   // Decorative: the label beside it already names the option.
   if (option.avatar)
     return (
@@ -439,11 +446,11 @@ function Leading({ option, gutter }: { option: SelectOption; gutter?: 'icon' | '
 
 export interface SelectValueProps extends Omit<BlockProps, 'children'> {
   /** Shows the chosen option's description as a second line; the trigger grows taller. */
-  valueDescription?: boolean;
+  valueDescription?: boolean | undefined;
   /** The text of a `multiple` select whose labels do not fit. */
-  selectedLabel?: (count: number) => string;
+  selectedLabel?: ((count: number) => string) | undefined;
   /** Replaces the content shown for the chosen options. */
-  renderValue?: (selected: SelectOption[]) => ReactNode;
+  renderValue?: ((selected: SelectOption[]) => ReactNode) | undefined;
 }
 
 /** The chosen option, the chosen labels of a `multiple` select, or the placeholder. */
@@ -493,8 +500,7 @@ function Value({
       data-part="value"
       data-empty={selected.length === 0 || undefined}
       data-count={level === 1 || undefined}
-      className={cx(styles.value, className)}
-      style={style}
+      {...defined({ className: cx(styles.value, className), style })}
     >
       {() => content}
     </AriaSelectValue>
@@ -512,34 +518,36 @@ export interface SelectOptionPartProps {
 export interface SelectPopoverProps
   extends Omit<BlockProps, 'children'>, Pick<DataStateProps, 'loading' | 'error' | 'onRetry' | 'retryLabel'> {
   /** Adds a field above the options: typing in it filters them. */
-  searchable?: boolean;
-  searchPlaceholder?: string;
+  searchable?: boolean | undefined;
+  searchPlaceholder?: string | undefined;
   /** Accessible name of the filter field. */
-  searchLabel?: string;
+  searchLabel?: string | undefined;
   /** Replaces the built-in filter (label or description contains the text). Pass `() => true` when the server filters. */
-  filter?: SelectFilter;
+  filter?: SelectFilter | undefined;
   /** What a screen reader hears while `loading`. */
-  loadingLabel?: string;
+  loadingLabel?: string | undefined;
   /** Shown when there are no options: text, a node, or `{ title, description, icon, action }`. */
-  empty?: DataStateProps['empty'];
+  empty?: DataStateProps['empty'] | undefined;
   /** Shown when the filter leaves no options. */
-  noResultsLabel?: string;
+  noResultsLabel?: string | undefined;
   /** Side of the trigger and alignment along it. It flips to the other side to stay in the window. */
-  placement?: OverlayPlacement;
+  placement?: OverlayPlacement | undefined;
   /** Gap between the trigger and the list, in pixels. */
-  offset?: number;
+  offset?: number | undefined;
   /** Gives the list the width of the trigger. Otherwise it is at least that wide. */
-  matchTriggerWidth?: boolean;
+  matchTriggerWidth?: boolean | undefined;
   /** Tallest the list may be, in pixels. It is never taller than the room in the window; the options scroll. */
-  maxHeight?: number;
+  maxHeight?: number | undefined;
   /** Replaces the content of an option row. The check mark stays. */
-  renderOption?: (option: SelectOption, state: { selected: boolean }) => ReactNode;
+  renderOption?: ((option: SelectOption, state: { selected: boolean }) => ReactNode) | undefined;
   /** Replace or hide named pieces. */
-  parts?: {
-    option?: Part<SelectOptionPartProps>;
-    check?: Part;
-    empty?: Part<{ children: ReactNode }>;
-  };
+  parts?:
+    | {
+        option?: Part<SelectOptionPartProps> | undefined;
+        check?: Part | undefined;
+        empty?: Part<{ children: ReactNode }> | undefined;
+      }
+    | undefined;
 }
 
 /** The list of options, in a panel anchored to the trigger. */
@@ -594,9 +602,9 @@ function Popover({
       key={option.id}
       id={option.id}
       textValue={textOf(option)}
-      isDisabled={option.disabled}
+      {...defined({ isDisabled: option.disabled })}
       data-part="option"
-      className={cx(menuStyles.item, styles.option)}
+      {...defined({ className: cx(menuStyles.item, styles.option) })}
     >
       {({ isSelected }) => (
         <>
@@ -641,14 +649,17 @@ function Popover({
     </AriaListBoxItem>
   );
   const list = (
-    <AriaListBox data-part="list" className={searchable ? styles.rows : cx(menuStyles.list, styles.list)}>
+    <AriaListBox
+      data-part="list"
+      {...defined({ className: searchable ? styles.rows : cx(menuStyles.list, styles.list) })}
+    >
       {/* An error takes the place of the options. */}
       {!error &&
         select.entries.map((entry, i) =>
           'id' in entry ? (
             row(entry)
           ) : (
-            <AriaListBoxSection key={`section-${i}`} className={menuStyles.section}>
+            <AriaListBoxSection key={`section-${i}`} {...defined({ className: menuStyles.section })}>
               {entry.label !== undefined && (
                 <AriaHeader data-part="sectionHeader" className={menuStyles.sectionHeader}>
                   {entry.label}
@@ -664,7 +675,7 @@ function Popover({
   return (
     <AriaPopover
       {...scope}
-      {...layer}
+      {...defined(layer)}
       ref={flipWhenCut}
       triggerRef={select.box}
       placement={toAriaPlacement(placement)}
@@ -673,7 +684,7 @@ function Popover({
       data-umbra="select-popover"
       data-umbra-overlay=""
       data-part="popover"
-      className={cx(menuStyles.root, styles.popover, className)}
+      {...defined({ className: cx(menuStyles.root, styles.popover, className) })}
       style={{
         ...scope.style,
         minWidth: select.width,
@@ -687,9 +698,14 @@ function Popover({
           onInputChange={select.setSearch}
           filter={(_text, input, node) => matches(byId.get(String(node.key)), input)}
         >
-          <AriaSearchField aria-label={searchLabel} autoFocus data-part="search" className={styles.search}>
+          <AriaSearchField
+            aria-label={searchLabel}
+            autoFocus
+            data-part="search"
+            {...defined({ className: styles.search })}
+          >
             {loading ? <Spinner label={loadingLabel} /> : <Icon name="search" />}
-            <AriaInput placeholder={searchPlaceholder} className={styles.searchInput} />
+            <AriaInput placeholder={searchPlaceholder} {...defined({ className: styles.searchInput })} />
           </AriaSearchField>
           {/*
             With a filter field, focus stays in the field and the options are not focusable. The region
@@ -718,21 +734,23 @@ export interface SelectProps
     Omit<SelectPopoverProps, 'parts' | 'className' | 'style'>,
     Pick<SelectValueProps, 'valueDescription' | 'selectedLabel' | 'renderValue'> {
   /** The choices as `Select.Option` and `Select.Section` blocks, in place of `options`. */
-  children?: ReactNode;
+  children?: ReactNode | undefined;
   /** Replace or hide named pieces. */
-  parts?: {
-    trigger?: Part<SelectTriggerProps>;
-    value?: Part<SelectValueProps>;
-    /** The caret. */
-    icon?: Part;
-    popover?: Part<SelectPopoverProps>;
-    /** The content of an option row. */
-    option?: Part<SelectOptionPartProps>;
-    /** The mark of a chosen option. */
-    check?: Part;
-    /** What the list shows in place of options: the loading, empty and error states. */
-    empty?: Part<{ children: ReactNode }>;
-  };
+  parts?:
+    | {
+        trigger?: Part<SelectTriggerProps> | undefined;
+        value?: Part<SelectValueProps> | undefined;
+        /** The caret. */
+        icon?: Part | undefined;
+        popover?: Part<SelectPopoverProps> | undefined;
+        /** The content of an option row. */
+        option?: Part<SelectOptionPartProps> | undefined;
+        /** The mark of a chosen option. */
+        check?: Part | undefined;
+        /** What the list shows in place of options: the loading, empty and error states. */
+        empty?: Part<{ children: ReactNode }> | undefined;
+      }
+    | undefined;
 }
 
 /** Chooses one option, or several with `multiple`, from a list that opens under a button. */

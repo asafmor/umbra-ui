@@ -17,28 +17,29 @@ import { filterCommands } from './commandMatch';
 import styles from './CommandPalette.module.css';
 import { Hint } from './Menu';
 import { useOpenState, useReturnFocusOnClose } from './shared';
+import { defined } from '../utils/defined';
 
 /** One entry of the palette: a page to go to, a thing to open, or an action. */
 export interface Command {
   id: string;
   label: string;
   /** A second, quieter line. It is searched too. */
-  description?: string;
-  icon?: ReactNode;
+  description?: string | undefined;
+  icon?: ReactNode | undefined;
   /** Heading of the group the command is listed under. */
-  section?: string;
+  section?: string | undefined;
   /** More words the command is found by. */
-  keywords?: string[];
+  keywords?: string[] | undefined;
   /** Id of a shortcut in the provider's list: its keys are shown at the end of the row. */
-  shortcut?: string;
+  shortcut?: string | undefined;
   /** Where the command goes. The palette calls `navigate` with it. */
-  href?: string;
-  onRun?: () => void;
-  disabled?: boolean;
+  href?: string | undefined;
+  onRun?: (() => void) | undefined;
+  disabled?: boolean | undefined;
   /** Leaves the palette open after the command ran. */
-  keepOpen?: boolean;
+  keepOpen?: boolean | undefined;
   /** Makes the command a page: choosing it lists these in place of the current list. */
-  children?: Command[];
+  children?: Command[] | undefined;
 }
 
 /** What the `item` part receives. */
@@ -52,77 +53,79 @@ export interface CommandItemPartProps {
 
 export interface CommandPaletteProps {
   /** A fixed list. The palette filters and ranks it as the user types. */
-  commands?: Command[];
+  commands?: Command[] | undefined;
   /**
    * Called with the text (after `debounce`) and the open page, for results the app looks up. They are
    * listed after the matches from `commands`, as given. An answer that arrives late is dropped.
    */
-  onQuery?: (text: string, page: Command | undefined) => Command[] | Promise<Command[]>;
+  onQuery?: ((text: string, page: Command | undefined) => Command[] | Promise<Command[]>) | undefined;
   /** Milliseconds to wait after the last key before `onQuery` is called. */
-  debounce?: number;
+  debounce?: number | undefined;
   /** Shows the loading rows, in addition to the time `onQuery` takes. */
-  loading?: boolean;
+  loading?: boolean | undefined;
   /** Shows the error state: text, a node, or `true` for the default text. A failed `onQuery` shows it too. */
-  error?: ReactNode;
+  error?: ReactNode | undefined;
   /** Ids of recently used commands, newest first. Listed first while the input is empty. */
-  recent?: string[];
+  recent?: string[] | undefined;
   /** Lists every shortcut of the provider's registry that has a label, with its keys. */
-  includeShortcuts?: boolean;
+  includeShortcuts?: boolean | undefined;
   /** Controlled state. */
-  open?: boolean;
-  defaultOpen?: boolean;
-  onOpenChange?: (open: boolean) => void;
+  open?: boolean | undefined;
+  defaultOpen?: boolean | undefined;
+  onOpenChange?: ((open: boolean) => void) | undefined;
   /** Called with every command the user runs, after its own `onRun`. */
-  onRun?: (command: Command) => void;
+  onRun?: ((command: Command) => void) | undefined;
   /** Called with the `href` of a command that has one. Defaults to a full page navigation. */
-  navigate?: (href: string) => void;
+  navigate?: ((href: string) => void) | undefined;
   /** Id of the shortcut that opens and closes the palette. `null` binds none. */
-  shortcut?: string | null;
+  shortcut?: string | null | undefined;
   /** Accessible name of the dialog and of the input. */
-  'aria-label'?: string;
+  'aria-label'?: string | undefined;
   /** @deprecated Use `aria-label`: the palette shows no label of its own (decision 07). */
-  label?: string;
-  placeholder?: string;
-  emptyLabel?: string;
-  errorLabel?: string;
-  retryLabel?: string;
-  loadingLabel?: string;
-  recentLabel?: string;
-  shortcutsLabel?: string;
+  label?: string | undefined;
+  placeholder?: string | undefined;
+  emptyLabel?: string | undefined;
+  errorLabel?: string | undefined;
+  retryLabel?: string | undefined;
+  loadingLabel?: string | undefined;
+  recentLabel?: string | undefined;
+  shortcutsLabel?: string | undefined;
   /** Accessible name of the list of results. */
-  resultsLabel?: string;
+  resultsLabel?: string | undefined;
   /** Accessible name of the breadcrumb button that leaves the open page. */
-  backLabel?: string;
+  backLabel?: string | undefined;
   /** The key hints in the footer. */
-  moveHint?: string;
+  moveHint?: string | undefined;
   /** The names of the keys in the footer hints. */
-  enterKeyLabel?: string;
-  backspaceKeyLabel?: string;
-  escapeKeyLabel?: string;
-  runHint?: string;
-  backHint?: string;
-  closeHint?: string;
+  enterKeyLabel?: string | undefined;
+  backspaceKeyLabel?: string | undefined;
+  escapeKeyLabel?: string | undefined;
+  runHint?: string | undefined;
+  backHint?: string | undefined;
+  closeHint?: string | undefined;
   /** Replace or hide named pieces. */
-  parts?: {
-    /** The icon before the input. */
-    searchIcon?: Part;
-    /** The content of a row. */
-    item?: Part<CommandItemPartProps>;
-    sectionHeader?: Part<{ children: ReactNode }>;
-    /** Shown when nothing matches. */
-    empty?: Part<{ query: string }>;
-    footer?: Part<{ children: ReactNode }>;
-  };
+  parts?:
+    | {
+        /** The icon before the input. */
+        searchIcon?: Part | undefined;
+        /** The content of a row. */
+        item?: Part<CommandItemPartProps> | undefined;
+        sectionHeader?: Part<{ children: ReactNode }> | undefined;
+        /** Shown when nothing matches. */
+        empty?: Part<{ query: string }> | undefined;
+        footer?: Part<{ children: ReactNode }> | undefined;
+      }
+    | undefined;
   /** On the palette's panel. */
-  className?: string;
-  style?: CSSProperties;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
 }
 
 interface Row {
   command: Command;
   section: string | undefined;
   /** A key hint to show as it is, for a row that comes from the shortcut registry. */
-  keys?: string;
+  keys?: string | undefined;
 }
 
 /** Rows in the order they are shown: grouped by section, sections in order of first appearance. */
@@ -508,7 +511,7 @@ export function CommandPalette({
       onOpenChange={setOpen}
       isDismissable
       data-umbra-overlay=""
-      className={styles.overlay}
+      {...defined({ className: styles.overlay })}
       style={scope.style}
     >
       <Modal
@@ -517,10 +520,9 @@ export function CommandPalette({
         // reachable, and does not pull focus back into the modal below. On the panel, not the scrim:
         // a press on the scrim is still a press outside.
         data-react-aria-top-layer="true"
-        className={cx(styles.root, className)}
-        style={style}
+        {...defined({ className: cx(styles.root, className), style })}
       >
-        <Dialog ref={dialog} aria-label={label} className={styles.dialog}>
+        <Dialog ref={dialog} aria-label={label} {...defined({ className: styles.dialog })}>
           <Panel {...panel} shortcut={shortcut} label={label} close={() => setOpen(false)} />
         </Dialog>
       </Modal>

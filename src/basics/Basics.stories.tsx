@@ -27,6 +27,7 @@ const variants = ['primary', 'accent', 'neutral', 'ghost', 'danger'] as const;
 
 /** Every variant and state of `Button`. */
 export const Buttons: Story = {
+  tags: ['tints'],
   render: () => (
     <div>
       <Row label="Variants">
@@ -91,6 +92,7 @@ function StarToggle() {
 
 /** Every variant and state of `IconButton`. */
 export const IconButtons: Story = {
+  tags: ['tints'],
   render: () => (
     <div>
       <Row label="Variants">
@@ -115,6 +117,7 @@ export const IconButtons: Story = {
 
 /** The three shapes of `Skeleton`. */
 export const Skeletons: Story = {
+  tags: ['tints'],
   render: () => (
     <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}>
       <div style={{ width: 240 }}>

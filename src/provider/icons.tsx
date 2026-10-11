@@ -83,7 +83,15 @@ const directional: ReadonlySet<IconName> = new Set([
 export type IconMap = Record<IconName, ReactNode>;
 
 /** Internal: renders a built-in icon from the provider's icon map. Decorative, so hidden from screen readers. */
-export function Icon({ name, spin, part }: { name: IconName; spin?: boolean; part?: string }) {
+export function Icon({
+  name,
+  spin,
+  part,
+}: {
+  name: IconName;
+  spin?: boolean | undefined;
+  part?: string | undefined;
+}) {
   return (
     <span
       className={styles.icon}
@@ -108,7 +116,7 @@ export function BareIcon({ name }: { name: IconName }) {
 }
 
 /** Internal: wraps an icon node supplied by the app so it gets the same size as built-in icons. */
-export function IconSlot({ children, part }: { children: ReactNode; part?: string }) {
+export function IconSlot({ children, part }: { children: ReactNode; part?: string | undefined }) {
   return (
     <span className={styles.icon} data-part={part} aria-hidden="true">
       {children}

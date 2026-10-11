@@ -2125,7 +2125,7 @@ Wraps the app once. Supplies the theme, density, icon map and shortcut registry 
 | `brand` | `string` | Brand colour, used by the TopBar. Text on it is computed for contrast. Hex or `rgb()`. |
 | `context` | `ContextTint` | Context tint for the page background and tinted cards. |
 | `density` | `"compact" \| "default" \| "spacious"` | Spacing, row heights and text sizes. |
-| `tokens` | `Partial<Record<(string & {}) \| TokenName, string \| number>>` | Overrides individual tokens for this subtree. |
+| `tokens` | `Partial<Record<(string & {}) \| TokenName, string \| number \| undefined>>` | Overrides individual tokens for this subtree. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
 | `children` | `ReactNode` |  |
@@ -2145,7 +2145,7 @@ The same `context`, `density`, `brand` and `tokens` as the provider, for one sub
 | `brand` | `string` | Brand colour, used by the TopBar. Text on it is computed for contrast. Hex or `rgb()`. |
 | `context` | `ContextTint` | Context tint for the page background and tinted cards. |
 | `density` | `"compact" \| "default" \| "spacious"` | Spacing, row heights and text sizes. |
-| `tokens` | `Partial<Record<(string & {}) \| TokenName, string \| number>>` | Overrides individual tokens for this subtree. |
+| `tokens` | `Partial<Record<(string & {}) \| TokenName, string \| number \| undefined>>` | Overrides individual tokens for this subtree. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
 | `children` | `ReactNode` |  |

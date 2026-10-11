@@ -15,34 +15,35 @@ import { Icon, IconSlot } from '../provider/icons';
 import { useShortcut } from '../provider/UmbraProvider';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './Button.module.css';
+import { defined } from '../utils/defined';
 
 export type ButtonVariant = 'primary' | 'accent' | 'neutral' | 'ghost' | 'danger';
 
 interface BaseProps {
   variant: ButtonVariant;
   /** Icon-only look: square, no padding. */
-  iconOnly?: boolean;
-  shape?: 'square' | 'circle';
-  size?: 'default' | 'small';
-  fullWidth?: boolean;
-  loading?: boolean;
-  disabled?: boolean;
-  href?: string;
-  type?: 'button' | 'submit' | 'reset';
+  iconOnly?: boolean | undefined;
+  shape?: 'square' | 'circle' | undefined;
+  size?: 'default' | 'small' | undefined;
+  fullWidth?: boolean | undefined;
+  loading?: boolean | undefined;
+  disabled?: boolean | undefined;
+  href?: string | undefined;
+  type?: 'button' | 'submit' | 'reset' | undefined;
   /** Accessible name, when the visible content is not text. */
-  label?: string;
+  label?: string | undefined;
   /** The label as text, for type-ahead when the button is a row of an overflow menu. */
-  text?: string;
-  pressed?: boolean;
-  expanded?: boolean;
-  tooltip?: ReactNode;
+  text?: string | undefined;
+  pressed?: boolean | undefined;
+  expanded?: boolean | undefined;
+  tooltip?: ReactNode | undefined;
   /** Id of a shortcut: its keys are shown in the tooltip, or at the end of the row in an overflow menu. */
-  shortcut?: string;
-  onPress?: () => void;
-  elementRef?: React.RefObject<HTMLElement | null>;
+  shortcut?: string | undefined;
+  onPress?: (() => void) | undefined;
+  elementRef?: React.RefObject<HTMLElement | null> | undefined;
   umbra: string;
-  className?: string;
-  style?: CSSProperties;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
   children: ReactNode;
 }
 
@@ -79,13 +80,13 @@ export function ButtonBase({
     const item = (
       <AriaMenuItem
         id={id}
-        aria-label={label}
+        {...defined({ 'aria-label': label })}
         textValue={text ?? label ?? ''}
-        href={disabled ? undefined : href}
+        {...defined({ href: disabled ? undefined : href })}
         isDisabled={disabled || loading}
-        onAction={onPress}
+        {...defined({ onAction: onPress })}
         data-part="item"
-        className={cx(menuStyles.item, styles.row)}
+        {...defined({ className: cx(menuStyles.item, styles.row) })}
       >
         {({ hasSubmenu }) => (
           <>
@@ -105,7 +106,7 @@ export function ButtonBase({
       <AriaMenuSection
         selectionMode="multiple"
         selectedKeys={pressed ? [id] : []}
-        className={menuStyles.section}
+        {...defined({ className: menuStyles.section })}
       >
         {item}
       </AriaMenuSection>
@@ -125,22 +126,20 @@ export function ButtonBase({
   };
   const element = href ? (
     <AriaLink
-      {...shared}
+      {...defined(shared)}
       ref={elementRef as React.RefObject<HTMLAnchorElement>}
       href={href}
-      onPress={onPress}
+      {...defined({ onPress })}
     >
       {children}
     </AriaLink>
   ) : (
     <AriaButton
-      {...shared}
+      {...defined(shared)}
       ref={elementRef as React.RefObject<HTMLButtonElement>}
       type={type}
       isPending={loading}
-      aria-pressed={pressed}
-      aria-expanded={expanded}
-      onPress={onPress}
+      {...defined({ 'aria-pressed': pressed, 'aria-expanded': expanded, onPress })}
     >
       {children}
     </AriaButton>
@@ -158,7 +157,7 @@ export function ButtonBase({
  */
 export function Spinner({ label }: { label: string }) {
   return (
-    <AriaProgressBar isIndeterminate aria-label={label} className={styles.spinner}>
+    <AriaProgressBar isIndeterminate aria-label={label} {...defined({ className: styles.spinner })}>
       <Icon name="spinner" spin part="spinner" />
     </AriaProgressBar>
   );
@@ -166,36 +165,38 @@ export function Spinner({ label }: { label: string }) {
 
 export interface ButtonProps {
   /** The label. */
-  children?: ReactNode;
+  children?: ReactNode | undefined;
   /** `primary`: the single main action of a screen. `accent`: the confirming action of a group. */
-  variant?: ButtonVariant;
-  iconStart?: ReactNode;
-  iconEnd?: ReactNode;
+  variant?: ButtonVariant | undefined;
+  iconStart?: ReactNode | undefined;
+  iconEnd?: ReactNode | undefined;
   /** `small` is for use inside table cells. Otherwise the height follows the density level. */
-  size?: 'default' | 'small';
+  size?: 'default' | 'small' | undefined;
   /** Shows the spinner and blocks presses. The button stays focusable. */
-  loading?: boolean;
+  loading?: boolean | undefined;
   /** What a screen reader hears while `loading`. */
-  loadingLabel?: string;
-  disabled?: boolean;
+  loadingLabel?: string | undefined;
+  disabled?: boolean | undefined;
   /** Renders a link that looks like a button. */
-  href?: string;
+  href?: string | undefined;
   /** Id of a shortcut in the provider's list: binds the key and shows the hint in the tooltip. */
-  shortcut?: string;
-  fullWidth?: boolean;
+  shortcut?: string | undefined;
+  fullWidth?: boolean | undefined;
   /** With an icon set, hides the label when the button does not fit; the label becomes its tooltip and name. */
-  collapseTo?: 'icon';
-  type?: 'button' | 'submit' | 'reset';
-  onPress?: () => void;
+  collapseTo?: 'icon' | undefined;
+  type?: 'button' | 'submit' | 'reset' | undefined;
+  onPress?: (() => void) | undefined;
   /** Replace or hide named pieces. */
-  parts?: {
-    iconStart?: Part<{ children: ReactNode }>;
-    label?: Part<{ children: ReactNode }>;
-    iconEnd?: Part<{ children: ReactNode }>;
-    spinner?: Part;
-  };
-  className?: string;
-  style?: CSSProperties;
+  parts?:
+    | {
+        iconStart?: Part<{ children: ReactNode }> | undefined;
+        label?: Part<{ children: ReactNode }> | undefined;
+        iconEnd?: Part<{ children: ReactNode }> | undefined;
+        spinner?: Part | undefined;
+      }
+    | undefined;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
 }
 
 /** Triggers an action. Text, with an optional icon. */

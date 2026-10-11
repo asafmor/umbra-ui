@@ -9,39 +9,41 @@ import styles from './HistoryButtons.module.css';
 export interface HistoryEntry {
   id: string;
   label: string;
-  description?: ReactNode;
-  icon?: ReactNode;
+  description?: ReactNode | undefined;
+  icon?: ReactNode | undefined;
 }
 
 export interface HistoryButtonsProps {
   /** Router mode: whether there is somewhere to go. Leave both out to use the browser history. */
-  canGoBack?: boolean;
-  canGoForward?: boolean;
+  canGoBack?: boolean | undefined;
+  canGoForward?: boolean | undefined;
   /** Router mode: called in place of `history.back()` and `history.forward()`. */
-  onBack?: () => void;
-  onForward?: () => void;
+  onBack?: (() => void) | undefined;
+  onForward?: (() => void) | undefined;
   /** Recent places, newest first. They open from a caret, a long press or a right click on the buttons. */
-  entries?: HistoryEntry[];
+  entries?: HistoryEntry[] | undefined;
   /** Called with the id of the entry the user chose. */
-  onNavigate?: (id: string) => void;
+  onNavigate?: ((id: string) => void) | undefined;
   /** Ids of the shortcuts the buttons bind. `null` binds none. */
-  backShortcut?: string | null;
-  forwardShortcut?: string | null;
+  backShortcut?: string | null | undefined;
+  forwardShortcut?: string | null | undefined;
   /** Accessible names and tooltip texts. */
-  backLabel?: string;
-  forwardLabel?: string;
+  backLabel?: string | undefined;
+  forwardLabel?: string | undefined;
   /** Accessible name of the caret and of the menu of `entries`. */
-  entriesLabel?: string;
+  entriesLabel?: string | undefined;
   /** Accessible name of the group. */
-  'aria-label'?: string;
+  'aria-label'?: string | undefined;
   /** Replace or hide named pieces. */
-  parts?: {
-    backIcon?: Part;
-    forwardIcon?: Part;
-    entriesIcon?: Part;
-  };
-  className?: string;
-  style?: CSSProperties;
+  parts?:
+    | {
+        backIcon?: Part | undefined;
+        forwardIcon?: Part | undefined;
+        entriesIcon?: Part | undefined;
+      }
+    | undefined;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
 }
 
 /** The browser's Navigation API, where it exists (Chromium today). */
@@ -50,7 +52,9 @@ interface NavigationLike extends EventTarget {
   canGoForward: boolean;
 }
 const navigation = () =>
-  typeof window === 'undefined' ? undefined : (window as { navigation?: NavigationLike }).navigation;
+  typeof window === 'undefined'
+    ? undefined
+    : (window as { navigation?: NavigationLike | undefined }).navigation;
 const subscribe = (notify: () => void) => {
   const nav = navigation();
   nav?.addEventListener('currententrychange', notify);

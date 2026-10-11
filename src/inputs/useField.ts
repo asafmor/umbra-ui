@@ -20,7 +20,7 @@ export interface FieldState {
    * For a control that validates itself (a required `Select` on submit): the message to show as the
    * field's error, or null to take it away. The field shows it only while it has no error of its own.
    */
-  report?: (message: string | null) => void;
+  report?: ((message: string | null) => void) | undefined;
 }
 
 export const noField: FieldState = {
@@ -49,12 +49,12 @@ const ids = (...list: (string | false | undefined)[]) => list.filter(Boolean).jo
  * are the control's own label, description and error ids; the field's come first.
  */
 export function useFieldControl(own: {
-  id?: string;
-  invalid?: boolean;
-  required?: boolean;
-  disabled?: boolean;
-  labelledBy?: string | false;
-  describedBy?: (string | false | undefined)[];
+  id?: string | undefined;
+  invalid?: boolean | undefined;
+  required?: boolean | undefined;
+  disabled?: boolean | undefined;
+  labelledBy?: string | false | undefined;
+  describedBy?: (string | false | undefined)[] | undefined;
 }) {
   const field = useField();
   return {

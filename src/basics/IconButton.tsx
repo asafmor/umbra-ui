@@ -11,31 +11,33 @@ export interface IconButtonProps {
   icon: ReactNode;
   /** Required. The accessible name and the tooltip text. */
   label: string;
-  variant?: ButtonVariant;
-  shape?: 'square' | 'circle';
+  variant?: ButtonVariant | undefined;
+  shape?: 'square' | 'circle' | undefined;
   /** Makes it a toggle (for example a star). */
-  pressed?: boolean;
-  onPressedChange?: (pressed: boolean) => void;
+  pressed?: boolean | undefined;
+  onPressedChange?: ((pressed: boolean) => void) | undefined;
   /** A count, or `true` for a dot, at the corner. */
-  badge?: number | true;
+  badge?: number | true | undefined;
   /** Shows `label` on hover and focus. A node replaces the text. */
-  tooltip?: boolean | ReactNode;
+  tooltip?: boolean | ReactNode | undefined;
   /** Id of a shortcut in the provider's list: binds the key and shows the hint in the tooltip. */
-  shortcut?: string;
-  disabled?: boolean;
-  loading?: boolean;
+  shortcut?: string | undefined;
+  disabled?: boolean | undefined;
+  loading?: boolean | undefined;
   /** What a screen reader hears while `loading`. */
-  loadingLabel?: string;
-  onPress?: () => void;
+  loadingLabel?: string | undefined;
+  onPress?: (() => void) | undefined;
   /** Replace or hide named pieces. */
-  parts?: {
-    icon?: Part<{ children: ReactNode }>;
-    badge?: Part<{ children: ReactNode }>;
-    /** The tooltip's text. The key hint of `shortcut` is added after it. */
-    tooltip?: Part<{ children: ReactNode }>;
-  };
-  className?: string;
-  style?: CSSProperties;
+  parts?:
+    | {
+        icon?: Part<{ children: ReactNode }> | undefined;
+        badge?: Part<{ children: ReactNode }> | undefined;
+        /** The tooltip's text. The key hint of `shortcut` is added after it. */
+        tooltip?: Part<{ children: ReactNode }> | undefined;
+      }
+    | undefined;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
 }
 
 /** A button that shows only an icon. Inside an overflow menu it becomes a menu item with its icon and label. */

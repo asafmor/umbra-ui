@@ -23,6 +23,7 @@ import { cx, renderPart, type Part } from '../utils/parts';
 import { GroupHeader, type GroupHeaderProps } from './GroupHeader';
 import styles from './List.module.css';
 import { ListItem, type ListItemProps } from './ListItem';
+import { defined } from '../utils/defined';
 
 /** The controls of a group header that the keyboard can reach. */
 const HEADER_CONTROL = 'button:not(:disabled), a[href]';
@@ -94,62 +95,64 @@ function useList() {
 
 export interface ListRootProps extends DataStateProps {
   /** `List.Item` and `List.Group` elements. */
-  children?: ReactNode;
+  children?: ReactNode | undefined;
   /** `single` and `multiple` let the user select rows. */
-  selectionMode?: 'none' | 'single' | 'multiple';
+  selectionMode?: 'none' | 'single' | 'multiple' | undefined;
   /** Controlled selection: the keys of the selected rows. */
-  selectedIds?: ListId[];
-  defaultSelectedIds?: ListId[];
-  onSelectionChange?: (keys: ListId[]) => void;
+  selectedIds?: ListId[] | undefined;
+  defaultSelectedIds?: ListId[] | undefined;
+  onSelectionChange?: ((keys: ListId[]) => void) | undefined;
   /**
    * `replace`: a click selects only that row, a double click or Enter activates it, and selection follows
    * the arrow keys. `toggle`: a click or Space toggles the row. Default: `replace` when `onAction` is set, otherwise `toggle`.
    */
-  selectionBehavior?: 'toggle' | 'replace';
+  selectionBehavior?: 'toggle' | 'replace' | undefined;
   /** The user cannot deselect the last selected row. Default: on with `replace` (so a double click does not deselect), otherwise off. */
-  disallowEmptySelection?: boolean;
+  disallowEmptySelection?: boolean | undefined;
   /** Called when a row is activated: Enter or a double click (a single click when nothing can be selected). */
-  onAction?: (key: ListId) => void;
+  onAction?: ((key: ListId) => void) | undefined;
   /** A line between rows. */
-  dividers?: boolean;
+  dividers?: boolean | undefined;
   /** A faint fill on every other row. */
-  striped?: boolean;
+  striped?: boolean | undefined;
   /** Shows each row's position, for a ranking. */
-  numbered?: boolean;
+  numbered?: boolean | undefined;
   /** Default `variant` of every `List.Item`, and the layout of the skeleton rows. */
-  itemVariant?: ListItemProps['variant'];
+  itemVariant?: ListItemProps['variant'] | undefined;
   /** Default `size` of every `List.Item`, and of the skeleton rows. */
-  itemSize?: ListItemProps['size'];
+  itemSize?: ListItemProps['size'] | undefined;
   /** Group headers stick to the top while their group scrolls. */
-  stickyHeaders?: boolean;
+  stickyHeaders?: boolean | undefined;
   /** Number of skeleton rows shown while `loading`. */
-  skeletonRows?: number;
+  skeletonRows?: number | undefined;
   /**
    * `fill` (default) takes the height of the parent, and falls back to the content's height in a parent
    * that has none (flowing content, a popover, a modal body, an accordion panel). `content` is always
    * as tall as the content. A number is a height in pixels.
    */
-  height?: 'fill' | 'content' | number;
+  height?: 'fill' | 'content' | number | undefined;
 
   /** Called when the list is scrolled to its end, for loading more. */
-  onReachEnd?: () => void;
+  onReachEnd?: (() => void) | undefined;
   /** Shows a skeleton row after the last row while more rows load. */
-  loadingMore?: boolean;
+  loadingMore?: boolean | undefined;
   /** What assistive technology hears for the `loadingMore` row. */
-  loadingMoreLabel?: string;
+  loadingMoreLabel?: string | undefined;
   /** Accessible name of the list. Required unless `aria-labelledby` is set. */
-  'aria-label'?: string;
-  'aria-labelledby'?: string;
+  'aria-label'?: string | undefined;
+  'aria-labelledby'?: string | undefined;
   /** Replace or hide named pieces. */
-  parts?: {
-    /** One skeleton row. */
-    skeleton?: Part<{ index: number }>;
-    /** The empty or error state. */
-    state?: Part<{ children: ReactNode }>;
-    loadingMore?: Part<{ label: string }>;
-  };
-  className?: string;
-  style?: CSSProperties;
+  parts?:
+    | {
+        /** One skeleton row. */
+        skeleton?: Part<{ index: number }> | undefined;
+        /** The empty or error state. */
+        state?: Part<{ children: ReactNode }> | undefined;
+        loadingMore?: Part<{ label: string }> | undefined;
+      }
+    | undefined;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
 }
 
 function Root({
@@ -236,8 +239,7 @@ function Root({
   ) : (
     <>
       <GridList
-        aria-label={ariaLabel}
-        aria-labelledby={ariaLabelledby}
+        {...defined({ 'aria-label': ariaLabel, 'aria-labelledby': ariaLabelledby })}
         selectionMode={selectionMode}
         selectionBehavior={selectionBehavior}
         disallowEmptySelection={disallowEmptySelection ?? selectionBehavior === 'replace'}
@@ -252,8 +254,7 @@ function Root({
           setOwnSelection(next);
           onSelectionChange?.(next);
         }}
-        onAction={onAction}
-        className={styles.grid}
+        {...defined({ onAction, className: styles.grid })}
       >
         {children}
       </GridList>
@@ -306,7 +307,7 @@ export interface ListEntryProps extends Omit<ListItemProps, 'selected' | 'intera
   /** The row's key: what selection and `onAction` report. Unique in the list. */
   id: ListId;
   /** Plain text of the row, for type-ahead and assistive technology. Defaults to a text `title`. */
-  textValue?: string;
+  textValue?: string | undefined;
   /** Replaces the row's content. A function receives the row's state, to pass on to `ListItem.Root`. */
   children?:
     | ReactNode
@@ -316,7 +317,8 @@ export interface ListEntryProps extends Omit<ListItemProps, 'selected' | 'intera
         interactive: boolean;
         /** The row's checkbox in `multiple` selection, to place in a row drawn by hand. */
         selectionControl: ReactNode;
-      }) => ReactNode);
+      }) => ReactNode)
+    | undefined;
 }
 
 /** One row of a `List`. Takes the props of `ListItem`; `children` replace the row's content. */
@@ -327,12 +329,14 @@ function Item({ id, textValue, href, onPress, disabled, children, ...item }: Lis
   return (
     <GridListItem
       id={id}
-      textValue={textValue ?? (typeof item.title === 'string' ? item.title : undefined)}
-      href={href}
-      onAction={onPress}
-      isDisabled={disabled}
+      {...defined({
+        textValue: textValue ?? (typeof item.title === 'string' ? item.title : undefined),
+        href,
+        onAction: onPress,
+        isDisabled: disabled,
+      })}
       data-part="row"
-      className={styles.item}
+      {...defined({ className: styles.item })}
     >
       {({ isSelected, isDisabled, selectionMode }) => {
         const state = {
@@ -375,9 +379,9 @@ function Item({ id, textValue, href, onPress, disabled, children, ...item }: Lis
 
 export interface ListGroupProps extends Omit<GroupHeaderProps, 'className' | 'style'> {
   /** The group's rows: `List.Item` elements. */
-  children?: ReactNode;
+  children?: ReactNode | undefined;
   /** Replaces the whole header. */
-  header?: ReactNode;
+  header?: ReactNode | undefined;
 }
 
 /** A group of rows under a `GroupHeader`. Collapsing it hides its rows. */
@@ -396,10 +400,10 @@ function Group({ children, header, ...props }: ListGroupProps) {
     section!.setAttribute('aria-labelledby', title.id);
   };
   return (
-    <GridListSection ref={name} className={styles.group}>
+    <GridListSection ref={name} {...defined({ className: styles.group })}>
       <GridListHeader
         data-part="groupHeader"
-        className={styles.groupRow}
+        {...defined({ className: styles.groupRow })}
         data-sticky={(props.sticky ?? list.stickyHeaders) || undefined}
       >
         {header ?? (
@@ -436,11 +440,11 @@ export interface ListGroupData<T> extends Omit<ListGroupProps, 'children'> {
 
 export interface ListProps<T = unknown> extends ListRootProps {
   /** The rows, as data. Use with `renderItem`; or pass `List.Item` children instead. */
-  items?: T[];
+  items?: T[] | undefined;
   /** Grouped rows, as data: each group's header props and its `items`. */
-  groups?: ListGroupData<T>[];
+  groups?: ListGroupData<T>[] | undefined;
   /** Returns the `List.Item` of one row. */
-  renderItem?: (item: T, index: number) => ReactNode;
+  renderItem?: ((item: T, index: number) => ReactNode) | undefined;
 }
 
 /**
@@ -453,7 +457,7 @@ export function List<T>({ items, groups, renderItem, children, ...root }: ListPr
   const rows = (list: T[]) =>
     list.map((item, index) => {
       const row = renderItem?.(item, index);
-      return isValidElement<{ id?: ListId }>(row) && row.key == null
+      return isValidElement<{ id?: ListId | undefined }>(row) && row.key == null
         ? cloneElement(row, { key: row.props.id ?? index })
         : row;
     });

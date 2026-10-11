@@ -17,30 +17,31 @@ import {
   type BlockProps,
 } from './fieldParts';
 import { FieldContext, noField, useFieldControl } from './useField';
+import { defined } from '../utils/defined';
 
 export interface CheckboxRootProps extends BlockProps {
   /** Controlled state. */
-  checked?: boolean;
-  defaultChecked?: boolean;
-  onChange?: (checked: boolean) => void;
+  checked?: boolean | undefined;
+  defaultChecked?: boolean | undefined;
+  onChange?: ((checked: boolean) => void) | undefined;
   /** Shows the "some, not all" mark, whatever `checked` is. */
-  indeterminate?: boolean;
-  disabled?: boolean;
+  indeterminate?: boolean | undefined;
+  disabled?: boolean | undefined;
   /** Focusable, but cannot be changed. */
-  readOnly?: boolean;
-  invalid?: boolean;
-  required?: boolean;
+  readOnly?: boolean | undefined;
+  invalid?: boolean | undefined;
+  required?: boolean | undefined;
   /** The text of the required marker after the label. */
-  requiredLabel?: string;
+  requiredLabel?: string | undefined;
   /** `small` is for use inside table cells. Otherwise the size follows the density level. */
-  size?: 'default' | 'small';
+  size?: 'default' | 'small' | undefined;
   /** Form field name. */
-  name?: string;
+  name?: string | undefined;
   /** The form value when checked; inside a `CheckboxGroup`, the entry in the group's `value`. */
-  value?: string;
-  id?: string;
+  value?: string | undefined;
+  id?: string | undefined;
   /** Accessible name of a checkbox that has no visible label. */
-  'aria-label'?: string;
+  'aria-label'?: string | undefined;
 }
 
 /**
@@ -80,27 +81,29 @@ function Root({
   });
   return (
     <AriaCheckbox
-      slot={slot}
+      {...defined({ slot })}
       data-umbra="checkbox"
       data-size={size}
-      className={cx(styles.root, className)}
-      style={style}
-      isSelected={checked}
-      defaultSelected={defaultChecked}
-      onChange={onChange}
-      isIndeterminate={indeterminate}
+      {...defined({
+        className: cx(styles.root, className),
+        style,
+        isSelected: checked,
+        defaultSelected: defaultChecked,
+        onChange,
+        isIndeterminate: indeterminate,
+      })}
       isDisabled={control.disabled}
-      isReadOnly={readOnly}
-      // Only when set here or by a field: a `false` would hide what the group says. In a required
-      // group each box is required while none is checked, which is what holds the form back.
-      isInvalid={control.invalid || undefined}
-      isRequired={control.required || undefined}
-      name={name}
-      value={value}
-      id={control.id}
-      aria-label={ariaLabel}
-      aria-labelledby={control.labelledBy}
-      aria-describedby={control.describedBy}
+      {...defined({
+        isReadOnly: readOnly,
+        isInvalid: control.invalid || undefined,
+        isRequired: control.required || undefined,
+        name,
+        value,
+        id: control.id,
+        'aria-label': ariaLabel,
+        'aria-labelledby': control.labelledBy,
+        'aria-describedby': control.describedBy,
+      })}
     >
       <TextSlotsProvider
         value={{ ...slots, marker: required && <Marker kind="required">{requiredLabel}</Marker> }}
@@ -143,18 +146,20 @@ function ErrorText(props: BlockProps) {
 
 export interface CheckboxProps extends Omit<CheckboxRootProps, 'children'> {
   /** The label. */
-  children?: ReactNode;
+  children?: ReactNode | undefined;
   /** A second line under the label. */
-  description?: ReactNode;
+  description?: ReactNode | undefined;
   /** An error message under the checkbox, shown with an icon. Setting it makes the checkbox invalid. */
-  error?: ReactNode;
+  error?: ReactNode | undefined;
   /** Replace or hide named pieces. */
-  parts?: {
-    box?: Part<BlockProps>;
-    label?: Part<{ children: ReactNode }>;
-    description?: Part<{ children: ReactNode }>;
-    error?: Part<{ children: ReactNode }>;
-  };
+  parts?:
+    | {
+        box?: Part<BlockProps> | undefined;
+        label?: Part<{ children: ReactNode }> | undefined;
+        description?: Part<{ children: ReactNode }> | undefined;
+        error?: Part<{ children: ReactNode }> | undefined;
+      }
+    | undefined;
 }
 
 /** A box that is checked or not: one yes-or-no choice, or one of several in a `CheckboxGroup`. */
@@ -183,23 +188,23 @@ Checkbox.Error = ErrorText;
 
 export interface CheckboxGroupRootProps extends BlockProps {
   /** Controlled: the `value` of every checked checkbox. */
-  value?: string[];
-  defaultValue?: string[];
-  onChange?: (value: string[]) => void;
+  value?: string[] | undefined;
+  defaultValue?: string[] | undefined;
+  onChange?: ((value: string[]) => void) | undefined;
   /** `horizontal` puts the checkboxes on one line, wrapping when they do not fit. */
-  orientation?: 'vertical' | 'horizontal';
-  disabled?: boolean;
-  readOnly?: boolean;
-  invalid?: boolean;
+  orientation?: 'vertical' | 'horizontal' | undefined;
+  disabled?: boolean | undefined;
+  readOnly?: boolean | undefined;
+  invalid?: boolean | undefined;
   /** At least one checkbox must be checked. */
-  required?: boolean;
+  required?: boolean | undefined;
   /** The text of the required marker after the group label. */
-  requiredLabel?: string;
+  requiredLabel?: string | undefined;
   /** Form field name of every checkbox in the group. */
-  name?: string;
-  id?: string;
+  name?: string | undefined;
+  id?: string | undefined;
   /** Accessible name of a group that has no visible label. */
-  'aria-label'?: string;
+  'aria-label'?: string | undefined;
 }
 
 function GroupRoot({
@@ -232,20 +237,18 @@ function GroupRoot({
     <AriaCheckboxGroup
       data-umbra="checkbox-group"
       data-orientation={orientation}
-      className={cx(groupClass, className)}
-      style={style}
-      value={value}
-      defaultValue={defaultValue}
-      onChange={onChange}
+      {...defined({ className: cx(groupClass, className), style, value, defaultValue, onChange })}
       isDisabled={control.disabled}
-      isReadOnly={readOnly}
+      {...defined({ isReadOnly: readOnly })}
       isInvalid={control.invalid}
       isRequired={control.required}
-      name={name}
-      id={control.id}
-      aria-label={ariaLabel}
-      aria-labelledby={control.labelledBy}
-      aria-describedby={control.describedBy}
+      {...defined({
+        name,
+        id: control.id,
+        'aria-label': ariaLabel,
+        'aria-labelledby': control.labelledBy,
+        'aria-describedby': control.describedBy,
+      })}
     >
       <TextSlotsProvider
         value={{ ...slots, marker: required && <Marker kind="required">{requiredLabel}</Marker> }}
@@ -265,22 +268,24 @@ function GroupLabel(props: BlockProps) {
 
 export interface CheckboxGroupProps extends Omit<CheckboxGroupRootProps, 'children'> {
   /** The checkboxes. */
-  children?: ReactNode;
+  children?: ReactNode | undefined;
   /** The group's label. */
-  label?: ReactNode;
+  label?: ReactNode | undefined;
   /** A line under the label. */
-  description?: ReactNode;
+  description?: ReactNode | undefined;
   /** An error message under the checkboxes, shown with an icon. Setting it makes the group invalid. */
-  error?: ReactNode;
+  error?: ReactNode | undefined;
   /** Lays the checkboxes in a grid of at most this many columns; columns drop as the group narrows. */
-  columns?: number;
+  columns?: number | undefined;
   /** Replace or hide named pieces. */
-  parts?: {
-    label?: Part<{ children: ReactNode }>;
-    description?: Part<{ children: ReactNode }>;
-    options?: Part<{ columns?: number; children: ReactNode }>;
-    error?: Part<{ children: ReactNode }>;
-  };
+  parts?:
+    | {
+        label?: Part<{ children: ReactNode }> | undefined;
+        description?: Part<{ children: ReactNode }> | undefined;
+        options?: Part<{ columns?: number | undefined; children: ReactNode }> | undefined;
+        error?: Part<{ children: ReactNode }> | undefined;
+      }
+    | undefined;
 }
 
 /** Several checkboxes that answer one question, with a shared label, description and error. */

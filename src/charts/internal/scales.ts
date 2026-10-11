@@ -140,7 +140,7 @@ export function fitTooltip(input: {
   chart: Rect;
   window: Rect;
   /** Distance from the point. */
-  offset?: number;
+  offset?: number | undefined;
 }) {
   const { x, y, width, height, align, chart, window: w, offset = 10 } = input;
   const into = (value: number, size: number, from: number, to: number) =>
@@ -241,13 +241,13 @@ export function cartesianMargins(options: {
   /** Width of the widest label on the left axis. */
   leftLabels: number;
   /** Extra room at the end of the plot, for labels drawn there. */
-  endLabels?: number;
+  endLabels?: number | undefined;
   /** Width of the last label under the plot, which is centred on the plot's end. */
-  endTick?: number;
+  endTick?: number | undefined;
   /** Room above the plot for value labels. */
-  topLabels?: boolean;
-  leftTitle?: boolean;
-  bottomTitle?: boolean;
+  topLabels?: boolean | undefined;
+  leftTitle?: boolean | undefined;
+  bottomTitle?: boolean | undefined;
 }): Margins {
   const { level, fontSize, leftLabels, endLabels = 0 } = options;
   if (level >= 4) return { top: 3, right: 3, bottom: 3, left: 3 };

@@ -1663,7 +1663,7 @@ test.describe('classic scrollbars', () => {
   const withScrollbars = async (baseURL: string | undefined, run: (page: Page) => Promise<void>) => {
     const browser = await chromium.launch({ ignoreDefaultArgs: ['--hide-scrollbars'] });
     try {
-      await run(await browser.newPage({ baseURL }));
+      await run(await browser.newPage(baseURL === undefined ? {} : { baseURL }));
     } finally {
       await browser.close();
     }

@@ -34,7 +34,7 @@ Review 3 asked whether `0.1.0` can be released. Verdict: **ready with gaps**; on
 | 6 | Three flaky browser tests | The component work |
 | 18 | Optional props are not typed `\| undefined`, so `prop={condition ? value : undefined}` fails for an app with `exactOptionalPropertyTypes`. Seen on `PageProps.context` and `Command.href`; the pattern is library-wide. | `src/` |
 | 19 | Tokens declared and never read: `space-0`, `size-min-window-width`, `size-min-window-height` (the minimum window is a TypeScript constant). Literal durations: Skeleton 1.6s, ProgressBar 1.4s, the spinner 0.9s. | Owner: remove, or read them |
-| 11 | Whether to trim the captures per story (12 images now) | Owner |
+| 11 | Whether to trim the captures per story (12 images now) | Done 2026-10-11: 5 images per story, tints for one story per file; 4,281 images and 197 MB became 1,979 and 92 MB (decision 06, "Baseline images") |
 | 21 | Repository settings: protect `main`, enable private vulnerability reporting and "Reported content", enable Pages | Owner |
 | 22 | Whether a registry install prints npm's allow-scripts warning for `prepare` (cannot be known before publishing; `docs/releasing.md` says what to do) | Owner, after the release |
 
@@ -90,12 +90,12 @@ Of the 20 open items of the Milestone 0 review, 17 were found fixed; the rest ar
 
 | Item | Detail | For |
 |---|---|---|
-| Optional props are not typed `\| undefined` | An app with `exactOptionalPropertyTypes` cannot write `prop={condition ? value : undefined}`. Library-wide. | Milestone 2, first |
+| Optional props are not typed `\| undefined` | **Done 2026-10-11.** Every optional member under `src/` is declared `\| undefined` (1973 of them), the library compiles with `exactOptionalPropertyTypes`, and two checks keep it: `scripts/check-optional-props.mjs` in `npm run lint`, and the consumer type check of `npm run check:package`. Rule: `plan/decisions/07-customisation.md`. | Done |
 | Some containers still set another component's token | `Badge`, `Avatar`, `EntityIcon` and the `DataTable` surface: their readers need private defaults first. | Milestone 2 |
 | Two tooltips still render outside a modal | The truncated-text tooltip and the `DataTable` cell tooltip are inert inside a `Modal`. | Milestone 2 |
 | `Card` costs about 70 KB gzip | Its header overflow pulls in the menu. A lazy menu, or a row rendered through context, would cut it. | Milestone 2 |
 | Tokens declared and never read | `space-0`, `size-min-window-width`, `size-min-window-height`. | Milestone 2 |
-| 12 baseline images per story, 177 MB in total | Policy in decision 06; whether to trim captures is open. | Milestone 2 proposes a trim; the owner decides |
+| 12 baseline images per story, 177 MB in total | Policy in decision 06. | Done 2026-10-11: trimmed to 5 images per story and tints for one story per file; 1,979 images, 92 MB (decision 06, "Baseline images") |
 | Browsers | Done 2026-10-11: `scripts/check-browsers.mjs` (in `lint` and `check:package`) fails on a CSS or JavaScript feature newer than the minimums without a fallback, and `docs/browser-checks.md` is the checklist a person runs in Firefox and Safari before a release. It found and fixed four things (decision 06, "Browsers: what keeps the minimums true"); what is left for the owner is listed there. No real screen reader, zoom or touch testing yet. | Done; the open points are the owner's |
 | Source maps | Done 2026-10-11: `check:package` proves every map (and found block names shifting the lines of seven modules, fixed), `release:check` limits the packed size to 1300 kB, an example in the Vite development server proves what a developer sees, and the getting-started guide has a "Debugging" section (decision 05, "Source maps: what is checked"). | Done |
 | Repository settings | Protect `main`, enable private vulnerability reporting, Pages for the Storybook workflow is enabled and the site is published. | Owner (the first two) |

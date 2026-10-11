@@ -15,19 +15,19 @@ export interface ColumnsTabsProps {
 
 export interface ColumnsProps extends SlotProps {
   /** Overrides the gap, which otherwise follows the density level. */
-  gap?: SpaceToken;
+  gap?: SpaceToken | undefined;
   /**
    * When there is no room for the columns (below the minimum window, or when the children cannot all
    * have their `minWidth`): `tabs` shows one child at a time, `keep` keeps the columns.
    */
-  narrow?: 'tabs' | 'keep';
+  narrow?: 'tabs' | 'keep' | undefined;
   /** Replace or hide named pieces. */
-  parts?: { tabs?: Part<ColumnsTabsProps> };
+  parts?: { tabs?: Part<ColumnsTabsProps> | undefined } | undefined;
   /** Accessible name of the tab strip. */
-  tabsLabel?: string;
-  className?: string;
-  style?: CSSProperties;
-  children?: ReactNode;
+  tabsLabel?: string | undefined;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
+  children?: ReactNode | undefined;
 }
 
 /** Shares its width among its children. Below the minimum window it shows one child at a time. */

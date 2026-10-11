@@ -4,17 +4,17 @@ import styles from './Skeleton.module.css';
 
 export interface SkeletonProps {
   /** `text` for lines of text, `block` for any rectangle, `circle` for avatars and icons. */
-  shape?: 'text' | 'block' | 'circle';
+  shape?: 'text' | 'block' | 'circle' | undefined;
   /** Number of lines, for `text`. The last line is shorter. */
-  lines?: number;
+  lines?: number | undefined;
   /** Defaults to the width of the slot. */
-  width?: number | string;
+  width?: number | string | undefined;
   /** Defaults to the height of the slot (`block`) or of the text (`text`). */
-  height?: number | string;
+  height?: number | string | undefined;
   /** `none` is forced when reduced motion is on. */
-  animation?: 'pulse' | 'none';
-  className?: string;
-  style?: CSSProperties;
+  animation?: 'pulse' | 'none' | undefined;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
 }
 
 /** A grey placeholder in the shape of content that is still loading. Hidden from assistive technology. */

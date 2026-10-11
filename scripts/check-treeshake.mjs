@@ -10,7 +10,8 @@
 //    every function and every `throw` in the built files resolves to its line of the source.
 // 5. Server rendering: a page renders with react-dom/server in Node, without a window.
 // 6. Types: a consumer project type-checks against the tarball under `bundler`, `node16` and
-//    `nodenext` with `skipLibCheck: false`, and a wrong prop is an error under each.
+//    `nodenext` with `skipLibCheck: false` and `exactOptionalPropertyTypes`; a wrong prop is an error
+//    under each, and optional props take an explicit `undefined`.
 import { build as esbuild } from 'esbuild';
 import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
@@ -335,7 +336,50 @@ export const App = () => (
   </Card>
 );
 `;
+  // An app with `exactOptionalPropertyTypes` writes `prop={condition ? value : undefined}`: every optional
+  // member must take an explicit `undefined`. One component or more per source group; props, an item, a
+  // column, a series, a command, a shortcut, a part and a block.
+  const explicit = `import {
+  Button, Card, Checkbox, CommandPalette, DataTable, Legend, Page, ProgressBar, Tag, TextField, Tooltip, TopBar,
+  PrimaryNav, UmbraProvider,
+  type Command, type DataTableColumn, type LegendItem, type NavItem, type Shortcut,
+} from 'umbra-ui';
+import { BarChart, type BarSeries } from 'umbra-ui/charts';
+type Row = { id: string; name: string };
+const no = undefined;
+const columns: DataTableColumn<Row>[] = [
+  { id: 'name', header: no, accessor: 'name', width: { min: no, flex: 1 }, align: no, sortFn: no, pin: no },
+];
+const commands: Command[] = [{ id: 'a', label: 'Open', href: no, onRun: no, icon: no, children: no }];
+const shortcuts: Shortcut[] = [{ id: 'app.save', keys: 'Mod+S', label: 'Save', action: no, whenTyping: no }];
+const nav: NavItem[] = [{ id: 'home', label: 'Home', href: no, icon: no, items: no }];
+const legend: LegendItem[] = [{ id: 'r1', label: 'Region 1', color: no, marker: no }];
+const series: BarSeries[] = [{ id: 'r1', label: 'Region 1', values: [4], color: no, marker: no }];
+export const App = ({ wide }: { wide: boolean }) => (
+  <UmbraProvider brand={no} density={wide ? 'spacious' : undefined} tokens={{ 'radius-card': no }} shortcuts={shortcuts}>
+    <TopBar logo={no} nav={<PrimaryNav items={nav} value={no} onChange={no} />} onSearch={no} parts={no} />
+    <CommandPalette commands={commands} open={no} onOpenChange={no} navigate={no} />
+    <Page context={wide ? 'teal' : undefined} header={no} parts={{ header: no }}>
+      <Card title="Orders" href={no} empty={no} onRetry={no} parts={{ header: no, title: wide ? null : undefined }}>
+        <Card.Header icon={no} className={no} style={no}>Orders</Card.Header>
+        <Card.Body axis={no} onReachEnd={no}>
+          <Button variant={no} iconStart={no} href={no} onPress={no} parts={{ label: no }}>Save</Button>
+          <Tooltip content="Tip" shortcut={no} delay={no}><Tag icon={no} onRemove={no} parts={{ remove: no }}>New</Tag></Tooltip>
+          <Tag.Root tone={no} className={no}>Block</Tag.Root>
+          <TextField aria-label="Name" value={no} onChange={no} prefix={no} parts={{ clear: no }} />
+          <Checkbox checked={no} onChange={no}>Agree</Checkbox>
+          <ProgressBar aria-label="Done" value={40} label={no} target={no} formatValue={no} parts={{ fill: no }} />
+          <Legend items={legend} onHighlight={no} orientation={no} />
+          <DataTable aria-label="Orders" columns={columns} data={[{ id: 'a', name: 'Item 1' }]} getRowId={(row) => row.id} sort={no} onSortChange={no} rowHref={no} empty={no} />
+          <BarChart aria-label="Orders" categories={['Q1']} series={series} variant={no} xTitle={no} parts={no} />
+        </Card.Body>
+      </Card>
+    </Page>
+  </UmbraProvider>
+);
+`;
   writeFileSync(join(consumer, 'good.tsx'), good);
+  writeFileSync(join(consumer, 'explicit.tsx'), explicit);
   // The same file with one wrong prop. It must not compile: types that resolve to `any` would let it.
   writeFileSync(join(consumer, 'bad.tsx'), good.replace('variant="primary"', 'variant="no-such-variant"'));
   const tsc = join(root, 'node_modules/typescript/bin/tsc');
@@ -358,6 +402,7 @@ export const App = () => (
             strict: true,
             noEmit: true,
             skipLibCheck: false,
+            exactOptionalPropertyTypes: true,
             types: [],
           },
           files: [`${file}.tsx`],
@@ -366,7 +411,11 @@ export const App = () => (
       const run = spawnSync(process.execPath, [tsc, '-p', config], { cwd: consumer, encoding: 'utf8' });
       return { ok: run.status === 0, errors: (run.stdout + run.stderr).trim().split('\n').filter(Boolean) };
     };
-    const [right, wrong] = [check('good'), check('bad')];
+    const [right, wrong, undefineds] = [check('good'), check('bad'), check('explicit')];
+    if (!undefineds.ok)
+      fail(
+        `types (${moduleResolution}): ${undefineds.errors.filter((e) => /error TS/.test(e)).length} errors where an optional member is given an explicit undefined:\n  ${undefineds.errors.join('\n  ')}`,
+      );
     if (!right.ok)
       fail(`types (${moduleResolution}): a correct file does not compile:\n  ${right.errors.join('\n  ')}`);
     const expected = wrong.errors.length === 1 && /^bad\.tsx.*TS2322/.test(wrong.errors[0]);
@@ -374,7 +423,9 @@ export const App = () => (
       fail(
         `types (${moduleResolution}): a wrong prop must be the one error, got:\n  ${wrong.errors.join('\n  ') || 'none'}`,
       );
-    console.log(`types (${moduleResolution}): a correct file compiles, a wrong prop is an error`);
+    console.log(
+      `types (${moduleResolution}): a correct file compiles, a wrong prop is an error, optional props take undefined`,
+    );
   }
 }
 

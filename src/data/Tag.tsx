@@ -9,24 +9,24 @@ import styles from './Tag.module.css';
 import { toneColour, toneProps, type Tone } from './tone';
 
 interface BlockProps {
-  className?: string;
-  style?: CSSProperties;
-  children?: ReactNode;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
+  children?: ReactNode | undefined;
 }
 
 export interface TagRootProps extends BlockProps {
   /** What the colour means. */
-  tone?: Tone;
+  tone?: Tone | undefined;
   /** A custom colour (any CSS colour). Replaces `tone`. */
-  color?: string;
+  color?: string | undefined;
   /** `outline`: coloured border. `subtle`: tinted fill. `solid`: filled, for short status codes. */
-  variant?: 'outline' | 'solid' | 'subtle';
+  variant?: 'outline' | 'solid' | 'subtle' | undefined;
   /** `small` is for use inside table cells. */
-  size?: 'default' | 'small';
+  size?: 'default' | 'small' | undefined;
   /** A second colour on the trailing edge: a tone name or any CSS colour. */
-  stripe?: Tone | (string & {});
+  stripe?: Tone | (string & {}) | undefined;
   /** What the stripe means: read by screen readers, and shown in a tooltip on hover and on keyboard focus. */
-  stripeLabel?: string;
+  stripeLabel?: string | undefined;
 }
 
 function Root({
@@ -87,9 +87,9 @@ function Label({ className, style, children }: BlockProps) {
 export interface TagRemoveProps {
   /** Accessible name of the button. */
   label: string;
-  onPress?: () => void;
-  className?: string;
-  style?: CSSProperties;
+  onPress?: (() => void) | undefined;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
 }
 
 /**
@@ -134,24 +134,26 @@ function Remove({ label, onPress, className, style }: TagRemoveProps) {
 
 export interface TagProps extends Omit<TagRootProps, 'children'> {
   /** The label. Without one (`null`, `undefined` or an empty text) the tag shows `emptyLabel`. */
-  children?: ReactNode;
+  children?: ReactNode | undefined;
   /** Shown when there is no label. */
-  emptyLabel?: ReactNode;
+  emptyLabel?: ReactNode | undefined;
   /** A leading icon, avatar or flag. */
-  icon?: ReactNode;
+  icon?: ReactNode | undefined;
   /** Shows a remove button. */
-  onRemove?: () => void;
+  onRemove?: (() => void) | undefined;
   /** Accessible name of the remove button; a text label is added to it ("Remove Region 2"). */
-  removeLabel?: string;
+  removeLabel?: string | undefined;
   /** Shows a placeholder of the tag's size. */
-  loading?: boolean;
+  loading?: boolean | undefined;
   /** Replace or hide named pieces. */
-  parts?: {
-    icon?: Part<{ children: ReactNode }>;
-    label?: Part<{ children: ReactNode }>;
-    remove?: Part<TagRemoveProps>;
-    skeleton?: Part;
-  };
+  parts?:
+    | {
+        icon?: Part<{ children: ReactNode }> | undefined;
+        label?: Part<{ children: ReactNode }> | undefined;
+        remove?: Part<TagRemoveProps> | undefined;
+        skeleton?: Part | undefined;
+      }
+    | undefined;
 }
 
 /** A small label chip: a category, a status code or a value with an icon. */

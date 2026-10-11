@@ -26,12 +26,12 @@ import styles from './VerticalNav.module.css';
 export interface VerticalNavItem {
   id: string;
   label: ReactNode;
-  icon?: ReactNode;
-  href?: string;
+  icon?: ReactNode | undefined;
+  href?: string | undefined;
   /** A count or marker at the end of the row, for example a `Badge`. */
-  badge?: ReactNode;
-  disabled?: boolean;
-  items?: VerticalNavItem[];
+  badge?: ReactNode | undefined;
+  disabled?: boolean | undefined;
+  items?: VerticalNavItem[] | undefined;
 }
 
 /** A heading over a run of entries. */
@@ -59,28 +59,28 @@ function useNav() {
 }
 
 interface BlockProps {
-  className?: string;
-  style?: CSSProperties;
-  children?: ReactNode;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
+  children?: ReactNode | undefined;
 }
 
 export interface VerticalNavRootProps extends BlockProps, SlotProps {
   /** The current item. */
-  value?: string;
+  value?: string | undefined;
   /** Called with the id of the item the user chose. */
-  onChange?: (id: string) => void;
+  onChange?: ((id: string) => void) | undefined;
   /** Plugs in the app's router link. Defaults to a plain `<a>`. */
-  renderLink?: (props: LinkRenderProps) => ReactNode;
+  renderLink?: ((props: LinkRenderProps) => ReactNode) | undefined;
   /** The open groups (controlled). */
-  expandedIds?: string[];
-  defaultExpandedIds?: string[];
-  onExpandedChange?: (ids: string[]) => void;
+  expandedIds?: string[] | undefined;
+  defaultExpandedIds?: string[] | undefined;
+  onExpandedChange?: ((ids: string[]) => void) | undefined;
   /** Icon-only rail (controlled). Each label stays as the accessible name of its item. */
-  collapsed?: boolean;
-  defaultCollapsed?: boolean;
-  onCollapsedChange?: (collapsed: boolean) => void;
+  collapsed?: boolean | undefined;
+  defaultCollapsed?: boolean | undefined;
+  onCollapsedChange?: ((collapsed: boolean) => void) | undefined;
   /** Accessible name of the navigation landmark. */
-  'aria-label'?: string;
+  'aria-label'?: string | undefined;
 }
 
 const focusTargets = (list: HTMLElement) => [...list.querySelectorAll<HTMLElement>('[data-nav-focus]')];
@@ -237,13 +237,13 @@ function List({ className, style, children }: BlockProps) {
 
 export interface VerticalNavItemProps {
   id: string;
-  icon?: ReactNode;
-  href?: string;
+  icon?: ReactNode | undefined;
+  href?: string | undefined;
   /** A count or marker at the end of the row. */
-  badge?: ReactNode;
-  disabled?: boolean;
+  badge?: ReactNode | undefined;
+  disabled?: boolean | undefined;
   /** The label. */
-  children?: ReactNode;
+  children?: ReactNode | undefined;
 }
 
 /** What a row shows: icon, label, badge. In the rail the label is hidden from sight only. */
@@ -309,9 +309,9 @@ function Item(props: VerticalNavItemProps) {
 export interface VerticalNavGroupProps extends Omit<VerticalNavItemProps, 'href' | 'children'> {
   label: ReactNode;
   /** Set when the current item is in this group: the closed group then carries the edge stripe. */
-  holdsCurrent?: boolean;
+  holdsCurrent?: boolean | undefined;
   /** The items of the group. */
-  children?: ReactNode;
+  children?: ReactNode | undefined;
 }
 
 /** An entry that opens and closes a list of items under it. */
@@ -370,10 +370,10 @@ function Section({ label, className, style, children }: VerticalNavSectionProps)
 
 export interface VerticalNavToggleProps {
   /** Accessible names of the button, by what a press does. */
-  collapseLabel?: string;
-  expandLabel?: string;
-  className?: string;
-  style?: CSSProperties;
+  collapseLabel?: string | undefined;
+  expandLabel?: string | undefined;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
 }
 
 /** The button that switches between the full nav and the rail. Not shown while the slot forces the rail. */
@@ -405,20 +405,22 @@ function Toggle({
 
 export interface VerticalNavProps extends Omit<VerticalNavRootProps, 'children'>, VerticalNavToggleProps {
   /** The entries: items, groups (an item with `items`) and sections (`{ type: 'section', label, items }`). */
-  items?: (VerticalNavItem | VerticalNavSection)[];
+  items?: (VerticalNavItem | VerticalNavSection)[] | undefined;
   /** Fixed above the list, for example a title or a search field. */
-  header?: ReactNode;
+  header?: ReactNode | undefined;
   /** Fixed below the list. */
-  footer?: ReactNode;
+  footer?: ReactNode | undefined;
   /** Shows the button that lets the user switch to the icon rail and back. */
-  collapsible?: boolean;
+  collapsible?: boolean | undefined;
   /** Replace or hide named pieces. `item` applies to every item, also inside groups and sections. */
-  parts?: {
-    header?: Part<{ children: ReactNode }>;
-    item?: Part<VerticalNavItemProps>;
-    footer?: Part<{ children: ReactNode }>;
-    toggle?: Part<VerticalNavToggleProps>;
-  };
+  parts?:
+    | {
+        header?: Part<{ children: ReactNode }> | undefined;
+        item?: Part<VerticalNavItemProps> | undefined;
+        footer?: Part<{ children: ReactNode }> | undefined;
+        toggle?: Part<VerticalNavToggleProps> | undefined;
+      }
+    | undefined;
 }
 
 const groupsHolding = (

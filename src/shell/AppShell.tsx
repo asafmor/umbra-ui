@@ -21,16 +21,16 @@ const ShellContext = createContext<ShellContextValue | null>(null);
 export const useShell = () => useContext(ShellContext);
 
 interface BlockProps {
-  className?: string;
-  style?: CSSProperties;
-  children?: ReactNode;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
+  children?: ReactNode | undefined;
 }
 
 export interface AppShellRootProps extends BlockProps {
   /** `flat` removes the gradient and pattern. */
-  background?: 'gradient' | 'flat';
+  background?: 'gradient' | 'flat' | undefined;
   /** Text of the "skip to content" link, the first focus stop. */
-  skipLabel?: string;
+  skipLabel?: string | undefined;
 }
 
 function Root({
@@ -101,18 +101,20 @@ function Main({ className, style, children }: BlockProps) {
 
 export interface AppShellProps extends AppShellRootProps {
   /** A `TopBar`. */
-  topBar?: ReactNode;
+  topBar?: ReactNode | undefined;
   /** A `SubNav`. */
-  subNav?: ReactNode;
+  subNav?: ReactNode | undefined;
   /** Replace or hide named pieces. */
-  parts?: {
-    topBar?: Part<{ children: ReactNode }>;
-    subNav?: Part<{ children: ReactNode }>;
-    main?: Part<{ children: ReactNode }>;
-    background?: Part;
-  };
+  parts?:
+    | {
+        topBar?: Part<{ children: ReactNode }> | undefined;
+        subNav?: Part<{ children: ReactNode }> | undefined;
+        main?: Part<{ children: ReactNode }> | undefined;
+        background?: Part | undefined;
+      }
+    | undefined;
   /** The `Page`. */
-  children?: ReactNode;
+  children?: ReactNode | undefined;
 }
 
 /** The outermost frame: exactly the size of the window, never scrolls, bars above one `Page`. */

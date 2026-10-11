@@ -24,21 +24,21 @@ export type StatValueTone = 'default' | 'accent' | 'success' | 'warning' | 'dang
 const LabelIdContext = createContext<string | undefined>(undefined);
 
 interface BlockProps {
-  className?: string;
-  style?: CSSProperties;
-  children?: ReactNode;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
+  children?: ReactNode | undefined;
 }
 
 export interface StatValueRootProps extends BlockProps {
   /** Size of the value: `md` is the title font, `lg` the display font, `xl` larger still. */
-  size?: 'md' | 'lg' | 'xl';
+  size?: 'md' | 'lg' | 'xl' | undefined;
   /** Colour of the value. A tone that carries meaning needs a second cue: a `trend`, an icon or the label. */
-  tone?: StatValueTone;
-  align?: 'start' | 'center' | 'end';
+  tone?: StatValueTone | undefined;
+  align?: 'start' | 'center' | 'end' | undefined;
   /** Marks the stat busy for assistive technology. */
-  loading?: boolean;
+  loading?: boolean | undefined;
   /** Accessible name, for a stat without a label. */
-  'aria-label'?: string;
+  'aria-label'?: string | undefined;
 }
 
 function Root({
@@ -77,7 +77,7 @@ function Root({
 
 export interface StatValueLabelProps extends BlockProps {
   /** Shown before the label. */
-  icon?: ReactNode;
+  icon?: ReactNode | undefined;
 }
 
 function Label({ icon, className, style, children }: StatValueLabelProps) {
@@ -148,34 +148,36 @@ function Meter({ className, style, children }: BlockProps) {
 
 export interface StatValueProps extends Omit<StatValueRootProps, 'children'>, ChangeHighlightProps {
   /** The value. It never hides. `null`, `undefined` or an empty text shows `emptyLabel`, without unit or trend. */
-  value?: ReactNode;
+  value?: ReactNode | undefined;
   /** Shown when there is no value. */
-  emptyLabel?: ReactNode;
+  emptyLabel?: ReactNode | undefined;
   /** What the value is. */
-  label?: ReactNode;
+  label?: ReactNode | undefined;
   /** Shown before the label. */
-  icon?: ReactNode;
+  icon?: ReactNode | undefined;
   /** Shown after the value, smaller. */
-  unit?: ReactNode;
+  unit?: ReactNode | undefined;
   /** A secondary line under the value. */
-  caption?: ReactNode;
+  caption?: ReactNode | undefined;
   /** A node after the value that shows its direction, for example a `TrendArrow`. */
-  trend?: ReactNode;
+  trend?: ReactNode | undefined;
   /** A node under the caption that shows the value as a share, for example a `ProgressBar`. */
-  meter?: ReactNode;
+  meter?: ReactNode | undefined;
   /** Shows skeletons in place of the value, caption and meter. */
-  loading?: boolean;
+  loading?: boolean | undefined;
   /** Replace or hide named pieces. */
-  parts?: {
-    icon?: Part<{ children: ReactNode }>;
-    label?: Part<StatValueLabelProps>;
-    value?: Part<{ children: ReactNode }>;
-    unit?: Part<{ children: ReactNode }>;
-    trend?: Part<{ children: ReactNode }>;
-    caption?: Part<{ children: ReactNode }>;
-    meter?: Part<{ children: ReactNode }>;
-    skeleton?: Part;
-  };
+  parts?:
+    | {
+        icon?: Part<{ children: ReactNode }> | undefined;
+        label?: Part<StatValueLabelProps> | undefined;
+        value?: Part<{ children: ReactNode }> | undefined;
+        unit?: Part<{ children: ReactNode }> | undefined;
+        trend?: Part<{ children: ReactNode }> | undefined;
+        caption?: Part<{ children: ReactNode }> | undefined;
+        meter?: Part<{ children: ReactNode }> | undefined;
+        skeleton?: Part | undefined;
+      }
+    | undefined;
 }
 
 const has = (node: ReactNode) => node != null && node !== false;

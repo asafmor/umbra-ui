@@ -38,7 +38,7 @@ export function PointShape({
   y: number;
   /** Half the width of the shape. */
   size: number;
-  color?: string;
+  color?: string | undefined;
 }) {
   const s = size;
   const common = { fill: color ?? 'currentColor', 'data-shape': shape };
@@ -65,7 +65,7 @@ export function LineGlyph({
   color,
 }: {
   shape: PointShapeKind;
-  dash?: string;
+  dash?: string | undefined;
   color: string;
 }) {
   return (

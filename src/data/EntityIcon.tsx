@@ -7,15 +7,15 @@ export type EntityIconSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 export type EntityIconShape = 'rounded' | 'circle' | 'square';
 
 interface BlockProps {
-  className?: string;
-  style?: CSSProperties;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
 }
 
 export interface EntityIconRootProps extends BlockProps {
   /** Fixed size of the mark. Without it the mark follows the size of the text around it. */
-  size?: EntityIconSize;
-  shape?: EntityIconShape;
-  children?: ReactNode;
+  size?: EntityIconSize | undefined;
+  shape?: EntityIconShape | undefined;
+  children?: ReactNode | undefined;
 }
 
 function Root({ size, shape = 'rounded', className, style, children }: EntityIconRootProps) {
@@ -34,12 +34,12 @@ function Root({ size, shape = 'rounded', className, style, children }: EntityIco
 
 export interface EntityIconMarkProps extends BlockProps {
   /** Accessible name. Without it the mark is decorative, as it is next to a visible label. */
-  label?: string;
+  label?: string | undefined;
   /** `image` and `icon` show the node as it is; `generated` is the coloured square with letters. */
-  kind?: 'image' | 'icon' | 'generated';
+  kind?: 'image' | 'icon' | 'generated' | undefined;
   /** Background of a generated mark. White text must keep 4.5:1 on it. */
-  color?: string;
-  children?: ReactNode;
+  color?: string | undefined;
+  children?: ReactNode | undefined;
 }
 
 function Mark({ label, kind = 'icon', color, className, style, children }: EntityIconMarkProps) {
@@ -57,7 +57,7 @@ function Mark({ label, kind = 'icon', color, className, style, children }: Entit
   );
 }
 
-function Label({ className, style, children }: BlockProps & { children?: ReactNode }) {
+function Label({ className, style, children }: BlockProps & { children?: ReactNode | undefined }) {
   return (
     <span data-part="label" className={cx(styles.label, className)} style={style}>
       {children}
@@ -67,24 +67,26 @@ function Label({ className, style, children }: BlockProps & { children?: ReactNo
 
 export interface EntityIconProps extends Omit<EntityIconRootProps, 'children'> {
   /** An image: a logo or a flag. When it is missing or fails to load, `icon` or the generated mark shows. */
-  src?: string;
+  src?: string | undefined;
   /** An icon node, used when there is no image. */
-  icon?: ReactNode;
+  icon?: ReactNode | undefined;
   /** The entity. Names the mark, and gives the letters and colour of the generated mark. */
-  name?: string;
+  name?: string | undefined;
   /** Accessible name of the mark, when it differs from `name`. */
-  alt?: string;
+  alt?: string | undefined;
   /** Text shown next to the mark, truncated when it does not fit. `true` shows `name`. */
-  label?: ReactNode;
+  label?: ReactNode | undefined;
   /** Letters in the generated mark. Default: 1 up to `sm`, 2 from `md`. */
-  letters?: 1 | 2;
+  letters?: 1 | 2 | undefined;
   /** Background of the generated mark, in place of the colour derived from `name`. White text must keep 4.5:1 on it. */
-  color?: string;
+  color?: string | undefined;
   /** Replace or hide named pieces. */
-  parts?: {
-    mark?: Part<EntityIconMarkProps>;
-    label?: Part<{ children: ReactNode }>;
-  };
+  parts?:
+    | {
+        mark?: Part<EntityIconMarkProps> | undefined;
+        label?: Part<{ children: ReactNode }> | undefined;
+      }
+    | undefined;
 }
 
 /** A small mark for an entity (a logo, a flag, a category glyph), with an optional name next to it. */

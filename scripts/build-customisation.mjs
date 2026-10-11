@@ -29,7 +29,10 @@ const typeText = (symbol, node) =>
     .typeToString(checker.getTypeOfSymbolAtLocation(symbol, node), node, ts.TypeFormatFlags.NoTruncation)
     // A type from another file prints as import("./file").Name: the name alone reads better.
     .replace(/import\("[^"]*"\)\./g, '')
-    .replace(/ \| undefined$/, '');
+    // Every optional member is declared `| undefined` (scripts/check-optional-props.mjs). The table and
+    // the `?` already say optional, so it is left out here: at the end, and on the members inside.
+    .replace(/ \| undefined$/, '')
+    .replace(/(\?: [^;{}]*?) \| undefined(?=;)/g, '$1');
 
 /** Names a file gives a default text to, as in `{ clearLabel = 'Clear' }`. */
 const defaults = new Map();

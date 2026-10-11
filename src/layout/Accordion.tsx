@@ -47,40 +47,40 @@ function useSection() {
 }
 
 interface BlockProps {
-  className?: string;
-  style?: CSSProperties;
-  children?: ReactNode;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
+  children?: ReactNode | undefined;
 }
 
 interface RootBaseProps extends BlockProps, SlotProps {
   /** May every section be closed? Only matters for `type="single"`; when `false`, the open section stays open. */
-  collapsible?: boolean;
+  collapsible?: boolean | undefined;
   /** `plain`: rules between the sections. `card`: each section looks like a card. */
-  variant?: 'plain' | 'card';
+  variant?: 'plain' | 'card' | undefined;
   /** Heading level of the section titles. */
-  headingLevel?: 2 | 3 | 4 | 5 | 6;
+  headingLevel?: 2 | 3 | 4 | 5 | 6 | undefined;
   /** Keeps the content of closed sections in the page (hidden), so it keeps its state. */
-  keepMounted?: boolean;
+  keepMounted?: boolean | undefined;
   /** Accessible name of the group of sections. */
-  'aria-label'?: string;
+  'aria-label'?: string | undefined;
 }
 interface SingleProps {
   /** `single`: one section open at a time. `multiple`: any number. */
   type: 'single';
   /** The open section (controlled). `null` for none. */
-  value?: string | null;
-  defaultValue?: string | null;
+  value?: string | null | undefined;
+  defaultValue?: string | null | undefined;
   /** Called with the id of the open section, or `null`. */
-  onChange?: (value: string | null) => void;
+  onChange?: ((value: string | null) => void) | undefined;
 }
 interface MultipleProps {
   /** `single`: one section open at a time. `multiple`: any number. */
-  type?: 'multiple';
+  type?: 'multiple' | undefined;
   /** The open sections (controlled). */
-  value?: string[];
-  defaultValue?: string[];
+  value?: string[] | undefined;
+  defaultValue?: string[] | undefined;
   /** Called with the ids of the open sections. */
-  onChange?: (value: string[]) => void;
+  onChange?: ((value: string[]) => void) | undefined;
 }
 export type AccordionRootProps = RootBaseProps & (SingleProps | MultipleProps);
 
@@ -157,7 +157,7 @@ function Root({
 export interface AccordionSectionProps extends BlockProps {
   /** Identifies the section in `value`. */
   id: string;
-  disabled?: boolean;
+  disabled?: boolean | undefined;
 }
 
 /** One section: holds a `Header` and a `Panel`. */
@@ -182,21 +182,23 @@ function Section({ id, disabled = false, className, style, children }: Accordion
 
 export interface AccordionHeaderProps extends BlockProps {
   /** Leading icon. */
-  icon?: ReactNode;
-  title?: ReactNode;
+  icon?: ReactNode | undefined;
+  title?: ReactNode | undefined;
   /** Second line under the title. */
-  subtitle?: ReactNode;
+  subtitle?: ReactNode | undefined;
   /** A short value or status at the end of the header. Hides when the section is narrow. */
-  meta?: ReactNode;
+  meta?: ReactNode | undefined;
   /** Controls at the end of the header. They do not toggle the section. */
-  actions?: ReactNode;
+  actions?: ReactNode | undefined;
   /** Replace or hide named pieces. */
-  parts?: {
-    title?: Part<{ children: ReactNode }>;
-    meta?: Part<{ children: ReactNode }>;
-    actions?: Part<{ children: ReactNode }>;
-    chevron?: Part;
-  };
+  parts?:
+    | {
+        title?: Part<{ children: ReactNode }> | undefined;
+        meta?: Part<{ children: ReactNode }> | undefined;
+        actions?: Part<{ children: ReactNode }> | undefined;
+        chevron?: Part | undefined;
+      }
+    | undefined;
 }
 
 /** The header of a section: a button inside a heading. `children` replace the default content of the button. */
@@ -272,7 +274,7 @@ function Header({
 
 export interface AccordionPanelProps extends BlockProps {
   /** `none` for edge-to-edge content. */
-  padding?: 'default' | 'none';
+  padding?: 'default' | 'none' | undefined;
 }
 
 /**
@@ -323,18 +325,20 @@ export interface AccordionItemProps
     AccordionSectionProps,
     Pick<AccordionHeaderProps, 'icon' | 'title' | 'subtitle' | 'meta' | 'actions'> {
   /** Overrides the padding of the panel. */
-  padding?: 'default' | 'none';
+  padding?: 'default' | 'none' | undefined;
   /** Replace or hide named pieces. */
-  parts?: {
-    header?: Part<AccordionHeaderProps>;
-    title?: Part<{ children: ReactNode }>;
-    meta?: Part<{ children: ReactNode }>;
-    actions?: Part<{ children: ReactNode }>;
-    chevron?: Part;
-    panel?: Part<AccordionPanelProps>;
-  };
+  parts?:
+    | {
+        header?: Part<AccordionHeaderProps> | undefined;
+        title?: Part<{ children: ReactNode }> | undefined;
+        meta?: Part<{ children: ReactNode }> | undefined;
+        actions?: Part<{ children: ReactNode }> | undefined;
+        chevron?: Part | undefined;
+        panel?: Part<AccordionPanelProps> | undefined;
+      }
+    | undefined;
   /** The content of the section. */
-  children?: ReactNode;
+  children?: ReactNode | undefined;
 }
 
 /** One complete section: a header and a panel. */
@@ -370,9 +374,9 @@ export interface AccordionItemData extends Omit<AccordionItemProps, 'children' |
 
 export type AccordionProps = AccordionRootProps & {
   /** The sections. Or pass `Accordion.Item` elements as children. */
-  items?: AccordionItemData[];
+  items?: AccordionItemData[] | undefined;
   /** Replace or hide named pieces. `item` applies to every section built from `items`. */
-  parts?: { item?: Part<AccordionItemProps> };
+  parts?: { item?: Part<AccordionItemProps> | undefined } | undefined;
 };
 
 /** A stack of sections that open and close. It fills its slot; an open panel scrolls inside when space is short. */

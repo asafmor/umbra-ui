@@ -43,9 +43,9 @@ export interface LinePoint {
   /** A number, the name of one of `yLevels`, or `null` for a missing value, which breaks the line. */
   y: number | string | null;
   /** Any CSS colour for this point only. */
-  color?: string;
+  color?: string | undefined;
   /** The shape of this point only. */
-  marker?: PointShapeKind;
+  marker?: PointShapeKind | undefined;
 }
 
 export interface LineSeries {
@@ -53,11 +53,11 @@ export interface LineSeries {
   label: string;
   data: LinePoint[];
   /** Any CSS colour. Without it the series takes the series palette, by its position. */
-  color?: string;
+  color?: string | undefined;
   /** The shape of its points. By default series take the shapes in turn. */
-  marker?: PointShapeKind;
+  marker?: PointShapeKind | undefined;
   /** The stroke dash array of its line, or `false` for a solid line. By default series take the dashes in turn. */
-  dash?: string | false;
+  dash?: string | false | undefined;
 }
 
 type DrawnPoint = PointModel & { shape: PointShapeKind; show: boolean };
@@ -65,38 +65,38 @@ interface LineModel extends CartesianModel {
   series: {
     id: string;
     color: string;
-    dash?: string;
+    dash?: string | undefined;
     line: string;
-    area?: string;
+    area?: string | undefined;
     points: DrawnPoint[];
-    end?: { x: number; y: number; text: string };
+    end?: { x: number; y: number; text: string } | undefined;
   }[];
 }
 
 export interface LineChartRootProps extends ChartCommonProps {
   series: LineSeries[];
   /** The order of a category x axis. Defaults to the order the names first appear in. */
-  categories?: string[];
+  categories?: string[] | undefined;
   /** Makes the y axis ordinal: the named levels, from the bottom up. Points then give a level name as `y`. */
-  yLevels?: string[];
+  yLevels?: string[] | undefined;
   /** The range of a numeric y axis. Defaults to round numbers around the data. */
-  yDomain?: [number, number];
+  yDomain?: [number, number] | undefined;
   /** `step` holds each value until the next point. */
-  curve?: LineCurve;
+  curve?: LineCurve | undefined;
   /** Fills the area under each line; the y axis then starts at zero. */
-  area?: boolean;
+  area?: boolean | undefined;
   /** Draws a shape on every value. Points too dense to tell apart are left out. */
-  points?: boolean;
+  points?: boolean | undefined;
   /** Reference lines and bands on either axis. */
-  annotations?: ChartAnnotation[];
-  xTitle?: string;
-  yTitle?: string;
+  annotations?: ChartAnnotation[] | undefined;
+  xTitle?: string | undefined;
+  yTitle?: string | undefined;
   /** Formats an x value for the axis, the tooltip and screen readers. */
-  formatX?: (x: LineX) => string;
+  formatX?: ((x: LineX) => string) | undefined;
   /** Replace or hide named pieces. */
-  parts?: ChartParts;
+  parts?: ChartParts | undefined;
   /** The blocks to draw, in order. */
-  children?: ReactNode;
+  children?: ReactNode | undefined;
 }
 
 const pointSize = 3.5;

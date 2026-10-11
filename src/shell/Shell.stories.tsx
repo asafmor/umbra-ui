@@ -19,7 +19,7 @@ const meta = { title: 'Shell/App shell', component: AppShell } satisfies Meta<ty
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-function Bars({ brand, nav = true }: { brand?: string; nav?: boolean }) {
+function Bars({ brand, nav = true }: { brand?: string | undefined; nav?: boolean }) {
   const [section, setSection] = useState('overview');
   const [page, setPage] = useState('summary');
   return (

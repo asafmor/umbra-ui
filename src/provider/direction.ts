@@ -9,8 +9,8 @@ const rtlScripts = new Set(['Adlm', 'Arab', 'Hebr', 'Mand', 'Mend', 'Nkoo', 'Roh
 export function textDirection(locale: string): Direction | undefined {
   try {
     const info = new Intl.Locale(locale) as Intl.Locale & {
-      getTextInfo?: () => { direction: Direction };
-      textInfo?: { direction: Direction };
+      getTextInfo?: (() => { direction: Direction }) | undefined;
+      textInfo?: { direction: Direction } | undefined;
     };
     // Firefox before 153 has neither form. The script of the locale decides there, as in React Aria.
     return (
