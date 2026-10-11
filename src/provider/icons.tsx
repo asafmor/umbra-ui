@@ -24,6 +24,7 @@ import {
   PanelLeftOpen,
   Pencil,
   Search,
+  Star,
   TriangleAlert,
   User,
   X,
@@ -68,6 +69,8 @@ export const defaultIcons = {
   user: <User />,
   panelClose: <PanelLeftClose />,
   panelOpen: <PanelLeftOpen />,
+  // One shape for a full and an empty star of `StarRating`: the full one is filled.
+  star: <Star />,
 } satisfies Record<string, ReactNode>;
 
 export type IconName = keyof typeof defaultIcons;

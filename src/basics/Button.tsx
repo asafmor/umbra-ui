@@ -42,6 +42,8 @@ interface BaseProps {
   onKeyDown?: ((event: KeyboardEvent) => void) | undefined;
   elementRef?: React.RefObject<HTMLElement | null> | undefined;
   umbra: string;
+  /** `data-part`, when the button is a named piece of another component (`SplitButton`). */
+  part?: string | undefined;
   className?: string | undefined;
   style?: CSSProperties | undefined;
   children: ReactNode;
@@ -72,6 +74,7 @@ export function ButtonBase({
   onKeyDown,
   elementRef,
   umbra,
+  part,
   className,
   style,
   children,
@@ -92,6 +95,7 @@ export function ButtonBase({
   }
   const shared = {
     'data-umbra': umbra,
+    'data-part': part,
     'data-variant': variant,
     'data-size': size,
     'data-shape': shape,

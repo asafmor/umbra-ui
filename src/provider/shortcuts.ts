@@ -13,6 +13,8 @@ export interface Shortcut {
    * or Alt does, and a bare key does not.
    */
   whenTyping?: boolean | undefined;
+  /** Heading the shortcut is listed under in the shortcuts sheet. Without one it is listed with the ungrouped. */
+  group?: string | undefined;
 }
 
 /** Keys the library reserves (plan/specs/UmbraProvider.md). */
@@ -143,15 +145,50 @@ export function shortcutForEvent(
 
 const arrows: Record<string, string> = { arrowleft: '←', arrowright: '→', arrowup: '↑', arrowdown: '↓' };
 
-/** The key hint shown in tooltips and menus, for example "Ctrl+K" or "⌘K". */
-export function formatKeys(keys: string, mac = isMac()) {
+/** The keys of a combination one by one, as they are written for the platform: `['Ctrl', 'K']` or `['⌘', 'K']`. */
+export function keyCaps(keys: string, mac = isMac()) {
   const p = parse(keys, mac);
   const raw = keys.split('+').pop()!.trim();
   const key = raw.length === 1 ? raw.toUpperCase() : (arrows[raw.toLowerCase()] ?? raw);
   const mods = mac
     ? [p.ctrl && '⌃', p.alt && '⌥', p.shift && '⇧', p.meta && '⌘']
     : [p.ctrl && 'Ctrl', p.alt && 'Alt', p.shift && 'Shift', p.meta && 'Meta'];
-  return [...mods.filter(Boolean), key].join(mac ? '' : '+');
+  return [...mods.filter((m): m is string => !!m), key];
+}
+
+/** The key hint shown in tooltips and menus, for example "Ctrl+K" or "⌘K". */
+export const formatKeys = (keys: string, mac = isMac()) => keyCaps(keys, mac).join(mac ? '' : '+');
+
+/** One shortcut as the shortcuts sheet and the command palette list it. */
+export interface ShortcutEntry {
+  id: string;
+  label: string;
+  /** The combination as it was registered, for example `Mod+K`. */
+  keys: string;
+  /** The heading it is listed under; undefined for an app shortcut without a `group`. */
+  group: string | undefined;
+  /** One of the library's own shortcuts (by id, so also one the app gave new keys). */
+  reserved: boolean;
+  action: (() => void) | undefined;
+}
+
+/**
+ * What a list of shortcuts shows: every shortcut that has a label and owns its keys, so of two on the
+ * same keys only the winner (`resolveShortcuts`). In the order of registration, the library's own first.
+ */
+export function listShortcuts(registry: ShortcutRegistry, reserved: Shortcut[] = reservedShortcuts) {
+  const reservedIds = new Set(reserved.map((s) => s.id));
+  return [...registry.owners.values()]
+    .map((id) => registry.shortcuts.get(id)!)
+    .filter((s) => s.label)
+    .map((s): ShortcutEntry => ({
+      id: s.id,
+      label: s.label,
+      keys: s.keys,
+      group: s.group,
+      reserved: reservedIds.has(s.id),
+      action: s.action,
+    }));
 }
 
 /** True while the user is typing, when a bare key must not trigger a shortcut. */
