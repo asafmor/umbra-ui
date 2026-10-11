@@ -33,8 +33,8 @@ Ring with a yellow arc on a dark track and the percentage inside, about 80px, 8p
 | Variant | Values | Notes |
 |---|---|---|
 | form | `value` + `max`, or `data` | One value against a total, or several segments |
-| `tone` | `default`, `success`, `warning`, `danger`, `info` | Single value only. The number in the centre is the cue that does not depend on colour |
-| `thresholds` | `{ from, tone }[]` | Picks the tone from the value: the last threshold reached |
+| `tone` | `default`, `neutral`, `info`, `success`, `warning`, `danger`, `accent`, `ramp-1` to `ramp-5` | Single value only. The number in the centre is the cue that does not depend on colour |
+| `thresholds` | a list of `{ from, tone?, color?, label? }`, or number[] | Single value only. Colours it by its band (the shared shape of `plan/decisions/07-customisation.md`, "Thresholds"): the last `from` not above the value. The band's `label` joins the value text (tooltip, point name, summary). `lowerIsBetter` mirrors the colours. `data-band` on the segment. |
 | `sweep` / `startAngle` | degrees | Less than 360 leaves the ring open, as a gauge |
 | `roundedCaps` | boolean | On by default for one value, off for segments |
 | `gap` | degrees | Space between segments, default 2 |
@@ -62,7 +62,8 @@ Shared by the four charts: `--umbra-chart-font`, `--umbra-chart-fg` (axis and la
 | `sweep` | number | `360` | Degrees the ring covers |
 | `roundedCaps` | boolean | see above | |
 | `gap` | number | `2` | Degrees between segments |
-| `tone` / `thresholds` / `color` | see above / see above / CSS colour | `default` / — / — | Colour of the single value; `color` wins |
+| `tone` / `thresholds` / `color` | see above / see above / CSS colour | `default` / — / — | Colour of the single value; `color` wins, then the band |
+| `lowerIsBetter` | boolean | `false` | Mirrors the colours of the bands |
 | `aria-label` / `aria-labelledby` | string | — | Accessible name; one of the two is required |
 | `description` | string | generated summary | What a screen reader hears after the name |
 | `legend` | boolean \| `top` \| `bottom` \| `start` \| `end` \| node | shown below when there is more than one series | The built-in `Legend`, its place, or the app's own node |
@@ -117,6 +118,11 @@ The caption also hides whenever there is under 72px of room inside the ring. Cen
 ## Open questions
 
 None.
+
+Resolved 2026-10-11 (Milestone 2, one `thresholds` shape):
+
+- A threshold is the shared `Threshold` (it was `{ from, tone }`): a `tone`, a free `color` or neither (the ring keeps its `tone`), and a `label`. `DonutTone` is `default` plus every tone a threshold can have.
+- The cue that is not colour stays the number in the centre, now with the band's label in the text; a ring of one value takes no pattern.
 
 Resolved 2026-10-11:
 

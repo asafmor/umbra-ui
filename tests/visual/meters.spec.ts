@@ -94,7 +94,7 @@ test.describe('ProgressBar', () => {
     ).toEqual([100, 100, 40, 0]);
   });
 
-  test('a threshold sets the tone, a pattern and the spoken label; invert swaps the tones', async ({
+  test('a threshold sets the tone, a pattern and the spoken label; lowerIsBetter mirrors the tones', async ({
     page,
   }) => {
     await open(page, 'meters-progressbar--thresholds');

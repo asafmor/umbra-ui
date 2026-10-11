@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 import { Box, Boxes, Tile, Tiles } from '../stories/charts';
 import { Log } from '../stories/placeholders';
+import type { Threshold } from '../utils/thresholds';
 import { DonutChart, type DonutSegment } from './DonutChart';
 import type { ChartPoint } from './internal/Frame';
 
@@ -19,10 +20,10 @@ const channels: DonutSegment[] = [
   { id: 'partner', label: 'Partners', value: 18 },
   { id: 'other', label: 'Other', value: 8 },
 ];
-const thresholds = [
-  { from: 0, tone: 'danger' as const },
-  { from: 50, tone: 'warning' as const },
-  { from: 80, tone: 'success' as const },
+const thresholds: Threshold[] = [
+  { from: 0, tone: 'danger' },
+  { from: 50, tone: 'warning' },
+  { from: 80, tone: 'success' },
 ];
 const row = { display: 'flex', gap: 12, height: '100%' };
 const cell = { flex: 1, minWidth: 0 };
