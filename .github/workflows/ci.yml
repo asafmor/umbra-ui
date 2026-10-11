@@ -22,8 +22,9 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
-      # The examples import the built package, so this checks the published entries and types.
-      - run: npm run build --workspaces --if-present
+      # The release flow: the pending changesets produce a version and a changelog, and the package
+      # holds what its exports name. It publishes nothing.
+      - run: npm run release:check
 
   # Every story: captures at three sizes, three densities and four tints, the no-page-scroll check,
   # the automated accessibility check and the interaction tests. Split so it stays fast as stories grow.
@@ -50,8 +51,9 @@ jobs:
           path: test-results
           retention-days: 7
 
-  # The three example apps, built against the built package and driven in a browser: they load
-  # cleanly, never scroll the page at any size or density, switch to tabs, and their interactions work.
+  # The three example apps, each installed in its own folder against the built package (this checks the
+  # published entries and types) and driven in a browser: they load cleanly, never scroll the page at
+  # any size or density, switch to tabs, and their interactions work.
   examples:
     runs-on: ubuntu-latest
     steps:
@@ -63,6 +65,8 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - run: npm run test:examples
+      # Each example, copied out of the repository and installed against the packed tarball.
+      - run: npm run examples:standalone
       - uses: actions/upload-artifact@v4
         if: failure()
         with:

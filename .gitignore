@@ -14,6 +14,9 @@ coverage/
 src/styles/tokens.css
 src/styles/tokens.generated.ts
 
+# the examples are templates: each app that copies one makes its own lock file
+examples/*/package-lock.json
+
 # local, per-developer files
 *.local
 .claude/settings.local.json
