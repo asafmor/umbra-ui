@@ -1707,3 +1707,78 @@ test.describe('WidgetBoard, review 2', () => {
     await expect(page.getByText('Collapsed: 1 (removed-widget)')).toBeVisible();
   });
 });
+
+test.describe('ContextBlock, filled (O-9)', () => {
+  test('on every brand the surface is a step away from the bar, the text keeps 4.5:1 on it and the chip 3:1', async ({
+    page,
+  }) => {
+    await openStory(page, 'shell-contextblock--filled');
+    const bars = await page.evaluate(() => {
+      // `rgb(r, g, b)`, or `color(srgb r g b)` from a `color-mix()`.
+      const parse = (colour: string) => {
+        const numbers = colour
+          .match(/[\d.]+/g)!
+          .slice(0, 3)
+          .map(Number);
+        return colour.startsWith('color(') ? numbers.map((n) => n * 255) : numbers;
+      };
+      const luminance = (rgb: number[]) => {
+        const [r, g, b] = rgb.map((v) => {
+          const s = v / 255;
+          return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+        });
+        return 0.2126 * r! + 0.7152 * g! + 0.0722 * b!;
+      };
+      const ratio = (a: string, b: string) => {
+        const [hi, lo] = [luminance(parse(a)), luminance(parse(b))].sort((x, y) => y - x);
+        return (hi! + 0.05) / (lo! + 0.05);
+      };
+      return [...document.querySelectorAll<HTMLElement>('[data-umbra="top-bar"]')].map((bar) => {
+        const block = bar.querySelector<HTMLElement>('[data-umbra="context-block"]')!;
+        const surface = getComputedStyle(block.firstElementChild!);
+        const chip = getComputedStyle(block.querySelector('[data-part="chip"]')!);
+        const barColour = getComputedStyle(bar).backgroundColor;
+        return {
+          variant: block.dataset.variant,
+          step: ratio(surface.backgroundColor, barColour),
+          text: ratio(surface.color, surface.backgroundColor),
+          onBar: ratio(surface.color, barColour),
+          chip: ratio(chip.borderTopColor, surface.backgroundColor),
+          radius: parseFloat(surface.borderRadius),
+          padding: parseFloat(surface.paddingLeft),
+        };
+      });
+    });
+    expect(bars).toHaveLength(6);
+    for (const bar of bars) {
+      expect(bar.variant).toBe('filled');
+      // Seen against the bar, and never at the cost of the text.
+      expect(bar.step).toBeGreaterThan(1.1);
+      expect(bar.text).toBeGreaterThanOrEqual(4.5);
+      expect(bar.chip).toBeGreaterThanOrEqual(3);
+      expect(bar.radius).toBeGreaterThan(0);
+      expect(bar.padding).toBeGreaterThan(0);
+    }
+    // Towards the text where there is room (lighter on the dark bars), away from it on the mid-tone ones.
+    expect(bars.filter((bar) => bar.text < bar.onBar).length).toBeGreaterThanOrEqual(3);
+    expect(bars.filter((bar) => bar.text > bar.onBar).length).toBeGreaterThanOrEqual(1);
+
+    // The tokens set the surface, its padding and its radius.
+    const block = page.locator('[data-umbra="context-block"]').first();
+    await block.evaluate((el) => {
+      el.style.setProperty('--umbra-context-block-bg', 'rgb(1, 2, 3)');
+      el.style.setProperty('--umbra-context-block-padding-x', '21px');
+      el.style.setProperty('--umbra-context-block-radius', '9px');
+    });
+    const control = block.locator('> *');
+    await expect(control).toHaveCSS('background-color', 'rgb(1, 2, 3)');
+    await expect(control).toHaveCSS('padding-left', '21px');
+    await expect(control).toHaveCSS('border-radius', '9px');
+
+    // `plain`, the default, has no surface.
+    await openStory(page, 'shell-contextblock--on-brands');
+    const plain = page.locator('[data-umbra="context-block"]').first();
+    await expect(plain).toHaveAttribute('data-variant', 'plain');
+    await expect(plain.locator('> *')).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+  });
+});
