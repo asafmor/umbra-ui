@@ -10,6 +10,8 @@ import {
 import { ToggleButton, Toolbar } from 'react-aria-components';
 import { ButtonBase } from '../basics/Button';
 import { Skeleton } from '../basics/Skeleton';
+import { dataState, type DataStateProps } from '../internal/dataState';
+import { TruncatedText } from '../internal/TruncatedText';
 import { Popover } from '../overlays/Popover';
 import {
   SeriesMarker,
@@ -121,7 +123,13 @@ function Root({
   );
   // Toggle buttons form a toolbar: one tab stop, arrow keys between the items.
   return interactive ? (
-    <Toolbar {...shared} ref={ref as React.Ref<HTMLDivElement>} orientation={orientation}>
+    <Toolbar
+      {...shared}
+      ref={ref as React.Ref<HTMLDivElement>}
+      orientation={orientation}
+      // React Aria's toolbar drops `aria-busy`; it is put back on its element.
+      render={(props) => <div {...props} aria-busy={loading || undefined} />}
+    >
       {content}
     </Toolbar>
   ) : (
@@ -170,13 +178,10 @@ function Item({
         <SeriesMarker {...p} />
       ))}
       {renderPart(parts?.label, { children }, (p) => (
-        <span
-          data-part="label"
-          className={styles.label}
-          title={typeof p.children === 'string' ? p.children : undefined}
-        >
+        // A label cut short shows its whole text in a tooltip: on hover, and on focus of its toggle button.
+        <TruncatedText part="label" className={styles.label}>
           {p.children}
-        </span>
+        </TruncatedText>
       ))}
       {value != null &&
         renderPart(parts?.value, { children: value }, (p) => (
@@ -243,15 +248,21 @@ function More({ children, label = 'All items', content }: LegendMoreProps) {
       </Popover.Content>
     </Popover.Root>
   );
-  return interactive ? trigger : <li className={styles.moreItem}>{trigger}</li>;
+  return interactive ? (
+    <span data-part="more" className={styles.moreItem}>
+      {trigger}
+    </span>
+  ) : (
+    <li data-part="more" className={styles.moreItem}>
+      {trigger}
+    </li>
+  );
 }
 
-export interface LegendProps extends Omit<LegendRootProps, 'children' | 'ref'> {
+export interface LegendProps extends Omit<LegendRootProps, 'children' | 'ref' | 'loading'>, DataStateProps {
   items: LegendItem[];
   /** The marker of every item that does not set its own. Patterns (`stripes`, `dots`) do not depend on colour. */
   marker?: LegendMarker;
-  /** Shows placeholder items while the data loads. */
-  loading?: boolean;
   /** Number of placeholder items while `loading`. */
   skeletonRows?: number;
   /** Text of the button that stands for the items that did not fit. */
@@ -266,6 +277,8 @@ export interface LegendProps extends Omit<LegendRootProps, 'children' | 'ref'> {
     value?: Part<{ children: ReactNode }>;
     more?: Part<LegendMoreProps>;
     skeleton?: Part;
+    /** The empty or error state. */
+    state?: Part<{ children: ReactNode }>;
   };
 }
 
@@ -280,6 +293,10 @@ export function Legend({
   hiddenIds,
   defaultHiddenIds,
   onHiddenChange,
+  empty,
+  error,
+  onRetry,
+  retryLabel,
   ...root
 }: LegendProps) {
   const ref = useRef<HTMLElement>(null);
@@ -295,21 +312,37 @@ export function Legend({
     { overflowing: (element) => element.scrollHeight > element.clientHeight + 1 },
   );
 
+  // The placeholders and the states sit in the element the items will sit in (a list or a toolbar), so
+  // the legend is one element through loading, error and data, and a focus inside it is not lost.
+  const Slot = root.interactive ? 'span' : 'li';
+  const stateNode = dataState(
+    { loading: root.loading, empty, error, onRetry, retryLabel },
+    { isEmpty: items.length === 0, defaultEmpty: { title: 'No items' }, variant: 'inline' },
+  );
+  if (stateNode) {
+    return (
+      <Root {...root} loading={false} ref={ref}>
+        <Slot className={styles.state}>
+          {renderPart(parts?.state, { children: stateNode }, (p) => p.children)}
+        </Slot>
+      </Root>
+    );
+  }
   if (root.loading) {
     return (
-      <Root {...root} interactive={false}>
+      <Root {...root} ref={ref}>
         {renderPart(parts?.skeleton, {}, () =>
           Array.from({ length: skeletonRows }, (_, i) => (
-            <li key={i} className={styles.item}>
+            // Hidden from assistive technology: the legend is announced as busy, not as empty items.
+            <Slot key={i} aria-hidden="true" data-part="skeleton" className={styles.item}>
               <Skeleton shape="circle" className={styles.skeletonMarker} />
               <Skeleton width={56 + (i % 3) * 16} />
-            </li>
+            </Slot>
           )),
         )}
       </Root>
     );
   }
-  if (!items.length) return null;
 
   const render = (item: LegendItem, index: number) => (
     <Fragment key={item.id}>
