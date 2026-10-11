@@ -1,0 +1,143 @@
+.chip {
+  --bg: var(--umbra-date-chip-bg, color-mix(in oklab, var(--umbra-color-base-text-primary) 10%, transparent));
+  --fg: var(--umbra-date-chip-fg, var(--umbra-color-base-text-primary));
+  --height: var(--umbra-date-chip-height, calc(var(--umbra-density-label-size) + 10px));
+
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 1 auto;
+  min-width: var(--height);
+  max-width: 100%;
+  height: var(--height);
+  padding: 0 var(--umbra-date-chip-padding-x, var(--umbra-space-3));
+  border-radius: var(--umbra-date-chip-radius, var(--umbra-radius-pill));
+  background: var(--bg);
+  color: var(--fg);
+  font: var(--umbra-date-chip-font, var(--umbra-font-label));
+  font-weight: 700;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.chip[data-size='small'] {
+  --height: var(--umbra-date-chip-height, calc(var(--umbra-density-label-size) + 4px));
+
+  padding: 0 var(--umbra-date-chip-padding-x, var(--umbra-space-2));
+  font-size: calc(var(--umbra-density-label-size) - 1px);
+}
+
+.text {
+  display: inline-flex;
+  gap: 0.35em;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.weekday {
+  font-weight: 500;
+}
+
+.day {
+  font-variant-numeric: tabular-nums;
+}
+
+/* A day of another month is dimmed by its colour, not by opacity, so its text keeps its contrast. */
+.chip[data-outside] {
+  --bg: var(--umbra-date-chip-outside-bg, transparent);
+  --fg: var(--umbra-date-chip-outside-fg, var(--umbra-color-base-text-muted));
+}
+
+/* Today: the primary colour, and a bar under the text so that it does not rest on colour. */
+.chip[data-today] {
+  --bg: var(--umbra-date-chip-today-bg, var(--umbra-color-fixed-primary));
+  --fg: var(--umbra-date-chip-today-fg, var(--umbra-color-fixed-on-primary));
+}
+
+.chip[data-today] .weekday {
+  font-weight: 700;
+}
+
+.chip[data-today]::after {
+  content: '';
+  position: absolute;
+  inset-inline: 25%;
+  bottom: 1px;
+  height: 2px;
+  border-radius: 1px;
+  background: currentColor;
+}
+
+/* Selected: violet, and a ring (plan/interaction.md). It wins over today's fill; today's bar stays. */
+.chip[data-selected] {
+  --bg: var(--umbra-date-chip-selected-bg, var(--umbra-color-fixed-selected));
+  --fg: var(--umbra-date-chip-selected-fg, var(--umbra-color-fixed-on-selected));
+
+  box-shadow: inset 0 0 0 var(--umbra-state-focus-ring-width) var(--fg);
+}
+
+/*
+ * `weekday="auto"`: the long name, and a shorter one as the day around the chip narrows. The day is the
+ * container (`umbra-schedule`, set by WeekStrip and Planner); without one the long name stays. The
+ * widths are literal because a container query cannot read a custom property.
+ */
+.auto:not([data-weekday='long']) {
+  display: none;
+}
+
+@container umbra-schedule (max-width: 128px) {
+  .auto[data-weekday='long'] {
+    display: none;
+  }
+
+  .auto[data-weekday='short'] {
+    display: inline;
+  }
+}
+
+/* Beside a number the short name gives way sooner than alone ("Mon" fits where "Mon 12" does not). */
+@container umbra-schedule (max-width: 56px) {
+  .text:has(> .day) .auto[data-weekday='short'] {
+    display: none;
+  }
+
+  .text:has(> .day) .auto[data-weekday='narrow'] {
+    display: inline;
+  }
+}
+
+@container umbra-schedule (max-width: 44px) {
+  .auto[data-weekday='short'] {
+    display: none;
+  }
+
+  .auto[data-weekday='narrow'] {
+    display: inline;
+  }
+}
+
+/* The month beside the number ("28 Sep") gives way to the number alone in a day too narrow for it. */
+.alone {
+  display: none;
+}
+
+@container umbra-schedule (max-width: 64px) {
+  .month {
+    display: none;
+  }
+
+  .alone {
+    display: inline;
+  }
+}
+
+/*
+ * The narrowest step: a chip that shows a weekday and a number has room for one, and keeps the weekday
+ * (a cut number would read as another day). The whole date is still said.
+ */
+@container umbra-schedule (max-width: 48px) {
+  .text:has(> .weekday) > .day {
+    display: none;
+  }
+}
