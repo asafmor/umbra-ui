@@ -280,3 +280,55 @@ Found by the owner while using the Storybook. Each is a requirement of the fix p
 | O-8 | Table page | The `ActionBar` of the selection is hidden under the table's summary row | open |
 | O-9 | `ContextBlock` | An optional background, slightly lighter or darker than the bar it sits in, as in the source | open |
 | O-10 | Theming | One global setting for how opaque card backgrounds are over the app background | open |
+
+## Review 3: the package, the checks, the docs, the examples, the open items (2026-10-11)
+
+An independent reviewer re-proved each open item of Milestone 1 and checked the package, docs and examples at `9f0ad6f`. Verdict: **ready for the owner to consider a release, with gaps**; no blocker, four majors. Status is filled in by the fix pass.
+
+| Id | Severity | Area | Finding | Status |
+|---|---|---|---|---|
+| F1 | major | `Card` actions | A `Tag` among a card's `actions` white-screens the app when the header overflows and "more" is pressed; an app component wrapping a `Select` vanishes from row and menu; no guide says what `actions` may hold | open |
+| F2 | major | Types | `ColorScaleToneLabels` is a `Partial<Record<…>>`, so `toneLabels={{ accent: cond ? 'A' : undefined }}` fails under `exactOptionalPropertyTypes`: the only failure across 89 components and 5,034 optional members | open |
+| F3 | major | Storybook on Pages | The published site holds the Milestone 1 state (354 stories): no tier 2 component and no new page, while README and `docs/browser-checks.md` send readers there | open |
+| F4 | major | Tests | `playwright.examples.config.ts` sets `retries: process.env.CI ? 2 : 0` | open |
+| F5 | minor | Check | `check-optional-props.mjs` misses `Partial<…>`, optional tuple members and class properties; the consumer check in `check:package` covers tier 1 components only | open |
+| F6 | minor | Server rendering | `<CommandPalette open>` or `defaultOpen` throws `document is not defined` in `renderToString` (`useReturnFocusOnClose`, `src/overlays/shared.ts`); the other 88 components render | open |
+| F7 | minor | Check | `check-tokens.mjs` is fooled by a computed key, `setProperty(variable)`, `cssText`, a token read only in a comment, and an unused member of a scale | open |
+| F8 | minor | Check | `check-browsers.mjs` is a denylist: newer features with no row pass (`corner-shape`, `sibling-index()`, `if()`, `scroll-state()`, `moveBefore`, `popover="hint"`, iterator helpers) | open |
+| F9 | minor | Docs | Recipe 18 says a label press does not focus a `Stepper` (it does); recipe 17 says a moved target is followed "at the next of those" (it is followed every frame) | open |
+| F10 | minor | Docs | Stale facts: README lists four charts (seven); "Chrome 111 is enough" beside the Popover API (114) marked required; `docs/releasing.md` "about 670 kB packed" (964) and "all `minor`" (five are patch); CONTRIBUTING "twelve images or more" (5); decision 06 "1,979 images, 92 MB" (2,882, 143 MB) | open |
+| F11 | minor | Docs | `SequenceDots` is in no guide or recipe; `Comparison`, `SplitButton`, `ScheduleSlot` and `DateChip` have no sample | open |
+| F12 | minor | Docs | Not told to users: `StarRating step={0.5}` pointer targets are 12 to 16px; `renderWeek` content loses its state when the Planner's side column collapses | open |
+| F13 | minor | Docs | README and "Server rendering" say to import from a `'use client'` file; "Debugging" says a Server Component can import directly (the second is true, checked in a Next.js 16.4 app) | open |
+| F14 | minor | Lint | One ESLint warning (`src/overlays/Spotlight.tsx`), and `eslint .` has no `--max-warnings 0` | open |
+| F15 | minor | Example | `examples/advanced` `#/clients` at 1024 wide: the fifth star of "Rating" is cut by 8px | open |
+| F16 | minor | Shortcut | `Alt+ArrowLeft` does nothing while focus is on a `PrimaryNav` link | open |
+| F17 | minor | Changelog | The rehearsed changelog reads as a diff against unreleased states ("`backLabel` is now `previousLabel`" for a new component; "was 75"); `rtl-and-maps.md` credits a Safari fallback that was removed | open |
+| F18 | minor | Limit | `PACKED_LIMIT_KB` is still 1300; its comment says to lower it to measured plus a quarter (about 1205) once Milestone 2 is built | open |
+| F19 | minor | CI history | Two red runs on `main` (`50b4c55`, `853fe67`), the same screenshot; green since `16b7e04`; not in AGENTS.md "Known issues" | open |
+| F20 | minor | Small | README links a `CHANGELOG.md` that does not exist until release; the AGENTS.md repo map omits six test files; the dashboard example hard-codes a date beside a live clock; no tier 2 component has a size ceiling in `check:package` | open |
+
+### Open items of Milestone 1, as re-proven
+
+| Item | Verdict |
+|---|---|
+| Optional props take `undefined` | Proven, one exception (F2); the check can be fooled (F5) |
+| No component declares a public token | Proven in a browser (813 tokens set on the root across 9 stories and 79 component kinds); the check can be fooled (F7) |
+| Tooltips inside a modal | Proven by the tests and CI |
+| `Card` and the on-demand menu, size ceilings | Proven; the esbuild `splitting` regression is real (any import loads about 66 KB first) and the docs state it without a figure |
+| Unused tokens | Proven |
+| Baseline trim | Proven: the no-page-scroll check runs for every story at 3 sizes × 3 densities; a planted stray image fails |
+| Browsers | Proven for what is listed (F8); 18 version claims match MDN's data |
+| Source maps | Proven (729 positions, 135 modules; Vite and webpack checked) |
+| Storybook on Pages | The address is filled in; the site is stale (F3) |
+
+### Measured
+
+| What | Number |
+|---|---|
+| One import, KB gzip, what loads first under Vite | `Skeleton` 0.6, `DateChip` 6.0, `Tag` 13.8, `ProgressBar` 19.4, `StarRating` 22.6, `Sparkline` 26.1, `Button` 27.3, `Card` 36.0, `Spotlight` 41.2, `Planner` 107.1 |
+| Tarball | 570 files, 964 kB packed, 3,717 kB unpacked; maps are 59% packed |
+| Baselines | 2,882 images, 143 MB |
+| Stories and tests | 516 stories; 8,044 browser tests; 149 unit tests; 58 doc samples; 42 example tests |
+
+Not verified: a complete local browser run under load (CI on `9f0ad6f` is green), Firefox and Safari, a registry install.
