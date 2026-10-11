@@ -7,6 +7,7 @@ import {
   FormField,
   Page,
   SegmentedFilter,
+  Slider,
   TextField,
   Toggle,
   VerticalNav,
@@ -21,6 +22,8 @@ export interface AppSettings {
   emailAlerts: boolean;
   weeklyDigest: boolean;
   lateOrders: boolean;
+  /** Days past the due date before an order counts as late. */
+  lateAfter: number;
   name: string;
   email: string;
 }
@@ -32,6 +35,7 @@ export const defaultSettings: AppSettings = {
   emailAlerts: true,
   weeklyDigest: false,
   lateOrders: true,
+  lateAfter: 2,
   name: 'Person 1',
   email: 'person1@example.com',
 };
@@ -88,6 +92,19 @@ export function Settings({
         {row('Email alerts', 'One message for every order that changes.', toggle('emailAlerts'))}
         {row('Weekly digest', 'A summary on Monday morning.', toggle('weeklyDigest'))}
         {row('Late orders', 'A notice when an order passes its due date.', toggle('lateOrders'))}
+        {row(
+          'Late after',
+          'Days past the due date before the notice is sent.',
+          <Slider
+            min={0}
+            max={14}
+            showValue
+            formatValue={(days) => (days === 1 ? '1 day' : `${days} days`)}
+            disabled={!settings.lateOrders}
+            value={settings.lateAfter}
+            onChange={(days) => set('lateAfter', days)}
+          />,
+        )}
       </>
     ),
     profile: (

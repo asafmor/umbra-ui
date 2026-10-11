@@ -5,17 +5,19 @@ and components show less as space shrinks.
 
 ## The pieces
 
-| Component    | Role                                                                 |
-| ------------ | -------------------------------------------------------------------- |
-| `AppShell`   | Exactly the window. Holds the bars and one `Page`.                   |
-| `Page`       | The area under the bars. Adds the outer margin and the context tint. |
-| `PageHeader` | In the `header` of a `Page`: fixed above the content.                |
-| `ActionBar`  | In the `footer` of a `Page`: fixed below the content.                |
-| `Columns`    | Shares its width among its children.                                 |
-| `Stack`      | Shares its height among its children.                                |
-| `Card`       | Fills the slot it is given. Its body scrolls inside.                 |
-| `Slot`       | Puts any element of yours into a `Columns` or `Stack`.               |
-| `ScrollArea` | A region that scrolls inside its slot.                               |
+| Component            | Role                                                                 |
+| -------------------- | -------------------------------------------------------------------- |
+| `AppShell`           | Exactly the window. Holds the bars and one `Page`.                   |
+| `Page`               | The area under the bars. Adds the outer margin and the context tint. |
+| `PageHeader`         | In the `header` of a `Page`: fixed above the content.                |
+| `ActionBar`          | In the `footer` of a `Page`: fixed below the content.                |
+| `Columns`            | Shares its width among its children.                                 |
+| `Stack`              | Shares its height among its children.                                |
+| `Card`               | Fills the slot it is given. Its body scrolls inside.                 |
+| `Slot`               | Puts any element of yours into a `Columns` or `Stack`.               |
+| `ScrollArea`         | A region that scrolls inside its slot.                               |
+| `WidgetBoard`        | A packed board of cards of different heights. It scrolls inside.     |
+| `HorizontalScroller` | A row of cards or tiles that scrolls sideways inside itself.         |
 
 `Columns` and `Stack` nest freely.
 
@@ -39,7 +41,8 @@ and components show less as space shrinks.
 ## How space is shared
 
 These props work on every child of `Columns` or `Stack`: `Card`, `Columns`, `Stack` and `Slot`, and also
-`Tabs`, `Accordion`, `VerticalNav` and `SummaryTile`, which can sit beside cards.
+`Tabs`, `Accordion`, `VerticalNav` and `SummaryTile`, which can sit beside cards, and on `WidgetBoard`,
+`HorizontalScroller`, `Planner`, `Comparison` and `MediaCard`.
 
 | Prop             | Meaning                                                                                                            |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------ |
@@ -83,6 +86,55 @@ Rule 4 in detail:
 - The window is "narrow" when it is under 1024 wide **or** under 600 high. `AppShell` sets `data-narrow`.
   `Columns` and `Modal` read the window themselves, so they react without an `AppShell` too.
 - Every `Columns` then shows tabs. `narrow="keep"` on a `Columns` keeps its columns.
+- A row above the columns (summary tiles, a `HorizontalScroller`) keeps its height in tab mode. When the
+  tab below it needs that height, hide the row there: `[data-narrow] .figures { display: none }`.
+
+## A board of widgets, and a row that scrolls sideways
+
+Two layouts for content that is not a fixed set of columns. Both keep the rule: the page does not
+scroll, they do, inside their slot.
+
+```tsx
+<Page>
+  <Stack>
+    <HorizontalScroller aria-label="Reports" itemWidth={240}>
+      <MediaCard title="Region 1" meta="9 sites" href="#region-1" />
+      <MediaCard title="Region 2" meta="5 sites" href="#region-2" />
+      <MediaCard title="Region 3" meta="10 sites" href="#region-3" />
+    </HorizontalScroller>
+    <WidgetBoard aria-label="Widgets" minColumnWidth={280}>
+      <WidgetBoard.Widget id="orders" title="Orders" span={2}>
+        Twelve open, three late.
+      </WidgetBoard.Widget>
+      <WidgetBoard.Widget id="notes" title="Notes">
+        Nothing new.
+      </WidgetBoard.Widget>
+    </WidgetBoard>
+  </Stack>
+</Page>
+```
+
+|              | `WidgetBoard`                                                                         | `HorizontalScroller`                                      |
+| ------------ | ------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| Its own size | Fills its slot, like a card                                                           | **As tall as its items**: `size` defaults to `"content"`  |
+| Its children | `WidgetBoard.Widget`: a `Card` with an `id`, as tall as its content                   | Anything. Each child is one item                          |
+| Columns      | As many as fit at `minColumnWidth`, or a fixed `columns`; `span` widens one widget    | One row; `itemWidth` gives every item the same width      |
+| Scrolls      | Down, inside the board                                                                | Sideways, with a button at each edge that has more        |
+| The user can | Collapse a widget to its header, or all at once (`collapsedIds`, `onCollapsedChange`) | Step with the buttons, the arrow keys, a wheel or a swipe |
+
+- The `HorizontalScroller` is the one exception to "components fill their slot": a row of tiles has no
+  use for more height, so it hugs its content and the rest of the `Stack` shares what is left. Give it
+  a `size` to make it fill instead.
+- A widget is as tall as its content, so content that fills (a chart, a table, a list) needs a height of
+  its own inside one: `height={200}` or `height="content"`
+  ([below](#tables-lists-and-charts-where-there-is-no-height-to-fill)).
+- Pass the children of a `HorizontalScroller` as they are. `HorizontalScroller.Item` is for
+  `HorizontalScroller.Root`, the block that does not wrap them for you.
+- A board has no drag to reorder: the order is the order of its children. Keep `collapsedIds` wherever
+  you keep the user's settings.
+- Inside a `Stack` of cards, give cards that must show their whole content a `minHeight`, not
+  `size="content"`: the stack decides which cards collapse from their minimum heights, and it cannot
+  know the height of content.
 
 ## A header and a footer for the page
 

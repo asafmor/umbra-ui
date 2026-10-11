@@ -135,23 +135,24 @@ Every token is a CSS variable. The global ones are generated from one file (`pla
 declared on `:root`. The `tokens` prop is typed with their names (the `TokenOverrides` type), so an editor
 completes them; it also takes any other name, for the variables of single components.
 
-| Group    | Variables (after `--umbra-`)                                                                                                                                                                          | Notes                                                                       |
-| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| Brand    | `color-brand`                                                                                                                                                                                         | Use the `brand` prop instead: it also computes the text colour.             |
-| Context  | `context`; derived: `context-page-background`, `context-page-background-end`, `context-card-tint`, `context-card-tint-strong`, `context-mid-accent`                                                   | Use the `context` prop. The derived values can be overridden one by one.    |
-| Surfaces | `color-base-surface1`, `color-base-surface2`, `color-base-surface3`, `color-base-surface-neutral`                                                                                                     | Darkest to lightest. A `neutral` card uses `surface-neutral`.               |
-| Borders  | `color-base-border-subtle`, `color-base-border-strong`, `color-base-border-control`, `color-base-border-neutral`                                                                                      | `border-control` is the outline of inputs: it must keep 3:1.                |
-| Text     | `color-base-text-primary`, `color-base-text-secondary`, `color-base-text-muted`                                                                                                                       | All three keep 4.5:1 on every surface and tint.                             |
-| Meaning  | `color-semantic-success`, `color-semantic-warning`, `color-semantic-danger`, `color-semantic-info`                                                                                                    |                                                                             |
-| Values   | `color-value-ramp-1` to `color-value-ramp-5`                                                                                                                                                          | Low to high: `ValuePill`, and the `ramp-1` to `ramp-5` tones of the meters. |
-| Series   | `color-series-1` to `color-series-8`                                                                                                                                                                  | See [the series palette](#the-series-palette).                              |
-| Fonts    | `font-family-heading`, `font-family-body`; roles: `font-card-title`, `font-nav`, `font-display`, `font-title`, `font-body`, `font-label`, `font-table-cell`                                           | See [fonts](#fonts).                                                        |
-| Space    | `space-1` (2px), `space-2` (4px), `space-3` (8px), `space-4` (12px), `space-5` (16px), `space-6` (20px), `space-7` (24px), `space-8` (32px), `space-9` (40px)                                         | The `gap` prop of `Columns` and `Stack` takes the step number.              |
-| Shape    | `radius-control`, `radius-card`, `radius-pill`, `border-width`, `elevation-overlay`                                                                                                                   | Cards are flat; only overlays cast a shadow.                                |
-| Density  | `density-control-height`, `density-table-row`, `density-list-row`, `density-gap`, `density-page-margin`, `density-card-padding`, `density-card-min-height`, `density-body-size`, `density-label-size` | Set by the `density` level. Override one with the `tokens` prop.            |
-| Sizes    | `size-top-bar-height`, `size-sub-nav-height`, `size-scroll-thumb`, `size-modal-sm`, `size-modal-md`, `size-modal-lg`, `size-modal-xl`, `size-modal-nav`                                               | The bar heights do not follow the density level.                            |
-| Motion   | `motion-duration-fast` (100ms), `motion-duration-base` (180ms), `motion-duration-slow` (240ms), `motion-easing-enter`, `motion-easing-exit`                                                           | See [reduced motion](#reduced-motion).                                      |
-| State    | `state-disabled-opacity`, `state-focus-ring-width`                                                                                                                                                    |                                                                             |
+| Group    | Variables (after `--umbra-`)                                                                                                                                                                          | Notes                                                                                    |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Brand    | `color-brand`                                                                                                                                                                                         | Use the `brand` prop instead: it also computes the text colour.                          |
+| Context  | `context`; derived: `context-page-background`, `context-page-background-end`, `context-card-tint`, `context-card-tint-strong`, `context-mid-accent`                                                   | Use the `context` prop. The derived values can be overridden one by one.                 |
+| Surfaces | `color-base-surface1`, `color-base-surface2`, `color-base-surface3`, `color-base-surface-neutral`                                                                                                     | Darkest to lightest. A `neutral` card uses `surface-neutral`.                            |
+| Borders  | `color-base-border-subtle`, `color-base-border-strong`, `color-base-border-control`, `color-base-border-neutral`                                                                                      | `border-control` is the outline of inputs: it must keep 3:1.                             |
+| Text     | `color-base-text-primary`, `color-base-text-secondary`, `color-base-text-muted`                                                                                                                       | All three keep 4.5:1 on every surface and tint.                                          |
+| Meaning  | `color-semantic-success`, `color-semantic-warning`, `color-semantic-danger`, `color-semantic-info`                                                                                                    |                                                                                          |
+| Values   | `color-value-ramp-1` to `color-value-ramp-5`                                                                                                                                                          | Low to high: `ValuePill`, and the `ramp-1` to `ramp-5` tones of the meters.              |
+| Series   | `color-series-1` to `color-series-8`                                                                                                                                                                  | See [the series palette](#the-series-palette).                                           |
+| Fonts    | `font-family-heading`, `font-family-body`; roles: `font-card-title`, `font-nav`, `font-display`, `font-title`, `font-body`, `font-label`, `font-table-cell`                                           | See [fonts](#fonts).                                                                     |
+| Space    | `space-1` (2px), `space-2` (4px), `space-3` (8px), `space-4` (12px), `space-5` (16px), `space-6` (20px), `space-7` (24px), `space-8` (32px), `space-9` (40px)                                         | The `gap` prop of `Columns` and `Stack` takes the step number.                           |
+| Shape    | `radius-control`, `radius-card`, `radius-pill`, `border-width`, `elevation-overlay`                                                                                                                   | Cards are flat; only overlays cast a shadow.                                             |
+| Density  | `density-control-height`, `density-table-row`, `density-list-row`, `density-gap`, `density-page-margin`, `density-card-padding`, `density-card-min-height`, `density-body-size`, `density-label-size` | Set by the `density` level. Override one with the `tokens` prop.                         |
+| Sizes    | `size-top-bar-height`, `size-sub-nav-height`, `size-scroll-thumb`, `size-modal-sm`, `size-modal-md`, `size-modal-lg`, `size-modal-xl`, `size-modal-nav`                                               | The bar heights do not follow the density level.                                         |
+| Motion   | `motion-duration-fast` (100ms), `motion-duration-base` (180ms), `motion-duration-slow` (240ms), `motion-easing-enter`, `motion-easing-exit`                                                           | See [reduced motion](#reduced-motion).                                                   |
+| State    | `state-disabled-opacity`, `state-focus-ring-width`                                                                                                                                                    |                                                                                          |
+| Layers   | `layer-popover`, `layer-tooltip`, `layer-modal`, `layer-spotlight`, `layer-palette`                                                                                                                   | A `Spotlight` is above a modal, so it can point into one, and below the command palette. |
 
 Each component also reads its own variables, such as `--umbra-card-radius` or `--umbra-table-row-height`.
 They are not declared anywhere: each falls back to a global token until you set it, so setting one
@@ -236,9 +237,9 @@ colour blindness and each keeps 4.8:1 against a card on every preset tint.
 
 ## Colour by value: one `thresholds` list
 
-`ValuePill`, `ProgressBar`, `LevelMeter`, `BarChart` and `DonutChart` colour a value by the band it
-falls in, and all take the same `thresholds`: an ascending list where each entry runs from its `from`
-up to the next one.
+`ValuePill`, `ProgressBar`, `LevelMeter`, `PieIndicator`, `DivergingMeter`, `Slider`, `BarChart`,
+`DonutChart`, `Heatmap` and `Sparkline` colour a value by the band it falls in, and all take the same
+`thresholds`: an ascending list where each entry runs from its `from` up to the next one.
 
 ```tsx
 import { ProgressBar, ValuePill, type Threshold } from 'umbra-ui';
@@ -281,6 +282,84 @@ export function Scores({ score }: { score: number }) {
 - A value below the first `from` is in no band. Each component sets `data-band` (the band's position,
   from 0) for CSS.
 - Your own cell or badge: `resolveThreshold(value, bands)` returns the band the components would pick.
+- `LineChart` and `Scatter` have no bands of their own: draw the boundaries as `annotations`
+  (`{ type: 'line', value: 70, label: 'High' }`).
+
+### Letting the user edit the scale
+
+`ColorScaleEditor` edits such a list: its `value` is the `thresholds` of everything else. Keep the list
+in state, give it to the editor and to the components, and they follow each change.
+
+```tsx
+import { useState } from 'react';
+import { ColorScaleEditor, FormField, ProgressBar, type Threshold } from 'umbra-ui';
+import { Heatmap } from 'umbra-ui/charts';
+
+const defaults: Threshold[] = [
+  { from: 0, tone: 'danger', label: 'Low' },
+  { from: 40, tone: 'warning', label: 'Medium' },
+  { from: 70, tone: 'success', label: 'High' },
+];
+
+export function Load({ value }: { value: number }) {
+  const [bands, setBands] = useState(defaults);
+  return (
+    <>
+      <FormField label="Bands" layout="stacked">
+        <ColorScaleEditor value={bands} onChange={setBands} defaultValue={defaults} min={0} max={100} />
+      </FormField>
+      <ProgressBar label="Load" kind="meter" value={value} thresholds={bands} showValue />
+      <Heatmap
+        aria-label="Load by day and shift"
+        height={120}
+        rows={['Mon', 'Tue']}
+        columns={['Early', 'Late']}
+        values={[
+          [value, 35],
+          [82, 55],
+        ]}
+        thresholds={bands}
+      />
+    </>
+  );
+}
+```
+
+- A stop's colour is a tone, a step of the value ramp, or a free colour picked in the browser's own
+  colour field. There is no colour picker of the library's.
+- `defaultValue` is what the reset button goes back to, in controlled use too.
+- `readOnly` is the row of swatches alone: a legend for the scale.
+- With `name`, a form receives the list as JSON.
+
+### The scale of a heatmap
+
+Without `thresholds`, a `Heatmap` colours its cells in steps between two colours, and a cell's size
+shows the same value without colour.
+
+| Variable (after `--umbra-`)                                               | Default                               | Sets                                                     |
+| ------------------------------------------------------------------------- | ------------------------------------- | -------------------------------------------------------- |
+| `heatmap-low`                                                             | `color-base-surface3`                 | The colour of the lowest value                           |
+| `heatmap-high`                                                            | `color-series-1`                      | The colour of the highest value                          |
+| `heatmap-cell-radius`, `heatmap-cell-border`, `heatmap-cell-border-width` | 2px, `color-base-border-control`, 1px | The shape of a cell                                      |
+| `heatmap-backdrop-opacity`                                                | `0.8`                                 | How much of a `backdrop` drawing shows through the cells |
+
+`steps` sets how many steps there are, `valueDomain` the values of the two ends, and `lowerIsBetter`
+swaps them.
+
+```tsx
+<UmbraScope tokens={{ 'heatmap-high': '#f2b23a', 'heatmap-low': '#241a10' }}>
+  <Heatmap
+    aria-label="Orders by day and shift"
+    rows={['Mon', 'Tue']}
+    columns={['Early', 'Late']}
+    values={[
+      [12, 30],
+      [44, 8],
+    ]}
+    steps={4}
+  />
+</UmbraScope>
+```
 
 ## Fonts
 

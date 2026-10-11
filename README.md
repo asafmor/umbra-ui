@@ -88,7 +88,7 @@ stack's `label`.
 | [Layout](docs/layout.md)                             | How space is shared, and what happens as it shrinks                               |
 | [Theming](docs/theming.md)                           | Brand, context, density, tokens, fonts, icons, direction                          |
 | [Customisation](docs/customisation.md)               | The four layers, router links, translating built-in strings                       |
-| [Recipes](docs/recipes.md)                           | Thirteen whole screens, from a first page to a table with bulk actions            |
+| [Recipes](docs/recipes.md)                           | Nineteen whole screens, from a first page to a planner and a board of widgets     |
 | [Customisation tables](docs/customisation-tables.md) | Every component's tokens, props, parts and blocks (generated)                     |
 | [Changelog](CHANGELOG.md)                            | What each release changed                                                         |
 | [Storybook](https://asafmor.github.io/umbra-ui/)     | Every component, variant and state, and the guides (locally: `npm run storybook`) |
@@ -98,11 +98,11 @@ stack's `label`.
 Three small apps that import the built package. Each is a complete Vite app: copy one out as a starting
 template (its README says how).
 
-| App                                        | Shows                                                                                                                                                                              |
-| ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`examples/basic`](examples/basic)         | The bars, a three-column page, a stack that collapses, a density switch                                                                                                            |
-| [`examples/dashboard`](examples/dashboard) | An overview of many cards: stats with meters and trends, charts, a list, a table; density and context switchers; a command palette                                                 |
-| [`examples/advanced`](examples/advanced)   | A back-office app on a small hash router: list and detail, a table with bulk actions and a modal form, settings, shortcuts, a theme per section, and a component built from blocks |
+| App                                        | Shows                                                                                                                                                                                                 |
+| ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`examples/basic`](examples/basic)         | The bars, a three-column page, a stack that collapses, a density switch                                                                                                                               |
+| [`examples/dashboard`](examples/dashboard) | An overview of many cards: stats with meters, trends and sparklines, charts, a week, a list, a table; density and context switchers; a command palette and the shortcuts sheet                        |
+| [`examples/advanced`](examples/advanced)   | A back-office app on a small hash router: list and detail, a table with bulk actions and a modal form, a planner, settings, shortcuts, a tour, a theme per section, and a component built from blocks |
 
 ```sh
 npm install && npm run build         # the library
@@ -121,17 +121,19 @@ npm run dev --prefix examples/dashboard
 
 **Layout**
 
-| Component      | For                                                                         |
-| -------------- | --------------------------------------------------------------------------- |
-| `AppShell`     | The outermost frame: exactly the window, never scrolls                      |
-| `Page`         | The area under the bars, with an optional fixed header and footer           |
-| `Columns`      | Shares its width among its children; tabs below the minimum window          |
-| `Stack`        | Shares its height; collapses the lowest-priority cards when they do not fit |
-| `Slot`         | Puts any element of yours into a `Columns` or `Stack`                       |
-| `Card`         | The container for one unit of content; scrolls its own body                 |
-| `SectionTitle` | A heading for one section inside a card, with controls on the same line     |
-| `ScrollArea`   | A region that scrolls inside its slot                                       |
-| `Accordion`    | Sections that open and close                                                |
+| Component            | For                                                                         |
+| -------------------- | --------------------------------------------------------------------------- |
+| `AppShell`           | The outermost frame: exactly the window, never scrolls                      |
+| `Page`               | The area under the bars, with an optional fixed header and footer           |
+| `Columns`            | Shares its width among its children; tabs below the minimum window          |
+| `Stack`              | Shares its height; collapses the lowest-priority cards when they do not fit |
+| `Slot`               | Puts any element of yours into a `Columns` or `Stack`                       |
+| `Card`               | The container for one unit of content; scrolls its own body                 |
+| `SectionTitle`       | A heading for one section inside a card, with controls on the same line     |
+| `ScrollArea`         | A region that scrolls inside its slot                                       |
+| `Accordion`          | Sections that open and close                                                |
+| `WidgetBoard`        | A packed board of collapsible cards of different heights; scrolls inside    |
+| `HorizontalScroller` | A row of cards or tiles that scrolls sideways inside itself                 |
 
 **Shell**
 
@@ -145,6 +147,8 @@ npm run dev --prefix examples/dashboard
 | `PrimaryAction`  | The one primary action of the app, at the end of the `TopBar`         |
 | `HistoryButtons` | Back and forward, on the browser history or your router's             |
 | `ShortcutBar`    | The user's pinned shortcuts, at the end of the `SubNav`               |
+| `ContextBlock`   | The two-line status of the `TopBar`, with a time or a short value     |
+| `EntitySwitcher` | The current entity of a header: steps to its siblings and a picker    |
 
 **Data**
 
@@ -166,17 +170,36 @@ npm run dev --prefix examples/dashboard
 | `EmptyState`               | Nothing to show, or failed to load, and what to do about it                                 |
 | `Legend`                   | The key for a chart or any colour-coded data                                                |
 | `Link`                     | A text link                                                                                 |
+| `SequenceDots`             | A short row of marks, one per recent outcome                                                |
+| `MediaCard`                | A card for one article or item: a picture, a title, a few details, its own link             |
+| `Comparison`               | Two sides compared on a list of metrics, with bars from the centre                          |
+
+**Time**
+
+| Component      | For                                                                          |
+| -------------- | ---------------------------------------------------------------------------- |
+| `Planner`      | A month of days with a fixed number of slots each, and controls per week     |
+| `WeekStrip`    | Seven days side by side, each with its slots: a week small enough for a card |
+| `ScheduleSlot` | A chip for one entry of a schedule: an icon and a label, coloured by kind    |
+| `DateChip`     | A pill with the number of a day: today, selected, outside the month          |
 
 **Meters and charts**
 
-| Component     | For                                                       |
-| ------------- | --------------------------------------------------------- |
-| `ProgressBar` | A bar that fills: progress of a task, or a measured level |
-| `LevelMeter`  | A strip of ticks with a marker on a scale                 |
-| `LineChart`   | Series over categories, numbers or time                   |
-| `BarChart`    | Values across categories: grouped, stacked or diverging   |
-| `DonutChart`  | One value against a total, or how a total splits          |
-| `RadarChart`  | Series across several axes that share a centre            |
+| Component        | For                                                                                    |
+| ---------------- | -------------------------------------------------------------------------------------- |
+| `ProgressBar`    | A bar that fills: progress of a task, or a measured level                              |
+| `LevelMeter`     | A strip of ticks with a marker on a scale                                              |
+| `PieIndicator`   | A small disc that fills with a value, for cells and rows                               |
+| `DivergingMeter` | A bar that fills to one side of an origin or the other                                 |
+| `LineChart`      | Series over categories, numbers or time                                                |
+| `BarChart`       | Values across categories: grouped, stacked or diverging                                |
+| `DonutChart`     | One value against a total, or how a total splits                                       |
+| `RadarChart`     | Series across several axes that share a centre                                         |
+| `Sparkline`      | A tiny chart with no axes, for a cell, a tile or a line; `sparklineColumn` for a table |
+| `Heatmap`        | A grid of cells coloured by value, or points summed into bins                          |
+| `Scatter`        | Points by two values; a third makes them bubbles                                       |
+
+The charts, from `LineChart` down, come from `umbra-ui/charts`.
 
 **Inputs**
 
@@ -192,6 +215,11 @@ npm run dev --prefix examples/dashboard
 | `FormField`                 | Pairs a label, a description and an error with one control |
 | `Tabs`                      | Switches between views of the same area                    |
 | `SegmentedFilter`           | Joined segments that filter the content below              |
+| `Slider`                    | A number, or a range with two thumbs, on a track           |
+| `Stepper`                   | Previous and next around one value                         |
+| `StarRating`                | A rating out of a number of stars, to show or to choose    |
+| `SplitButton`               | A main action with a menu of related actions beside it     |
+| `ColorScaleEditor`          | Edits the bands and colours of a `thresholds` scale        |
 | `Skeleton`                  | A placeholder in the shape of content that is loading      |
 
 **Overlays**
@@ -204,6 +232,8 @@ npm run dev --prefix examples/dashboard
 | `Tooltip`                | A short description of a control                                   |
 | `CommandPalette`         | A search over everything the app can do or open                    |
 | `ActionBar`              | Status and actions at the bottom of a page, card or modal          |
+| `Spotlight`              | Dims all but one element and explains it: a coach mark or a tour   |
+| `ShortcutsSheet`         | Every keyboard shortcut of the app, in groups, opened by `?`       |
 
 Every data component has `loading`, `empty` and `error` states. Every one is checked for keyboard use,
 screen-reader names and contrast on every tint.
@@ -238,12 +268,12 @@ The stylesheet relies on current CSS, with no fallbacks for older browsers.
 
 ## Status and roadmap
 
-- **Now**: the core is complete (layout, shell, data, inputs, overlays, table, meters, charts), with
-  five guides and three example apps. Versions below `1.0` may change props between minor releases; the
-  [changelog](CHANGELOG.md) says what changed.
-- **Next**: the extended set (tier 2): planner and schedule views, sparklines and heatmaps, sliders and
-  steppers, a widget board and more. The order follows demand:
-  [open an issue](https://github.com/asafmor/umbra-ui/issues) for what you need.
+- **Now**: the core (layout, shell, data, inputs, overlays, table, meters, charts) and the extended set
+  (planner and schedule views, sparklines, heatmaps and scatter plots, sliders and steppers, a widget
+  board, a tour and a shortcuts sheet) are built, with five guides and three example apps. Versions
+  below `1.0` may change props between minor releases; the [changelog](CHANGELOG.md) says what changed.
+- **Next**: what users ask for. [Open an issue](https://github.com/asafmor/umbra-ui/issues) for what
+  you need.
 - The plan and the design decisions are in [`plan/roadmap.md`](plan/roadmap.md).
 
 ## Develop

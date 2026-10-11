@@ -1,24 +1,30 @@
 # Recipes
 
-Whole screens, from a first page to a table with bulk actions. Each sample is a complete `src/App.tsx`:
+Whole screens, from a first page to a planner and a board of widgets. Each sample is a complete `src/App.tsx`:
 paste it into the app from [Getting started](getting-started.md), whose `main.tsx` loads the stylesheet
 and the fonts and renders `<App />`.
 
-| #   | Recipe                                                                          | Shows                                                |
-| --- | ------------------------------------------------------------------------------- | ---------------------------------------------------- |
-| 1   | [A first page](#1-a-first-page)                                                 | Provider, shell, one card that scrolls inside        |
-| 2   | [Three columns and a stack](#2-three-columns-and-a-stack-that-collapses)        | `size`, `priority`, `minHeight`, stack collapse      |
-| 3   | [Tab mode](#3-tab-mode-below-the-minimum-window)                                | `label`, `tabsLabel`, `narrow="keep"`                |
-| 4   | [A card with tabs and data states](#4-a-card-with-tabs-loading-empty-and-error) | Toolbar tabs, `loading`, `empty`, `error`, `onRetry` |
-| 5   | [List and detail](#5-list-and-detail)                                           | `List` selection driving a pane with a `PageHeader`  |
-| 6   | [A table with bulk actions](#6-a-table-with-sorting-selection-and-bulk-actions) | Sorting, selection, `ActionBar`, column priorities   |
-| 7   | [Server-side data](#7-server-side-data)                                         | `manualSorting`, `loadingMore`, `onReachEnd`         |
-| 8   | [A settings modal](#8-a-settings-modal)                                         | `Modal` with `VerticalNav` and `FormField`s          |
-| 9   | [A command palette](#9-a-command-palette-and-shortcuts)                         | Commands, pages, shortcuts and key hints             |
-| 10  | [Charts with a shared legend](#10-charts-with-a-shared-legend)                  | One `Legend` switching series in two charts          |
-| 11  | [The shell with a router](#11-the-shell-with-a-router)                          | `renderLink`, history buttons, the primary action    |
-| 12  | [Live updates](#12-live-updates)                                                | `highlightChanges`                                   |
-| 13  | [One section in its own theme](#13-one-section-in-its-own-theme)                | `UmbraScope`                                         |
+| #   | Recipe                                                                          | Shows                                                             |
+| --- | ------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| 1   | [A first page](#1-a-first-page)                                                 | Provider, shell, one card that scrolls inside                     |
+| 2   | [Three columns and a stack](#2-three-columns-and-a-stack-that-collapses)        | `size`, `priority`, `minHeight`, stack collapse                   |
+| 3   | [Tab mode](#3-tab-mode-below-the-minimum-window)                                | `label`, `tabsLabel`, `narrow="keep"`                             |
+| 4   | [A card with tabs and data states](#4-a-card-with-tabs-loading-empty-and-error) | Toolbar tabs, `loading`, `empty`, `error`, `onRetry`              |
+| 5   | [List and detail](#5-list-and-detail)                                           | `List` selection driving a pane with a `PageHeader`               |
+| 6   | [A table with bulk actions](#6-a-table-with-sorting-selection-and-bulk-actions) | Sorting, selection, `ActionBar`, column priorities                |
+| 7   | [Server-side data](#7-server-side-data)                                         | `manualSorting`, `loadingMore`, `onReachEnd`                      |
+| 8   | [A settings modal](#8-a-settings-modal)                                         | `Modal` with `VerticalNav` and `FormField`s                       |
+| 9   | [A command palette](#9-a-command-palette-and-shortcuts)                         | Commands, pages, shortcuts and key hints                          |
+| 10  | [Charts with a shared legend](#10-charts-with-a-shared-legend)                  | One `Legend` switching series in two charts                       |
+| 11  | [The shell with a router](#11-the-shell-with-a-router)                          | `renderLink`, history buttons, the primary action                 |
+| 12  | [Live updates](#12-live-updates)                                                | `highlightChanges`                                                |
+| 13  | [One section in its own theme](#13-one-section-in-its-own-theme)                | `UmbraScope`                                                      |
+| 14  | [A planner page](#14-a-planner-page)                                            | `Planner`, `WeekStrip`, ISO dates, the locale                     |
+| 15  | [A table with sparklines](#15-a-table-with-sparklines-and-rating-cells)         | `sparklineColumn`, `PieIndicator`, `DivergingMeter`, `StarRating` |
+| 16  | [A board of widgets](#16-a-board-of-widgets)                                    | `WidgetBoard`, `HorizontalScroller`, `MediaCard`                  |
+| 17  | [A tour and the shortcuts](#17-a-tour-and-the-sheet-of-shortcuts)               | `Spotlight`, `ShortcutsSheet`                                     |
+| 18  | [A settings form](#18-a-settings-form-with-a-slider-a-stepper-and-a-scale)      | `Slider`, `Stepper`, `ColorScaleEditor`                           |
+| 19  | [Charts over a backdrop](#19-charts-over-a-backdrop)                            | `Scatter` and `Heatmap` with a `backdrop`                         |
 
 ## 1. A first page
 
@@ -1243,8 +1249,694 @@ export function App() {
 
 [Theming](theming.md) lists what a scope can change, and what nothing can.
 
+## 14. A planner page
+
+A month of days with two slots each, the controls of each week beside it, and the selected week in a
+card of its own.
+
+- **Dates are ISO strings** (`'2026-10-05'`, and `'2026-10'` for a month), never `Date` objects: no time
+  zone can move an item to the day before.
+- **The locale decides** the names of months and weekdays, the first day of the week and the direction.
+  `weekStartsOn` (0 is Sunday) overrides the first day where the locale should not decide.
+- `today` defaults to the day it is where the user is. Pass it when the server's day is the one that counts.
+- A day has a fixed number of slots, `slotsPerDay`. An item names its `slot`, or takes the next free one.
+
+```tsx
+import { ClipboardList, Truck } from 'lucide-react';
+import { useState } from 'react';
+import {
+  AppShell,
+  Button,
+  Card,
+  Columns,
+  Page,
+  Planner,
+  Select,
+  TopBar,
+  UmbraProvider,
+  WeekStrip,
+  type IsoDate,
+  type PlannerWeek,
+  type ScheduleItem,
+} from 'umbra-ui';
+
+// Each kind has an icon, so none is told from the others by colour alone.
+const delivery = { label: 'Delivery', tone: 'success', icon: <Truck /> } as const;
+const planning = { label: 'Planning', tone: 'info', icon: <ClipboardList /> } as const;
+
+const initial: ScheduleItem[] = [
+  { id: 'a', date: '2026-10-05', slot: 0, ...planning },
+  { id: 'b', date: '2026-10-06', slot: 0, ...delivery },
+  { id: 'c', date: '2026-10-06', slot: 1, ...planning },
+  { id: 'd', date: '2026-10-14', slot: 1, ...delivery },
+  { id: 'e', date: '2026-10-22', slot: 0, ...delivery },
+];
+const locales = ['en-GB', 'en-US', 'de', 'he'].map((id) => ({ id, label: id }));
+
+export function App() {
+  const [locale, setLocale] = useState('en-GB');
+  const [items, setItems] = useState(initial);
+  const [selected, setSelected] = useState<IsoDate | null>('2026-10-06');
+
+  const clear = (week: PlannerWeek) =>
+    setItems((all) => all.filter((item) => item.date < week.start || item.date > week.end));
+  // A press on a day's header or on one of its free slots adds a delivery there.
+  const add = (date: IsoDate) =>
+    setItems((all) => [...all, { id: `${date}-${all.length}`, date, ...delivery }]);
+
+  return (
+    <UmbraProvider locale={locale}>
+      <AppShell
+        topBar={
+          <TopBar
+            logo="U"
+            actions={
+              <Select
+                aria-label="Language"
+                size="small"
+                options={locales}
+                value={locale}
+                onChange={(id) => id && setLocale(id)}
+              />
+            }
+          />
+        }
+      >
+        <Page>
+          <Columns>
+            <Card title="Schedule" size={3}>
+              <Planner
+                aria-label="Schedule"
+                today="2026-10-10"
+                items={items}
+                slotsPerDay={2}
+                minMonth="2026-09"
+                maxMonth="2026-12"
+                selectedDate={selected}
+                onSelectedDateChange={setSelected}
+                onDayAction={add}
+                onAction={(id) => setItems((all) => all.filter((item) => item.id !== id))}
+                renderWeek={(week) => (
+                  <Button size="small" disabled={week.items.length === 0} onPress={() => clear(week)}>
+                    Clear
+                  </Button>
+                )}
+              />
+            </Card>
+            <Card title="Week">
+              <WeekStrip
+                aria-label="The selected week"
+                today="2026-10-10"
+                date={selected ?? '2026-10-10'}
+                items={items}
+                slotsPerDay={2}
+                selectedDate={selected}
+                onSelectedDateChange={setSelected}
+              />
+            </Card>
+          </Columns>
+        </Page>
+      </AppShell>
+    </UmbraProvider>
+  );
+}
+```
+
+- `renderWeek` is the side column: whatever stands beside each week. It receives the week's `start`,
+  `end`, `days` and `items`. As the planner narrows, the column becomes a button that opens the same
+  content.
+- There is no drag and no built-in copy and paste: they are buttons of yours in `renderWeek`, or in
+  the toolbar (`parts={{ toolbar: (p) => <Planner.Toolbar {...p} actions={…} /> }}`).
+- A day draws `slotsPerDay` items and no more: a further item of that day is not shown. Set it for
+  your busiest day, or count what is left out in `renderWeek`.
+- The grid is one tab stop. Arrow keys move between days and slots, Page Up and Page Down change the
+  month, Enter activates a slot or goes into the side column.
+- Slots show an icon and a label, then the icon alone when a day is too narrow (`slotDisplay`). A slot
+  without an icon always keeps its label.
+- The dates, and the text written for them, are Gregorian whatever calendar the locale prefers. The
+  digits and the names are the locale's: try `he` above, which also turns the page right to left.
+
+## 15. A table with sparklines and rating cells
+
+Cells that draw their value: the run of a number, a level, a change and a rating.
+
+```tsx
+import {
+  AppShell,
+  Card,
+  DataTable,
+  DivergingMeter,
+  numberColumn,
+  Page,
+  PieIndicator,
+  StarRating,
+  TopBar,
+  UmbraProvider,
+  type DataTableColumn,
+} from 'umbra-ui';
+import { sparklineColumn } from 'umbra-ui/charts';
+
+interface Site {
+  id: string;
+  name: string;
+  /** Twelve weekly scores, 0 to 100. */
+  weeks: number[];
+  used: number;
+  change: number;
+  rating: number;
+}
+
+const sites: Site[] = Array.from({ length: 30 }, (_, i) => ({
+  id: `s${i}`,
+  name: `Site ${i + 1}`,
+  weeks: Array.from({ length: 12 }, (_, w) => 20 + ((i * 23 + w * w * 5) % 75)),
+  used: (i * 37) % 101,
+  change: ((i * 13) % 41) - 20,
+  rating: 1 + ((i * 3) % 9) / 2,
+}));
+
+const columns: DataTableColumn<Site>[] = [
+  {
+    id: 'name',
+    header: 'Site',
+    accessor: 'name',
+    width: { min: 80, flex: 1 },
+    priority: 'always',
+    rowHeader: true,
+    sortable: true,
+  },
+  sparklineColumn<Site>({
+    id: 'weeks',
+    header: 'Twelve weeks',
+    values: (site) => site.weeks,
+    sparkline: { variant: 'bars', thresholds: [40, 70] },
+    priority: 3,
+    sortable: true,
+  }),
+  numberColumn<Site>({
+    id: 'score',
+    header: 'Score',
+    accessor: (site) => site.weeks[11]!,
+    width: 72,
+    priority: 'always',
+    sortable: true,
+  }),
+  {
+    id: 'used',
+    header: 'In use',
+    accessor: 'used',
+    width: 88,
+    priority: 2,
+    sortable: true,
+    cell: (site) => (
+      <PieIndicator value={site.used} thresholds showValue layout="inline" size="small" aria-label="In use" />
+    ),
+  },
+  {
+    id: 'change',
+    header: 'Change',
+    accessor: 'change',
+    width: 120,
+    priority: 1,
+    sortable: true,
+    cell: (site) => (
+      <DivergingMeter
+        value={site.change}
+        min={-20}
+        max={20}
+        layout="inline"
+        size="thin"
+        showValue
+        formatValue={(value) => `${value > 0 ? '+' : ''}${value}%`}
+        aria-label="Change on last quarter"
+      />
+    ),
+  },
+  {
+    id: 'rating',
+    header: 'Rating',
+    accessor: 'rating',
+    width: 96,
+    priority: 0,
+    sortable: true,
+    cell: (site) => <StarRating readOnly size="small" value={site.rating} aria-label="Rating" />,
+  },
+];
+
+export function App() {
+  return (
+    <UmbraProvider>
+      <AppShell topBar={<TopBar logo="U" />}>
+        <Page>
+          <Card title="Sites" padding="none">
+            <DataTable
+              aria-label="Sites"
+              data={sites}
+              getRowId={(site) => site.id}
+              columns={columns}
+              striped
+            />
+          </Card>
+        </Page>
+      </AppShell>
+    </UmbraProvider>
+  );
+}
+```
+
+- `sparklineColumn` comes from `umbra-ui/charts`, so a table without one loads no chart code. The
+  column sorts by the last value of the run; `sparkline` is the props of every cell's `Sparkline`, or a
+  function of the row.
+- A meter in a cell has no visible label: give it an `aria-label`, the name of the column.
+- `PieIndicator` drops its text when the cell is too narrow for it, and keeps the disc. Its root is a
+  `div`, so it cannot stand inside a `<p>`.
+- A `StarRating` with `readOnly` is a picture with a text name, not a control: it draws any fraction.
+  Without `readOnly` it is a radio group, and `step={0.5}` lets the user choose halves.
+- In a `SummaryTile`, a `Sparkline` goes in `caption`: it is as wide as its container, and the `trend`
+  slot is only as wide as its content.
+
+## 16. A board of widgets
+
+A row of cards to pick from, and under it a board of widgets of different heights. Both scroll inside
+themselves: the row sideways, the board down.
+
+```tsx
+import { useState } from 'react';
+import {
+  AppShell,
+  HorizontalScroller,
+  KeyValueList,
+  MediaCard,
+  Page,
+  ProgressBar,
+  Stack,
+  TopBar,
+  UmbraProvider,
+  WidgetBoard,
+} from 'umbra-ui';
+import { BarChart } from 'umbra-ui/charts';
+
+const regions = ['North', 'South', 'East', 'West', 'Centre', 'Coast', 'Islands'];
+const orders = (region: number) => [0, 1, 2, 3].map((quarter) => 20 + ((region * 17 + quarter * 31) % 60));
+
+export function App() {
+  const [region, setRegion] = useState(0);
+  // Kept by the app: store it with the user's settings to bring the board back as it was left.
+  const [collapsed, setCollapsed] = useState<string[]>(['notes']);
+
+  return (
+    <UmbraProvider>
+      <AppShell topBar={<TopBar logo="U" />}>
+        <Page>
+          <Stack>
+            <HorizontalScroller aria-label="Regions" itemWidth={240}>
+              {regions.map((name, i) => (
+                <MediaCard
+                  key={name}
+                  title={name}
+                  category={i === region ? 'Shown' : undefined}
+                  meta={`${4 + ((i * 5) % 9)} sites`}
+                  onPress={() => setRegion(i)}
+                />
+              ))}
+            </HorizontalScroller>
+            <WidgetBoard
+              aria-label={`Widgets of ${regions[region]}`}
+              minColumnWidth={280}
+              collapsedIds={collapsed}
+              onCollapsedChange={setCollapsed}
+            >
+              <WidgetBoard.Widget id="orders" title="Orders by quarter" span={2}>
+                <BarChart
+                  aria-label="Orders by quarter"
+                  height={200}
+                  categories={['Q1', 'Q2', 'Q3', 'Q4']}
+                  series={[{ id: 'orders', label: 'Orders', values: orders(region) }]}
+                />
+              </WidgetBoard.Widget>
+              <WidgetBoard.Widget id="capacity" title="Capacity">
+                <ProgressBar label="In use" kind="meter" value={orders(region)[3]!} thresholds showValue />
+              </WidgetBoard.Widget>
+              <WidgetBoard.Widget id="facts" title="Facts">
+                <KeyValueList
+                  aria-label="Facts"
+                  items={[
+                    { key: 'sites', label: 'Sites', value: 4 + ((region * 5) % 9) },
+                    { key: 'people', label: 'People', value: 30 + region * 7 },
+                    { key: 'lead', label: 'Lead', value: 'Person A' },
+                  ]}
+                />
+              </WidgetBoard.Widget>
+              <WidgetBoard.Widget id="notes" title="Notes">
+                Nothing new this week.
+              </WidgetBoard.Widget>
+            </WidgetBoard>
+          </Stack>
+        </Page>
+      </AppShell>
+    </UmbraProvider>
+  );
+}
+```
+
+- The row is as tall as its cards and the board takes the rest: `HorizontalScroller` is the one
+  component whose `size` defaults to `"content"` ([Layout](layout.md#a-board-of-widgets-and-a-row-that-scrolls-sideways)).
+- Each child of the row is one item. A `MediaCard` without a picture draws a placeholder; `image` takes
+  any node and `src` an address.
+- A widget is a `Card` that is as tall as its content, so the chart inside has a `height`.
+- `span` makes a widget wider; a span wider than the board is cut to its width. `columns` fixes the
+  number of columns in place of `minColumnWidth`.
+- A widget collapses to its header, and "Collapse all" does all of them. There is no drag to reorder.
+- `onReachEnd` on the row is the place to load more.
+
+## 17. A tour and the sheet of shortcuts
+
+Two kinds of help: a tour that lights one element after another, and a sheet that lists every keyboard
+shortcut.
+
+```tsx
+import { CircleHelp } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import {
+  AppShell,
+  Button,
+  Card,
+  Columns,
+  CommandPalette,
+  IconButton,
+  Page,
+  ShortcutsSheet,
+  Spotlight,
+  TopBar,
+  UmbraProvider,
+  type Shortcut,
+  type SpotlightStep,
+} from 'umbra-ui';
+
+// A step points at an element of the page: a selector, a ref, or a function that returns the element.
+const steps: SpotlightStep[] = [
+  { target: '.tour-inbox', title: 'Your inbox', body: 'New messages arrive here, the newest first.' },
+  { target: '.tour-summary', title: 'The summary', body: 'What changed since you last looked.' },
+  {
+    target: '.tour-help',
+    title: 'Keyboard shortcuts',
+    body: 'Press ? anywhere to see them all.',
+    placement: 'bottom end',
+  },
+];
+
+export function App() {
+  const [touring, setTouring] = useState(true);
+  const [toured, setToured] = useState(0);
+  const shortcuts = useMemo<Shortcut[]>(
+    () => [
+      { id: 'app.tour', keys: 'Shift+T', label: 'Take the tour', group: 'Help' },
+      { id: 'app.refresh', keys: 'R', label: 'Refresh', group: 'Inbox', action: () => {} },
+    ],
+    [],
+  );
+
+  return (
+    <UmbraProvider shortcuts={shortcuts}>
+      <AppShell
+        topBar={
+          <TopBar
+            logo="U"
+            commandPalette={<CommandPalette commands={[]} includeShortcuts />}
+            actions={
+              <span className="tour-help">
+                <ShortcutsSheet
+                  trigger={<IconButton icon={<CircleHelp />} label="Keyboard shortcuts" />}
+                  extra={[
+                    {
+                      title: 'In a list',
+                      items: [
+                        { label: 'Move between rows', keys: ['ArrowUp', 'ArrowDown'] },
+                        { label: 'Open the row', keys: 'Enter' },
+                      ],
+                    },
+                  ]}
+                />
+              </span>
+            }
+          />
+        }
+      >
+        <Page>
+          <Columns>
+            <Card title="Inbox" className="tour-inbox">
+              Three new messages.
+            </Card>
+            <Card
+              title="Summary"
+              size={2}
+              className="tour-summary"
+              actions={
+                <Button shortcut="app.tour" onPress={() => setTouring(true)}>
+                  Tour
+                </Button>
+              }
+            >
+              Tours finished: {toured}.
+            </Card>
+          </Columns>
+        </Page>
+      </AppShell>
+      <Spotlight
+        open={touring}
+        onOpenChange={setTouring}
+        steps={steps}
+        onFinish={() => setToured((n) => n + 1)}
+      />
+    </UmbraProvider>
+  );
+}
+```
+
+The tour:
+
+- While it is open nothing but the callout can be used. `interactive` on the spotlight, or on one step,
+  lets the user press the target itself.
+- Escape and a press on the dim close it (`dismissable={false}` turns that off). `onFinish` runs only
+  when the last step is ended with its button: that is the moment to remember that the user has seen it.
+- A step whose target is not in the page is skipped. Mark targets with `className`: a `data-` attribute
+  of yours is not passed on by a component.
+- Without `steps` it is one coach mark: `target`, `title` and the text as children.
+- It is drawn on `layer-spotlight`, above a modal and below the command palette, so a step can point
+  into an open modal.
+- The ring follows its target when the window is resized, something scrolls or a transition ends. A
+  target that moves in another way is followed at the next of those.
+
+The sheet:
+
+- It lists the shortcuts of the provider that have a `label` and can run now, under their `group`, and
+  the library's own keys. `extra` adds sections for keys that are not shortcuts, such as those of a table.
+- `?` opens and closes it while a `ShortcutsSheet` is mounted, except while the user types in a field.
+  `shortcut={null}` binds no key; `open` and `onOpenChange` control it.
+- `includeShortcuts` on the palette lists the same shortcuts as commands.
+- Its search matches every word typed; it does not rank or correct as the palette does.
+
+## 18. A settings form with a slider, a stepper and a scale
+
+Settings that take effect while the modal is open: the bands of a scale, a target on it, and how many
+bars the chart shows.
+
+```tsx
+import { useState } from 'react';
+import {
+  ActionBar,
+  AppShell,
+  Button,
+  Card,
+  ColorScaleEditor,
+  FormField,
+  Modal,
+  Page,
+  Slider,
+  Stepper,
+  TopBar,
+  UmbraProvider,
+  type Threshold,
+} from 'umbra-ui';
+import { BarChart } from 'umbra-ui/charts';
+
+const defaults: Threshold[] = [
+  { from: 0, tone: 'danger', label: 'Low' },
+  { from: 40, tone: 'warning', label: 'Fair' },
+  { from: 70, tone: 'success', label: 'Good' },
+];
+const scores = [77, 55, 33, 89, 67, 45, 23, 79, 57, 35, 91, 69];
+const periods = [
+  { id: 'week', label: 'This week' },
+  { id: 'month', label: 'This month' },
+  { id: 'quarter', label: 'This quarter' },
+];
+
+export function App() {
+  const [open, setOpen] = useState(false);
+  const [bands, setBands] = useState(defaults);
+  const [target, setTarget] = useState(60);
+  const [range, setRange] = useState<[number, number]>([20, 90]);
+  const [count, setCount] = useState(8);
+  const [period, setPeriod] = useState('month');
+  const shown = scores.slice(0, count);
+
+  return (
+    <UmbraProvider>
+      <AppShell topBar={<TopBar logo="U" />}>
+        <Page>
+          <Card title="Score by site" actions={<Button onPress={() => setOpen(true)}>Settings</Button>}>
+            <BarChart
+              aria-label="Score by site"
+              categories={shown.map((_, i) => `S${i + 1}`)}
+              series={[{ id: 'score', label: 'Score', values: shown }]}
+              thresholds={bands}
+              valueDomain={[0, 100]}
+              annotations={[
+                { type: 'line', value: target, label: 'Target' },
+                { type: 'band', from: range[0], to: range[1], label: 'Expected' },
+              ]}
+            />
+          </Card>
+        </Page>
+        <Modal
+          open={open}
+          onOpenChange={setOpen}
+          title="Settings"
+          footer={<ActionBar primary={{ label: 'Done', variant: 'accent', onPress: () => setOpen(false) }} />}
+        >
+          <FormField label="Bands" layout="stacked">
+            <ColorScaleEditor
+              value={bands}
+              onChange={setBands}
+              defaultValue={defaults}
+              min={0}
+              max={100}
+              step={5}
+            />
+          </FormField>
+          <FormField label="Target">
+            <Slider value={target} onChange={setTarget} step={5} showValue thresholds={bands} />
+          </FormField>
+          <FormField label="Expected" description="Two thumbs: a range.">
+            <Slider value={range} onChange={setRange} step={5} showValue />
+          </FormField>
+          <FormField label="Sites shown">
+            <Stepper value={count} onChange={setCount} min={4} max={12} step={2} />
+          </FormField>
+          <FormField label="Period">
+            <Stepper options={periods} value={period} onChange={setPeriod} />
+          </FormField>
+        </Modal>
+      </AppShell>
+    </UmbraProvider>
+  );
+}
+```
+
+- The value of the `ColorScaleEditor` is the `thresholds` list itself
+  ([Theming](theming.md#colour-by-value-one-thresholds-list)), so the chart needs nothing more than the
+  same state.
+- A `Slider` is a number with one thumb and `[from, to]` with two. `onChange` runs while it moves;
+  `onChangeEnd` once, when a drag or a key press ends: the place to save.
+- With `thresholds`, the fill of a slider takes the band of its value and its text the band's label.
+- A `Stepper` walks through numbers (`min`, `max`, `step`) or through `options`. Options wrap around by
+  default and numbers do not (`wrap`).
+- A press on the label of a `FormField` focuses a native control only. It does not focus the value of a
+  `Stepper`, a `Slider` or a `ColorScaleEditor`; the label still names them.
+- A stop's free colour is picked in the browser's own colour field.
+
+## 19. Charts over a backdrop
+
+Points on a drawing of yours: a floor plan, a map, a diagram. `Scatter` and `Heatmap` take it as the
+`backdrop` part and size it to the plot.
+
+```tsx
+import { AppShell, Card, Columns, Page, TopBar, UmbraProvider } from 'umbra-ui';
+import { Heatmap, Scatter, type ScatterSeries } from 'umbra-ui/charts';
+
+// The drawing has its own coordinates, 100 by 60. The charts are given the same domains.
+const line = {
+  fill: 'none',
+  stroke: 'var(--umbra-color-base-border-control)',
+  // The drawing is stretched; its lines keep their width.
+  vectorEffect: 'non-scaling-stroke',
+} as const;
+
+function FloorPlan() {
+  return (
+    <svg viewBox="0 0 100 60" width="100%" height="100%" preserveAspectRatio="none" aria-hidden="true">
+      <rect x="1" y="1" width="98" height="58" {...line} />
+      <path d="M1 22h30v-21M69 1v20h30M42 59v-12h16v12" {...line} />
+      <circle cx="50" cy="28" r="7" {...line} />
+    </svg>
+  );
+}
+
+const visits = Array.from({ length: 160 }, (_, i) => ({ x: (i * 37) % 100, y: (i * 53) % 60 }));
+const teams: ScatterSeries[] = ['Team 1', 'Team 2'].map((label, t) => ({
+  id: `team-${t}`,
+  label,
+  data: Array.from({ length: 6 }, (_, i) => ({
+    x: 8 + ((t * 31 + i * 23) % 84),
+    y: 6 + ((t * 17 + i * 19) % 48),
+    size: 4 + ((t * 3 + i * 5) % 14),
+    label: `Place ${t * 6 + i + 1}`,
+  })),
+}));
+
+export function App() {
+  return (
+    <UmbraProvider>
+      <AppShell topBar={<TopBar logo="U" />}>
+        <Page>
+          <Columns>
+            <Card title="Orders by place">
+              <Scatter
+                aria-label="Orders by place"
+                series={teams}
+                xDomain={[0, 100]}
+                yDomain={[0, 60]}
+                axes={false}
+                sizeLabel="Orders"
+                parts={{ backdrop: <FloorPlan /> }}
+              />
+            </Card>
+            <Card title="Visits">
+              <Heatmap
+                aria-label="Visits by position"
+                points={visits}
+                bins={[10, 6]}
+                xDomain={[0, 100]}
+                yDomain={[0, 60]}
+                axes={false}
+                labels={false}
+                parts={{ backdrop: <FloorPlan /> }}
+              />
+            </Card>
+          </Columns>
+        </Page>
+      </AppShell>
+    </UmbraProvider>
+  );
+}
+```
+
+- The backdrop is stretched to the plot, so draw it to stretch (`preserveAspectRatio="none"`) or give
+  the card the proportions of the drawing.
+- `axes={false}` leaves out the axis lines, the grid and the tick labels: the plot is the drawing.
+  Keep the axes when the positions are measurements a reader needs.
+- `xDomain` and `yDomain` tie the data to the drawing. Without them the charts fit the data, and the
+  points no longer sit where the drawing says.
+- A `size` in a point makes it a bubble; `sizeLabel` names that value in the tooltip.
+- The `Heatmap` sums `points` into `bins`. Over a backdrop its cells are a little transparent
+  (`--umbra-heatmap-backdrop-opacity`).
+- The drawing is decoration to a screen reader: the points and cells are read from the data.
+
 ## Next
 
 - `examples/dashboard`: many of these on one screen, with density and context switchers.
-- `examples/advanced`: several screens with a router, a modal form and a custom component.
+- `examples/advanced`: several screens with a router, a modal form, a planner, a tour and a custom
+  component.
+- The "Pages" stories of the Storybook: a planning page and an analysis page that put these together.
 - [Customisation](customisation.md): when a recipe is close but not right.

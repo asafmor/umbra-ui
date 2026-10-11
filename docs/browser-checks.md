@@ -22,13 +22,15 @@ lists each newer feature and what happens without it: `node scripts/check-browse
 Report a difference as an issue with the browser, its version, the story id and a capture. A difference
 that is in the list of `check-browsers.mjs --list` is known: check that it is no worse than its note.
 
-## 1. The three pages
+## 1. The five pages
 
 | Story id                                 | Look at                                                                                                    |
 | ---------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
 | `pages-overview--overview`               | The page fills the window and never scrolls, at each window size and each density                          |
 | `pages-list-and-detail--list-and-detail` | Selecting a row fills the detail pane; its modal opens and closes; below 1024 wide the columns become tabs |
 | `pages-table--table`                     | Sorting, selecting rows, and the action bar that appears                                                   |
+| `pages-planning--planning`               | The month changes; a day's slots keep their colours; the tour's ring sits on its target                    |
+| `pages-analysis--analysis`               | The row of reports scrolls sideways; the heatmap and the bars change colour when the scale is edited       |
 
 On each: card tints and borders have colour (they come from `color-mix()`), a hovered row and a pressed
 button change shade, cards collapse to their headers when the window gets low, and the nav moves items
