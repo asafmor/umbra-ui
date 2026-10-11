@@ -56,7 +56,7 @@ export function ActionsOverflow({
   const items: { node: ReactNode; kept: boolean }[] = [];
   const sort = (nodes: ReactNode) =>
     Children.forEach(nodes, (child) => {
-      if (isValidElement<{ children?: ReactNode }>(child) && child.type === Fragment)
+      if (isValidElement<{ children?: ReactNode | undefined }>(child) && child.type === Fragment)
         return sort(child.props.children);
       items.push({
         node: isValidElement(child) ? cloneElement(child, { key: items.length }) : child,
