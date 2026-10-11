@@ -114,9 +114,20 @@ export function useReturnFocusOnClose(open: boolean, inside: RefObject<Element |
 
 /**
  * Props for a React Aria popover or tooltip: its layer (`--umbra-layer-*`), and where it is rendered,
- * which is inside the modal it was opened from when there is one.
+ * which is inside the modal it was opened from when there is one. Every overlay of the library takes
+ * these, so none is left under a modal or in the inert page behind it.
  */
-export function useOverlayLayer(layer: 'popover' | 'tooltip') {
+export function useOverlayLayer(layer: 'popover' | 'tooltip'): {
+  UNSTABLE_portalContainer: HTMLElement | undefined;
+  // Stated, so that the name of React Aria's attribute below is not written into the published types.
+  [attribute: `data-${string}`]: string | undefined;
+} {
   const container = useContext(OverlayContainerContext);
-  return { 'data-umbra-layer': layer, UNSTABLE_portalContainer: container ?? undefined };
+  return {
+    'data-umbra-layer': layer,
+    UNSTABLE_portalContainer: container ?? undefined,
+    // React Aria keeps what carries this out of the inert page behind a modal. A popover is kept out by
+    // its own dialog; a tooltip has none.
+    'data-react-aria-top-layer': layer === 'tooltip' ? 'true' : undefined,
+  };
 }

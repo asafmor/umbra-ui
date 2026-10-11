@@ -57,7 +57,7 @@ Character: **crisp and minimal**. Short fades and small slides only; no sweeps, 
 
 ## Layers and direction (decided 2026-10-11)
 
-- **Layers.** Overlay kinds have a fixed order, as tokens (`plan/tokens.json`, "layer"): popover, menu and select list (`--umbra-layer-popover`), tooltip, modal, command palette. Within a layer the overlay opened later is on top. An overlay opened from inside a modal is rendered into that modal, so it is above it. React Aria's portals and the library's own use the same tokens.
+- **Layers.** Overlay kinds have a fixed order, as tokens (`plan/tokens.json`, "layer"): popover, menu and select list (`--umbra-layer-popover`), tooltip, modal, command palette. Within a layer the overlay opened later is on top. An overlay opened from inside a modal is rendered into that modal, so it is above it. React Aria's portals and the library's own use the same tokens. Every popover and tooltip takes its layer and its container from one hook (`useOverlayLayer`, `src/overlays/shared.ts`), the tooltips the library opens by itself included (`Tip`, `src/internal/TruncatedText.tsx`).
 - **Direction.** One source on the provider (`plan/specs/UmbraProvider.md`, "Direction"). The root and every portal carry `dir`; arrow keys in a horizontal composite follow what is drawn; CSS is logical, and icons that point along the line are mirrored.
 - **Focus is never lost.** A component that removes or re-renders the element the user is on moves focus first: to its replacement, the control that opened it, or the nearest control that stays (`src/internal/focus.ts`). No interaction leaves focus on `<body>`; the interaction tests assert it after each step.
 

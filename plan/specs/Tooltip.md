@@ -83,6 +83,8 @@ None.
 
 - Inside a modal it renders into the modal's layer, so it is above it and still describes its control.
 
+- The tooltips the library opens by itself (the full text of a text that is cut, a `DataTable` cell or header hint, the value of a meter) are not this component but look and behave like it: one internal `Tip` (`src/internal/TruncatedText.tsx`). Same layer and modal container (`useOverlayLayer`), 500ms before it shows on hover and at once on keyboard focus, hoverable with the same 200ms, `Escape` dismisses it alone, and only one of them is open at a time. They repeat what the element already says, so they are not wired as a description.
+
 ## Open questions
 
 None.

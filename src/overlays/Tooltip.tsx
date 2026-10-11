@@ -116,8 +116,6 @@ export function Tooltip({
         {...defined(layer)}
         placement={toAriaPlacement(placement)}
         offset={offset}
-        // React Aria keeps what carries this out of the inert page behind a modal.
-        data-react-aria-top-layer="true"
         data-umbra="tooltip"
         data-umbra-overlay=""
         data-rich={!empty(title) || undefined}

@@ -26,21 +26,19 @@ import {
   type RefObject,
 } from 'react';
 import { flushSync } from 'react-dom';
-import { Tooltip as AriaTooltip, TooltipTrigger } from 'react-aria-components';
 import { IconButton } from '../basics/IconButton';
 import { Skeleton } from '../basics/Skeleton';
 import { GroupHeader } from '../data/GroupHeader';
 import { KeyValueList, type KeyValueItem } from '../data/KeyValue';
 import { Checkbox } from '../inputs/Checkbox';
+import { Tip, TIP_CLOSE_DELAY } from '../internal/TruncatedText';
 import { ChangeHighlight } from '../internal/ChangeHighlight';
 import { dataState, type DataStateProps } from '../internal/dataState';
 import { heightProps } from '../internal/height';
 import { ScrollArea } from '../layout/ScrollArea';
 import { Menu, type MenuEntry } from '../overlays/Menu';
-import tipStyles from '../overlays/Tooltip.module.css';
 import { Icon } from '../provider/icons';
 import { useUmbra } from '../provider/UmbraProvider';
-import { useScopeAttributes } from '../provider/UmbraProvider';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './DataTable.module.css';
 import {
@@ -247,7 +245,6 @@ function Root({
   const own = useRef<HTMLDivElement>(null);
   const root = elementRef ?? own;
   const [table, gridHandlers] = useGrid();
-  const scope = useScopeAttributes();
   useLayoutEffect(() => {
     const el = table.current;
     if (!el) return;
@@ -264,9 +261,10 @@ function Root({
     if (!el || (!el.hasAttribute('data-tip-always') && el.scrollWidth <= el.clientWidth)) return null;
     return { el, text: el.dataset.tip! };
   };
-  const hideTip = () => {
+  const hideTip = (delay = 0) => {
     clearTimeout(tipTimer.current);
-    setTip(null);
+    if (delay) tipTimer.current = setTimeout(() => setTip(null), delay);
+    else setTip(null);
   };
 
   // Pinned columns show an edge line only while something is scrolled under them.
@@ -340,12 +338,14 @@ function Root({
           }}
           onPointerOver={(event) => {
             const next = tipFor(event.target);
+            clearTimeout(tipTimer.current);
             if (next?.el === tip?.el) return;
-            hideTip();
-            if (next) tipTimer.current = setTimeout(() => setTip(next), 500);
+            // Not at once: the pointer may be crossing another cell on its way to the tip. Once a tip
+            // is open the next cell's replaces it after the same short time.
+            tipTimer.current = setTimeout(() => setTip(next), tip ? TIP_CLOSE_DELAY : 500);
           }}
-          onPointerLeave={hideTip}
-          onPointerDown={hideTip}
+          onPointerLeave={() => hideTip(TIP_CLOSE_DELAY)}
+          onPointerDown={() => hideTip()}
         >
           {children}
         </table>
@@ -360,24 +360,14 @@ function Root({
       <div role="status" className={srOnly}>
         {announcement}
       </div>
-      {tip && tip.el.isConnected && (
-        // Opened by the table, against the cell: there is no trigger element of its own.
-        <TooltipTrigger isOpen>
-          <AriaTooltip
-            {...scope}
-            triggerRef={{ current: tip.el }}
-            placement="top"
-            offset={6}
-            data-umbra="tooltip"
-            data-umbra-overlay=""
-            {...defined({ className: tipStyles.root })}
-          >
-            <span data-part="body" className={tipStyles.body}>
-              {tip.text}
-            </span>
-          </AriaTooltip>
-        </TooltipTrigger>
-      )}
+      {/* Opened by the table, against the cell: there is no trigger element of its own. */}
+      <Tip
+        anchor={{ current: tip?.el ?? null }}
+        open={!!tip?.el.isConnected}
+        onOpenChange={(open, delay) => (open ? clearTimeout(tipTimer.current) : hideTip(delay))}
+      >
+        {tip?.text}
+      </Tip>
     </div>
   );
 }
