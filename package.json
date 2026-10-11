@@ -73,6 +73,7 @@
     "react-dom": ">=19"
   },
   "dependencies": {
+    "@internationalized/date": "^3.12.4",
     "@tanstack/react-table": "^9.2.8",
     "d3-scale": "^4.0.2",
     "d3-shape": "^3.2.0",

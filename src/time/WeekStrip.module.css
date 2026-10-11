@@ -1,0 +1,80 @@
+/* The grid of days shared by WeekStrip and Planner: seven columns, a line per header and per slot. */
+.strip,
+.week {
+  --gap: var(--umbra-week-strip-gap, var(--umbra-space-2));
+
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  min-width: 0;
+}
+
+/* A row is there for assistive technology; its cells are laid out by the week. */
+.row {
+  display: contents;
+}
+
+/*
+ * A cell is the size container its chip and slot answer to (`umbra-schedule`): the weekday shortens and
+ * the label gives way to the icon by the width of the day, not of the window. The gap between days is
+ * the cells' padding, so the tint of today and the hover of a cell have no holes.
+ */
+.cell {
+  container: umbra-schedule / inline-size;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  padding: calc(var(--gap) / 2);
+  border-radius: var(--umbra-radius-control);
+  /* The strip sits in containers that clip, so the ring is drawn inwards. */
+  outline-offset: calc(-1 * var(--umbra-state-focus-ring-width));
+  transition: background-color var(--umbra-motion-duration-fast);
+}
+
+.cell[data-line='0'] {
+  justify-content: center;
+}
+
+/* Today: the whole day is tinted, on top of the chip's own mark. */
+.cell[data-today] {
+  border-radius: 0;
+  background: var(
+    --umbra-week-strip-today-bg,
+    color-mix(in oklab, var(--umbra-color-fixed-primary) 14%, transparent)
+  );
+}
+
+.cell[data-action] {
+  cursor: pointer;
+}
+
+.cell[data-action]:hover {
+  background: color-mix(
+    in oklab,
+    var(--umbra-color-base-text-primary) var(--umbra-state-hover-lighten),
+    transparent
+  );
+}
+
+.cell[data-action]:active {
+  background: color-mix(in oklab, #000 var(--umbra-state-press-darken), transparent);
+}
+
+.cell[aria-disabled='true'] {
+  cursor: default;
+}
+
+/* The line a week without entries shows under the headers of its days. */
+.weekEmpty {
+  grid-column: 1 / -1;
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  padding: var(--umbra-space-4) var(--umbra-space-3);
+  color: var(--umbra-color-base-text-secondary);
+  font: var(--umbra-font-label);
+  text-align: center;
+}
+
+.state {
+  min-width: 0;
+}

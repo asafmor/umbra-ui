@@ -1,0 +1,126 @@
+/* Fills its slot; the weeks scroll inside. */
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--umbra-planner-gap, var(--umbra-space-3));
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* `height="content"`, and what `fill` falls back to by itself in a parent without a height. */
+.root[data-height='content'] {
+  height: auto;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--umbra-space-2);
+  flex: none;
+  min-width: 0;
+}
+
+.month {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.title {
+  min-width: 0;
+  overflow: hidden;
+  font: var(--umbra-font-title);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.spacer {
+  flex: 1 1 0;
+}
+
+/* Starts from the height of the weeks, which only counts where the planner has no height to fill. */
+.scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.state {
+  display: grid;
+  flex: 1 1 auto;
+  place-items: center;
+  min-height: 0;
+}
+
+.grid {
+  /* What scrolls under the sticky weekday names is covered: the fill is the surface the planner is on. */
+  --surface: var(
+    --umbra-planner-header-bg,
+    var(--umbra-scroll-fade-color, var(--scroll-fade-color, var(--umbra-context-card-tint)))
+  );
+  --line: var(--umbra-planner-border-color, var(--umbra-color-base-border-subtle));
+  /* From the `weekAsideWidth` prop, not a token: the step that collapses the column is worked out from it. */
+  --aside: var(--aside-width);
+
+  min-width: 0;
+}
+
+/* The side column collapsed: the width of the button it becomes. */
+.grid[data-aside='collapsed'] {
+  --aside: var(--umbra-density-control-height);
+}
+
+.grid[data-aside] .week {
+  grid-template-columns: var(--aside) repeat(7, minmax(0, 1fr));
+}
+
+.grid .week {
+  --gap: var(--umbra-planner-day-gap, var(--umbra-space-2));
+
+  border-top: var(--umbra-border-width) solid var(--line);
+}
+
+.grid[data-aside] [data-part='weekEmpty'] {
+  grid-column: 2 / -1;
+}
+
+.weekdays {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--surface);
+}
+
+.grid .weekdays > .week {
+  border-top: 0;
+}
+
+.weekday {
+  container: umbra-schedule / inline-size;
+  min-width: 0;
+  padding: var(--umbra-space-2) 0;
+  overflow: hidden;
+  color: var(--umbra-color-base-text-secondary);
+  font: var(--umbra-font-label);
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* The side cell of a week: beside all of its lines. */
+.aside {
+  display: flex;
+  flex-direction: column;
+  gap: var(--umbra-space-2);
+  min-width: 0;
+  padding: var(--umbra-planner-aside-padding, var(--umbra-space-3));
+  overflow: hidden;
+  outline-offset: calc(-1 * var(--umbra-state-focus-ring-width));
+  font: var(--umbra-font-label);
+}
+
+.grid[data-aside='collapsed'] .aside {
+  align-items: center;
+  padding: var(--umbra-space-1) 0;
+  /* The button is the size of the column, and its ring is drawn inside it. */
+  --icon-button-size: var(--aside);
+  --focus-offset: calc(-1 * var(--umbra-state-focus-ring-width));
+}
