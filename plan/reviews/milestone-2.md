@@ -27,7 +27,7 @@ The owner answered the plan's questions with: decide yourself, from the code and
 | 5 | ShortcutsSheet key | `?`, as already recorded in `plan/interaction.md`. |
 | 6 | Spotlight layer | A new token `layer.spotlight` between `modal` and `palette`: a spotlight can point at something inside a modal, and the command palette still opens on top. |
 | 7 | Spec approval | No stop: specs are approved under delegation. |
-| 8 | Milestone 0 leftovers | Taken with the open items: the three literal durations become tokens, and the generated tables get a defaults column. **Durations done 2026-10-11**: they were tokens already; a check now refuses a literal duration in a stylesheet. |
+| 8 | Milestone 0 leftovers | Taken with the open items: the three literal durations become tokens, and the generated tables get a defaults column. **Durations done 2026-10-11**: they were tokens already; a check now refuses a literal duration in a stylesheet. **Tables done 2026-10-11**: a Default column, and each token under the component whose name it carries. |
 | 9 | Heatmap and Scatter | Both take a `backdrop` part: an app-supplied node drawn behind the plot. |
 | 10 | WidgetBoard | A masonry of collapsible cards that scrolls inside itself. No drag to reorder. |
 | 11 | Planner | The per-week side column is a render slot; a fixed number of slots per day; `onAction` per slot; no drag and no built-in copy and paste (the app's buttons go in the side column). |
