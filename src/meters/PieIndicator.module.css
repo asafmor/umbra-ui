@@ -1,0 +1,87 @@
+.root {
+  --size: var(--umbra-pie-indicator-size, 16px);
+
+  display: inline-flex;
+  align-items: center;
+  column-gap: var(--umbra-pie-indicator-gap, var(--umbra-space-2));
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  vertical-align: middle;
+  font: var(--umbra-font-label);
+  color: var(--umbra-color-base-text-secondary);
+}
+
+.root[data-size='small'] {
+  --size: var(--umbra-pie-indicator-size, 12px);
+}
+
+.root[data-size='large'] {
+  --size: var(--umbra-pie-indicator-size, 24px);
+}
+
+/* The disc above its label and value. */
+.root[data-layout='block'] {
+  display: inline-grid;
+  justify-items: center;
+  row-gap: var(--umbra-space-1);
+}
+
+/* The disc never shrinks: the value hides and the label truncates instead (see `tooNarrow`). */
+.disc {
+  flex: none;
+  width: var(--size);
+  min-width: var(--size);
+  height: var(--size);
+}
+
+/* The unfilled scale. Its fill is close to the card's, so its edge is a line with 3:1. */
+.track {
+  fill: var(--umbra-pie-indicator-track, var(--umbra-color-base-surface3));
+  stroke: var(--umbra-pie-indicator-track-border, var(--umbra-color-base-border-control));
+  stroke-width: var(--umbra-border-width);
+  vector-effect: non-scaling-stroke;
+}
+
+/* No value: a dashed edge, so an empty disc is not read as zero. */
+.root[data-empty] .track {
+  stroke-dasharray: 2 2;
+}
+
+.fill {
+  fill: var(--paint, var(--umbra-pie-indicator-fill, var(--umbra-color-fixed-accent-text)));
+}
+
+/* The gaps between the wedges, in units of the disc's radius. */
+.gap {
+  stroke-width: var(--umbra-pie-indicator-wedge-gap, 0.16);
+}
+
+.label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.value {
+  flex: none;
+  color: var(--umbra-color-base-text-primary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.root[data-layout='block'] > :is(.label, .value) {
+  max-width: 100%;
+}
+
+.skeletonPart {
+  display: contents;
+}
+
+.root .skeleton[data-umbra] {
+  flex: none;
+  width: var(--size);
+  height: var(--size);
+  min-height: 0;
+}

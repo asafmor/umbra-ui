@@ -1,0 +1,123 @@
+.root {
+  --h: var(--umbra-diverging-meter-height, 6px);
+  --radius: var(--umbra-diverging-meter-radius, var(--umbra-radius-pill));
+
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: var(--umbra-space-3);
+  width: 100%;
+  min-width: 0;
+  font: var(--umbra-font-label);
+  color: var(--umbra-color-base-text-secondary);
+}
+
+.root[data-size='thin'] {
+  --h: var(--umbra-diverging-meter-height, 4px);
+}
+
+.root[data-size='thick'] {
+  --h: var(--umbra-diverging-meter-height, 12px);
+}
+
+/* The label truncates; the value never does (it hides instead, see `tooNarrow` in fit.ts). */
+.label {
+  grid-area: 1 / 1;
+  min-width: 0;
+  margin-block-end: var(--umbra-space-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.value {
+  grid-area: 1 / 2;
+  margin-block-end: var(--umbra-space-2);
+  color: var(--umbra-color-base-text-primary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.track {
+  grid-area: 2 / 1 / auto / -1;
+  position: relative;
+  height: var(--h);
+  min-width: var(--umbra-diverging-meter-min-width, var(--umbra-space-7));
+}
+
+/* One line: label, bar, value. Only the label gives way; the bar keeps its minimum width. */
+.root[data-layout='inline'] {
+  display: flex;
+}
+
+.root[data-layout='inline'] > :is(.label, .value) {
+  margin-block-end: 0;
+}
+
+.root[data-layout='inline'] > .label {
+  flex: 0 1 auto;
+}
+
+.root[data-layout='inline'] > .track {
+  flex: 1 1 0;
+  order: 1;
+}
+
+.root[data-layout='inline'] > .value {
+  flex: none;
+  order: 2;
+}
+
+/* The unfilled scale. Its colour is close to the card's, so an outline with 3:1 marks it. */
+.rail {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius);
+  background: var(--umbra-diverging-meter-track, var(--umbra-color-base-surface3));
+  box-shadow: inset 0 0 0 var(--umbra-border-width)
+    var(--umbra-diverging-meter-track-border, var(--umbra-color-base-border-control));
+}
+
+/*
+ * The chunk between the origin and the value. It is placed from the inline start, so in a right-to-left
+ * page the positive side is on the left, like the text around it. A fill below the origin is hatched:
+ * the cue of the direction that does not depend on colour.
+ */
+.fill {
+  /* Dark enough for 3:1 against every tone it is drawn on. */
+  --ink: var(
+    --umbra-diverging-meter-hatch,
+    color-mix(in oklab, var(--umbra-color-base-surface1) 75%, transparent)
+  );
+
+  position: absolute;
+  inset-block: 0;
+  border-radius: var(--radius);
+  background:
+    var(--pattern, none), var(--paint, var(--umbra-diverging-meter-fill, var(--umbra-color-fixed-primary)));
+}
+
+.fill[data-direction='negative'] {
+  --pattern: repeating-linear-gradient(45deg, transparent 0 3px, var(--ink) 3px 5px);
+}
+
+/* The origin: a tick that stands taller than the bar, outlined so it shows on the fill and on the track. */
+.origin {
+  position: absolute;
+  inset-block: calc(var(--umbra-space-1) * -1);
+  inline-size: var(--umbra-diverging-meter-origin-width, 2px);
+  margin-inline-start: calc(var(--umbra-diverging-meter-origin-width, 2px) / -2);
+  border-radius: 1px;
+  background: var(--umbra-diverging-meter-origin, var(--umbra-color-base-text-primary));
+  box-shadow: 0 0 0 var(--umbra-border-width) var(--umbra-color-base-surface1);
+}
+
+.skeletonPart {
+  display: contents;
+}
+
+.track .skeleton[data-umbra] {
+  height: var(--h);
+  min-height: 0;
+  border-radius: var(--radius);
+}
