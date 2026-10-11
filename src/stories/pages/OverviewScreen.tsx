@@ -24,8 +24,8 @@ import {
   type DataTableColumn,
   type Status,
 } from '../../index';
-import type { ScheduleItem } from '../../time/ScheduleSlot';
-import { WeekStrip } from '../../time/WeekStrip';
+import type { ScheduleItem } from '../../index';
+import { WeekStrip } from '../../index';
 import {
   deliveries,
   insightAxes,

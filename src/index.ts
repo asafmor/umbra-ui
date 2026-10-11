@@ -454,3 +454,47 @@ export type {
   ShortcutsSheetSectionData,
   ShortcutsSheetItemData,
 } from './overlays/ShortcutsSheet';
+export { DateChip } from './time/DateChip';
+export type {
+  DateChipProps,
+  DateChipRootProps,
+  DateChipWeekdayProps,
+  DateChipDayProps,
+} from './time/DateChip';
+export { ScheduleSlot } from './time/ScheduleSlot';
+export type {
+  ScheduleSlotProps,
+  ScheduleSlotRootProps,
+  ScheduleSlotSeries,
+  ScheduleItem,
+} from './time/ScheduleSlot';
+export { WeekStrip } from './time/WeekStrip';
+export type { WeekStripProps, WeekStripRootProps } from './time/WeekStrip';
+export { Planner } from './time/Planner';
+export type {
+  PlannerProps,
+  PlannerRootProps,
+  PlannerToolbarProps,
+  PlannerGridProps,
+  PlannerWeek,
+} from './time/Planner';
+export type { ScheduleRowProps, ScheduleCellProps, ScheduleParts, ScheduleSlotPartProps } from './time/cells';
+export type { IsoDate, IsoMonth, WeekStart, WeekdayFormat } from './time/dates';
+export { PieIndicator } from './meters/PieIndicator';
+export type {
+  PieIndicatorProps,
+  PieIndicatorRootProps,
+  PieIndicatorDiscProps,
+  PieIndicatorValueProps,
+  PieIndicatorScale,
+} from './meters/PieIndicator';
+export { DivergingMeter } from './meters/DivergingMeter';
+export type {
+  DivergingMeterProps,
+  DivergingMeterRootProps,
+  DivergingMeterTrackProps,
+  DivergingMeterFillProps,
+  DivergingMeterValueProps,
+  DivergingMeterScale,
+  DivergingMeterDirection,
+} from './meters/DivergingMeter';

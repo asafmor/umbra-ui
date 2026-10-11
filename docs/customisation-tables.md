@@ -36,9 +36,12 @@ translate a component. A name followed by brackets can also be a function of wha
 | [`Comparison`](#comparison) | `metricLabel`, `summaryLabel`, `leaderLabel`, `retryLabel`, `increasedLabel`, `decreasedLabel` |
 | [`ConfirmDialog`](#confirmdialog) | `confirmLabel`, `cancelLabel`, `loadingLabel` |
 | [`DataTable`](#datatable) | `selectRowLabel(row)`, `selectAllLabel`, `highlightLabel`, `collapseGroupLabel`, `expandGroupLabel`, `showDetailsLabel`, `hideDetailsLabel`, `hiddenColumnsLabel(count)`, `loadingMoreLabel`, `increasedLabel`, `decreasedLabel`, `retryLabel` |
+| [`DateChip`](#datechip) | `selectedLabel`, `todayLabel` |
+| [`DivergingMeter`](#divergingmeter) | `noValueLabel`, `increasedLabel`, `decreasedLabel` |
 | [`DonutChart`](#donutchart) | `retryLabel`, `allHiddenLabel`, `pointsLabel`, `legendLabel`, `valueLabel` |
 | [`FormField`](#formfield) | `requiredLabel`, `optionalLabel` |
 | [`GroupHeader`](#groupheader) | `moreLabel`, `collapseLabel`, `expandLabel` |
+| [`Heatmap`](#heatmap) | `retryLabel`, `allHiddenLabel`, `pointsLabel`, `legendLabel`, `lowLabel`, `highLabel` |
 | [`HistoryButtons`](#historybuttons) | `backLabel`, `forwardLabel`, `entriesLabel` |
 | [`IconButton`](#iconbutton) | `loadingLabel` |
 | [`KeyValue`](#keyvalue) | `increasedLabel`, `decreasedLabel` |
@@ -52,12 +55,16 @@ translate a component. A name followed by brackets can also be a function of wha
 | [`Menu`](#menu) | `emptyLabel` |
 | [`Modal`](#modal) | `navLabel`, `closeLabel` |
 | [`PageHeader`](#pageheader) | `moreLabel`, `backLabel`, `breadcrumbsLabel` |
+| [`PieIndicator`](#pieindicator) | `noValueLabel`, `increasedLabel`, `decreasedLabel` |
+| [`Planner`](#planner) | `retryLabel`, `weekLabel`, `freeLabel`, `previousLabel`, `nextLabel`, `todayLabel`, `monthLabel` |
 | [`Popover`](#popover) | `closeLabel` |
 | [`PrimaryAction`](#primaryaction) | `loadingLabel`, `attentionLabel`, `menuLabel` |
 | [`PrimaryNav`](#primarynav) | `moreLabel`, `submenuLabel(label)` |
 | [`ProgressBar`](#progressbar) | `targetLabel`, `noValueLabel`, `increasedLabel`, `decreasedLabel` |
 | [`RadarChart`](#radarchart) | `retryLabel`, `allHiddenLabel`, `pointsLabel`, `legendLabel` |
 | [`RadioGroup`](#radiogroup) | `requiredLabel` |
+| [`Scatter`](#scatter) | `retryLabel`, `allHiddenLabel`, `pointsLabel`, `legendLabel`, `sizeLabel` |
+| [`ScheduleSlot`](#scheduleslot) | `selectedLabel` |
 | [`SearchField`](#searchfield) | `clearLabel`, `label`, `loadingLabel`, `noResultsLabel`, `recentLabel`, `removeRecentLabel` |
 | [`SectionTitle`](#sectiontitle) | `moreLabel` |
 | [`SegmentedFilter`](#segmentedfilter) | `allLabel`, `moreLabel` |
@@ -66,6 +73,7 @@ translate a component. A name followed by brackets can also be a function of wha
 | [`ShortcutBar`](#shortcutbar) | `moreLabel(count)`, `moreName(count)`, `editLabel` |
 | [`ShortcutsSheet`](#shortcutssheet) | `searchLabel`, `clearLabel`, `closeLabel`, `emptyLabel`, `ungroupedLabel`, `reservedLabel`, `orLabel` |
 | [`Slider`](#slider) | `startLabel`, `endLabel` |
+| [`Sparkline`](#sparkline) | `noValueLabel` |
 | [`SplitButton`](#splitbutton) | `menuLabel`, `loadingLabel` |
 | [`Spotlight`](#spotlight) | `nextLabel`, `backLabel`, `skipLabel`, `doneLabel`, `progressLabel(current, total)` |
 | [`StarRating`](#starrating) | `emptyLabel`, `noValueLabel`, `clearLabel` |
@@ -80,6 +88,7 @@ translate a component. A name followed by brackets can also be a function of wha
 | [`TrendArrow`](#trendarrow) | `upLabel`, `downLabel`, `flatLabel` |
 | [`ValuePill`](#valuepill) | `levelLabel(level, steps)`, `increasedLabel`, `decreasedLabel` |
 | [`VerticalNav`](#verticalnav) | `collapseLabel`, `expandLabel` |
+| [`WeekStrip`](#weekstrip) | `freeLabel`, `retryLabel` |
 
 ## Accordion
 
@@ -355,7 +364,7 @@ A message band inside a card or page: a notice, a warning, or an insight about t
 
 Compares values across categories: grouped, stacked or diverging around zero, upright or sideways.
 
-**Tokens**: each with its default. It also reads the tokens of [`Legend`](#legend).
+**Tokens**: each with its default. It also reads the tokens of [`Heatmap`](#heatmap), [`Legend`](#legend), [`Scatter`](#scatter).
 
 | Token | Default |
 |---|---|
@@ -397,11 +406,6 @@ Compares values across categories: grouped, stacked or diverging around zero, up
 | `--umbra-chart-value-fg` | `--umbra-color-base-text-primary` (#f5f3f8) |
 | `--umbra-chart-warning` | `--umbra-color-semantic-warning` (#f2b23a) |
 | `--umbra-focus-color` | `--umbra-color-fixed-focus-ring` (#ffb3f5) |
-| `--umbra-heatmap-backdrop-opacity` | `0.8` |
-| `--umbra-heatmap-cell-border` | `--umbra-color-base-border-control` (#7a6e91) |
-| `--umbra-heatmap-cell-border-width` | `--umbra-border-width` (1px) |
-| `--umbra-heatmap-cell-radius` | `2px` |
-| `--umbra-scatter-bubble-opacity` | `0.55` |
 | `--umbra-series-marker-size` | `0.875rem` |
 
 | Prop | Type | Purpose |
@@ -426,14 +430,14 @@ Compares values across categories: grouped, stacked or diverging around zero, up
 | `labels` | `boolean` | Draws labels on the chart itself, so it can be read without the legend or the tooltip. |
 | `onRetry` | `(() => void)` | Adds a retry button to the error state. |
 | `retryLabel` | `string` | Label of the retry button. |
-| `categories` (required) | `string[]` |  |
 | `series` (required) | `BarSeries[]` |  |
+| `aria-labelledby` | `string` | Id of the element that names the chart, for example a card title. |
+| `categories` (required) | `string[]` |  |
 | `colorBy` | `"series" \| "sign"` | `sign` colours bars by the sign of their value; negative bars are also striped. |
 | `valueDomain` | `[number, number]` | The range of the value axis. Defaults to round numbers around the data, with zero. |
 | `annotations` | `ChartAnnotation[]` | Reference lines and bands on the value axis. |
 | `xTitle` | `string` | Title of the horizontal axis. |
 | `yTitle` | `string` | Title of the vertical axis. |
-| `aria-labelledby` | `string` | Id of the element that names the chart, for example a card title. |
 | `legend` | `string \| number \| bigint \| boolean \| ReactElement<unknown, string \| JSXElementConstructor<any>> \| Iterable<ReactNode> \| ReactPortal \| Promise<string \| number \| bigint \| boolean \| ReactPortal \| ReactElement<unknown, string \| JSXElementConstructor<any>> \| Iterable<ReactNode> \| null \| undefined> \| null` | The legend: `true` or a placement shows the built-in one, `false` hides it, and a node replaces it. By default it is shown below the chart when there is more than one series. |
 | `onPointPress` | `((point: ChartPoint) => void)` | Called when a point is clicked, or activated with Enter or Space. |
 | `allHiddenLabel` | `string` | Shown in place of the plot when the legend has switched every series off. |
@@ -990,11 +994,103 @@ A table of rows and columns that fills its slot and scrolls inside it: sorting, 
 
 **Blocks**: `DataTable.Root`, `DataTable.Header`, `DataTable.HeaderCell`, `DataTable.SortIndicator`, `DataTable.Body`, `DataTable.Row`, `DataTable.Cell`, `DataTable.GroupRow`, `DataTable.Footer`.
 
+## DateChip
+
+A pill with the number of a day: the header of a day in a `WeekStrip` or a `Planner`.
+
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-date-chip-bg` | `color-mix(in oklab, var(--umbra-color-base-text-primary) 10%, transparent)` |
+| `--umbra-date-chip-fg` | `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-date-chip-font` | `--umbra-font-label` |
+| `--umbra-date-chip-height` | `calc(var(--umbra-density-label-size) + 10px)` or `calc(var(--umbra-density-label-size) + 4px)` |
+| `--umbra-date-chip-outside-bg` | `transparent` |
+| `--umbra-date-chip-outside-fg` | `--umbra-color-base-text-muted` (#948da2) |
+| `--umbra-date-chip-padding-x` | `--umbra-space-3` (8px) or `--umbra-space-2` (4px) |
+| `--umbra-date-chip-radius` | `--umbra-radius-pill` (999px) |
+| `--umbra-date-chip-selected-bg` | `--umbra-color-fixed-selected` (#6a1fd6) |
+| `--umbra-date-chip-selected-fg` | `--umbra-color-fixed-on-selected` (#ffffff) |
+| `--umbra-date-chip-today-bg` | `--umbra-color-fixed-primary` (#db1065) |
+| `--umbra-date-chip-today-fg` | `--umbra-color-fixed-on-primary` (#ffffff) |
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `weekday` | `"auto" \| WeekdayFormat` | Shows the name of the weekday before the number. |
+| `day` | `boolean` | Shows the day number. Off leaves the weekday alone ("Mon"). |
+| `showMonth` | `boolean \| "auto"` | Adds the short month to the number ("1 Nov"). `auto`: on the first day of a month. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `size` | `"default" \| "small"` | `small` is for dense strips and table cells. Otherwise the height follows the density level. |
+| `selected` | `boolean` | Marks the chosen day: the violet fill and a ring. |
+| `outside` | `boolean` | A day of another month than the one shown: dimmed. |
+| `selectedLabel` | `string` | What a screen reader hears after the date of the chosen day. Empty when the holder says it. |
+| `date` (required) | `string` | The day, as `'2026-10-11'`. |
+| `today` | `boolean` | Marks the current day: the primary fill, a heavier weight and a bar under the text. |
+| `todayLabel` | `string` | What a screen reader hears after the date of the current day. Empty when the holder says it. |
+
+**Parts**: `weekday`, `day`.
+
+**Blocks**: `DateChip.Root`, `DateChip.Weekday`, `DateChip.Day`.
+
+## DivergingMeter
+
+A bar that fills to one side of an origin or the other: the direction and the size of a change or an effect.
+
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-diverging-meter-fill` | `--umbra-color-fixed-primary` (#db1065) |
+| `--umbra-diverging-meter-hatch` | `color-mix(in oklab, var(--umbra-color-base-surface1) 75%, transparent)` |
+| `--umbra-diverging-meter-height` | `6px`; `4px`; `12px` |
+| `--umbra-diverging-meter-min-width` | `--umbra-space-7` (24px) |
+| `--umbra-diverging-meter-origin` | `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-diverging-meter-origin-width` | `2px` |
+| `--umbra-diverging-meter-radius` | `--umbra-radius-pill` (999px) |
+| `--umbra-diverging-meter-track` | `--umbra-color-base-surface3` (#261b38) |
+| `--umbra-diverging-meter-track-border` | `--umbra-color-base-border-control` (#7a6e91) |
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `label` | `ReactNode` | The name of the meter, shown above or beside it. |
+| `valueLabel` | `ReactNode` | Replaces the formatted value. Setting it shows the value. |
+| `showValue` | `boolean` | Shows the value as text. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `value` | `number \| null` | The current value. `null` or nothing means there is no value: nothing is filled, and the text says so. |
+| `aria-label` | `string` | Names a meter that has no visible label. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `tone` | `MeterTone` | Colour of a fill above the origin. A matching threshold wins over it. |
+| `loading` | `boolean` | Shows skeletons in place of the bar and the value. |
+| `size` | `"default" \| "thin" \| "thick"` |  |
+| `layout` | `"block" \| "inline"` | `inline` puts the label, the bar and the value on one line, for table cells and rows. |
+| `emptyLabel` | `ReactNode` | Shown in place of the value text when there is no value. |
+| `min` | `number` |  |
+| `max` | `number` |  |
+| `thresholds` | `ThresholdList` | Colours the fill by the band of the value: an ascending list of `{ from, tone?, color?, label? }`, or plain numbers as boundaries on the value ramp. The band's `label` joins the value text. |
+| `lowerIsBetter` | `boolean` | For a scale where low is good: swaps the colours of the two sides, and mirrors those of the bands. The hatch stays below the origin. |
+| `formatValue` | `((value: number, scale: DivergingMeterScale) => string)` | Text of a value. The default is the distance from the origin, with its sign. |
+| `noValueLabel` | `string` | What assistive technology and the tooltip say when there is no value. |
+| `tooltip` | `boolean` | `false` turns off the tooltip that shows the exact value on hover. |
+| `origin` | `number` | The value the fill grows from. Defaults to 0, or to the middle of a scale that does not hold 0. |
+| `negativeTone` | `MeterTone` | Colour of a fill below the origin, which is also hatched. |
+| `originTick` | `boolean` | `false` hides the tick at the origin. |
+| `highlightChanges` | `boolean` | A changed value flashes softly once: green when a number rose, red when it fell, neutral otherwise. A sign shows the direction without colour. No flash under reduced motion; the sign stays. The value is never counted up or down. |
+| `increasedLabel` | `string` | What a screen reader hears with the sign of a value that rose or fell. |
+| `decreasedLabel` | `string` |  |
+
+**Parts**: `label`, `value`, `track`, `fill`, `origin`, `skeleton`.
+
+**Blocks**: `DivergingMeter.Root`, `DivergingMeter.Label`, `DivergingMeter.Value`, `DivergingMeter.Track`, `DivergingMeter.Fill`, `DivergingMeter.Origin`.
+
 ## DonutChart
 
 A ring that shows one value against a total, or how a total splits into segments.
 
-**Tokens**: each with its default. It also reads the tokens of [`Legend`](#legend).
+**Tokens**: each with its default. It also reads the tokens of [`Heatmap`](#heatmap), [`Legend`](#legend), [`Scatter`](#scatter).
 
 | Token | Default |
 |---|---|
@@ -1036,11 +1132,6 @@ A ring that shows one value against a total, or how a total splits into segments
 | `--umbra-chart-value-fg` | `--umbra-color-base-text-primary` (#f5f3f8) |
 | `--umbra-chart-warning` | `--umbra-color-semantic-warning` (#f2b23a) |
 | `--umbra-focus-color` | `--umbra-color-fixed-focus-ring` (#ffb3f5) |
-| `--umbra-heatmap-backdrop-opacity` | `0.8` |
-| `--umbra-heatmap-cell-border` | `--umbra-color-base-border-control` (#7a6e91) |
-| `--umbra-heatmap-cell-border-width` | `--umbra-border-width` (1px) |
-| `--umbra-heatmap-cell-radius` | `2px` |
-| `--umbra-scatter-bubble-opacity` | `0.55` |
 | `--umbra-series-marker-size` | `0.875rem` |
 
 | Prop | Type | Purpose |
@@ -1244,6 +1335,104 @@ A header row for one group of rows inside a list or table.
 **Parts**: `toggle`, `icon`, `title`, `count`, `meta`, `actions`.
 
 **Blocks**: `GroupHeader.Root`, `GroupHeader.Toggle`, `GroupHeader.Title`, `GroupHeader.Count`, `GroupHeader.Meta`, `GroupHeader.Actions`.
+
+## Heatmap
+
+A grid of cells coloured by value: two categories against each other, or points summed into bins.
+
+**Tokens**: each with its default. It also reads the tokens of [`Legend`](#legend), [`Scatter`](#scatter).
+
+| Token | Default |
+|---|---|
+| `--umbra-chart-annotation` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-chart-annotation-dash` | `5 3` |
+| `--umbra-chart-annotation-width` | `1.5px` |
+| `--umbra-chart-area-opacity` | `0.22` |
+| `--umbra-chart-axis` | `--umbra-color-base-border-control` (#7a6e91) |
+| `--umbra-chart-axis-width` | `--umbra-border-width` (1px) |
+| `--umbra-chart-band-edge-width` | `--umbra-border-width` (1px) |
+| `--umbra-chart-band-opacity` | `0.16` |
+| `--umbra-chart-bar-radius` | `2px` |
+| `--umbra-chart-center-font` | `--umbra-font-title` |
+| `--umbra-chart-content-height` | `240px` |
+| `--umbra-chart-dim-opacity` | `0.25` |
+| `--umbra-chart-fg` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-chart-font` | `--umbra-font-label` |
+| `--umbra-chart-gap` | `--umbra-space-3` (8px) |
+| `--umbra-chart-grid` | `--umbra-color-base-border-control` (#7a6e91) |
+| `--umbra-chart-grid-dash` | `1 4` |
+| `--umbra-chart-grid-width` | `--umbra-border-width` (1px) |
+| `--umbra-chart-info` | `--umbra-color-semantic-info` (#3d9be8) |
+| `--umbra-chart-label-halo` | `--umbra-color-base-surface1` (#0b0612) |
+| `--umbra-chart-line-width` | `2px` |
+| `--umbra-chart-negative` | `--umbra-color-semantic-danger` (#f0455a) |
+| `--umbra-chart-outline-width` | `1.5px` |
+| `--umbra-chart-point-scale` | `1` |
+| `--umbra-chart-positive` | `--umbra-color-semantic-success` (#16b877) |
+| `--umbra-chart-ring-width` | `1.5px` |
+| `--umbra-chart-tooltip-bg` | `--umbra-color-base-surface2` (#1b1329) |
+| `--umbra-chart-tooltip-border` | `--umbra-color-base-border-strong` (#47395e) |
+| `--umbra-chart-tooltip-fg` | `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-chart-tooltip-max-width` | `20rem` |
+| `--umbra-chart-tooltip-radius` | `--umbra-radius-control` (4px) |
+| `--umbra-chart-track` | `--umbra-color-base-surface3` (#261b38) |
+| `--umbra-chart-track-border` | `--umbra-color-base-border-control` (#7a6e91) |
+| `--umbra-chart-track-border-width` | `--umbra-border-width` (1px) |
+| `--umbra-chart-value` | `--umbra-color-series-1` (#4a94e8) |
+| `--umbra-chart-value-fg` | `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-chart-warning` | `--umbra-color-semantic-warning` (#f2b23a) |
+| `--umbra-focus-color` | `--umbra-color-fixed-focus-ring` (#ffb3f5) |
+| `--umbra-heatmap-backdrop-opacity` | `0.8` |
+| `--umbra-heatmap-cell-border` | `--umbra-color-base-border-control` (#7a6e91) |
+| `--umbra-heatmap-cell-border-width` | `--umbra-border-width` (1px) |
+| `--umbra-heatmap-cell-radius` | `2px` |
+| `--umbra-heatmap-high` | `--umbra-color-series-1` (#4a94e8) |
+| `--umbra-heatmap-low` | `--umbra-color-base-surface3` (#261b38) |
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `aria-label` | `string` | Accessible name of the chart. Required unless `aria-labelledby` is set. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `empty` | `ReactNode \| DataStateContent` | Shown when there is no data: text, a node, or `{ title, description, icon, action }`. Defaults to a short English text. |
+| `error` | `ReactNode \| DataStateContent` | Shown in place of the data when set: text, a node, `{ title, description, icon, action }`, or `true` for a default text. |
+| `loading` | `boolean` | Shows skeletons in the final layout and marks the component busy. |
+| `hiddenIds` | `readonly string[]` | Ids of the series that are switched off (controlled). |
+| `defaultHiddenIds` | `readonly string[]` |  |
+| `onHiddenChange` | `((hiddenIds: string[]) => void)` |  |
+| `columns` | `string[]` | The names of the columns. |
+| `rows` | `string[]` | The names of the rows, from the top down. |
+| `thresholds` | `ThresholdList` | Colours cells by the band of their value in place of the scale: an ascending list of `{ from, tone?, color?, label? }`, or plain numbers as boundaries on the value ramp. The band's `label` joins the value in the tooltip and for screen readers, and names the band in the legend. |
+| `lowerIsBetter` | `boolean` | For a scale where low is good: mirrors the colours over the steps or bands. The labels stay. |
+| `formatValue` | `((value: number) => string)` | Formats a value for labels, the tooltip and screen readers. Defaults to the provider's locale. |
+| `steps` | `number` | Number of steps of the colour scale. `thresholds` replaces it. |
+| `height` | `number \| "content" \| "fill"` | `fill` (default) takes the height of the parent, and falls back to the content's height in a parent that has none (flowing content, a popover, a modal body, an accordion panel). `content` is always as tall as the content: the plot is `--umbra-chart-content-height` (240px) high. A number is a height in pixels. |
+| `description` | `string` | What a screen reader hears after the name. Defaults to a generated summary of the data. |
+| `labels` | `boolean` | Draws labels on the chart itself, so it can be read without the legend or the tooltip. |
+| `values` | `(number \| null)[][]` | One list per row, with one value per column. `null` leaves the cell out. |
+| `onRetry` | `(() => void)` | Adds a retry button to the error state. |
+| `retryLabel` | `string` | Label of the retry button. |
+| `aria-labelledby` | `string` | Id of the element that names the chart, for example a card title. |
+| `valueDomain` | `[number, number]` | The range of the colour scale. Defaults to the lowest and highest value. |
+| `xTitle` | `string` |  |
+| `yTitle` | `string` |  |
+| `legend` | `string \| number \| bigint \| boolean \| ReactElement<unknown, string \| JSXElementConstructor<any>> \| Iterable<ReactNode> \| ReactPortal \| Promise<string \| number \| bigint \| boolean \| ReactPortal \| ReactElement<unknown, string \| JSXElementConstructor<any>> \| Iterable<ReactNode> \| null \| undefined> \| null` | The legend: `true` or a placement shows the built-in one, `false` hides it, and a node replaces it. By default it is shown below the chart when there is more than one series. |
+| `onPointPress` | `((point: ChartPoint) => void)` | Called when a point is clicked, or activated with Enter or Space. |
+| `allHiddenLabel` | `string` | Shown in place of the plot when the legend has switched every series off. |
+| `pointsLabel` | `string` | Accessible name of the list of data points. |
+| `legendLabel` | `string` | Accessible name of the legend. |
+| `yDomain` | `[number, number]` |  |
+| `points` | `HeatPoint[]` | Instead of `rows`, `columns` and `values`: points that the chart sums into a grid of `bins`. |
+| `axes` | `boolean` | `false` draws no axis lines, tick labels or titles: the cells take the whole plot, for a chart over a backdrop. |
+| `bins` | `number \| [number, number]` | The grid of `points`: the number of columns and rows, or one number for both. |
+| `xDomain` | `[number, number]` | The range `points` are binned over. Defaults to the range of the points. |
+| `lowLabel` | `string` | The captions at the two ends of the scale's legend. |
+| `highLabel` | `string` |  |
+
+**Parts**: `backdrop`, `legend`, `tooltip`, `skeleton`, `empty`, `error`.
+
+**Blocks**: `Heatmap.Root`, `Heatmap.Backdrop`, `Heatmap.Cells`, `Heatmap.Axes`, `Heatmap.ValueLabels`.
 
 ## HistoryButtons
 
@@ -1515,7 +1704,7 @@ A strip of ticks with a marker that shows where a value sits on a scale.
 
 One or more series over categories, numbers or time, with a numeric or an ordinal y axis.
 
-**Tokens**: each with its default. It also reads the tokens of [`Legend`](#legend).
+**Tokens**: each with its default. It also reads the tokens of [`Heatmap`](#heatmap), [`Legend`](#legend), [`Scatter`](#scatter).
 
 | Token | Default |
 |---|---|
@@ -1552,11 +1741,6 @@ One or more series over categories, numbers or time, with a numeric or an ordina
 | `--umbra-chart-track-border-width` | `--umbra-border-width` (1px) |
 | `--umbra-chart-value-fg` | `--umbra-color-base-text-primary` (#f5f3f8) |
 | `--umbra-focus-color` | `--umbra-color-fixed-focus-ring` (#ffb3f5) |
-| `--umbra-heatmap-backdrop-opacity` | `0.8` |
-| `--umbra-heatmap-cell-border` | `--umbra-color-base-border-control` (#7a6e91) |
-| `--umbra-heatmap-cell-border-width` | `--umbra-border-width` (1px) |
-| `--umbra-heatmap-cell-radius` | `2px` |
-| `--umbra-scatter-bubble-opacity` | `0.55` |
 | `--umbra-series-marker-size` | `0.875rem` |
 
 | Prop | Type | Purpose |
@@ -1577,12 +1761,12 @@ One or more series over categories, numbers or time, with a numeric or an ordina
 | `labels` | `boolean` | Draws labels on the chart itself, so it can be read without the legend or the tooltip. |
 | `onRetry` | `(() => void)` | Adds a retry button to the error state. |
 | `retryLabel` | `string` | Label of the retry button. |
-| `categories` | `string[]` | The order of a category x axis. Defaults to the order the names first appear in. |
 | `series` (required) | `LineSeries[]` |  |
+| `aria-labelledby` | `string` | Id of the element that names the chart, for example a card title. |
+| `categories` | `string[]` | The order of a category x axis. Defaults to the order the names first appear in. |
 | `annotations` | `ChartAnnotation[]` | Reference lines and bands on either axis. |
 | `xTitle` | `string` |  |
 | `yTitle` | `string` |  |
-| `aria-labelledby` | `string` | Id of the element that names the chart, for example a card title. |
 | `legend` | `string \| number \| bigint \| boolean \| ReactElement<unknown, string \| JSXElementConstructor<any>> \| Iterable<ReactNode> \| ReactPortal \| Promise<string \| number \| bigint \| boolean \| ReactPortal \| ReactElement<unknown, string \| JSXElementConstructor<any>> \| Iterable<ReactNode> \| null \| undefined> \| null` | The legend: `true` or a placement shows the built-in one, `false` hides it, and a node replaces it. By default it is shown below the chart when there is more than one series. |
 | `onPointPress` | `((point: ChartPoint) => void)` | Called when a point is clicked, or activated with Enter or Space. |
 | `allHiddenLabel` | `string` | Shown in place of the plot when the legend has switched every series off. |
@@ -1982,6 +2166,115 @@ The header of a page or of a detail pane: what it shows, facts about it, and its
 
 **Blocks**: `PageHeader.Root`, `PageHeader.Breadcrumbs`, `PageHeader.Bar`, `PageHeader.Content`, `PageHeader.Back`, `PageHeader.Media`, `PageHeader.Titles`, `PageHeader.Overline`, `PageHeader.Title`, `PageHeader.Subtitle`, `PageHeader.Meta`, `PageHeader.Actions`, `PageHeader.Tabs`.
 
+## PieIndicator
+
+A small disc of wedges that fills with a value: a level gauge for table cells, rows and lines of text.
+
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-pie-indicator-fill` | `--umbra-color-fixed-accent-text` (#f77bf0) |
+| `--umbra-pie-indicator-gap` | `--umbra-space-2` (4px) |
+| `--umbra-pie-indicator-size` | `16px`; `12px`; `24px` |
+| `--umbra-pie-indicator-track` | `--umbra-color-base-surface3` (#261b38) |
+| `--umbra-pie-indicator-track-border` | `--umbra-color-base-border-control` (#7a6e91) |
+| `--umbra-pie-indicator-wedge-gap` | `0.16` |
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `label` | `ReactNode` | The name of the indicator, shown after the disc. |
+| `valueLabel` | `ReactNode` | Replaces the formatted value. Setting it shows the value. |
+| `showValue` | `boolean` | Shows the value as text. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `value` | `number \| null` | The current value. `null` or nothing means there is no value: the disc is empty, and says so. |
+| `aria-label` | `string` | Names an indicator that has no visible label. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `tone` | `MeterTone` | Colour of the filled wedges. A matching threshold wins over it. |
+| `variant` | `"segmented" \| "continuous"` | `segmented` fills whole wedges; `continuous` fills one sector to the exact value. |
+| `loading` | `boolean` | Shows skeletons in place of the disc and the value. |
+| `size` | `"default" \| "small" \| "large"` |  |
+| `layout` | `"block" \| "inline"` | `inline` puts the disc, the label and the value on one line; `block` puts the disc above them. |
+| `emptyLabel` | `ReactNode` | Shown in place of the value text when there is no value. |
+| `min` | `number` |  |
+| `max` | `number` |  |
+| `thresholds` | `boolean \| ThresholdList` | Colours the fill by the band of the value: an ascending list of `{ from, tone?, color?, label? }`. `true` is thirds of the scale (danger, warning, success); plain numbers are boundaries on the value ramp. The filled amount shows the level without the colour, and the band's `label` joins the value text. |
+| `lowerIsBetter` | `boolean` | For a scale where low is good: mirrors the colours of the bands. The labels stay. |
+| `segments` | `number` | Number of wedges of the segmented disc. |
+| `formatValue` | `((value: number, scale: PieIndicatorScale) => string)` | Text of a value. The default is a rounded percentage. |
+| `noValueLabel` | `string` | What assistive technology and the tooltip say when there is no value. |
+| `tooltip` | `boolean` | `false` turns off the tooltip that shows the exact value on hover. |
+| `highlightChanges` | `boolean` | A changed value flashes softly once: green when a number rose, red when it fell, neutral otherwise. A sign shows the direction without colour. No flash under reduced motion; the sign stays. The value is never counted up or down. |
+| `increasedLabel` | `string` | What a screen reader hears with the sign of a value that rose or fell. |
+| `decreasedLabel` | `string` |  |
+
+**Parts**: `disc`, `label`, `value`, `skeleton`.
+
+**Blocks**: `PieIndicator.Root`, `PieIndicator.Disc`, `PieIndicator.Label`, `PieIndicator.Value`.
+
+## Planner
+
+A month of days with a fixed number of slots each, and room beside every week for its controls.
+
+**Tokens**: each with its default. It also reads the tokens of [`ScrollArea`](#scrollarea), [`WeekStrip`](#weekstrip).
+
+| Token | Default |
+|---|---|
+| `--umbra-planner-aside-padding` | `--umbra-space-3` (8px) |
+| `--umbra-planner-border-color` | `--umbra-color-base-border-subtle` (#2e2440) |
+| `--umbra-planner-day-gap` | `--umbra-space-2` (4px) |
+| `--umbra-planner-gap` | `--umbra-space-3` (8px) |
+| `--umbra-planner-header-bg` | `var(--umbra-scroll-fade-color, var(--scroll-fade-color, var(--umbra-context-card-tint)))` |
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `aria-label` | `string` | Names the grid, before the month: "Schedule, October 2026". |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `size` | `number \| "content"` | Share of the parent's space: a weight, or `"content"` to take the size of the content. Default 1. |
+| `label` | `string` | Tab label when a parent `Columns` shows one child at a time. |
+| `priority` | `number` | Which child gives way first when space runs out. Higher stays longer; ties give way from the end. Default 0. |
+| `minWidth` | `number` | The width the child needs. When the children of a `Columns` cannot all have theirs, the `Columns` shows one child at a time, with tabs, as it does below the minimum window. |
+| `minHeight` | `number` | Below this height a parent `Stack` may collapse the child to its header. |
+| `height` | `FillHeight` | `fill` (default) takes the height of the parent, and falls back to the content's height in a parent that has none. `content` is always as tall as the weeks. A number is a height in pixels. |
+| `today` | `string` | The current day, as `'2026-10-11'`. Defaults to the day it is where the user is. |
+| `month` | `string` | The month shown, as `'2026-10'`. Controlled. |
+| `defaultMonth` | `string` | The month shown at first. Defaults to the month of `today`. |
+| `onMonthChange` | `((month: IsoMonth) => void)` |  |
+| `minMonth` | `string` | The first and the last month the user can go to. |
+| `maxMonth` | `string` |  |
+| `weekStartsOn` | `WeekStart` | The first day of the week, 0 (Sunday) to 6, where the provider's locale should not decide. |
+| `empty` | `ReactNode \| DataStateContent` | Shown when there is no data: text, a node, or `{ title, description, icon, action }`. Defaults to a short English text. |
+| `error` | `ReactNode \| DataStateContent` | Shown in place of the data when set: text, a node, `{ title, description, icon, action }`, or `true` for a default text. |
+| `loading` | `boolean` | Shows skeletons in the final layout and marks the component busy. |
+| `onRetry` | `(() => void)` | Adds a retry button to the error state. |
+| `retryLabel` | `string` | Label of the retry button. |
+| `onAction` | `((id: string) => void)` | Called with the id of an item when it is activated: a click, Enter or Space. |
+| `items` | `readonly ScheduleItem[]` | The entries. Only those on the days shown are drawn. |
+| `slotsPerDay` | `number` | The number of slots of each day. A slot without an item is drawn as a free one. |
+| `selectedDate` | `string \| null` | The chosen day, as `'2026-10-11'`. Controlled; `null` is none. |
+| `defaultSelectedDate` | `string \| null` |  |
+| `onSelectedDateChange` | `((date: IsoDate) => void)` |  |
+| `onDayAction` | `((date: IsoDate) => void)` | Called with the day when its header or one of its free slots is activated. |
+| `renderWeek` | `((week: PlannerWeek) => ReactNode)` | The side column: what stands beside each week, such as its settings or "Copy" and "Clear" buttons. |
+| `weekAsideWidth` | `number` | Width of the side column, in pixels. |
+| `weekLabel` | `string` | Names the side column, the side cell of a week ("Week, Oct 11 – 17") and the button it collapses to. |
+| `emptyWeekLabel` | `ReactNode` | Shown under the day headers of a week that has no items. |
+| `freeLabel` | `string` | What assistive technology reads for a free slot. |
+| `weekdayFormat` | `"auto" \| WeekdayFormat` | The names of the weekdays above the grid. `auto` shortens them as the columns narrow. |
+| `slotSize` | `"default" \| "small"` |  |
+| `slotDisplay` | `"icon" \| "auto" \| "full"` | `auto` hides the labels of the slots, leaving their icons, when a day is too narrow for them. |
+| `previousLabel` | `string` |  |
+| `nextLabel` | `string` |  |
+| `todayLabel` | `string` |  |
+| `monthLabel` | `string` | Accessible name of the list of months. |
+
+**Parts**: `day`, `slot`, `placeholder`, `skeleton`, `weekdays`, `weekEmpty`, `state`, `toolbar`.
+
+**Blocks**: `Planner.Root`, `Planner.Toolbar`, `Planner.Grid`, `Planner.Row`, `Planner.Cell`.
+
 ## Popover
 
 An anchored panel without a backdrop: the page behind it stays usable. It keeps the density, context tint and tokens of the place it was opened from.
@@ -2170,7 +2463,7 @@ A bar that fills with a value: progress of a task, or a measured level. Fills th
 
 Compares one or more series across several axes that share a centre.
 
-**Tokens**: each with its default. It also reads the tokens of [`Legend`](#legend).
+**Tokens**: each with its default. It also reads the tokens of [`Heatmap`](#heatmap), [`Legend`](#legend), [`Scatter`](#scatter).
 
 | Token | Default |
 |---|---|
@@ -2207,11 +2500,6 @@ Compares one or more series across several axes that share a centre.
 | `--umbra-chart-track-border-width` | `--umbra-border-width` (1px) |
 | `--umbra-chart-value-fg` | `--umbra-color-base-text-primary` (#f5f3f8) |
 | `--umbra-focus-color` | `--umbra-color-fixed-focus-ring` (#ffb3f5) |
-| `--umbra-heatmap-backdrop-opacity` | `0.8` |
-| `--umbra-heatmap-cell-border` | `--umbra-color-base-border-control` (#7a6e91) |
-| `--umbra-heatmap-cell-border-width` | `--umbra-border-width` (1px) |
-| `--umbra-heatmap-cell-radius` | `2px` |
-| `--umbra-scatter-bubble-opacity` | `0.55` |
 | `--umbra-series-marker-size` | `0.875rem` |
 
 | Prop | Type | Purpose |
@@ -2347,6 +2635,139 @@ A choice of exactly one option among a few, all visible at once.
 **Parts**: `label`, `description`, `options`, `error`.
 
 **Blocks**: `RadioGroup.Root`, `RadioGroup.Label`, `RadioGroup.Description`, `RadioGroup.Options`, `RadioGroup.Error`.
+
+## Scatter
+
+Points by two values, in one or more series; a third value makes them bubbles.
+
+**Tokens**: each with its default. It also reads the tokens of [`Heatmap`](#heatmap), [`Legend`](#legend).
+
+| Token | Default |
+|---|---|
+| `--umbra-chart-annotation` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-chart-annotation-dash` | `5 3` |
+| `--umbra-chart-annotation-width` | `1.5px` |
+| `--umbra-chart-area-opacity` | `0.22` |
+| `--umbra-chart-axis` | `--umbra-color-base-border-control` (#7a6e91) |
+| `--umbra-chart-axis-width` | `--umbra-border-width` (1px) |
+| `--umbra-chart-band-edge-width` | `--umbra-border-width` (1px) |
+| `--umbra-chart-band-opacity` | `0.16` |
+| `--umbra-chart-bar-radius` | `2px` |
+| `--umbra-chart-center-font` | `--umbra-font-title` |
+| `--umbra-chart-content-height` | `240px` |
+| `--umbra-chart-dim-opacity` | `0.25` |
+| `--umbra-chart-fg` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-chart-font` | `--umbra-font-label` |
+| `--umbra-chart-gap` | `--umbra-space-3` (8px) |
+| `--umbra-chart-grid` | `--umbra-color-base-border-control` (#7a6e91) |
+| `--umbra-chart-grid-dash` | `1 4` |
+| `--umbra-chart-grid-width` | `--umbra-border-width` (1px) |
+| `--umbra-chart-label-halo` | `--umbra-color-base-surface1` (#0b0612) |
+| `--umbra-chart-line-width` | `2px` |
+| `--umbra-chart-outline-width` | `1.5px` |
+| `--umbra-chart-point-scale` | `1` |
+| `--umbra-chart-ring-width` | `1.5px` |
+| `--umbra-chart-tooltip-bg` | `--umbra-color-base-surface2` (#1b1329) |
+| `--umbra-chart-tooltip-border` | `--umbra-color-base-border-strong` (#47395e) |
+| `--umbra-chart-tooltip-fg` | `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-chart-tooltip-max-width` | `20rem` |
+| `--umbra-chart-tooltip-radius` | `--umbra-radius-control` (4px) |
+| `--umbra-chart-track` | `--umbra-color-base-surface3` (#261b38) |
+| `--umbra-chart-track-border` | `--umbra-color-base-border-control` (#7a6e91) |
+| `--umbra-chart-track-border-width` | `--umbra-border-width` (1px) |
+| `--umbra-chart-value-fg` | `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-focus-color` | `--umbra-color-fixed-focus-ring` (#ffb3f5) |
+| `--umbra-scatter-bubble-opacity` | `0.55` |
+| `--umbra-series-marker-size` | `0.875rem` |
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `aria-label` | `string` | Accessible name of the chart. Required unless `aria-labelledby` is set. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `empty` | `ReactNode \| DataStateContent` | Shown when there is no data: text, a node, or `{ title, description, icon, action }`. Defaults to a short English text. |
+| `error` | `ReactNode \| DataStateContent` | Shown in place of the data when set: text, a node, `{ title, description, icon, action }`, or `true` for a default text. |
+| `loading` | `boolean` | Shows skeletons in the final layout and marks the component busy. |
+| `hiddenIds` | `readonly string[]` | Ids of the series that are switched off (controlled). |
+| `defaultHiddenIds` | `readonly string[]` |  |
+| `onHiddenChange` | `((hiddenIds: string[]) => void)` |  |
+| `formatValue` | `((value: number) => string)` | Formats a value for labels, the tooltip and screen readers. Defaults to the provider's locale. |
+| `height` | `number \| "content" \| "fill"` | `fill` (default) takes the height of the parent, and falls back to the content's height in a parent that has none (flowing content, a popover, a modal body, an accordion panel). `content` is always as tall as the content: the plot is `--umbra-chart-content-height` (240px) high. A number is a height in pixels. |
+| `description` | `string` | What a screen reader hears after the name. Defaults to a generated summary of the data. |
+| `labels` | `boolean` | Draws labels on the chart itself, so it can be read without the legend or the tooltip. |
+| `onRetry` | `(() => void)` | Adds a retry button to the error state. |
+| `retryLabel` | `string` | Label of the retry button. |
+| `onAction` | `((id: string) => void)` | Called with the id of a point that is clicked, or activated with Enter or Space. |
+| `series` (required) | `ScatterSeries[]` |  |
+| `aria-labelledby` | `string` | Id of the element that names the chart, for example a card title. |
+| `annotations` | `ChartAnnotation[]` | Reference lines and bands on either axis. |
+| `xTitle` | `string` |  |
+| `yTitle` | `string` |  |
+| `legend` | `string \| number \| bigint \| boolean \| ReactElement<unknown, string \| JSXElementConstructor<any>> \| Iterable<ReactNode> \| ReactPortal \| Promise<string \| number \| bigint \| boolean \| ReactPortal \| ReactElement<unknown, string \| JSXElementConstructor<any>> \| Iterable<ReactNode> \| null \| undefined> \| null` | The legend: `true` or a placement shows the built-in one, `false` hides it, and a node replaces it. By default it is shown below the chart when there is more than one series. |
+| `onPointPress` | `((point: ChartPoint) => void)` | Called when a point is clicked, or activated with Enter or Space. |
+| `allHiddenLabel` | `string` | Shown in place of the plot when the legend has switched every series off. |
+| `pointsLabel` | `string` | Accessible name of the list of data points. |
+| `legendLabel` | `string` | Accessible name of the legend. |
+| `yDomain` | `[number, number]` | The range of the y axis. Defaults to round numbers around the data. |
+| `formatX` | `((x: ScatterX) => string)` | Formats an x value for the axis, the tooltip and screen readers. |
+| `axes` | `boolean` | `false` draws no axis lines, grid, tick labels or titles: the points take the whole plot, for a chart over a backdrop. |
+| `xDomain` | `[number, number] \| [Date, Date]` | The range of the x axis. Defaults to round numbers around the data, or the first and last date. |
+| `sizeDomain` | `[number, number]` | The `size` values that give the smallest and the largest bubble. Defaults to 0 and the largest size. |
+| `sizeLabel` | `string` | Names the `size` value in the tooltip, for screen readers and in the data table. |
+| `formatSize` | `((size: number) => string)` | Formats a `size` value. Defaults to the provider's locale. |
+
+**Parts**: `backdrop`, `legend`, `tooltip`, `skeleton`, `empty`, `error`.
+
+**Blocks**: `Scatter.Root`, `Scatter.Backdrop`, `Scatter.Grid`, `Scatter.Annotations`, `Scatter.Points`, `Scatter.Axes`, `Scatter.PointLabels`.
+
+## ScheduleSlot
+
+A coloured chip for one entry of a schedule: an icon and a label, coloured by its category.
+
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-schedule-slot-bg` | `var(--fill)` |
+| `--umbra-schedule-slot-border` | `var(--line)` |
+| `--umbra-schedule-slot-fg` | `var(--ink)` |
+| `--umbra-schedule-slot-font` | `--umbra-font-label` |
+| `--umbra-schedule-slot-gap` | `--umbra-space-2` (4px) |
+| `--umbra-schedule-slot-height` | `calc(var(--umbra-density-table-row) + 2px)` or `max(16px, calc(var(--umbra-density-table-row) - 6px))` |
+| `--umbra-schedule-slot-padding-x` | `--umbra-space-3` (8px) or `--umbra-space-2` (4px) |
+| `--umbra-schedule-slot-radius` | `--umbra-radius-control` (4px) |
+| `--umbra-schedule-slot-selected-ring` | `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-schedule-slot-stripe` | `var(--tone)` |
+| `--umbra-schedule-slot-stripe-width` | `3px` |
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `children` | `ReactNode` | The label. Without one (`null`, `undefined` or an empty text) the slot is `empty` and shows `emptyLabel`. |
+| `emptyLabel` | `ReactNode` | Shown when there is no label. |
+| `icon` | `ReactNode` | The category's icon: with the label, the cue that does not depend on colour. |
+| `loading` | `boolean` | Shows a placeholder of the slot's size. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `renderLink` | `((props: LinkRenderProps) => ReactNode)` | Plugs in the app's router link. Defaults to a plain `<a>`. |
+| `aria-label` | `string` | Accessible name, for a slot whose content is not text. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `href` | `string` | Makes the slot a link. |
+| `tone` | `Tone` | What the colour means. |
+| `variant` | `"empty" \| "filled" \| "outlined"` | `filled`: tinted, with a stripe. `outlined`: the border only. `empty`: dashed and quiet, for free or rest time. |
+| `size` | `"default" \| "small"` | `small` is for a strip in a small card. Otherwise the height follows the density level. |
+| `selected` | `boolean` | Marks the chosen slot with a ring. |
+| `disabled` | `boolean` |  |
+| `onPress` | `(() => void)` | Makes the slot a button. |
+| `color` | `string` | A free colour (any CSS colour) for a category of the app. Replaces `tone`. |
+| `fullWidth` | `boolean` | Fills the width of its container. Otherwise it is as wide as its content. |
+| `selectedLabel` | `string` | What a screen reader hears after the label of a selected slot. |
+| `series` | `ScheduleSlotSeries` | A colour of the series palette, by its number. Replaces `tone`; `color` replaces both. |
+| `display` | `"icon" \| "auto" \| "full"` | `icon` shows the icon alone; the label stays the accessible name and becomes a tooltip. `auto` does that by itself when the day of a `WeekStrip` or `Planner` around it is too narrow for a label. A slot without an icon always keeps its label. |
+
+**Parts**: `icon`, `label`, `skeleton`.
+
+**Blocks**: `ScheduleSlot.Root`, `ScheduleSlot.Icon`, `ScheduleSlot.Label`.
 
 ## ScrollArea
 
@@ -2851,6 +3272,59 @@ Gives `size`, `priority`, `minWidth`, `minHeight` and `label` to content that is
 **Parts**: none.
 
 **Blocks**: none.
+
+## Sparkline
+
+A tiny chart with no axes: the shape of a run of values, for a table cell, a tile or a line of text.
+
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-chart-info` | `--umbra-color-semantic-info` (#3d9be8) |
+| `--umbra-chart-negative` | `--umbra-color-semantic-danger` (#f0455a) |
+| `--umbra-chart-positive` | `--umbra-color-semantic-success` (#16b877) |
+| `--umbra-chart-value` | `--umbra-color-series-1` (#4a94e8) |
+| `--umbra-chart-warning` | `--umbra-color-semantic-warning` (#f2b23a) |
+| `--umbra-focus-color` | `--umbra-color-fixed-focus-ring` (#ffb3f5) |
+| `--umbra-sparkline-area-opacity` | `0.22` |
+| `--umbra-sparkline-color` | `--umbra-color-series-1` (#4a94e8) |
+| `--umbra-sparkline-height` | `20px` |
+| `--umbra-sparkline-line-width` | `1.5px` |
+| `--umbra-sparkline-marker` | `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-sparkline-negative` | `--umbra-color-semantic-danger` (#f0455a) |
+| `--umbra-sparkline-positive` | `--umbra-color-semantic-success` (#16b877) |
+| `--umbra-sparkline-reference` | `--umbra-color-base-text-muted` (#948da2) |
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `aria-label` | `string` | Replaces the generated summary as the accessible name. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `tone` | `"default" \| ThresholdTone` | Colour of the marks, by meaning. |
+| `variant` | `"line" \| "bars" \| "area" \| "signed"` | `line` and `area` join the values; `bars` draws one bar per value from zero; `signed` draws equal bars above or below the middle by the sign of each value, for a run of outcomes. |
+| `loading` | `boolean` | Shows a skeleton in place of the marks. |
+| `interactive` | `boolean` | Makes the sparkline a tab stop that shows the nearest value in a tooltip on hover, focus and arrow keys. |
+| `emptyLabel` | `ReactNode` | Shown in place of the marks when there is no value. |
+| `color` | `string` | Any CSS colour. Wins over `tone`. |
+| `thresholds` | `ThresholdList` | Colours each bar, and the last point of a line, by the band of its value: an ascending list of `{ from, tone?, color?, label? }`, or plain numbers as boundaries on the value ramp. The height of a bar already shows its value without colour; the band's `label` joins the value in the tooltip. |
+| `lowerIsBetter` | `boolean` | For a scale where low is good: mirrors the colours of the bands. The labels stay. |
+| `formatValue` | `((value: number) => string)` | Formats a value for the summary and the tooltip. Defaults to the provider's locale. |
+| `noValueLabel` | `string` | What assistive technology hears when there is no value. |
+| `labels` | `readonly string[]` | The name of each value (a month, a round), for the tooltip of an `interactive` sparkline. |
+| `data` (required) | `readonly (number \| null \| undefined)[]` | The values, in order. `null` is a missing value: a gap in the line, no bar. |
+| `curve` | `LineCurve` |  |
+| `domain` | `[number, number]` | The range of the scale. Defaults to the lowest and highest value; bars include zero. |
+| `reference` | `number \| [number, number]` | A reference line at one value, or a band between two. |
+| `lastPoint` | `boolean` | Marks the last value with a dot. |
+| `extremes` | `boolean` | Marks the lowest and the highest value with a dot. |
+| `maxBarWidth` | `number` | The widest a bar gets, in pixels. Narrower when the values do not fit. |
+| `formatSummary` | `((stats: SparklineStats, format: (value: number) => string) => string)` | The text a screen reader hears in place of the drawing. Defaults to an English sentence. |
+
+**Parts**: `reference`, `marks`, `markers`, `skeleton`.
+
+**Blocks**: `Sparkline.Root`, `Sparkline.Reference`, `Sparkline.Marks`, `Sparkline.Markers`.
 
 ## SplitButton
 
@@ -3703,3 +4177,47 @@ Side navigation for a modal, a settings screen or one column of a page.
 **Parts**: `header`, `item`, `footer`, `toggle`.
 
 **Blocks**: `VerticalNav.Root`, `VerticalNav.Header`, `VerticalNav.List`, `VerticalNav.Section`, `VerticalNav.Group`, `VerticalNav.Item`, `VerticalNav.Footer`, `VerticalNav.Toggle`.
+
+## WeekStrip
+
+Seven days side by side, each with its slots: a week at a glance, small enough for a card.
+
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-week-strip-gap` | `--umbra-space-2` (4px) |
+| `--umbra-week-strip-today-bg` | `color-mix(in oklab, var(--umbra-color-fixed-primary) 14%, transparent)` |
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `items` | `readonly ScheduleItem[]` | The entries. Those outside the seven days are left out. |
+| `startDate` | `string` | The first of the seven days, as `'2026-10-05'`. Wins over `date`. |
+| `date` | `string` | A day of the week to show: the strip starts on the first day of its week. Defaults to `today`. |
+| `today` | `string` | The current day. Defaults to the day it is where the user is. |
+| `weekStartsOn` | `WeekStart` | The first day of the week, 0 (Sunday) to 6, where the provider's locale should not decide. |
+| `slotsPerDay` | `number` | The number of slots of each day. Defaults to the most any of the days has, and at least one. |
+| `dayHeader` | `"both" \| "date" \| "weekday"` | What heads each day: the weekday and the number, or one of them. |
+| `weekdayFormat` | `"auto" \| WeekdayFormat` | `auto`: the long name where it fits, then the short and the narrow one as the strip narrows. |
+| `slotSize` | `"default" \| "small"` |  |
+| `slotDisplay` | `"icon" \| "auto" \| "full"` | `auto` hides the labels of the slots, leaving their icons, when a day is too narrow for them. |
+| `selectedDate` | `string \| null` | The chosen day. Controlled; `null` is none. |
+| `defaultSelectedDate` | `string \| null` |  |
+| `onSelectedDateChange` | `((date: IsoDate) => void)` |  |
+| `onAction` | `((id: string) => void)` | Called with the id of an item when it is activated: a click, Enter or Space. |
+| `onDayAction` | `((date: IsoDate) => void)` | Called with the day when its header or one of its free slots is activated. |
+| `freeLabel` | `string` | What assistive technology reads for a free slot. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `loading` | `boolean` | Shows skeletons in the final layout and marks the component busy. |
+| `empty` | `ReactNode \| DataStateContent` | Shown when there is no data: text, a node, or `{ title, description, icon, action }`. Defaults to a short English text. |
+| `error` | `ReactNode \| DataStateContent` | Shown in place of the data when set: text, a node, `{ title, description, icon, action }`, or `true` for a default text. |
+| `onRetry` | `(() => void)` | Adds a retry button to the error state. |
+| `retryLabel` | `string` | Label of the retry button. |
+| `aria-label` | `string` | Accessible name of the grid. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `aria-labelledby` | `string` |  |
+
+**Parts**: `day`, `slot`, `placeholder`, `skeleton`, `state`.
+
+**Blocks**: `WeekStrip.Root`, `WeekStrip.Row`, `WeekStrip.Cell`.

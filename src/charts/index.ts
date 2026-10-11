@@ -34,3 +34,16 @@ export type { LineCurve } from './internal/line';
 // The shared `thresholds` shape, also in the main entry: a chart-only app needs no second import.
 export { rampThresholds, resolveThreshold } from '../utils/thresholds';
 export type { Threshold, ThresholdBand, ThresholdList, ThresholdTone } from '../utils/thresholds';
+export { Sparkline, sparklineColumn } from './Sparkline';
+export type { SparklineProps, SparklineRootProps, SparklineStats } from './Sparkline';
+export { Heatmap } from './Heatmap';
+export type { HeatmapProps, HeatmapRootProps, HeatmapParts, HeatmapPoint } from './Heatmap';
+export { Scatter } from './Scatter';
+export type {
+  ScatterProps,
+  ScatterRootProps,
+  ScatterParts,
+  ScatterSeries,
+  ScatterPoint,
+  ScatterX,
+} from './Scatter';
