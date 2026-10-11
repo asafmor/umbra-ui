@@ -78,17 +78,13 @@ After step 6:
 ## Publishing Storybook
 
 `.github/workflows/docs.yml` builds Storybook (the components and the guides) and deploys it to GitHub
-Pages. It runs only when started by hand, so it cannot fail before Pages is enabled.
+Pages. It runs only when started by hand.
 
-1. Repository **Settings > Pages > Build and deployment > Source**: choose **GitHub Actions**.
-2. **Actions > Docs > Run workflow**, on `main`.
-3. The run prints the address of the site (the `deploy` job, under `github-pages`).
-4. Add that address to the README, in "Learn more", in place of the `npm run storybook` row, and to
-   `homepage` in `package.json`.
+Pages is enabled for the repository, with GitHub Actions as its source, and the site is at
+<https://asafmor.github.io/umbra-ui/> (also in the README's "Learn more" and in `homepage` of `package.json`).
 
-> **For the owner to fill in**: the address is not written anywhere yet, because it is only known once
-> Pages is enabled. Without a custom domain GitHub serves a project site at
-> `https://<account>.github.io/<repository>/`.
+To publish the current `main`: **Actions > Docs > Run workflow**, or `gh workflow run docs.yml --ref main`.
+The site does not update by itself.
 
 To publish on every release instead of by hand, add a `push: tags: ['v*']` trigger to the workflow once
 the first run has worked.

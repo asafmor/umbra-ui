@@ -186,9 +186,11 @@ done in that file's table as you fix it:
   - docs/getting-started.md gets a short "Debugging" note: what ships, and
     that the maps need no setup in Vite. Check what webpack and Next.js
     need and say it.
-- Storybook on GitHub Pages: I enable Pages and run the workflow myself.
-  When README.md has a line marked for the site's address and I have given
-  it to you, fill it in, with `homepage` in package.json.
+- Storybook on GitHub Pages is live at https://asafmor.github.io/umbra-ui/
+  and is published only by hand. After each group is merged and CI is
+  green, run `gh workflow run docs.yml --ref main` and check the site
+  loads a new story. Propose in your plan whether it should publish on
+  every push to `main` instead.
 - Not yours: protecting `main`, vulnerability reporting, the release.
 
 Things Milestone 2 must do to what Milestone 1 left:

@@ -8,7 +8,7 @@
     "type": "git",
     "url": "git+https://github.com/asafmor/umbra-ui.git"
   },
-  "homepage": "https://github.com/asafmor/umbra-ui#readme",
+  "homepage": "https://asafmor.github.io/umbra-ui/",
   "bugs": "https://github.com/asafmor/umbra-ui/issues",
   "keywords": [
     "react",

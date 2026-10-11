@@ -82,16 +82,16 @@ stack's `label`.
 
 ## Learn more
 
-|                                                      |                                                                         |
-| ---------------------------------------------------- | ----------------------------------------------------------------------- |
-| [Getting started](docs/getting-started.md)           | Install, the provider, the frame                                        |
-| [Layout](docs/layout.md)                             | How space is shared, and what happens as it shrinks                     |
-| [Theming](docs/theming.md)                           | Brand, context, density, tokens, fonts, icons, direction                |
-| [Customisation](docs/customisation.md)               | The four layers, router links, translating built-in strings             |
-| [Recipes](docs/recipes.md)                           | Thirteen whole screens, from a first page to a table with bulk actions  |
-| [Customisation tables](docs/customisation-tables.md) | Every component's tokens, props, parts and blocks (generated)           |
-| [Changelog](CHANGELOG.md)                            | What each release changed                                               |
-| Storybook                                            | `npm run storybook`: every component, variant and state, and the guides |
+|                                                      |                                                                                   |
+| ---------------------------------------------------- | --------------------------------------------------------------------------------- |
+| [Getting started](docs/getting-started.md)           | Install, the provider, the frame                                                  |
+| [Layout](docs/layout.md)                             | How space is shared, and what happens as it shrinks                               |
+| [Theming](docs/theming.md)                           | Brand, context, density, tokens, fonts, icons, direction                          |
+| [Customisation](docs/customisation.md)               | The four layers, router links, translating built-in strings                       |
+| [Recipes](docs/recipes.md)                           | Thirteen whole screens, from a first page to a table with bulk actions            |
+| [Customisation tables](docs/customisation-tables.md) | Every component's tokens, props, parts and blocks (generated)                     |
+| [Changelog](CHANGELOG.md)                            | What each release changed                                                         |
+| [Storybook](https://asafmor.github.io/umbra-ui/)     | Every component, variant and state, and the guides (locally: `npm run storybook`) |
 
 ## Examples
 

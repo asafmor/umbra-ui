@@ -1,8 +1,8 @@
 name: Docs
 
 # Builds Storybook (the workshop and the guides) and publishes it to GitHub Pages.
-# It runs only when started by hand (Actions > Docs > Run workflow), so it cannot fail before Pages is
-# enabled for the repository. docs/releasing.md says how to enable it.
+# It runs only when started by hand (Actions > Docs > Run workflow): the site shows what was last
+# published, not every push. docs/releasing.md has the address.
 on:
   workflow_dispatch:
 

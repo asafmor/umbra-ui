@@ -57,6 +57,6 @@ A story costs 12 images (15 when `narrow`), about 45 kB each.
 
 - Changesets, on a single package: `npm run version` (bump and changelog), review, commit, `npm run release` (checks, build, package check, publish). Steps: `docs/releasing.md`.
 - `npm run release:check` rehearses the version bump on a temporary copy and checks the tarball; CI runs it, with `npm run examples:standalone` (each example, copied out and installed against the packed tarball).
-- Storybook is published to GitHub Pages by `.github/workflows/docs.yml`, started by hand until the owner enables Pages.
+- Storybook is published to GitHub Pages by `.github/workflows/docs.yml`, started by hand; the site is at <https://asafmor.github.io/umbra-ui/>.
 - The docs samples compile under `exactOptionalPropertyTypes`.
 - Browsers: the automated tests run in Chromium only, by the owner's decision. Firefox and Safari are supported from the minimum versions in the README without automated tests; the support rests on the CSS features used and on a manual checklist run before a release (written in Milestone 2).
