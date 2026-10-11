@@ -218,18 +218,26 @@ The stylesheet relies on current CSS and has no fallbacks for older browsers.
 | Firefox         | 121     | `:has()`                 |
 | Safari          | 16.2    | `color-mix()` in `oklab` |
 
-| Feature                               | Used for                                              | Without it                                                    |
-| ------------------------------------- | ----------------------------------------------------- | ------------------------------------------------------------- |
-| `color-mix()` in `oklab`              | Tints, hover and pressed colours, borders             | Required: those colours are missing                           |
-| `:has()`                              | States that depend on a child (a hovered trigger)     | Required                                                      |
-| Container queries                     | Showing less as a component narrows                   | Required: content is cut instead                              |
-| `dvh` and `dvw` units                 | The shell is exactly the window                       | Required                                                      |
-| Subgrid                               | One label column for every row of a `KeyValueList`    | Degrades: each row sizes its own label. Chrome 111 is enough. |
-| `transition-behavior: allow-discrete` | Hiding the scrollbar while an `Accordion` panel opens | Degrades: the scrollbar shows during the transition           |
-| `scrollbar-color`, `scrollbar-width`  | Thin scrollbars in Firefox                            | Degrades: the browser's own scrollbar                         |
+| Feature                               | Used for                                                         | Without it                                                                                    |
+| ------------------------------------- | ---------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `color-mix()` in `oklab`              | Tints, hover and pressed colours, borders                        | Required: those colours are missing                                                           |
+| `:has()`                              | States that depend on a child (a hovered trigger)                | Required                                                                                      |
+| Container queries                     | Showing less as a component narrows                              | Required: content is cut instead                                                              |
+| `dvh` and `dvw` units                 | The shell is exactly the window                                  | Required                                                                                      |
+| Subgrid                               | One label column for every row of a `KeyValueList`               | Degrades: each row sizes its own label. Chrome 111 is enough.                                 |
+| `transition-behavior: allow-discrete` | Hiding the scrollbar while an `Accordion` panel opens            | Degrades: the scrollbar shows during the transition                                           |
+| `scrollbar-color`, `scrollbar-width`  | Thin scrollbars in Firefox                                       | Degrades: Chrome before 121 and Safari take the `::-webkit-scrollbar` rules                   |
+| `lh` unit                             | Centring a checkbox, a radio or one line of text on its row      | Degrades in Safari 16.2 and 16.3: a few pixels off; nothing is hidden                         |
+| `contain-intrinsic-block-size`        | The 240px of a chart that has no height to fill                  | Safari before 17: `height="content"` has a fallback; give other charts a parent with a height |
+| `safe` alignment                      | An `EmptyState` taller than its slot stays readable from the top | Safari before 17.6: centred by a fallback, cut at both ends when too tall                     |
+| Popover API                           | The chart tooltip, above everything                              | Firefox before 125, Safari before 17: a fixed element, which a clipping ancestor can cut      |
 
-- The automated tests run in Chromium only. Firefox and Safari are expected to work from the versions
-  above, and are not tested yet.
+- `npm run lint` fails when the stylesheet or the code uses a feature newer than the minimums without a
+  fallback (`scripts/check-browsers.mjs` holds the list, with the version of each browser that ships it).
+- The automated tests run in Chromium only. Firefox and Safari are supported from the versions above
+  and looked at by hand before a release ([the checklist](browser-checks.md)).
+- Right to left needs `dir="rtl"` on the page or a right-to-left `locale` on the provider; it does not
+  depend on `lang`.
 - React 19.0 or later. No React 18.
 - Node 20 or later, when you render on the server. In the browser the package needs a bundler (Vite,
   webpack, Next.js): it is ESM, and it imports its dependencies by name.

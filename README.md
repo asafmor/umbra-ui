@@ -222,9 +222,14 @@ The stylesheet relies on current CSS, with no fallbacks for older browsers.
   states and the rules that shed detail as space shrinks do not work.
 - **Degrade gracefully**: subgrid (the rows of a `KeyValueList` stop sharing one label column; Chrome 111
   is enough without it), `transition-behavior: allow-discrete` (a scrollbar shows while an `Accordion`
-  section opens) and `scrollbar-color`.
+  section opens), `scrollbar-color`, and a few features newer than the minimum Firefox or Safari, each
+  with a fallback or a small visual difference: the table is in
+  [Getting started](docs/getting-started.md#browser-support).
+- **Checked**: `npm run lint` fails when the stylesheet or the code uses a feature newer than these
+  versions without a fallback and a note (`scripts/check-browsers.mjs`).
 - **Tested** automatically in Chromium only. Firefox and Safari are supported from the versions above
-  without automated tests; please report what you find.
+  without automated tests, and are looked at by hand before a release
+  ([the checklist](docs/browser-checks.md)); please report what you find.
 - **React** 19.0 or later. **Node** 20 or later to render on the server; the package is ESM only.
 - **Server rendering**: every component renders with `renderToString` and hydrates without warnings.
   They are client components (they use state, effects and context): with React Server Components, as in

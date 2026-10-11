@@ -15,6 +15,7 @@ between them.
 | CI is green on that commit                       | The badge in the README, or the Actions tab |
 | You are signed in to npm as the package owner    | `npm whoami`                                |
 | The release can be made                          | `npm run build && npm run release:check`    |
+| Firefox and Safari have been looked at           | [The checks by hand](browser-checks.md)     |
 
 `release:check` rehearses the version bump on a copy in a temporary folder and prints what it would
 release (`umbra-ui 0.0.0 -> 0.1.0`), then checks that the package holds every file its `exports` name

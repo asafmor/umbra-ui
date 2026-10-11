@@ -20,7 +20,7 @@
 
 **Changed 2026-10-11 (examples)**: no npm workspaces. Changesets cannot version a root package that is also the workspace root (`changeset version` failed), and a workspace example is not a template that works when copied out. The examples are plain folders, each a complete app with its own `package.json`; `npm run examples` installs each against the built package (as a copy, through `install-links`) and builds it. Release steps: `docs/releasing.md`.
 
-**Confirmed 2026-10-11 (support)**: peer range `react >=19` (checked on 19.0.0: a page, the command palette, a tooltip, and `renderToString` on Node 20, 22 and 24); `engines.node >=20`. Browser support is stated in the README: Chrome and Edge 117, Firefox 121, Safari 16.2, from the CSS the stylesheet needs; tested in Chromium only.
+**Confirmed 2026-10-11 (support)**: peer range `react >=19` (checked on 19.0.0: a page, the command palette, a tooltip, and `renderToString` on Node 20, 22 and 24); `engines.node >=20`. Browser support is stated in the README: Chrome and Edge 117, Firefox 121, Safari 16.2, from the CSS the stylesheet needs; tested in Chromium only. `build.cssTarget` is set to the same versions, and `scripts/check-browsers.mjs` keeps them true (decision 06).
 
 ## Build shape (2026-10-11)
 

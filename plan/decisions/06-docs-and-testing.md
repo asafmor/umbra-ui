@@ -59,4 +59,34 @@ A story costs 12 images (15 when `narrow`), about 45 kB each.
 - `npm run release:check` rehearses the version bump on a temporary copy and checks the tarball; CI runs it, with `npm run examples:standalone` (each example, copied out and installed against the packed tarball).
 - Storybook is published to GitHub Pages by `.github/workflows/docs.yml`, started by hand; the site is at <https://asafmor.github.io/umbra-ui/>.
 - The docs samples compile under `exactOptionalPropertyTypes`.
-- Browsers: the automated tests run in Chromium only, by the owner's decision. Firefox and Safari are supported from the minimum versions in the README without automated tests; the support rests on the CSS features used and on a manual checklist run before a release (written in Milestone 2).
+- Browsers: the automated tests run in Chromium only, by the owner's decision. Firefox and Safari are supported from the minimum versions in the README without automated tests; the support rests on the CSS features used and on a manual checklist run before a release ("Browsers: what keeps the minimums true" below).
+
+## Browsers: what keeps the minimums true (added 2026-10-11)
+
+Minimums: Chrome and Edge 117, Firefox 121, Safari 16.2. No automated test runs in Firefox or Safari.
+
+| What | Where |
+|---|---|
+| A table of CSS and JavaScript features, the first version of each browser that ships each (MDN browser-compat-data 8.1.5), and a pattern that finds it. A feature newer than a minimum fails unless its row has a note saying what happens without it; a note that is no longer needed fails too. | `scripts/check-browsers.mjs`, run by `npm run lint` on `src/` and by `npm run check:package` on `dist/styles.css` too |
+| The same versions in the README, the getting-started guide and `build.cssTarget` | The same script |
+| The built stylesheet holds no selector the minifier rewrote (`:lang()`), and a `-webkit-` twin beside `mask`, `backdrop-filter` and `user-select` | The same script, with `--dist` |
+| A person looks at the pages, overlays, the table, scrollbars, focus rings, right to left, reduced motion, fonts and charts in Firefox and Safari before a release | `docs/browser-checks.md` |
+
+**`build.cssTarget` is the minimums** (it was Vite's default, "baseline widely available", which moves with Vite). Lightning CSS, which minifies the stylesheet, adds prefixes and merges rules for those versions.
+
+**Found when the check was written, and fixed**
+
+| Finding | Fix |
+|---|---|
+| `:dir(rtl)` (Chrome 120, Safari 16.4) in 11 rules of 7 stylesheets. The minifier rewrote each to `:lang(ar, he, …)`, in the package and in the Storybook the tests run on: a page with `dir="rtl"` and no right-to-left `lang` lost those rules in every browser. The tests passed because the stories set a Hebrew locale. | The rules are written `:is([dir='rtl'], [dir='rtl'] *)`. |
+| The direction of a locale was `ltr` for every locale in Firefox before 153, which has no `Intl.Locale` text info. | The script of the locale decides there (unit-tested). |
+| `justify-content: safe center` (Safari 17.6) left an `EmptyState` at the top of its slot. | A `center` fallback inside `@supports not`. A plain fallback line above it does not survive the minifier. |
+| `contain-intrinsic-block-size` (Safari 17) left a chart with `height="content"` without a height. | A `min-height` inside `@supports not`. |
+
+**Newer than a minimum, kept, each with its note in the script**: the `lh` unit (Safari 16.4), `transition-behavior`, `scrollbar-width` and `scrollbar-color`, the unprefixed `mask`, `backdrop-filter`, `user-select` and `line-clamp`, the Popover API of the chart tooltip (Firefox 125, Safari 17), `Intl.Locale` text info.
+
+**Open (owner)**
+
+- Safari 16.2 and 16.3 lack the `lh` unit: six alignments are a few pixels off there. Safari 16.4 as the minimum would end that, and would allow `:dir()` together with Chrome 120.
+- A `fill` chart in a parent without a height has no height in Safari before 17 (the fallback covers `height="content"` only), and the chart tooltip is not in the top layer in Firefox before 125 and Safari before 17. Neither has been seen in those browsers: both are on the checklist. Safari 17 and Firefox 125 as the minimums would end both.
+- No real screen reader, zoom or touch testing yet.
