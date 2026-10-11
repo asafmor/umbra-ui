@@ -1,3 +1,4 @@
+import { usePopoverRef } from './popoverRef';
 import {
   createContext,
   createElement,
@@ -30,13 +31,7 @@ import { useScopeAttributes } from '../provider/UmbraProvider';
 import { warn } from '../utils/dev';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './Popover.module.css';
-import {
-  toAriaPlacement,
-  usePopoverRef,
-  useOpenState,
-  useOverlayLayer,
-  type OverlayPlacement,
-} from './shared';
+import { toAriaPlacement, useOpenState, useOverlayLayer, type OverlayPlacement } from './shared';
 import { defined } from '../utils/defined';
 import { passThrough, type RootAttributes } from '../utils/passThrough';
 

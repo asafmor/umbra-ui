@@ -1,3 +1,4 @@
+import { usePopoverRef } from '../overlays/popoverRef';
 import {
   Children,
   createContext,
@@ -35,13 +36,7 @@ import { TruncatedText } from '../internal/TruncatedText';
 import { useShrinkLevel } from '../internal/useShrinkLevel';
 import { CheckMark } from '../overlays/Menu';
 import menuStyles from '../overlays/Menu.module.css';
-import {
-  toAriaPlacement,
-  usePopoverRef,
-  useOpenState,
-  useOverlayLayer,
-  type OverlayPlacement,
-} from '../overlays/shared';
+import { toAriaPlacement, useOpenState, useOverlayLayer, type OverlayPlacement } from '../overlays/shared';
 import { BareIcon, Icon, IconSlot } from '../provider/icons';
 import { useScopeAttributes } from '../provider/UmbraProvider';
 import { cx, renderPart, type Part } from '../utils/parts';
