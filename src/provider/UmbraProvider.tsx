@@ -13,7 +13,7 @@ import { I18nProvider, useLocale } from 'react-aria-components';
 import { contextPresets, densities, fixedColours, type TokenName } from '../styles/tokens.generated';
 import { warn } from '../utils/dev';
 import { cx } from '../utils/parts';
-import { focusColourOn, mutedTextOn, textColourOn } from './contrast';
+import { focusColourOn, insetOn, mutedTextOn, textColourOn } from './contrast';
 import { resolveLocale } from './direction';
 import { defaultIcons, type IconMap } from './icons';
 import {
@@ -144,6 +144,9 @@ export function useScope(
       // Resting nav items and the focus ring on the brand bar keep their contrast on any brand.
       vars['--umbra-color-on-brand-muted'] = mutedTextOn(brand, on) ?? on;
       vars['--umbra-color-on-brand-focus'] = focusColourOn(brand, fixedColours.focusRing, on);
+      // A surface inside the bar (the `filled` `ContextBlock`), on which the bar's text stays readable.
+      const inset = insetOn(brand, on);
+      if (inset) vars['--umbra-color-brand-inset'] = inset;
     }
     for (const [name, value] of Object.entries(tokens ?? {})) {
       if (value !== undefined) vars[`--umbra-${name}`] = value;

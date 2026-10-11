@@ -137,3 +137,5 @@ Resolved 2026-10-10:
 Resolved 2026-10-11 (review 2):
 
 - Direction has one source and the root always carries `dir` (F8, F10, F11). Before, a browser with a right-to-left locale and no `locale` prop made React Aria run right to left while the root had no `dir`, and portals other than popovers had none.
+
+Added 2026-10-11 (owner's feedback O-9): with a `brand`, the scope also sets `--umbra-color-brand-inset`, a surface inside the brand bar on which the bar's text keeps its contrast (`insetOn`, `src/provider/contrast.ts`). The `filled` `ContextBlock` uses it. Without a `brand` prop the readers fall back to the brand colour mixed 14% towards its text colour.

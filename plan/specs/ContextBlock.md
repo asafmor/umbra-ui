@@ -42,8 +42,9 @@ No variants. The block takes its text colour from where it sits, so it is right 
 | `primary` | node | — | The main line |
 | `secondary` | node | — | The second line |
 | `chip` | node | — | The chip's content; wins over `time` |
+| `variant` | `plain`, `filled` | `plain` | `filled` sets the block on a surface of its own, a step lighter or darker than the bar |
 | `time` | `Date` \| ISO string \| number | — | Shown in the chip, formatted with the provider's `locale` |
-| `timeFormat` | `Intl.DateTimeFormatOptions` | hour and minute | How `time` is written |
+| `timeFormat` | `Intl.DateTimeFormatOptions` | hour and minute | How `time` is written. Give it a `timeZone` when the page is rendered on a server (see "Server rendering") |
 | `live` | boolean | `false` | The chip is a clock: it starts at `time` (or now) and moves on each minute |
 | `onPress` | function | — | Makes the block a button |
 | `href` / `renderLink` | string / function | — | Makes the block a link; `renderLink` takes the shared `LinkRenderProps` |
@@ -92,3 +93,11 @@ Resolved 2026-10-11 (under the owner's delegation):
 - **The chip is outlined, not filled**: a fill mixed from the bar's colour could lower the contrast of the text in it on a brand colour near the limit.
 - **The steps inside a bar are driven by the bar**, not measured by the block: the block's own width never changes there, it is the nav beside it that runs out of room. `TopBar.Root` takes two steps for the block before its own first step; `data-shrink` on the bar still counts `0` to `4`.
 - **`ContextBlock` replaces the plain two-line node** in the stories that fill the bar's `context` slot.
+
+Changed 2026-10-11 (fix pass of review 2, and the owner's O-9):
+
+- **`variant="filled"`** (O-9, after the dark inset panel of the source): the block sits on a surface of its own. Tokens: `--umbra-context-block-bg`, `--umbra-context-block-padding-x`, `--umbra-context-block-padding-y`, `--umbra-context-block-radius`. The colour is worked out from the brand by the provider (`insetOn`, `src/provider/contrast.ts`, as `--umbra-color-brand-inset`): 14% towards the bar's text colour, so lighter on a dark bar and darker on a light one, when the text keeps 4.5:1 on it; on a mid-tone bar, where that would cost the text its contrast, 14% the other way, which only adds contrast. So text that is readable on the bar is readable on the surface on any brand, and the chip's outline, in the text colour, keeps more than 3:1. Hover and press mix the text colour into the surface. **`plain` stays the default**: see "Which is the default" below.
+- **Server rendering** (X-6). Without `timeFormat.timeZone` the time is written in the viewer's time zone, which a server does not know: rendered there in its own zone, the markup did not match the browser's. Now, on a server and while the browser takes the page over, the chip holds the time written in UTC, not shown (`visibility: hidden`): the same text on both sides, and the chip has its size already, so the bar does not move. The viewer's time is written as soon as the page is the browser's. A page rendered in the browser writes it at once. With a `timeZone` nothing waits anywhere, and the text is the same on every machine: an app that renders on a server and wants no empty chip in the first paint gives one.
+- **The font tokens are taken whole** (SL-14): the weight of `--umbra-context-block-primary-font`, `-secondary-font` and `-chip-font` was overridden by the block. The defaults are the label font at 700, 400 and 700.
+- **A plain block whose lines a bar has hidden is a tab stop** (SL-15), so the tooltip with the whole text is within reach of the keyboard (it shows on focus). Whole, it is text and no tab stop. A block cut by an ellipsis outside a bar is not one either, like every truncated text of the library.
+- **The generated token table lists the block's tokens** (SL-13): the generator took `--umbra-context-block-*` for tokens of the global context tint.

@@ -62,3 +62,19 @@ export function focusColourOn(background: string, ring: string, fallback: string
   const colour = parseColour(ring);
   return bg && colour && contrastRatio(bg, colour) >= 3 ? ring : fallback;
 }
+
+/**
+ * A surface inside a bar of colour `background`, a step away from it (the `filled` `ContextBlock`). It
+ * goes towards `text`, so it is lighter on a dark bar and darker on a light one, when `text` keeps 4.5:1
+ * on it. On a bar where that would cost the text its contrast it goes the other way, which only adds
+ * contrast. So text that is readable on the bar is readable on the surface, on any brand.
+ */
+export function insetOn(background: string, text: string, amount = 0.14): string | null {
+  const bg = parseColour(background);
+  const fg = parseColour(text);
+  if (!bg || !fg) return null;
+  const mix = (to: Rgb) => bg.map((v, i) => v + (to[i]! - v) * amount) as Rgb;
+  const towards = mix(fg);
+  if (contrastRatio(towards, fg) >= 4.5) return toHex(towards);
+  return toHex(mix(luminance(fg) > 0.5 ? [0, 0, 0] : [255, 255, 255]));
+}

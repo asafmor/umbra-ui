@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Bell, Settings } from 'lucide-react';
-import { useState, type CSSProperties } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import { IconButton } from '../basics/IconButton';
 import { Log, sections } from '../stories/placeholders';
 import { ContextBlock, type ContextBlockProps } from './ContextBlock';
@@ -60,23 +60,31 @@ export const Anatomy: Story = {
   ),
 };
 
+const brands = ['#1d4ed8', '#22262e', '#e8e4f0', '#0f766e'];
+const onBrands = (variant: 'plain' | 'filled', colours: (string | undefined)[] = brands) => (
+  <div style={{ display: 'grid', gap: 16 }}>
+    {colours.map((brand) => (
+      <TopBar
+        key={brand ?? 'default'}
+        brand={brand}
+        logo="U"
+        nav={<PrimaryNav items={sections.slice(0, 3)} value="overview" onChange={() => {}} />}
+        context={<ContextBlock {...sample} variant={variant} onPress={() => {}} />}
+        primaryAction={<SamplePrimaryAction />}
+      />
+    ))}
+  </div>
+);
+
 /** On bars of other colours, the light one included: text, chip and focus ring follow the bar. */
-export const OnBrands: Story = {
-  render: () => (
-    <div style={{ display: 'grid', gap: 16 }}>
-      {['#1d4ed8', '#22262e', '#e8e4f0', '#0f766e'].map((brand) => (
-        <TopBar
-          key={brand}
-          brand={brand}
-          logo="U"
-          nav={<PrimaryNav items={sections.slice(0, 3)} value="overview" onChange={() => {}} />}
-          context={<ContextBlock {...sample} onPress={() => {}} />}
-          primaryAction={<SamplePrimaryAction />}
-        />
-      ))}
-    </div>
-  ),
-};
+export const OnBrands: Story = { render: () => onBrands('plain') };
+
+/**
+ * `variant="filled"`: the block sits on a surface of its own, a step lighter than a dark bar and a step
+ * darker than a light one. On a mid-tone bar, where that would cost the text its contrast, it goes the
+ * other way.
+ */
+export const Filled: Story = { render: () => onBrands('filled', [undefined, ...brands, '#777777']) };
 
 /** With `onPress` the block is a button, with `href` a link. A disabled one does nothing. */
 export const Interactive: Story = {
@@ -108,7 +116,7 @@ export const Shrink: Story = {
   render: () => (
     <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 8 }}>
       {[1000, 930, 880, 800].map((width) => (
-        <div key={width} style={{ width }}>
+        <div key={width} style={{ width, maxWidth: '100%' }}>
           <TopBar
             logo="U"
             nav={<PrimaryNav items={sections.slice(0, 4)} value="overview" onChange={() => {}} />}
@@ -187,6 +195,52 @@ export const PartsAndBlocks: Story = {
         </ContextBlock.Text>
         <ContextBlock.Chip dateTime="2026-10-10T09:30:00Z">09:30</ContextBlock.Chip>
       </ContextBlock.Root>
+    </div>
+  ),
+};
+
+/**
+ * A block whose chip comes and goes by itself, without the bar rendering again, as the chip of a `live`
+ * clock without a `time` arrives after the first render. Dispatch `story:chip` on `window` to remove it
+ * and to bring it back.
+ */
+function LateChip() {
+  const [chip, setChip] = useState<string | undefined>('09:30');
+  useEffect(() => {
+    const toggle = () => setChip((now) => (now ? undefined : '09:30'));
+    window.addEventListener('story:chip', toggle);
+    return () => window.removeEventListener('story:chip', toggle);
+  }, []);
+  return (
+    <ContextBlock primary={sample.primary} secondary={sample.secondary} chip={chip} onPress={() => {}} />
+  );
+}
+
+/**
+ * A chip that arrives after the bar has measured itself (above) gives the same bar as one that was there
+ * from the start (below): what a bar shows follows its width and its content, whenever the content came.
+ */
+export const LateContent: Story = {
+  render: () => (
+    <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 8 }}>
+      {[<LateChip key="late" />, <ContextBlock key="first" {...sample} onPress={() => {}} />].map(
+        (context) => (
+          <div key={context.key} style={{ width: 880, maxWidth: '100%' }}>
+            <TopBar
+              logo="U"
+              nav={<PrimaryNav items={sections.slice(0, 4)} value="overview" onChange={() => {}} />}
+              actions={
+                <>
+                  <IconButton icon={<Bell />} label="Notifications" />
+                  <IconButton icon={<Settings />} label="Settings" />
+                </>
+              }
+              context={context}
+              primaryAction={<SamplePrimaryAction />}
+            />
+          </div>
+        ),
+      )}
     </div>
   ),
 };
