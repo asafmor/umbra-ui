@@ -77,7 +77,7 @@
 
 :is(.button, .caret)[data-focus-visible] {
   outline: var(--umbra-state-focus-ring-width) solid
-    var(--umbra-focus-color, var(--umbra-color-fixed-focus-ring));
+    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-fixed-focus-ring)));
   outline-offset: calc(-1 * var(--umbra-state-focus-ring-width) - 1px);
 }
 

@@ -7,6 +7,13 @@ A token is a CSS variable: set it in CSS on any ancestor, or through the `tokens
 `UmbraProvider` or `UmbraScope` (without the `--umbra-` prefix). Every component also accepts
 `className` and `style` on its root.
 
+A token is listed under the component whose name it carries, with its default: the value it has
+until you set it. A default that names a global token shows that token and its value. A name
+without `--umbra-` is a value the component works out from its variant or state. Where two
+defaults are given, the token is read in more than one place (a size per `size`, for example).
+A token no component is named in (`--umbra-focus-color`, `--umbra-chart-*`) is shared: it is
+listed under every component that reads it.
+
 ## Built-in strings
 
 Every prop that holds one of the library's own words, with an English default. Pass your own to
@@ -69,7 +76,16 @@ translate a component. A name followed by brackets can also be a function of wha
 
 A stack of sections that open and close. It fills its slot; an open panel scrolls inside when space is short.
 
-**Tokens**: `--umbra-accordion-border`, `--umbra-accordion-gap`, `--umbra-accordion-header-height`, `--umbra-accordion-padding`, `--umbra-accordion-title-font`, `--umbra-card-bg`, `--umbra-card-border`, `--umbra-card-padding`, `--umbra-card-radius`, `--umbra-card-title-font`, `--umbra-dir`, `--umbra-focus-color`, `--umbra-scroll-thumb`.
+**Tokens**: each with its default. It also reads the tokens of [`Card`](#card), [`ScrollArea`](#scrollarea).
+
+| Token | Default |
+|---|---|
+| `--umbra-accordion-border` | `--umbra-color-base-border-subtle` (#2e2440) or `var(--umbra-card-border, var(--umbra-color-base-border-subtle))` |
+| `--umbra-accordion-gap` | `--umbra-space-3` (8px) |
+| `--umbra-accordion-header-height` | `calc(var(--umbra-density-control-height) + 2 * var(--umbra-space-2))` |
+| `--umbra-accordion-padding` | `--umbra-density-card-padding` (16px at the default density) or `var(--umbra-card-padding, var(--umbra-density-card-padding))` |
+| `--umbra-accordion-title-font` | `700 var(--umbra-density-body-size) / 1.375 var(--umbra-font-family-body)` or `var(--umbra-card-title-font, var(--umbra-font-card-title))` |
+| `--umbra-focus-color` | `--umbra-color-fixed-focus-ring` (#ffb3f5) |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -101,7 +117,23 @@ A stack of sections that open and close. It fills its slot; an open panel scroll
 
 The bar at the bottom of a page, card or modal: a status at the start and the actions at the end.
 
-**Tokens**: `--umbra-action-bar-bg`, `--umbra-action-bar-border`, `--umbra-action-bar-danger-color`, `--umbra-action-bar-gap`, `--umbra-action-bar-info-color`, `--umbra-action-bar-neutral-color`, `--umbra-action-bar-offset`, `--umbra-action-bar-padding-x`, `--umbra-action-bar-padding-y`, `--umbra-action-bar-radius`, `--umbra-action-bar-success-color`, `--umbra-action-bar-warning-color`, `--umbra-icon-size`.
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-action-bar-bg` | `color-mix(in oklab, var(--tone) 24%, var(--umbra-color-base-surface1))` or `--umbra-color-base-surface2` (#1b1329) |
+| `--umbra-action-bar-border` | `--umbra-color-base-border-strong` (#47395e) |
+| `--umbra-action-bar-danger-color` | `--umbra-color-semantic-danger` (#f0455a) |
+| `--umbra-action-bar-gap` | `--umbra-space-3` (8px) |
+| `--umbra-action-bar-info-color` | `--umbra-color-semantic-info` (#3d9be8) |
+| `--umbra-action-bar-neutral-color` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-action-bar-offset` | `--umbra-space-5` (16px) |
+| `--umbra-action-bar-padding-x` | `var(--umbra-card-padding, var(--umbra-density-card-padding))`; `--umbra-density-card-padding` (16px at the default density); `--umbra-space-4` (12px) |
+| `--umbra-action-bar-padding-y` | `--umbra-space-3` (8px) |
+| `--umbra-action-bar-radius` | `--umbra-radius-card` (8px) |
+| `--umbra-action-bar-success-color` | `--umbra-color-semantic-success` (#16b877) |
+| `--umbra-action-bar-warning-color` | `--umbra-color-semantic-warning` (#f2b23a) |
+| `--umbra-icon-size` | `1.25em` |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -131,7 +163,13 @@ The bar at the bottom of a page, card or modal: a status at the start and the ac
 
 The outermost frame: exactly the size of the window, never scrolls, bars above one `Page`.
 
-**Tokens**: `--umbra-shell-bg`, `--umbra-shell-bg-end`, `--umbra-shell-pattern-opacity`.
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-shell-bg` | `--umbra-context-page-background` |
+| `--umbra-shell-bg-end` | `--umbra-context-page-background-end` |
+| `--umbra-shell-pattern-opacity` | `0` |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -152,7 +190,17 @@ The outermost frame: exactly the size of the window, never scrolls, bars above o
 
 A person or entity: its image, or its initials, or a silhouette.
 
-**Tokens**: `--umbra-avatar-bg`, `--umbra-avatar-fallback-fg`, `--umbra-avatar-fg`, `--umbra-avatar-group-border`, `--umbra-avatar-group-overlap`, `--umbra-avatar-radius`, `--umbra-avatar-ring`, `--umbra-avatar-size`, `--umbra-avatar-status-size`.
+**Tokens**: each with its default. It also reads the tokens of [`AvatarGroup`](#avatargroup).
+
+| Token | Default |
+|---|---|
+| `--umbra-avatar-bg` | `--umbra-color-base-surface3` (#261b38) |
+| `--umbra-avatar-fallback-fg` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-avatar-fg` | `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-avatar-radius` | `--umbra-radius-control` (4px) |
+| `--umbra-avatar-ring` | `--umbra-color-fixed-accent-text` (#f77bf0) |
+| `--umbra-avatar-size` | `--umbra-density-control-height` (36px at the default density); `18px`; `24px`; `32px`; `48px`; `72px` |
+| `--umbra-avatar-status-size` | `max(8px, calc(var(--size) * 0.28))` |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -176,7 +224,12 @@ A person or entity: its image, or its initials, or a silhouette.
 
 A row of overlapping avatars. Those that do not fit are counted in a "+N" at the end.
 
-**Tokens**: `--umbra-avatar-bg`, `--umbra-avatar-fallback-fg`, `--umbra-avatar-fg`, `--umbra-avatar-group-border`, `--umbra-avatar-group-overlap`, `--umbra-avatar-radius`, `--umbra-avatar-ring`, `--umbra-avatar-size`, `--umbra-avatar-status-size`.
+**Tokens**: each with its default. It also reads the tokens of [`Avatar`](#avatar).
+
+| Token | Default |
+|---|---|
+| `--umbra-avatar-group-border` | `--umbra-color-base-surface1` (#0b0612) |
+| `--umbra-avatar-group-overlap` | `0.16` |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -199,7 +252,21 @@ A row of overlapping avatars. Those that do not fit are counted in a "+N" at the
 
 A count or a dot, alone or on the corner of another element.
 
-**Tokens**: `--umbra-badge-bg`, `--umbra-badge-dot-lighten`, `--umbra-badge-dot-size`, `--umbra-badge-fg`, `--umbra-badge-font`, `--umbra-badge-offset`, `--umbra-badge-padding-x`, `--umbra-badge-radius`, `--umbra-badge-ring`, `--umbra-badge-ring-width`, `--umbra-badge-size`, `--umbra-button-accent-fg`, `--umbra-button-primary-fg`.
+**Tokens**: each with its default. It also reads the tokens of [`Button`](#button).
+
+| Token | Default |
+|---|---|
+| `--umbra-badge-bg` | `var(--tone)` or `color-mix(in oklab, var(--tone), var(--umbra-color-base-text-primary) var(--umbra-badge-dot-lighten, 25%))` |
+| `--umbra-badge-dot-lighten` | `25%` |
+| `--umbra-badge-dot-size` | `--umbra-space-3` (8px) |
+| `--umbra-badge-fg` | `var(--on-tone)` |
+| `--umbra-badge-font` | `700 11px / var(--size) var(--umbra-font-family-body)` |
+| `--umbra-badge-offset` | `--umbra-space-2` (4px) |
+| `--umbra-badge-padding-x` | `--umbra-space-2` (4px) |
+| `--umbra-badge-radius` | `--umbra-radius-pill` (999px) |
+| `--umbra-badge-ring` | `transparent` |
+| `--umbra-badge-ring-width` | `1px` |
+| `--umbra-badge-size` | `var(--umbra-icon-button-badge-size, 14px)` or `--umbra-space-5` (16px) |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -224,7 +291,31 @@ A count or a dot, alone or on the corner of another element.
 
 A message band inside a card or page: a notice, a warning, or an insight about the data beside it.
 
-**Tokens**: `--umbra-banner-accent-color`, `--umbra-banner-bg`, `--umbra-banner-border`, `--umbra-banner-danger-color`, `--umbra-banner-dismiss-size`, `--umbra-banner-fg`, `--umbra-banner-focus-color`, `--umbra-banner-focus-offset`, `--umbra-banner-icon-color`, `--umbra-banner-info-color`, `--umbra-banner-neutral-color`, `--umbra-banner-padding-x`, `--umbra-banner-padding-y`, `--umbra-banner-radius`, `--umbra-banner-row-height`, `--umbra-banner-solid-fg`, `--umbra-banner-stripe-width`, `--umbra-banner-subtle-strength`, `--umbra-banner-success-color`, `--umbra-banner-warning-color`, `--umbra-icon-size`.
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-banner-accent-color` | `--umbra-color-fixed-accent-text` (#f77bf0) |
+| `--umbra-banner-bg` | `color-mix(in oklab, var(--tone) var(--umbra-banner-subtle-strength, 16%), transparent)`; `var(--tone)`; `--umbra-color-fixed-selected` (#6a1fd6); `transparent` |
+| `--umbra-banner-border` | `color-mix(in oklab, var(--tone) 45%, transparent)`; `transparent`; `var(--tone)` |
+| `--umbra-banner-danger-color` | `--umbra-color-semantic-danger` (#f0455a) |
+| `--umbra-banner-dismiss-size` | `var(--row)` |
+| `--umbra-banner-fg` | `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-banner-focus-color` | `var(--fg)` |
+| `--umbra-banner-focus-offset` | `1px` or `calc(-1 * var(--umbra-state-focus-ring-width))` |
+| `--umbra-banner-icon-color` | `var(--tone)` or `var(--fg)` |
+| `--umbra-banner-info-color` | `--umbra-color-semantic-info` (#3d9be8) |
+| `--umbra-banner-neutral-color` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-banner-padding-x` | `--umbra-space-4` (12px) |
+| `--umbra-banner-padding-y` | `--umbra-space-1` (2px) |
+| `--umbra-banner-radius` | `--umbra-radius-control` (4px) |
+| `--umbra-banner-row-height` | `--umbra-density-control-height` (36px at the default density) or `--umbra-density-table-row` (26px at the default density) |
+| `--umbra-banner-solid-fg` | `--umbra-color-base-surface1` (#0b0612) or `--umbra-color-fixed-on-selected` (#ffffff) |
+| `--umbra-banner-stripe-width` | `--umbra-space-2` (4px) |
+| `--umbra-banner-subtle-strength` | `16%` |
+| `--umbra-banner-success-color` | `--umbra-color-semantic-success` (#16b877) |
+| `--umbra-banner-warning-color` | `--umbra-color-semantic-warning` (#f2b23a) |
+| `--umbra-icon-size` | `1.25em` |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -255,7 +346,48 @@ A message band inside a card or page: a notice, a warning, or an insight about t
 
 Compares values across categories: grouped, stacked or diverging around zero, upright or sideways.
 
-**Tokens**: `--umbra-chart-annotation`, `--umbra-chart-annotation-dash`, `--umbra-chart-annotation-width`, `--umbra-chart-area-opacity`, `--umbra-chart-axis`, `--umbra-chart-axis-width`, `--umbra-chart-band-edge-width`, `--umbra-chart-band-opacity`, `--umbra-chart-bar-radius`, `--umbra-chart-center-font`, `--umbra-chart-content-height`, `--umbra-chart-dim-opacity`, `--umbra-chart-fg`, `--umbra-chart-font`, `--umbra-chart-gap`, `--umbra-chart-grid`, `--umbra-chart-grid-dash`, `--umbra-chart-grid-width`, `--umbra-chart-info`, `--umbra-chart-line-width`, `--umbra-chart-negative`, `--umbra-chart-outline-width`, `--umbra-chart-point-scale`, `--umbra-chart-positive`, `--umbra-chart-ring-width`, `--umbra-chart-tooltip-bg`, `--umbra-chart-tooltip-border`, `--umbra-chart-tooltip-fg`, `--umbra-chart-tooltip-max-width`, `--umbra-chart-tooltip-radius`, `--umbra-chart-track`, `--umbra-chart-track-border`, `--umbra-chart-track-border-width`, `--umbra-chart-value`, `--umbra-chart-value-fg`, `--umbra-chart-warning`, `--umbra-focus-color`, `--umbra-legend-row-height`, `--umbra-series-marker-size`.
+**Tokens**: each with its default. It also reads the tokens of [`Legend`](#legend).
+
+| Token | Default |
+|---|---|
+| `--umbra-chart-annotation` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-chart-annotation-dash` | `5 3` |
+| `--umbra-chart-annotation-width` | `1.5px` |
+| `--umbra-chart-area-opacity` | `0.22` |
+| `--umbra-chart-axis` | `--umbra-color-base-border-control` (#7a6e91) |
+| `--umbra-chart-axis-width` | `--umbra-border-width` (1px) |
+| `--umbra-chart-band-edge-width` | `--umbra-border-width` (1px) |
+| `--umbra-chart-band-opacity` | `0.16` |
+| `--umbra-chart-bar-radius` | `2px` |
+| `--umbra-chart-center-font` | `--umbra-font-title` |
+| `--umbra-chart-content-height` | `240px` |
+| `--umbra-chart-dim-opacity` | `0.25` |
+| `--umbra-chart-fg` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-chart-font` | `--umbra-font-label` |
+| `--umbra-chart-gap` | `--umbra-space-3` (8px) |
+| `--umbra-chart-grid` | `--umbra-color-base-border-control` (#7a6e91) |
+| `--umbra-chart-grid-dash` | `1 4` |
+| `--umbra-chart-grid-width` | `--umbra-border-width` (1px) |
+| `--umbra-chart-info` | `--umbra-color-semantic-info` (#3d9be8) |
+| `--umbra-chart-line-width` | `2px` |
+| `--umbra-chart-negative` | `--umbra-color-semantic-danger` (#f0455a) |
+| `--umbra-chart-outline-width` | `1.5px` |
+| `--umbra-chart-point-scale` | `1` |
+| `--umbra-chart-positive` | `--umbra-color-semantic-success` (#16b877) |
+| `--umbra-chart-ring-width` | `1.5px` |
+| `--umbra-chart-tooltip-bg` | `--umbra-color-base-surface2` (#1b1329) |
+| `--umbra-chart-tooltip-border` | `--umbra-color-base-border-strong` (#47395e) |
+| `--umbra-chart-tooltip-fg` | `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-chart-tooltip-max-width` | `20rem` |
+| `--umbra-chart-tooltip-radius` | `--umbra-radius-control` (4px) |
+| `--umbra-chart-track` | `--umbra-color-base-surface3` (#261b38) |
+| `--umbra-chart-track-border` | `--umbra-color-base-border-control` (#7a6e91) |
+| `--umbra-chart-track-border-width` | `--umbra-border-width` (1px) |
+| `--umbra-chart-value` | `--umbra-color-series-1` (#4a94e8) |
+| `--umbra-chart-value-fg` | `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-chart-warning` | `--umbra-color-semantic-warning` (#f2b23a) |
+| `--umbra-focus-color` | `--umbra-color-fixed-focus-ring` (#ffb3f5) |
+| `--umbra-series-marker-size` | `0.875rem` |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -301,7 +433,30 @@ Compares values across categories: grouped, stacked or diverging around zero, up
 
 Triggers an action. Text, with an optional icon.
 
-**Tokens**: `--umbra-button-accent-bg`, `--umbra-button-accent-border`, `--umbra-button-accent-fg`, `--umbra-button-danger-bg`, `--umbra-button-danger-border`, `--umbra-button-danger-fg`, `--umbra-button-ghost-bg`, `--umbra-button-ghost-border`, `--umbra-button-ghost-fg`, `--umbra-button-height`, `--umbra-button-neutral-bg`, `--umbra-button-neutral-border`, `--umbra-button-neutral-fg`, `--umbra-button-padding-x`, `--umbra-button-primary-bg`, `--umbra-button-primary-border`, `--umbra-button-primary-fg`, `--umbra-button-radius`, `--umbra-focus-color`, `--umbra-focus-offset`, `--umbra-icon-button-badge-dot-size`, `--umbra-icon-button-badge-font`, `--umbra-icon-button-badge-padding-x`, `--umbra-icon-button-badge-size`, `--umbra-icon-button-size`.
+**Tokens**: each with its default. It also reads the tokens of [`Badge`](#badge), [`IconButton`](#iconbutton).
+
+| Token | Default |
+|---|---|
+| `--umbra-button-accent-bg` | `--umbra-color-fixed-selected` (#6a1fd6) |
+| `--umbra-button-accent-border` | `transparent` |
+| `--umbra-button-accent-fg` | `--umbra-color-fixed-on-selected` (#ffffff) |
+| `--umbra-button-danger-bg` | `--umbra-color-base-surface2` (#1b1329) |
+| `--umbra-button-danger-border` | `--umbra-color-semantic-danger` (#f0455a) |
+| `--umbra-button-danger-fg` | `--umbra-color-semantic-danger` (#f0455a) |
+| `--umbra-button-ghost-bg` | `transparent` |
+| `--umbra-button-ghost-border` | `transparent` |
+| `--umbra-button-ghost-fg` | `currentColor` |
+| `--umbra-button-height` | `--umbra-density-control-height` (36px at the default density) |
+| `--umbra-button-neutral-bg` | `--umbra-color-base-surface2` (#1b1329) |
+| `--umbra-button-neutral-border` | `--umbra-color-base-border-control` (#7a6e91) |
+| `--umbra-button-neutral-fg` | `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-button-padding-x` | `--umbra-space-4` (12px) |
+| `--umbra-button-primary-bg` | `--umbra-color-fixed-primary` (#db1065) |
+| `--umbra-button-primary-border` | `transparent` |
+| `--umbra-button-primary-fg` | `--umbra-color-fixed-on-primary` (#ffffff) |
+| `--umbra-button-radius` | `--umbra-radius-control` (4px) |
+| `--umbra-focus-color` | `--umbra-color-fixed-focus-ring` (#ffb3f5) |
+| `--umbra-focus-offset` | `2px` |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -331,7 +486,20 @@ Triggers an action. Text, with an optional icon.
 
 The container for one unit of content on a page. Fills the slot its parent gives it and scrolls its own body when the content is taller.
 
-**Tokens**: `--umbra-action-bar-padding-x`, `--umbra-action-bar-padding-y`, `--umbra-card-bg`, `--umbra-card-border`, `--umbra-card-header-bg`, `--umbra-card-header-fg`, `--umbra-card-header-height`, `--umbra-card-min-height`, `--umbra-card-padding`, `--umbra-card-radius`, `--umbra-card-title-font`, `--umbra-dir`, `--umbra-focus-color`, `--umbra-page-header-padding`.
+**Tokens**: each with its default. It also reads the tokens of [`ActionBar`](#actionbar), [`PageHeader`](#pageheader).
+
+| Token | Default |
+|---|---|
+| `--umbra-card-bg` | `--umbra-context-card-tint`; `--umbra-context-card-tint-strong`; `--umbra-color-base-surface-neutral` (#141a22) |
+| `--umbra-card-border` | `--umbra-color-base-border-subtle` (#2e2440); `color-mix(in oklab, var(--umbra-context) 30%, var(--umbra-color-base-border-subtle))`; `--umbra-color-base-border-neutral` (#232b36) |
+| `--umbra-card-header-bg` | `transparent` or `--umbra-color-brand` (#2a2f8f) |
+| `--umbra-card-header-fg` | `inherit` or `var(--umbra-color-on-brand, #fff)` |
+| `--umbra-card-header-height` | `auto` |
+| `--umbra-card-min-height` | `--umbra-density-card-min-height` (88px at the default density) |
+| `--umbra-card-padding` | `--umbra-density-card-padding` (16px at the default density) |
+| `--umbra-card-radius` | `--umbra-radius-card` (8px) |
+| `--umbra-card-title-font` | `--umbra-font-card-title` |
+| `--umbra-focus-color` | `--umbra-color-fixed-focus-ring` (#ffb3f5) |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -377,7 +545,29 @@ The container for one unit of content on a page. Fills the slot its parent gives
 
 A box that is checked or not: one yes-or-no choice, or one of several in a `CheckboxGroup`.
 
-**Tokens**: `--umbra-checkbox-bg`, `--umbra-checkbox-border`, `--umbra-checkbox-border-width`, `--umbra-checkbox-gap`, `--umbra-checkbox-invalid-border`, `--umbra-checkbox-mark-color`, `--umbra-checkbox-radius`, `--umbra-checkbox-selected-bg`, `--umbra-checkbox-size`, `--umbra-checkbox-small-size`, `--umbra-field-description-color`, `--umbra-field-error-color`, `--umbra-field-marker-color`, `--umbra-focus-color`, `--umbra-focus-offset`, `--umbra-option-group-gap`, `--umbra-option-group-inline-gap`, `--umbra-option-group-min-option-width`, `--umbra-option-group-text-gap`.
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-checkbox-bg` | `transparent` |
+| `--umbra-checkbox-border` | `--umbra-color-base-border-control` (#7a6e91) |
+| `--umbra-checkbox-border-width` | `calc(var(--umbra-border-width) * 2)` |
+| `--umbra-checkbox-gap` | `--umbra-space-3` (8px) |
+| `--umbra-checkbox-invalid-border` | `--umbra-color-semantic-danger` (#f0455a) |
+| `--umbra-checkbox-mark-color` | `--umbra-color-fixed-on-selected` (#ffffff) |
+| `--umbra-checkbox-radius` | `--umbra-radius-control` (4px) |
+| `--umbra-checkbox-selected-bg` | `--umbra-color-fixed-selected` (#6a1fd6) |
+| `--umbra-checkbox-size` | `calc(var(--umbra-density-control-height) / 2)` |
+| `--umbra-checkbox-small-size` | `calc(var(--umbra-density-table-row) / 2 + 2px)` |
+| `--umbra-field-description-color` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-field-error-color` | `--umbra-color-semantic-danger` (#f0455a) |
+| `--umbra-field-marker-color` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-focus-color` | `--umbra-color-fixed-focus-ring` (#ffb3f5) |
+| `--umbra-focus-offset` | `2px` |
+| `--umbra-option-group-gap` | `--umbra-space-3` (8px) |
+| `--umbra-option-group-inline-gap` | `--umbra-space-6` (20px) |
+| `--umbra-option-group-min-option-width` | `12em` |
+| `--umbra-option-group-text-gap` | `--umbra-space-2` (4px) |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -410,7 +600,19 @@ A box that is checked or not: one yes-or-no choice, or one of several in a `Chec
 
 Several checkboxes that answer one question, with a shared label, description and error.
 
-**Tokens**: `--umbra-checkbox-bg`, `--umbra-checkbox-border`, `--umbra-checkbox-border-width`, `--umbra-checkbox-gap`, `--umbra-checkbox-invalid-border`, `--umbra-checkbox-mark-color`, `--umbra-checkbox-radius`, `--umbra-checkbox-selected-bg`, `--umbra-checkbox-size`, `--umbra-checkbox-small-size`, `--umbra-field-description-color`, `--umbra-field-error-color`, `--umbra-field-marker-color`, `--umbra-focus-color`, `--umbra-focus-offset`, `--umbra-option-group-gap`, `--umbra-option-group-inline-gap`, `--umbra-option-group-min-option-width`, `--umbra-option-group-text-gap`.
+**Tokens**: each with its default. It also reads the tokens of [`Checkbox`](#checkbox).
+
+| Token | Default |
+|---|---|
+| `--umbra-field-description-color` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-field-error-color` | `--umbra-color-semantic-danger` (#f0455a) |
+| `--umbra-field-marker-color` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-focus-color` | `--umbra-color-fixed-focus-ring` (#ffb3f5) |
+| `--umbra-focus-offset` | `2px` |
+| `--umbra-option-group-gap` | `--umbra-space-3` (8px) |
+| `--umbra-option-group-inline-gap` | `--umbra-space-6` (20px) |
+| `--umbra-option-group-min-option-width` | `12em` |
+| `--umbra-option-group-text-gap` | `--umbra-space-2` (4px) |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -443,7 +645,11 @@ Several checkboxes that answer one question, with a shared label, description an
 
 Shares its width among its children. Below the minimum window it shows one child at a time.
 
-**Tokens**: `--umbra-layout-gap`.
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-layout-gap` | `--umbra-density-gap` (20px at the default density) |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -468,7 +674,22 @@ Shares its width among its children. Below the minimum window it shows one child
 
 A search over everything the app can do or open, in a dialog near the top of the window. Opened by the `TopBar` search and by `Mod+K`. Focus stays in the input; the arrow keys move through the results.
 
-**Tokens**: `--umbra-command-palette-active-bg`, `--umbra-command-palette-active-fg`, `--umbra-command-palette-bg`, `--umbra-command-palette-border`, `--umbra-command-palette-item-height`, `--umbra-command-palette-max-height`, `--umbra-command-palette-offset`, `--umbra-command-palette-radius`, `--umbra-command-palette-scrim`, `--umbra-command-palette-width`, `--umbra-command-palette-z-index`, `--umbra-dir`, `--umbra-focus-color`, `--umbra-scroll-thumb`.
+**Tokens**: each with its default. It also reads the tokens of [`ScrollArea`](#scrollarea).
+
+| Token | Default |
+|---|---|
+| `--umbra-command-palette-active-bg` | `--umbra-color-fixed-selected` (#6a1fd6) |
+| `--umbra-command-palette-active-fg` | `--umbra-color-fixed-on-selected` (#ffffff) |
+| `--umbra-command-palette-bg` | `--umbra-color-base-surface2` (#1b1329) |
+| `--umbra-command-palette-border` | `--umbra-color-base-border-strong` (#47395e) |
+| `--umbra-command-palette-item-height` | `--umbra-density-control-height` (36px at the default density) |
+| `--umbra-command-palette-max-height` | `480px` |
+| `--umbra-command-palette-offset` | `min(12vh, 96px)` |
+| `--umbra-command-palette-radius` | `--umbra-radius-card` (8px) |
+| `--umbra-command-palette-scrim` | `--umbra-color-base-scrim` (rgba(5, 2, 10, 0.72)) |
+| `--umbra-command-palette-width` | `640px` |
+| `--umbra-command-palette-z-index` | `--umbra-layer-palette` (1300) |
+| `--umbra-focus-color` | `--umbra-color-fixed-focus-ring` (#ffb3f5) |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -515,7 +736,7 @@ A search over everything the app can do or open, in a dialog near the top of the
 
 The confirm step before an action that cannot be undone. An alert dialog: it opens with the focus on Cancel, and cannot be dismissed by a press outside it.
 
-**Tokens**: `--umbra-modal-backdrop-filter`, `--umbra-modal-bg`, `--umbra-modal-border`, `--umbra-modal-duration`, `--umbra-modal-margin`, `--umbra-modal-nav-width`, `--umbra-modal-padding`, `--umbra-modal-radius`, `--umbra-modal-scrim`, `--umbra-modal-shadow`, `--umbra-modal-width`, `--umbra-modal-z-index`.
+**Tokens**: none of its own. It also reads the tokens of [`Modal`](#modal).
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -546,7 +767,44 @@ The confirm step before an action that cannot be undone. An alert dialog: it ope
 
 A table of rows and columns that fills its slot and scrolls inside it: sorting, selection, groups, pinned columns, and columns that hide by priority as it narrows.
 
-**Tokens**: `--umbra-change-down`, `--umbra-change-neutral`, `--umbra-change-up`, `--umbra-checkbox-small-size`, `--umbra-focus-color`, `--umbra-focus-offset`, `--umbra-group-header-bg`, `--umbra-group-header-color`, `--umbra-group-header-font`, `--umbra-group-header-height`, `--umbra-radio-bg`, `--umbra-radio-border`, `--umbra-radio-border-width`, `--umbra-radio-mark-color`, `--umbra-radio-selected-bg`, `--umbra-scroll-fade-color`, `--umbra-table-border-color`, `--umbra-table-caption-color`, `--umbra-table-cell-padding-x`, `--umbra-table-change-down`, `--umbra-table-change-neutral`, `--umbra-table-change-up`, `--umbra-table-color`, `--umbra-table-control-size`, `--umbra-table-detail-bg`, `--umbra-table-edge-padding-x`, `--umbra-table-focus-offset`, `--umbra-table-font`, `--umbra-table-footer-bg`, `--umbra-table-header-active-color`, `--umbra-table-header-bg`, `--umbra-table-header-border-color`, `--umbra-table-header-color`, `--umbra-table-header-font`, `--umbra-table-header-group-color`, `--umbra-table-header-height`, `--umbra-table-highlight-bg`, `--umbra-table-highlight-marker`, `--umbra-table-hover-bg`, `--umbra-table-pin-border-color`, `--umbra-table-row-bg`, `--umbra-table-row-height`, `--umbra-table-selected-bg`, `--umbra-table-stripe-bg`, `--umbra-table-stripe-width`.
+**Tokens**: each with its default. It also reads the tokens of [`Checkbox`](#checkbox), [`GroupHeader`](#groupheader), [`Radio`](#radio), [`ScrollArea`](#scrollarea).
+
+| Token | Default |
+|---|---|
+| `--umbra-change-down` | `--umbra-color-semantic-danger` (#f0455a) |
+| `--umbra-change-neutral` | `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-change-up` | `--umbra-color-semantic-success` (#16b877) |
+| `--umbra-focus-color` | `--umbra-color-fixed-focus-ring` (#ffb3f5) |
+| `--umbra-focus-offset` | `2px` |
+| `--umbra-table-border-color` | `--umbra-color-base-border-subtle` (#2e2440) |
+| `--umbra-table-caption-color` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-table-cell-padding-x` | `--umbra-space-3` (8px) |
+| `--umbra-table-change-down` | `var(--umbra-change-down, var(--umbra-color-semantic-danger))` |
+| `--umbra-table-change-neutral` | `var(--umbra-change-neutral, var(--umbra-color-base-text-primary))` |
+| `--umbra-table-change-up` | `var(--umbra-change-up, var(--umbra-color-semantic-success))` |
+| `--umbra-table-color` | `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-table-control-size` | `calc(var(--row-h) - 2px)` |
+| `--umbra-table-detail-bg` | `color-mix(in oklab, #000 var(--umbra-state-press-darken), var(--surface))` |
+| `--umbra-table-edge-padding-x` | `--umbra-density-card-padding` (16px at the default density) |
+| `--umbra-table-focus-offset` | `calc(-1 * var(--umbra-state-focus-ring-width))` |
+| `--umbra-table-font` | `--umbra-font-table-cell` |
+| `--umbra-table-footer-bg` | `var(--umbra-table-header-bg, var(--surface))` |
+| `--umbra-table-header-active-color` | `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-table-header-bg` | `var( --umbra-table-row-bg, var(--umbra-scroll-fade-color, var(--scroll-fade-color, var(--umbra-context-card-tint))) )` |
+| `--umbra-table-header-border-color` | `--umbra-color-base-border-strong` (#47395e) |
+| `--umbra-table-header-color` | `--umbra-color-base-text-muted` (#948da2) |
+| `--umbra-table-header-font` | `--umbra-font-label` |
+| `--umbra-table-header-group-color` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-table-header-height` | `calc(var(--row-h) + var(--umbra-space-2))` |
+| `--umbra-table-highlight-bg` | `color-mix(in oklab, var(--umbra-color-fixed-accent-text) 14%, var(--surface))` |
+| `--umbra-table-highlight-marker` | `--umbra-color-fixed-accent-text` (#f77bf0) |
+| `--umbra-table-hover-bg` | `color-mix(in oklab, var(--umbra-color-base-text-primary) 8%, var(--bg))` |
+| `--umbra-table-pin-border-color` | `--umbra-color-base-border-strong` (#47395e) |
+| `--umbra-table-row-bg` | `var(--umbra-scroll-fade-color, var(--scroll-fade-color, var(--umbra-context-card-tint)))` |
+| `--umbra-table-row-height` | `--umbra-density-table-row` (26px at the default density) |
+| `--umbra-table-selected-bg` | `color-mix(in oklab, var(--umbra-color-fixed-selected) 32%, var(--surface))` |
+| `--umbra-table-stripe-bg` | `color-mix(in srgb, var(--umbra-color-base-text-primary) var(--umbra-state-stripe-strength), var(--surface))` |
+| `--umbra-table-stripe-width` | `3px` |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -618,7 +876,48 @@ A table of rows and columns that fills its slot and scrolls inside it: sorting, 
 
 A ring that shows one value against a total, or how a total splits into segments.
 
-**Tokens**: `--umbra-chart-annotation`, `--umbra-chart-annotation-dash`, `--umbra-chart-annotation-width`, `--umbra-chart-area-opacity`, `--umbra-chart-axis`, `--umbra-chart-axis-width`, `--umbra-chart-band-edge-width`, `--umbra-chart-band-opacity`, `--umbra-chart-bar-radius`, `--umbra-chart-center-font`, `--umbra-chart-content-height`, `--umbra-chart-dim-opacity`, `--umbra-chart-fg`, `--umbra-chart-font`, `--umbra-chart-gap`, `--umbra-chart-grid`, `--umbra-chart-grid-dash`, `--umbra-chart-grid-width`, `--umbra-chart-info`, `--umbra-chart-line-width`, `--umbra-chart-negative`, `--umbra-chart-outline-width`, `--umbra-chart-point-scale`, `--umbra-chart-positive`, `--umbra-chart-ring-width`, `--umbra-chart-tooltip-bg`, `--umbra-chart-tooltip-border`, `--umbra-chart-tooltip-fg`, `--umbra-chart-tooltip-max-width`, `--umbra-chart-tooltip-radius`, `--umbra-chart-track`, `--umbra-chart-track-border`, `--umbra-chart-track-border-width`, `--umbra-chart-value`, `--umbra-chart-value-fg`, `--umbra-chart-warning`, `--umbra-focus-color`, `--umbra-legend-row-height`, `--umbra-series-marker-size`.
+**Tokens**: each with its default. It also reads the tokens of [`Legend`](#legend).
+
+| Token | Default |
+|---|---|
+| `--umbra-chart-annotation` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-chart-annotation-dash` | `5 3` |
+| `--umbra-chart-annotation-width` | `1.5px` |
+| `--umbra-chart-area-opacity` | `0.22` |
+| `--umbra-chart-axis` | `--umbra-color-base-border-control` (#7a6e91) |
+| `--umbra-chart-axis-width` | `--umbra-border-width` (1px) |
+| `--umbra-chart-band-edge-width` | `--umbra-border-width` (1px) |
+| `--umbra-chart-band-opacity` | `0.16` |
+| `--umbra-chart-bar-radius` | `2px` |
+| `--umbra-chart-center-font` | `--umbra-font-title` |
+| `--umbra-chart-content-height` | `240px` |
+| `--umbra-chart-dim-opacity` | `0.25` |
+| `--umbra-chart-fg` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-chart-font` | `--umbra-font-label` |
+| `--umbra-chart-gap` | `--umbra-space-3` (8px) |
+| `--umbra-chart-grid` | `--umbra-color-base-border-control` (#7a6e91) |
+| `--umbra-chart-grid-dash` | `1 4` |
+| `--umbra-chart-grid-width` | `--umbra-border-width` (1px) |
+| `--umbra-chart-info` | `--umbra-color-semantic-info` (#3d9be8) |
+| `--umbra-chart-line-width` | `2px` |
+| `--umbra-chart-negative` | `--umbra-color-semantic-danger` (#f0455a) |
+| `--umbra-chart-outline-width` | `1.5px` |
+| `--umbra-chart-point-scale` | `1` |
+| `--umbra-chart-positive` | `--umbra-color-semantic-success` (#16b877) |
+| `--umbra-chart-ring-width` | `1.5px` |
+| `--umbra-chart-tooltip-bg` | `--umbra-color-base-surface2` (#1b1329) |
+| `--umbra-chart-tooltip-border` | `--umbra-color-base-border-strong` (#47395e) |
+| `--umbra-chart-tooltip-fg` | `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-chart-tooltip-max-width` | `20rem` |
+| `--umbra-chart-tooltip-radius` | `--umbra-radius-control` (4px) |
+| `--umbra-chart-track` | `--umbra-color-base-surface3` (#261b38) |
+| `--umbra-chart-track-border` | `--umbra-color-base-border-control` (#7a6e91) |
+| `--umbra-chart-track-border-width` | `--umbra-border-width` (1px) |
+| `--umbra-chart-value` | `--umbra-color-series-1` (#4a94e8) |
+| `--umbra-chart-value-fg` | `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-chart-warning` | `--umbra-color-semantic-warning` (#f2b23a) |
+| `--umbra-focus-color` | `--umbra-color-fixed-focus-ring` (#ffb3f5) |
+| `--umbra-series-marker-size` | `0.875rem` |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -668,7 +967,21 @@ A ring that shows one value against a total, or how a total splits into segments
 
 Says that a region has nothing to show, or failed to load, and what to do about it.
 
-**Tokens**: `--umbra-empty-state-color`, `--umbra-empty-state-error-color`, `--umbra-empty-state-focus-offset`, `--umbra-empty-state-gap`, `--umbra-empty-state-icon-color`, `--umbra-empty-state-icon-size`, `--umbra-empty-state-inline-icon-size`, `--umbra-empty-state-max-width`, `--umbra-empty-state-padding`, `--umbra-empty-state-title-color`, `--umbra-empty-state-title-font`.
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-empty-state-color` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-empty-state-error-color` | `--umbra-color-semantic-danger` (#f0455a) |
+| `--umbra-empty-state-focus-offset` | `calc(-1 * var(--umbra-state-focus-ring-width))` |
+| `--umbra-empty-state-gap` | `--umbra-space-3` (8px) |
+| `--umbra-empty-state-icon-color` | `--umbra-color-base-text-muted` (#948da2) |
+| `--umbra-empty-state-icon-size` | `2em` |
+| `--umbra-empty-state-inline-icon-size` | `1.25em` |
+| `--umbra-empty-state-max-width` | `44ch` |
+| `--umbra-empty-state-padding` | `--umbra-space-4` (12px) |
+| `--umbra-empty-state-title-color` | `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-empty-state-title-font` | `--umbra-font-body` |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -692,7 +1005,15 @@ Says that a region has nothing to show, or failed to load, and what to do about 
 
 A small mark for an entity (a logo, a flag, a category glyph), with an optional name next to it.
 
-**Tokens**: `--umbra-entity-icon-bg`, `--umbra-entity-icon-fg`, `--umbra-entity-icon-gap`, `--umbra-entity-icon-radius`, `--umbra-entity-icon-size`.
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-entity-icon-bg` | `var(--generated)` |
+| `--umbra-entity-icon-fg` | `#fff` |
+| `--umbra-entity-icon-gap` | `--umbra-space-2` (4px) or `--umbra-space-3` (8px) |
+| `--umbra-entity-icon-radius` | `calc(var(--size) * 0.2)` |
+| `--umbra-entity-icon-size` | `1.25em`; `14px`; `18px`; `24px`; `32px`; `56px` |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -717,7 +1038,24 @@ A small mark for an entity (a logo, a flag, a category glyph), with an optional 
 
 Pairs a label, a description and an error message with one control: a row of a form or settings list.
 
-**Tokens**: `--umbra-field-description-color`, `--umbra-field-error-color`, `--umbra-field-marker-color`, `--umbra-form-field-bg`, `--umbra-form-field-control-gap`, `--umbra-form-field-control-max-width`, `--umbra-form-field-gap`, `--umbra-form-field-padding-x`, `--umbra-form-field-padding-y`, `--umbra-form-field-radius`, `--umbra-option-group-gap`, `--umbra-option-group-inline-gap`, `--umbra-option-group-min-option-width`, `--umbra-option-group-text-gap`.
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-field-description-color` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-field-error-color` | `--umbra-color-semantic-danger` (#f0455a) |
+| `--umbra-field-marker-color` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-form-field-bg` | `--umbra-color-base-surface2` (#1b1329) |
+| `--umbra-form-field-control-gap` | `--umbra-space-2` (4px) |
+| `--umbra-form-field-control-max-width` | `60%` |
+| `--umbra-form-field-gap` | `--umbra-space-5` (16px) |
+| `--umbra-form-field-padding-x` | `--umbra-space-4` (12px) |
+| `--umbra-form-field-padding-y` | `--umbra-space-3` (8px) |
+| `--umbra-form-field-radius` | `--umbra-radius-control` (4px) |
+| `--umbra-option-group-gap` | `--umbra-space-3` (8px) |
+| `--umbra-option-group-inline-gap` | `--umbra-space-6` (20px) |
+| `--umbra-option-group-min-option-width` | `12em` |
+| `--umbra-option-group-text-gap` | `--umbra-space-2` (4px) |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -747,7 +1085,16 @@ Pairs a label, a description and an error message with one control: a row of a f
 
 A header row for one group of rows inside a list or table.
 
-**Tokens**: `--umbra-group-header-bg`, `--umbra-group-header-color`, `--umbra-group-header-focus-offset`, `--umbra-group-header-font`, `--umbra-group-header-height`, `--umbra-group-header-padding-x`.
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-group-header-bg` | `--umbra-color-base-surface2` (#1b1329); `transparent`; `--umbra-context-card-tint`; `color-mix(in oklab, var(--umbra-color-base-surface2) 80%, var(--surface))` |
+| `--umbra-group-header-color` | `--umbra-color-base-text-secondary` (#b3adbf) or `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-group-header-focus-offset` | `calc(-1 * var(--umbra-state-focus-ring-width))` |
+| `--umbra-group-header-font` | `--umbra-font-label` |
+| `--umbra-group-header-height` | `calc(var(--umbra-density-table-row) + var(--umbra-space-2))` or `calc(var(--row-h) + var(--umbra-space-2))` |
+| `--umbra-group-header-padding-x` | `--umbra-density-card-padding` (16px at the default density) |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -778,7 +1125,13 @@ A header row for one group of rows inside a list or table.
 
 Back and forward. On their own they drive the browser history; with `onBack` and `onForward` they drive the app's router.
 
-**Tokens**: `--umbra-history-buttons-bg`, `--umbra-history-buttons-gap`, `--umbra-history-buttons-size`.
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-history-buttons-bg` | `color-mix(in oklab, currentColor 8%, transparent)` |
+| `--umbra-history-buttons-gap` | `--umbra-space-3` (8px) |
+| `--umbra-history-buttons-size` | `--umbra-density-control-height` (36px at the default density) |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -806,7 +1159,17 @@ Back and forward. On their own they drive the browser history; with `onBack` and
 
 A button that shows only an icon. Inside an overflow menu it becomes a menu item with its icon and label.
 
-**Tokens**: `--umbra-button-accent-bg`, `--umbra-button-accent-border`, `--umbra-button-accent-fg`, `--umbra-button-danger-bg`, `--umbra-button-danger-border`, `--umbra-button-danger-fg`, `--umbra-button-ghost-bg`, `--umbra-button-ghost-border`, `--umbra-button-ghost-fg`, `--umbra-button-height`, `--umbra-button-neutral-bg`, `--umbra-button-neutral-border`, `--umbra-button-neutral-fg`, `--umbra-button-padding-x`, `--umbra-button-primary-bg`, `--umbra-button-primary-border`, `--umbra-button-primary-fg`, `--umbra-button-radius`, `--umbra-focus-color`, `--umbra-focus-offset`, `--umbra-icon-button-badge-dot-size`, `--umbra-icon-button-badge-font`, `--umbra-icon-button-badge-padding-x`, `--umbra-icon-button-badge-size`, `--umbra-icon-button-size`.
+**Tokens**: each with its default. It also reads the tokens of [`Badge`](#badge), [`Button`](#button).
+
+| Token | Default |
+|---|---|
+| `--umbra-focus-color` | `--umbra-color-fixed-focus-ring` (#ffb3f5) |
+| `--umbra-focus-offset` | `2px` |
+| `--umbra-icon-button-badge-dot-size` | `8px` |
+| `--umbra-icon-button-badge-font` | `700 10px / var(--umbra-badge-size, var(--badge-size)) var(--umbra-font-family-body)` |
+| `--umbra-icon-button-badge-padding-x` | `3px` |
+| `--umbra-icon-button-badge-size` | `14px` |
+| `--umbra-icon-button-size` | `var(--height)` |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -835,7 +1198,23 @@ A button that shows only an icon. Inside an overflow menu it becomes a menu item
 
 One label with its value. Use it inside a `KeyValueList`, or on its own.
 
-**Tokens**: `--umbra-key-value-divider`, `--umbra-key-value-gap`, `--umbra-key-value-highlight-bg`, `--umbra-key-value-highlight-fg`, `--umbra-key-value-hint-fg`, `--umbra-key-value-label-fg`, `--umbra-key-value-label-width`, `--umbra-key-value-min-column`, `--umbra-key-value-padding-x`, `--umbra-key-value-row-height`, `--umbra-key-value-stripe`, `--umbra-key-value-value-fg`, `--umbra-key-value-value-font`.
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-key-value-divider` | `--umbra-color-base-border-subtle` (#2e2440) |
+| `--umbra-key-value-gap` | `--umbra-space-4` (12px) |
+| `--umbra-key-value-highlight-bg` | `--umbra-context-card-tint-strong` |
+| `--umbra-key-value-highlight-fg` | `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-key-value-hint-fg` | `--umbra-color-base-text-muted` (#948da2) |
+| `--umbra-key-value-label-fg` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-key-value-label-width` | `60%` |
+| `--umbra-key-value-min-column` | `140px` |
+| `--umbra-key-value-padding-x` | `--umbra-space-3` (8px) |
+| `--umbra-key-value-row-height` | `--umbra-density-table-row` (26px at the default density) |
+| `--umbra-key-value-stripe` | `color-mix(in srgb, var(--umbra-color-base-text-primary) var(--umbra-state-stripe-strength), transparent)` |
+| `--umbra-key-value-value-fg` | `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-key-value-value-font` | `--umbra-font-body` |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -865,7 +1244,7 @@ One label with its value. Use it inside a `KeyValueList`, or on its own.
 
 A group of labels with their values, in rows, columns or a grid.
 
-**Tokens**: `--umbra-key-value-divider`, `--umbra-key-value-gap`, `--umbra-key-value-highlight-bg`, `--umbra-key-value-highlight-fg`, `--umbra-key-value-hint-fg`, `--umbra-key-value-label-fg`, `--umbra-key-value-label-width`, `--umbra-key-value-min-column`, `--umbra-key-value-padding-x`, `--umbra-key-value-row-height`, `--umbra-key-value-stripe`, `--umbra-key-value-value-fg`, `--umbra-key-value-value-font`.
+**Tokens**: none of its own. It also reads the tokens of [`KeyValue`](#keyvalue).
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -901,7 +1280,21 @@ A group of labels with their values, in rows, columns or a grid.
 
 The key for a chart or any colour-coded data: one marker and label per series.
 
-**Tokens**: `--umbra-focus-color`, `--umbra-focus-offset`, `--umbra-legend-fg`, `--umbra-legend-focus-offset`, `--umbra-legend-font`, `--umbra-legend-gap`, `--umbra-legend-item-radius`, `--umbra-legend-row-gap`, `--umbra-legend-row-height`, `--umbra-legend-value-fg`, `--umbra-series-marker-size`.
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-focus-color` | `--umbra-color-fixed-focus-ring` (#ffb3f5) |
+| `--umbra-focus-offset` | `2px` |
+| `--umbra-legend-fg` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-legend-focus-offset` | `calc(-1 * var(--umbra-state-focus-ring-width))` |
+| `--umbra-legend-font` | `--umbra-font-label` |
+| `--umbra-legend-gap` | `--umbra-space-4` (12px) |
+| `--umbra-legend-item-radius` | `--umbra-radius-control` (4px) |
+| `--umbra-legend-row-gap` | `--umbra-space-1` (2px) |
+| `--umbra-legend-row-height` | `--umbra-density-table-row` (26px at the default density) |
+| `--umbra-legend-value-fg` | `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-series-marker-size` | `0.875rem` |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -936,7 +1329,24 @@ The key for a chart or any colour-coded data: one marker and label per series.
 
 A strip of ticks with a marker that shows where a value sits on a scale.
 
-**Tokens**: `--umbra-level-meter-band`, `--umbra-level-meter-border`, `--umbra-level-meter-boundary`, `--umbra-level-meter-compare`, `--umbra-level-meter-height`, `--umbra-level-meter-length`, `--umbra-level-meter-marker`, `--umbra-level-meter-marker-width`, `--umbra-level-meter-pitch`, `--umbra-level-meter-radius`, `--umbra-level-meter-tick`, `--umbra-level-meter-tick-lit`, `--umbra-level-meter-tick-width`, `--umbra-level-meter-track`.
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-level-meter-band` | `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-level-meter-border` | `--umbra-color-base-border-control` (#7a6e91) |
+| `--umbra-level-meter-boundary` | `--umbra-color-base-text-muted` (#948da2) |
+| `--umbra-level-meter-compare` | `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-level-meter-height` | `20px`; `14px`; `28px` |
+| `--umbra-level-meter-length` | `none` |
+| `--umbra-level-meter-marker` | `--umbra-color-fixed-accent-text` (#f77bf0) |
+| `--umbra-level-meter-marker-width` | `3px` or `4px` |
+| `--umbra-level-meter-pitch` | `5px` |
+| `--umbra-level-meter-radius` | `--umbra-radius-control` (4px) |
+| `--umbra-level-meter-tick` | `--umbra-color-base-border-control` (#7a6e91) |
+| `--umbra-level-meter-tick-lit` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-level-meter-tick-width` | `2px` |
+| `--umbra-level-meter-track` | `--umbra-color-base-surface1` (#0b0612) |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -981,7 +1391,43 @@ A strip of ticks with a marker that shows where a value sits on a scale.
 
 One or more series over categories, numbers or time, with a numeric or an ordinal y axis.
 
-**Tokens**: `--umbra-chart-annotation`, `--umbra-chart-annotation-dash`, `--umbra-chart-annotation-width`, `--umbra-chart-area-opacity`, `--umbra-chart-axis`, `--umbra-chart-axis-width`, `--umbra-chart-band-edge-width`, `--umbra-chart-band-opacity`, `--umbra-chart-bar-radius`, `--umbra-chart-center-font`, `--umbra-chart-content-height`, `--umbra-chart-dim-opacity`, `--umbra-chart-fg`, `--umbra-chart-font`, `--umbra-chart-gap`, `--umbra-chart-grid`, `--umbra-chart-grid-dash`, `--umbra-chart-grid-width`, `--umbra-chart-line-width`, `--umbra-chart-outline-width`, `--umbra-chart-point-scale`, `--umbra-chart-ring-width`, `--umbra-chart-tooltip-bg`, `--umbra-chart-tooltip-border`, `--umbra-chart-tooltip-fg`, `--umbra-chart-tooltip-max-width`, `--umbra-chart-tooltip-radius`, `--umbra-chart-track`, `--umbra-chart-track-border`, `--umbra-chart-track-border-width`, `--umbra-chart-value-fg`, `--umbra-focus-color`, `--umbra-legend-row-height`, `--umbra-series-marker-size`.
+**Tokens**: each with its default. It also reads the tokens of [`Legend`](#legend).
+
+| Token | Default |
+|---|---|
+| `--umbra-chart-annotation` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-chart-annotation-dash` | `5 3` |
+| `--umbra-chart-annotation-width` | `1.5px` |
+| `--umbra-chart-area-opacity` | `0.22` |
+| `--umbra-chart-axis` | `--umbra-color-base-border-control` (#7a6e91) |
+| `--umbra-chart-axis-width` | `--umbra-border-width` (1px) |
+| `--umbra-chart-band-edge-width` | `--umbra-border-width` (1px) |
+| `--umbra-chart-band-opacity` | `0.16` |
+| `--umbra-chart-bar-radius` | `2px` |
+| `--umbra-chart-center-font` | `--umbra-font-title` |
+| `--umbra-chart-content-height` | `240px` |
+| `--umbra-chart-dim-opacity` | `0.25` |
+| `--umbra-chart-fg` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-chart-font` | `--umbra-font-label` |
+| `--umbra-chart-gap` | `--umbra-space-3` (8px) |
+| `--umbra-chart-grid` | `--umbra-color-base-border-control` (#7a6e91) |
+| `--umbra-chart-grid-dash` | `1 4` |
+| `--umbra-chart-grid-width` | `--umbra-border-width` (1px) |
+| `--umbra-chart-line-width` | `2px` |
+| `--umbra-chart-outline-width` | `1.5px` |
+| `--umbra-chart-point-scale` | `1` |
+| `--umbra-chart-ring-width` | `1.5px` |
+| `--umbra-chart-tooltip-bg` | `--umbra-color-base-surface2` (#1b1329) |
+| `--umbra-chart-tooltip-border` | `--umbra-color-base-border-strong` (#47395e) |
+| `--umbra-chart-tooltip-fg` | `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-chart-tooltip-max-width` | `20rem` |
+| `--umbra-chart-tooltip-radius` | `--umbra-radius-control` (4px) |
+| `--umbra-chart-track` | `--umbra-color-base-surface3` (#261b38) |
+| `--umbra-chart-track-border` | `--umbra-color-base-border-control` (#7a6e91) |
+| `--umbra-chart-track-border-width` | `--umbra-border-width` (1px) |
+| `--umbra-chart-value-fg` | `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-focus-color` | `--umbra-color-fixed-focus-ring` (#ffb3f5) |
+| `--umbra-series-marker-size` | `0.875rem` |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -1027,7 +1473,16 @@ One or more series over categories, numbers or time, with a numeric or an ordina
 
 A text link: inside a sentence, or on its own line as the way to a fuller view.
 
-**Tokens**: `--umbra-link-color`, `--umbra-link-font`, `--umbra-link-hover-lighten`, `--umbra-link-neutral-color`, `--umbra-link-radius`, `--umbra-link-underline-offset`.
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-link-color` | `--umbra-color-fixed-accent-text` (#f77bf0) |
+| `--umbra-link-font` | `--umbra-font-label` |
+| `--umbra-link-hover-lighten` | `30%` |
+| `--umbra-link-neutral-color` | `currentColor` |
+| `--umbra-link-radius` | `--umbra-radius-control` (4px) |
+| `--umbra-link-underline-offset` | `3px` |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -1053,7 +1508,14 @@ A text link: inside a sentence, or on its own line as the way to a fuller view.
 
 A vertical list of rows that scrolls inside its slot, with optional groups, selection and row actions.
 
-**Tokens**: `--umbra-focus-color`, `--umbra-group-header-bg`, `--umbra-group-header-height`, `--umbra-list-divider-color`, `--umbra-list-number-width`, `--umbra-list-stripe-bg`.
+**Tokens**: each with its default. It also reads the tokens of [`GroupHeader`](#groupheader).
+
+| Token | Default |
+|---|---|
+| `--umbra-focus-color` | `--umbra-color-fixed-focus-ring` (#ffb3f5) |
+| `--umbra-list-divider-color` | `--umbra-color-base-border-subtle` (#2e2440) |
+| `--umbra-list-number-width` | `1.5em` |
+| `--umbra-list-stripe-bg` | `color-mix(in srgb, var(--umbra-color-base-text-primary) var(--umbra-state-stripe-strength), transparent)` |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -1098,7 +1560,27 @@ A vertical list of rows that scrolls inside its slot, with optional groups, sele
 
 The content of one row of a list: a title with optional lines, and leading and trailing pieces.
 
-**Tokens**: `--umbra-focus-color`, `--umbra-list-item-bg`, `--umbra-list-item-center-bg`, `--umbra-list-item-color`, `--umbra-list-item-focus-offset`, `--umbra-list-item-gap`, `--umbra-list-item-hover-bg`, `--umbra-list-item-min-height`, `--umbra-list-item-padding-x`, `--umbra-list-item-padding-y`, `--umbra-list-item-read-color`, `--umbra-list-item-secondary-color`, `--umbra-list-item-selected-bg`, `--umbra-list-item-selected-stripe`, `--umbra-list-item-stripe-width`, `--umbra-list-item-title-font`, `--umbra-list-item-unread-color`.
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-focus-color` | `--umbra-color-fixed-focus-ring` (#ffb3f5) |
+| `--umbra-list-item-bg` | `transparent` |
+| `--umbra-list-item-center-bg` | `color-mix(in oklab, #000 var(--umbra-state-press-darken-strong), transparent)` |
+| `--umbra-list-item-color` | `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-list-item-focus-offset` | `calc(-1 * var(--umbra-state-focus-ring-width))` |
+| `--umbra-list-item-gap` | `--umbra-space-4` (12px) |
+| `--umbra-list-item-hover-bg` | `color-mix(in oklab, currentColor var(--umbra-state-hover-lighten), transparent)` |
+| `--umbra-list-item-min-height` | `--umbra-density-list-row` (72px at the default density) or `calc(var(--umbra-density-control-height) + var(--umbra-space-2))` |
+| `--umbra-list-item-padding-x` | `--umbra-density-card-padding` (16px at the default density) |
+| `--umbra-list-item-padding-y` | `--umbra-space-3` (8px) or `--umbra-space-2` (4px) |
+| `--umbra-list-item-read-color` | `--umbra-color-base-text-muted` (#948da2) |
+| `--umbra-list-item-secondary-color` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-list-item-selected-bg` | `color-mix(in oklab, var(--umbra-color-fixed-selected) 28%, transparent)` |
+| `--umbra-list-item-selected-stripe` | `color-mix(in oklab, var(--umbra-color-fixed-selected), #fff 35%)` |
+| `--umbra-list-item-stripe-width` | `3px` |
+| `--umbra-list-item-title-font` | `--umbra-font-body` |
+| `--umbra-list-item-unread-color` | `--umbra-color-base-text-primary` (#f5f3f8) |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -1138,7 +1620,20 @@ The content of one row of a list: a title with optional lines, and leading and t
 
 A list of actions or links that opens from a control. One tab stop; arrow keys, type-ahead, and submenus that open with the arrow keys.
 
-**Tokens**: `--umbra-dir`, `--umbra-focus-color`, `--umbra-menu-bg`, `--umbra-menu-border`, `--umbra-menu-item-danger-highlight-fg`, `--umbra-menu-item-height`, `--umbra-menu-item-hover-bg`, `--umbra-menu-item-radius`, `--umbra-menu-max-width`, `--umbra-menu-min-width`, `--umbra-menu-radius`, `--umbra-scroll-thumb`, `--umbra-scroll-thumb-size`.
+**Tokens**: each with its default. It also reads the tokens of [`ScrollArea`](#scrollarea).
+
+| Token | Default |
+|---|---|
+| `--umbra-focus-color` | `--umbra-color-fixed-focus-ring` (#ffb3f5) |
+| `--umbra-menu-bg` | `--umbra-color-base-surface2` (#1b1329) |
+| `--umbra-menu-border` | `--umbra-color-base-border-strong` (#47395e) |
+| `--umbra-menu-item-danger-highlight-fg` | `color-mix(in oklab, var(--umbra-color-semantic-danger), #fff 22%)` |
+| `--umbra-menu-item-height` | `--umbra-density-control-height` (36px at the default density) |
+| `--umbra-menu-item-hover-bg` | `--umbra-color-base-surface3` (#261b38) |
+| `--umbra-menu-item-radius` | `--umbra-radius-control` (4px) |
+| `--umbra-menu-max-width` | `360px` |
+| `--umbra-menu-min-width` | `180px` |
+| `--umbra-menu-radius` | `--umbra-radius-card` (8px) |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -1172,7 +1667,22 @@ A list of actions or links that opens from a control. One tab stop; arrow keys, 
 
 A panel over a dimmed page, for a focused task. Focus stays inside it and the page behind is inert until it closes. Its body scrolls inside; the page never does.
 
-**Tokens**: `--umbra-modal-backdrop-filter`, `--umbra-modal-bg`, `--umbra-modal-border`, `--umbra-modal-duration`, `--umbra-modal-margin`, `--umbra-modal-nav-width`, `--umbra-modal-padding`, `--umbra-modal-radius`, `--umbra-modal-scrim`, `--umbra-modal-shadow`, `--umbra-modal-width`, `--umbra-modal-z-index`.
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-modal-backdrop-filter` | `none` |
+| `--umbra-modal-bg` | `--umbra-color-base-surface2` (#1b1329) |
+| `--umbra-modal-border` | `--umbra-color-base-border-strong` (#47395e) |
+| `--umbra-modal-duration` | `--umbra-motion-duration-slow` (240ms) |
+| `--umbra-modal-margin` | `--umbra-density-page-margin` (32px at the default density) |
+| `--umbra-modal-nav-width` | `--umbra-size-modal-nav` (240px) |
+| `--umbra-modal-padding` | `--umbra-density-card-padding` (16px at the default density) |
+| `--umbra-modal-radius` | `--umbra-radius-card` (8px) |
+| `--umbra-modal-scrim` | `--umbra-color-base-scrim` (rgba(5, 2, 10, 0.72)) |
+| `--umbra-modal-shadow` | `--umbra-elevation-overlay` (0 8px 24px rgba(0, 0, 0, 0.5)) |
+| `--umbra-modal-width` | `var(--width)` |
+| `--umbra-modal-z-index` | `--umbra-layer-modal` (1200) |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -1213,7 +1723,12 @@ A panel over a dimmed page, for a focused task. Focus stays inside it and the pa
 
 The content area under the bars: applies the outer margin and the context tint.
 
-**Tokens**: `--umbra-page-gap`, `--umbra-page-margin`.
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-page-gap` | `--umbra-density-gap` (20px at the default density) |
+| `--umbra-page-margin` | `--umbra-density-page-margin` (32px at the default density) |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -1235,7 +1750,18 @@ The content area under the bars: applies the outer margin and the context tint.
 
 The header of a page or of a detail pane: what it shows, facts about it, and its actions.
 
-**Tokens**: `--umbra-page-header-bg`, `--umbra-page-header-border`, `--umbra-page-header-fg`, `--umbra-page-header-media-size`, `--umbra-page-header-media-size-small`, `--umbra-page-header-padding`, `--umbra-page-header-radius`, `--umbra-page-header-title-font`.
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-page-header-bg` | `transparent`; `--umbra-context-card-tint-strong`; `--umbra-color-brand` (#2a2f8f) |
+| `--umbra-page-header-border` | `--umbra-color-base-border-strong` (#47395e) or `color-mix(in oklab, var(--umbra-context) 30%, var(--umbra-color-base-border-subtle))` |
+| `--umbra-page-header-fg` | `inherit`; `var(--umbra-color-on-brand, #fff)`; `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-page-header-media-size` | `56px` or `--umbra-density-control-height` (36px at the default density) |
+| `--umbra-page-header-media-size-small` | `32px` |
+| `--umbra-page-header-padding` | `var(--card-pad) var(--card-pad) 0`; `0px`; `--umbra-density-card-padding` (16px at the default density) |
+| `--umbra-page-header-radius` | `--umbra-radius-card` (8px) |
+| `--umbra-page-header-title-font` | `--umbra-font-display` or `--umbra-font-title` |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -1269,7 +1795,19 @@ The header of a page or of a detail pane: what it shows, facts about it, and its
 
 An anchored panel without a backdrop: the page behind it stays usable. It keeps the density, context tint and tokens of the place it was opened from.
 
-**Tokens**: `--umbra-focus-color`, `--umbra-popover-bg`, `--umbra-popover-border`, `--umbra-popover-max-width`, `--umbra-popover-min-width`, `--umbra-popover-padding`, `--umbra-popover-radius`, `--umbra-popover-shadow`, `--umbra-popover-title-font`.
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-focus-color` | `--umbra-color-fixed-focus-ring` (#ffb3f5) |
+| `--umbra-popover-bg` | `--umbra-color-base-surface2` (#1b1329) |
+| `--umbra-popover-border` | `--umbra-color-base-border-strong` (#47395e) |
+| `--umbra-popover-max-width` | `420px` or `720px` |
+| `--umbra-popover-min-width` | `240px` or `480px` |
+| `--umbra-popover-padding` | `--umbra-density-card-padding` (16px at the default density) |
+| `--umbra-popover-radius` | `--umbra-radius-card` (8px) |
+| `--umbra-popover-shadow` | `--umbra-elevation-overlay` (0 8px 24px rgba(0, 0, 0, 0.5)) |
+| `--umbra-popover-title-font` | `--umbra-font-card-title` or `--umbra-font-title` |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -1307,7 +1845,19 @@ An anchored panel without a backdrop: the page behind it stays usable. It keeps 
 
 The one primary action of the app, at the end of the `TopBar`. Its label follows the state of the app. It fills the height of the bar and shows its icon only when the bar runs out of room.
 
-**Tokens**: `--umbra-dir`, `--umbra-focus-color`, `--umbra-primary-action-bg`, `--umbra-primary-action-bg-end`, `--umbra-primary-action-caret-width`, `--umbra-primary-action-fg`, `--umbra-primary-action-min-height`, `--umbra-primary-action-min-width`, `--umbra-primary-action-padding-x`, `--umbra-primary-action-radius`.
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-focus-color` | `--umbra-color-fixed-focus-ring` (#ffb3f5) |
+| `--umbra-primary-action-bg` | `--umbra-color-fixed-primary` (#db1065) |
+| `--umbra-primary-action-bg-end` | `--umbra-color-fixed-primary-end` (#c2128a) |
+| `--umbra-primary-action-caret-width` | `--umbra-density-control-height` (36px at the default density) |
+| `--umbra-primary-action-fg` | `--umbra-color-fixed-on-primary` (#ffffff) |
+| `--umbra-primary-action-min-height` | `--umbra-density-control-height` (36px at the default density) |
+| `--umbra-primary-action-min-width` | `180px` |
+| `--umbra-primary-action-padding-x` | `--umbra-space-6` (20px) |
+| `--umbra-primary-action-radius` | `0` |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -1340,7 +1890,15 @@ The one primary action of the app, at the end of the `TopBar`. Its label follows
 
 The top-level sections of the app, inside the `TopBar`.
 
-**Tokens**: `--umbra-focus-color`, `--umbra-focus-offset`, `--umbra-nav-font`, `--umbra-nav-gap`, `--umbra-nav-indicator-color`, `--umbra-subnav-indicator-color`.
+**Tokens**: each with its default. It also reads the tokens of [`SubNav`](#subnav).
+
+| Token | Default |
+|---|---|
+| `--umbra-focus-color` | `--umbra-color-fixed-focus-ring` (#ffb3f5) |
+| `--umbra-focus-offset` | `2px` |
+| `--umbra-nav-font` | `--umbra-font-nav` |
+| `--umbra-nav-gap` | `--umbra-space-7` (24px) |
+| `--umbra-nav-indicator-color` | `currentColor` |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -1363,7 +1921,22 @@ The top-level sections of the app, inside the `TopBar`.
 
 A bar that fills with a value: progress of a task, or a measured level. Fills the width of its container.
 
-**Tokens**: `--umbra-progress-bar-fill`, `--umbra-progress-bar-fill-end`, `--umbra-progress-bar-hatch`, `--umbra-progress-bar-height`, `--umbra-progress-bar-min-width`, `--umbra-progress-bar-radius`, `--umbra-progress-bar-segment-gap`, `--umbra-progress-bar-target`, `--umbra-progress-bar-target-width`, `--umbra-progress-bar-track`, `--umbra-progress-bar-track-border`, `--umbra-progress-bar-travel-duration`.
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-progress-bar-fill` | `--umbra-color-fixed-primary` (#db1065) or `--umbra-color-fixed-accent-text` (#f77bf0) |
+| `--umbra-progress-bar-fill-end` | `var(--umbra-progress-bar-fill, var(--umbra-color-fixed-accent-text))` |
+| `--umbra-progress-bar-hatch` | `color-mix(in oklab, var(--umbra-color-base-surface1) 75%, transparent)` |
+| `--umbra-progress-bar-height` | `6px`; `4px`; `18px` |
+| `--umbra-progress-bar-min-width` | `--umbra-space-7` (24px) |
+| `--umbra-progress-bar-radius` | `--umbra-radius-pill` (999px) |
+| `--umbra-progress-bar-segment-gap` | `--umbra-space-1` (2px) |
+| `--umbra-progress-bar-target` | `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-progress-bar-target-width` | `2px` |
+| `--umbra-progress-bar-track` | `--umbra-color-base-surface3` (#261b38) |
+| `--umbra-progress-bar-track-border` | `--umbra-color-base-border-control` (#7a6e91) |
+| `--umbra-progress-bar-travel-duration` | `--umbra-motion-duration-pulse` (1600ms) |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -1406,7 +1979,43 @@ A bar that fills with a value: progress of a task, or a measured level. Fills th
 
 Compares one or more series across several axes that share a centre.
 
-**Tokens**: `--umbra-chart-annotation`, `--umbra-chart-annotation-dash`, `--umbra-chart-annotation-width`, `--umbra-chart-area-opacity`, `--umbra-chart-axis`, `--umbra-chart-axis-width`, `--umbra-chart-band-edge-width`, `--umbra-chart-band-opacity`, `--umbra-chart-bar-radius`, `--umbra-chart-center-font`, `--umbra-chart-content-height`, `--umbra-chart-dim-opacity`, `--umbra-chart-fg`, `--umbra-chart-font`, `--umbra-chart-gap`, `--umbra-chart-grid`, `--umbra-chart-grid-dash`, `--umbra-chart-grid-width`, `--umbra-chart-line-width`, `--umbra-chart-outline-width`, `--umbra-chart-point-scale`, `--umbra-chart-ring-width`, `--umbra-chart-tooltip-bg`, `--umbra-chart-tooltip-border`, `--umbra-chart-tooltip-fg`, `--umbra-chart-tooltip-max-width`, `--umbra-chart-tooltip-radius`, `--umbra-chart-track`, `--umbra-chart-track-border`, `--umbra-chart-track-border-width`, `--umbra-chart-value-fg`, `--umbra-focus-color`, `--umbra-legend-row-height`, `--umbra-series-marker-size`.
+**Tokens**: each with its default. It also reads the tokens of [`Legend`](#legend).
+
+| Token | Default |
+|---|---|
+| `--umbra-chart-annotation` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-chart-annotation-dash` | `5 3` |
+| `--umbra-chart-annotation-width` | `1.5px` |
+| `--umbra-chart-area-opacity` | `0.22` |
+| `--umbra-chart-axis` | `--umbra-color-base-border-control` (#7a6e91) |
+| `--umbra-chart-axis-width` | `--umbra-border-width` (1px) |
+| `--umbra-chart-band-edge-width` | `--umbra-border-width` (1px) |
+| `--umbra-chart-band-opacity` | `0.16` |
+| `--umbra-chart-bar-radius` | `2px` |
+| `--umbra-chart-center-font` | `--umbra-font-title` |
+| `--umbra-chart-content-height` | `240px` |
+| `--umbra-chart-dim-opacity` | `0.25` |
+| `--umbra-chart-fg` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-chart-font` | `--umbra-font-label` |
+| `--umbra-chart-gap` | `--umbra-space-3` (8px) |
+| `--umbra-chart-grid` | `--umbra-color-base-border-control` (#7a6e91) |
+| `--umbra-chart-grid-dash` | `1 4` |
+| `--umbra-chart-grid-width` | `--umbra-border-width` (1px) |
+| `--umbra-chart-line-width` | `2px` |
+| `--umbra-chart-outline-width` | `1.5px` |
+| `--umbra-chart-point-scale` | `1` |
+| `--umbra-chart-ring-width` | `1.5px` |
+| `--umbra-chart-tooltip-bg` | `--umbra-color-base-surface2` (#1b1329) |
+| `--umbra-chart-tooltip-border` | `--umbra-color-base-border-strong` (#47395e) |
+| `--umbra-chart-tooltip-fg` | `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-chart-tooltip-max-width` | `20rem` |
+| `--umbra-chart-tooltip-radius` | `--umbra-radius-control` (4px) |
+| `--umbra-chart-track` | `--umbra-color-base-surface3` (#261b38) |
+| `--umbra-chart-track-border` | `--umbra-color-base-border-control` (#7a6e91) |
+| `--umbra-chart-track-border-width` | `--umbra-border-width` (1px) |
+| `--umbra-chart-value-fg` | `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-focus-color` | `--umbra-color-fixed-focus-ring` (#ffb3f5) |
+| `--umbra-series-marker-size` | `0.875rem` |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -1448,7 +2057,37 @@ Compares one or more series across several axes that share a centre.
 
 One option of a `RadioGroup`.
 
-**Tokens**: `--umbra-field-description-color`, `--umbra-field-error-color`, `--umbra-field-marker-color`, `--umbra-focus-color`, `--umbra-focus-offset`, `--umbra-option-group-gap`, `--umbra-option-group-inline-gap`, `--umbra-option-group-min-option-width`, `--umbra-option-group-text-gap`, `--umbra-radio-bg`, `--umbra-radio-border`, `--umbra-radio-border-width`, `--umbra-radio-card-bg`, `--umbra-radio-card-border`, `--umbra-radio-card-description-lines`, `--umbra-radio-card-divider`, `--umbra-radio-card-media-size`, `--umbra-radio-card-min-height`, `--umbra-radio-card-padding`, `--umbra-radio-card-radius`, `--umbra-radio-card-selected-bg`, `--umbra-radio-card-selected-border`, `--umbra-radio-gap`, `--umbra-radio-invalid-border`, `--umbra-radio-mark-color`, `--umbra-radio-selected-bg`, `--umbra-radio-size`.
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-field-description-color` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-field-error-color` | `--umbra-color-semantic-danger` (#f0455a) |
+| `--umbra-field-marker-color` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-focus-color` | `--umbra-color-fixed-focus-ring` (#ffb3f5) |
+| `--umbra-focus-offset` | `2px` |
+| `--umbra-option-group-gap` | `--umbra-space-3` (8px) |
+| `--umbra-option-group-inline-gap` | `--umbra-space-6` (20px) |
+| `--umbra-option-group-min-option-width` | `12em` |
+| `--umbra-option-group-text-gap` | `--umbra-space-2` (4px) |
+| `--umbra-radio-bg` | `transparent` |
+| `--umbra-radio-border` | `--umbra-color-base-border-control` (#7a6e91) |
+| `--umbra-radio-border-width` | `calc(var(--umbra-border-width) * 2)` |
+| `--umbra-radio-card-bg` | `--umbra-color-base-surface2` (#1b1329) |
+| `--umbra-radio-card-border` | `--umbra-color-base-border-strong` (#47395e) |
+| `--umbra-radio-card-description-lines` | `2` |
+| `--umbra-radio-card-divider` | `color-mix(in oklab, currentColor 25%, transparent)` |
+| `--umbra-radio-card-media-size` | `1.5em` |
+| `--umbra-radio-card-min-height` | `calc(var(--umbra-density-control-height) + 2 * var(--pad))` |
+| `--umbra-radio-card-padding` | `--umbra-space-4` (12px) |
+| `--umbra-radio-card-radius` | `--umbra-radius-control` (4px) |
+| `--umbra-radio-card-selected-bg` | `color-mix(in oklab, var(--fill) 38%, var(--umbra-color-base-surface1))` |
+| `--umbra-radio-card-selected-border` | `var(--umbra-radio-selected-bg, var(--umbra-color-fixed-selected))` |
+| `--umbra-radio-gap` | `--umbra-space-3` (8px) |
+| `--umbra-radio-invalid-border` | `--umbra-color-semantic-danger` (#f0455a) |
+| `--umbra-radio-mark-color` | `--umbra-color-fixed-on-selected` (#ffffff) |
+| `--umbra-radio-selected-bg` | `--umbra-color-fixed-selected` (#6a1fd6) |
+| `--umbra-radio-size` | `calc(var(--umbra-density-control-height) / 2)` |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -1470,7 +2109,19 @@ One option of a `RadioGroup`.
 
 A choice of exactly one option among a few, all visible at once.
 
-**Tokens**: `--umbra-field-description-color`, `--umbra-field-error-color`, `--umbra-field-marker-color`, `--umbra-focus-color`, `--umbra-focus-offset`, `--umbra-option-group-gap`, `--umbra-option-group-inline-gap`, `--umbra-option-group-min-option-width`, `--umbra-option-group-text-gap`, `--umbra-radio-bg`, `--umbra-radio-border`, `--umbra-radio-border-width`, `--umbra-radio-card-bg`, `--umbra-radio-card-border`, `--umbra-radio-card-description-lines`, `--umbra-radio-card-divider`, `--umbra-radio-card-media-size`, `--umbra-radio-card-min-height`, `--umbra-radio-card-padding`, `--umbra-radio-card-radius`, `--umbra-radio-card-selected-bg`, `--umbra-radio-card-selected-border`, `--umbra-radio-gap`, `--umbra-radio-invalid-border`, `--umbra-radio-mark-color`, `--umbra-radio-selected-bg`, `--umbra-radio-size`.
+**Tokens**: each with its default. It also reads the tokens of [`Radio`](#radio).
+
+| Token | Default |
+|---|---|
+| `--umbra-field-description-color` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-field-error-color` | `--umbra-color-semantic-danger` (#f0455a) |
+| `--umbra-field-marker-color` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-focus-color` | `--umbra-color-fixed-focus-ring` (#ffb3f5) |
+| `--umbra-focus-offset` | `2px` |
+| `--umbra-option-group-gap` | `--umbra-space-3` (8px) |
+| `--umbra-option-group-inline-gap` | `--umbra-space-6` (20px) |
+| `--umbra-option-group-min-option-width` | `12em` |
+| `--umbra-option-group-text-gap` | `--umbra-space-2` (4px) |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -1504,7 +2155,14 @@ A choice of exactly one option among a few, all visible at once.
 
 A region that scrolls inside its slot. The only place scrolling happens.
 
-**Tokens**: `--umbra-scroll-fade-color`, `--umbra-scroll-thumb`, `--umbra-scroll-thumb-hover`, `--umbra-scroll-thumb-size`.
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-scroll-fade-color` | `--umbra-context-card-tint` |
+| `--umbra-scroll-thumb` | `--umbra-color-base-border-control` (#7a6e91) |
+| `--umbra-scroll-thumb-hover` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-scroll-thumb-size` | `--umbra-size-scroll-thumb` (4px) |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -1527,7 +2185,32 @@ A region that scrolls inside its slot. The only place scrolling happens.
 
 A field for searching: always an input, or an icon that opens into one. It can list suggestions and recent searches.
 
-**Tokens**: `--umbra-field-description-color`, `--umbra-field-error-color`, `--umbra-field-marker-color`, `--umbra-focus-color`, `--umbra-option-group-gap`, `--umbra-option-group-inline-gap`, `--umbra-option-group-min-option-width`, `--umbra-option-group-text-gap`, `--umbra-search-field-bg`, `--umbra-search-field-border`, `--umbra-search-field-expanded-width`, `--umbra-search-field-fg`, `--umbra-search-field-height`, `--umbra-search-field-icon-color`, `--umbra-search-field-invalid-border`, `--umbra-search-field-list-max-width`, `--umbra-search-field-min-width`, `--umbra-search-field-padding-x`, `--umbra-search-field-placeholder`, `--umbra-search-field-radius`, `--umbra-search-field-shortcut-color`, `--umbra-search-field-width`.
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-field-description-color` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-field-error-color` | `--umbra-color-semantic-danger` (#f0455a) |
+| `--umbra-field-marker-color` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-focus-color` | `--umbra-color-fixed-focus-ring` (#ffb3f5) |
+| `--umbra-option-group-gap` | `--umbra-space-3` (8px) |
+| `--umbra-option-group-inline-gap` | `--umbra-space-6` (20px) |
+| `--umbra-option-group-min-option-width` | `12em` |
+| `--umbra-option-group-text-gap` | `--umbra-space-2` (4px) |
+| `--umbra-search-field-bg` | `--umbra-color-base-surface1` (#0b0612) |
+| `--umbra-search-field-border` | `--umbra-color-base-border-control` (#7a6e91) |
+| `--umbra-search-field-expanded-width` | `240px` |
+| `--umbra-search-field-fg` | `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-search-field-height` | `--umbra-density-control-height` (36px at the default density) |
+| `--umbra-search-field-icon-color` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-search-field-invalid-border` | `--umbra-color-semantic-danger` (#f0455a) |
+| `--umbra-search-field-list-max-width` | `480px` |
+| `--umbra-search-field-min-width` | `120px` |
+| `--umbra-search-field-padding-x` | `--umbra-space-4` (12px) |
+| `--umbra-search-field-placeholder` | `--umbra-color-base-text-muted` (#948da2) |
+| `--umbra-search-field-radius` | `--umbra-radius-control` (4px) |
+| `--umbra-search-field-shortcut-color` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-search-field-width` | `100%` |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -1576,7 +2259,14 @@ A field for searching: always an input, or an icon that opens into one. It can l
 
 A heading for one section of content inside a card or page, with optional controls on the same line.
 
-**Tokens**: `--umbra-section-link-color`, `--umbra-section-rule-color`, `--umbra-section-title-color`, `--umbra-section-title-font`.
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-section-link-color` | `--umbra-color-fixed-accent-text` (#f77bf0) |
+| `--umbra-section-rule-color` | `--umbra-color-base-border-strong` (#47395e) |
+| `--umbra-section-title-color` | `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-section-title-font` | `700 16px/1.25 var(--umbra-font-family-heading)`; `--umbra-font-label`; `--umbra-font-body` |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -1601,7 +2291,20 @@ A heading for one section of content inside a card or page, with optional contro
 
 A row of joined segments that filters the content below it. One or several can be selected.
 
-**Tokens**: `--umbra-segmented-filter-bg`, `--umbra-segmented-filter-border`, `--umbra-segmented-filter-fg`, `--umbra-segmented-filter-height`, `--umbra-segmented-filter-min-item-width`, `--umbra-segmented-filter-padding-x`, `--umbra-segmented-filter-radius`, `--umbra-segmented-filter-selected-bg`, `--umbra-segmented-filter-selected-border`, `--umbra-segmented-filter-selected-fg`.
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-segmented-filter-bg` | `--umbra-color-base-surface1` (#0b0612) |
+| `--umbra-segmented-filter-border` | `--umbra-color-base-border-strong` (#47395e) |
+| `--umbra-segmented-filter-fg` | `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-segmented-filter-height` | `--umbra-density-control-height` (36px at the default density) or `calc(var(--umbra-density-table-row) - 2px)` |
+| `--umbra-segmented-filter-min-item-width` | `4.5em` |
+| `--umbra-segmented-filter-padding-x` | `--umbra-space-4` (12px) or `--umbra-space-3` (8px) |
+| `--umbra-segmented-filter-radius` | `--umbra-radius-control` (4px) |
+| `--umbra-segmented-filter-selected-bg` | `--umbra-color-fixed-selected` (#6a1fd6) |
+| `--umbra-segmented-filter-selected-border` | `color-mix(in oklab, var(--selected), #fff 35%)` |
+| `--umbra-segmented-filter-selected-fg` | `--umbra-color-fixed-on-selected` (#ffffff) |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -1634,7 +2337,34 @@ A row of joined segments that filters the content below it. One or several can b
 
 Chooses one option, or several with `multiple`, from a list that opens under a button.
 
-**Tokens**: `--umbra-dir`, `--umbra-field-description-color`, `--umbra-field-error-color`, `--umbra-field-marker-color`, `--umbra-focus-color`, `--umbra-focus-offset`, `--umbra-menu-border`, `--umbra-option-group-gap`, `--umbra-option-group-inline-gap`, `--umbra-option-group-min-option-width`, `--umbra-option-group-text-gap`, `--umbra-select-bg`, `--umbra-select-border`, `--umbra-select-fg`, `--umbra-select-ghost-bg`, `--umbra-select-height`, `--umbra-select-icon-color`, `--umbra-select-invalid-border`, `--umbra-select-option-selected-bg`, `--umbra-select-option-stripe-width`, `--umbra-select-padding-x`, `--umbra-select-placeholder`, `--umbra-select-popover-max-width`, `--umbra-select-radius`, `--umbra-select-swatch-size`, `--umbra-select-width`.
+**Tokens**: each with its default. It also reads the tokens of [`Menu`](#menu).
+
+| Token | Default |
+|---|---|
+| `--umbra-field-description-color` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-field-error-color` | `--umbra-color-semantic-danger` (#f0455a) |
+| `--umbra-field-marker-color` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-focus-color` | `--umbra-color-fixed-focus-ring` (#ffb3f5) |
+| `--umbra-focus-offset` | `2px` |
+| `--umbra-option-group-gap` | `--umbra-space-3` (8px) |
+| `--umbra-option-group-inline-gap` | `--umbra-space-6` (20px) |
+| `--umbra-option-group-min-option-width` | `12em` |
+| `--umbra-option-group-text-gap` | `--umbra-space-2` (4px) |
+| `--umbra-select-bg` | `--umbra-color-base-surface1` (#0b0612) |
+| `--umbra-select-border` | `--umbra-color-base-border-control` (#7a6e91) |
+| `--umbra-select-fg` | `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-select-ghost-bg` | `transparent` |
+| `--umbra-select-height` | `--umbra-density-control-height` (36px at the default density) |
+| `--umbra-select-icon-color` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-select-invalid-border` | `--umbra-color-semantic-danger` (#f0455a) |
+| `--umbra-select-option-selected-bg` | `color-mix(in oklab, var(--umbra-color-fixed-selected) 28%, transparent)` |
+| `--umbra-select-option-stripe-width` | `3px` |
+| `--umbra-select-padding-x` | `--umbra-space-4` (12px) |
+| `--umbra-select-placeholder` | `--umbra-color-base-text-muted` (#948da2) |
+| `--umbra-select-popover-max-width` | `480px` |
+| `--umbra-select-radius` | `--umbra-radius-control` (4px) |
+| `--umbra-select-swatch-size` | `0.75em` |
+| `--umbra-select-width` | `auto` |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -1695,7 +2425,18 @@ Chooses one option, or several with `multiple`, from a list that opens under a b
 
 The user's pinned shortcuts, at the end of the `SubNav`. One tab stop; arrow keys move between the chips. Chips that do not fit move into a "+N" menu.
 
-**Tokens**: `--umbra-focus-color`, `--umbra-shortcut-bar-font`, `--umbra-shortcut-bar-gap`, `--umbra-shortcut-bar-item-bg`, `--umbra-shortcut-bar-item-border`, `--umbra-shortcut-bar-item-fg`, `--umbra-shortcut-bar-item-height`, `--umbra-shortcut-bar-item-radius`.
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-focus-color` | `--umbra-color-fixed-focus-ring` (#ffb3f5) |
+| `--umbra-shortcut-bar-font` | `--umbra-font-label` |
+| `--umbra-shortcut-bar-gap` | `--umbra-space-2` (4px) |
+| `--umbra-shortcut-bar-item-bg` | `--umbra-color-base-surface1` (#0b0612) |
+| `--umbra-shortcut-bar-item-border` | `--umbra-color-base-border-strong` (#47395e) |
+| `--umbra-shortcut-bar-item-fg` | `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-shortcut-bar-item-height` | `22px` |
+| `--umbra-shortcut-bar-item-radius` | `--umbra-radius-control` (4px) |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -1720,7 +2461,13 @@ The user's pinned shortcuts, at the end of the `SubNav`. One tab stop; arrow key
 
 A grey placeholder in the shape of content that is still loading. Hidden from assistive technology.
 
-**Tokens**: `--umbra-skeleton-bg`, `--umbra-skeleton-highlight`, `--umbra-skeleton-radius`.
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-skeleton-bg` | `--umbra-color-base-surface3` (#261b38) |
+| `--umbra-skeleton-highlight` | `--umbra-color-base-border-strong` (#47395e) |
+| `--umbra-skeleton-radius` | `--umbra-radius-control` (4px) |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -1740,7 +2487,11 @@ A grey placeholder in the shape of content that is still loading. Hidden from as
 
 Gives `size`, `priority`, `minWidth`, `minHeight` and `label` to content that is not an umbra-ui component. The content fills the slot.
 
-**Tokens**: `--umbra-layout-gap`.
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-layout-gap` | `--umbra-density-gap` (20px at the default density) |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -1761,7 +2512,11 @@ Gives `size`, `priority`, `minWidth`, `minHeight` and `label` to content that is
 
 Shares its height among its children.
 
-**Tokens**: `--umbra-layout-gap`.
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-layout-gap` | `--umbra-density-gap` (20px at the default density) |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -1784,7 +2539,14 @@ Shares its height among its children.
 
 A status as a dot or an icon with a label, or as a coloured label.
 
-**Tokens**: `--umbra-status-indicator-color`, `--umbra-status-indicator-gap`, `--umbra-status-indicator-pulse-duration`, `--umbra-status-indicator-size`.
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-status-indicator-color` | `var(--tone)` |
+| `--umbra-status-indicator-gap` | `--umbra-space-2` (4px) |
+| `--umbra-status-indicator-pulse-duration` | `--umbra-motion-duration-pulse` (1600ms) |
+| `--umbra-status-indicator-size` | `0.625em` |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -1807,7 +2569,17 @@ A status as a dot or an icon with a label, or as a coloured label.
 
 A large value with its label, and optional unit, trend, caption and meter.
 
-**Tokens**: `--umbra-stat-value-caption-fg`, `--umbra-stat-value-fg`, `--umbra-stat-value-font`, `--umbra-stat-value-font-small`, `--umbra-stat-value-gap`, `--umbra-stat-value-label-fg`, `--umbra-stat-value-unit-fg`.
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-stat-value-caption-fg` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-stat-value-fg` | `--umbra-color-base-text-primary` (#f5f3f8); `--umbra-color-fixed-accent-text` (#f77bf0); `--umbra-color-semantic-success` (#16b877); `--umbra-color-semantic-warning` (#f2b23a); `--umbra-color-semantic-danger` (#f0455a); `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-stat-value-font` | `--umbra-font-title`; `--umbra-font-display`; `700 40px/1.1 var(--umbra-font-family-body)` |
+| `--umbra-stat-value-font-small` | `700 var(--umbra-density-body-size) / 1.375 var(--umbra-font-family-body)`; `--umbra-font-title`; `--umbra-font-display` |
+| `--umbra-stat-value-gap` | `--umbra-space-2` (4px) |
+| `--umbra-stat-value-label-fg` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-stat-value-unit-fg` | `--umbra-color-base-text-secondary` (#b3adbf) |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -1840,7 +2612,21 @@ A large value with its label, and optional unit, trend, caption and meter.
 
 The second bar: the pages of the current section, and room for shortcuts at the end.
 
-**Tokens**: `--umbra-focus-color`, `--umbra-focus-offset`, `--umbra-nav-font`, `--umbra-nav-gap`, `--umbra-nav-indicator-color`, `--umbra-subnav-bg`, `--umbra-subnav-end-gap`, `--umbra-subnav-gap`, `--umbra-subnav-height`, `--umbra-subnav-indicator-color`, `--umbra-subnav-padding-x`.
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-focus-color` | `--umbra-color-fixed-focus-ring` (#ffb3f5) |
+| `--umbra-focus-offset` | `2px` |
+| `--umbra-nav-font` | `--umbra-font-nav` |
+| `--umbra-nav-gap` | `--umbra-space-7` (24px) |
+| `--umbra-nav-indicator-color` | `currentColor` |
+| `--umbra-subnav-bg` | `color-mix(in oklab, var(--umbra-color-brand) 35%, #05020a)` |
+| `--umbra-subnav-end-gap` | `--umbra-space-2` (4px) |
+| `--umbra-subnav-gap` | `--umbra-space-5` (16px) |
+| `--umbra-subnav-height` | `--umbra-size-sub-nav-height` (32px) |
+| `--umbra-subnav-indicator-color` | `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-subnav-padding-x` | `--umbra-density-page-margin` (32px at the default density) |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -1865,7 +2651,23 @@ The second bar: the pages of the current section, and room for shortcuts at the 
 
 A compact tile that sums up one thing: an icon, a title and one value. The whole tile can be a link or a button.
 
-**Tokens**: `--umbra-focus-color`, `--umbra-summary-tile-bg`, `--umbra-summary-tile-border`, `--umbra-summary-tile-caption-fg`, `--umbra-summary-tile-fg`, `--umbra-summary-tile-icon-bg`, `--umbra-summary-tile-icon-size`, `--umbra-summary-tile-min-height`, `--umbra-summary-tile-min-width`, `--umbra-summary-tile-padding`, `--umbra-summary-tile-radius`, `--umbra-summary-tile-selected-bg`, `--umbra-summary-tile-selected-fg`.
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-focus-color` | `--umbra-color-fixed-focus-ring` (#ffb3f5) |
+| `--umbra-summary-tile-bg` | `--umbra-context-card-tint` |
+| `--umbra-summary-tile-border` | `--umbra-color-base-border-subtle` (#2e2440) |
+| `--umbra-summary-tile-caption-fg` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-summary-tile-fg` | `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-summary-tile-icon-bg` | `--umbra-color-base-surface3` (#261b38) or `color-mix(in oklab, var(--fg) 18%, transparent)` |
+| `--umbra-summary-tile-icon-size` | `calc(var(--umbra-density-control-height) + var(--umbra-space-3))` |
+| `--umbra-summary-tile-min-height` | `--umbra-density-list-row` (72px at the default density) |
+| `--umbra-summary-tile-min-width` | `160px` |
+| `--umbra-summary-tile-padding` | `--umbra-space-4` (12px) or `--umbra-space-3` (8px) |
+| `--umbra-summary-tile-radius` | `--umbra-radius-card` (8px) |
+| `--umbra-summary-tile-selected-bg` | `--umbra-color-fixed-selected` (#6a1fd6) |
+| `--umbra-summary-tile-selected-fg` | `--umbra-color-fixed-on-selected` (#ffffff) |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -1902,7 +2704,23 @@ A compact tile that sums up one thing: an icon, a title and one value. The whole
 
 Switches between views of the same content area. The panel fills the rest of the slot.
 
-**Tokens**: `--umbra-dir`, `--umbra-tabs-bg`, `--umbra-tabs-border`, `--umbra-tabs-fg`, `--umbra-tabs-gap`, `--umbra-tabs-height`, `--umbra-tabs-indicator-color`, `--umbra-tabs-padding-x`, `--umbra-tabs-pill-radius`, `--umbra-tabs-radius`, `--umbra-tabs-selected-bg`, `--umbra-tabs-selected-fg`, `--umbra-tabs-underline-selected-fg`, `--umbra-tabs-vertical-max-width`.
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-tabs-bg` | `--umbra-color-base-surface1` (#0b0612) |
+| `--umbra-tabs-border` | `--umbra-color-base-border-strong` (#47395e) |
+| `--umbra-tabs-fg` | `--umbra-color-base-text-secondary` (#b3adbf) or `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-tabs-gap` | `--umbra-space-4` (12px) |
+| `--umbra-tabs-height` | `--umbra-density-control-height` (36px at the default density) or `calc(var(--umbra-density-table-row) - 2px)` |
+| `--umbra-tabs-indicator-color` | `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-tabs-padding-x` | `--umbra-space-4` (12px) or `--umbra-space-3` (8px) |
+| `--umbra-tabs-pill-radius` | `--umbra-radius-pill` (999px) |
+| `--umbra-tabs-radius` | `--umbra-radius-control` (4px) |
+| `--umbra-tabs-selected-bg` | `--umbra-color-fixed-selected` (#6a1fd6) |
+| `--umbra-tabs-selected-fg` | `--umbra-color-fixed-on-selected` (#ffffff) |
+| `--umbra-tabs-underline-selected-fg` | `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-tabs-vertical-max-width` | `40%` |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -1939,7 +2757,19 @@ Switches between views of the same content area. The panel fills the rest of the
 
 A small label chip: a category, a status code or a value with an icon.
 
-**Tokens**: `--umbra-tag-bg`, `--umbra-tag-border`, `--umbra-tag-fg`, `--umbra-tag-focus-color`, `--umbra-tag-font`, `--umbra-tag-gap`, `--umbra-tag-padding`, `--umbra-tag-radius`, `--umbra-tag-stripe-width`.
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-tag-bg` | `var(--fill)` |
+| `--umbra-tag-border` | `var(--line)` |
+| `--umbra-tag-fg` | `var(--ink)` |
+| `--umbra-tag-focus-color` | `var(--on-tone)` |
+| `--umbra-tag-font` | `--umbra-font-label` |
+| `--umbra-tag-gap` | `--umbra-space-2` (4px) |
+| `--umbra-tag-padding` | `1px calc(var(--umbra-space-2) + var(--umbra-space-1))` or `0 var(--umbra-space-2)` |
+| `--umbra-tag-radius` | `--umbra-radius-control` (4px) |
+| `--umbra-tag-stripe-width` | `--umbra-space-2` (4px) |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -1967,7 +2797,29 @@ A small label chip: a category, a status code or a value with an icon.
 
 A box for typing one line of text, or several with `multiline`.
 
-**Tokens**: `--umbra-field-description-color`, `--umbra-field-error-color`, `--umbra-field-marker-color`, `--umbra-focus-color`, `--umbra-icon-size`, `--umbra-option-group-gap`, `--umbra-option-group-inline-gap`, `--umbra-option-group-min-option-width`, `--umbra-option-group-text-gap`, `--umbra-text-field-affix-color`, `--umbra-text-field-bg`, `--umbra-text-field-border`, `--umbra-text-field-fg`, `--umbra-text-field-height`, `--umbra-text-field-invalid-border`, `--umbra-text-field-padding-x`, `--umbra-text-field-placeholder`, `--umbra-text-field-radius`, `--umbra-text-field-width`.
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-field-description-color` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-field-error-color` | `--umbra-color-semantic-danger` (#f0455a) |
+| `--umbra-field-marker-color` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-focus-color` | `--umbra-color-fixed-focus-ring` (#ffb3f5) |
+| `--umbra-icon-size` | `1.25em` |
+| `--umbra-option-group-gap` | `--umbra-space-3` (8px) |
+| `--umbra-option-group-inline-gap` | `--umbra-space-6` (20px) |
+| `--umbra-option-group-min-option-width` | `12em` |
+| `--umbra-option-group-text-gap` | `--umbra-space-2` (4px) |
+| `--umbra-text-field-affix-color` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-text-field-bg` | `--umbra-color-base-surface1` (#0b0612) |
+| `--umbra-text-field-border` | `--umbra-color-base-border-control` (#7a6e91) |
+| `--umbra-text-field-fg` | `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-text-field-height` | `--umbra-density-control-height` (36px at the default density) |
+| `--umbra-text-field-invalid-border` | `--umbra-color-semantic-danger` (#f0455a) |
+| `--umbra-text-field-padding-x` | `--umbra-space-4` (12px) |
+| `--umbra-text-field-placeholder` | `--umbra-color-base-text-muted` (#948da2) |
+| `--umbra-text-field-radius` | `--umbra-radius-control` (4px) |
+| `--umbra-text-field-width` | `100%` |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -2004,7 +2856,31 @@ A box for typing one line of text, or several with `multiline`.
 
 A switch for a setting that takes effect at once: on or off.
 
-**Tokens**: `--umbra-field-description-color`, `--umbra-field-error-color`, `--umbra-field-marker-color`, `--umbra-focus-color`, `--umbra-focus-offset`, `--umbra-option-group-gap`, `--umbra-option-group-inline-gap`, `--umbra-option-group-min-option-width`, `--umbra-option-group-text-gap`, `--umbra-toggle-bg`, `--umbra-toggle-border`, `--umbra-toggle-gap`, `--umbra-toggle-height`, `--umbra-toggle-mark-color`, `--umbra-toggle-radius`, `--umbra-toggle-selected-bg`, `--umbra-toggle-selected-thumb-bg`, `--umbra-toggle-small-height`, `--umbra-toggle-thumb-bg`, `--umbra-toggle-thumb-inset`, `--umbra-toggle-width`.
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-field-description-color` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-field-error-color` | `--umbra-color-semantic-danger` (#f0455a) |
+| `--umbra-field-marker-color` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-focus-color` | `--umbra-color-fixed-focus-ring` (#ffb3f5) |
+| `--umbra-focus-offset` | `2px` |
+| `--umbra-option-group-gap` | `--umbra-space-3` (8px) |
+| `--umbra-option-group-inline-gap` | `--umbra-space-6` (20px) |
+| `--umbra-option-group-min-option-width` | `12em` |
+| `--umbra-option-group-text-gap` | `--umbra-space-2` (4px) |
+| `--umbra-toggle-bg` | `--umbra-color-base-surface1` (#0b0612) |
+| `--umbra-toggle-border` | `--umbra-color-base-border-control` (#7a6e91) |
+| `--umbra-toggle-gap` | `--umbra-space-3` (8px) |
+| `--umbra-toggle-height` | `calc(var(--umbra-density-control-height) / 2 + 4px)` |
+| `--umbra-toggle-mark-color` | `var(--umbra-toggle-selected-bg, var(--umbra-color-fixed-selected))` |
+| `--umbra-toggle-radius` | `--umbra-radius-pill` (999px) |
+| `--umbra-toggle-selected-bg` | `--umbra-color-fixed-selected` (#6a1fd6) |
+| `--umbra-toggle-selected-thumb-bg` | `--umbra-color-fixed-on-selected` (#ffffff) |
+| `--umbra-toggle-small-height` | `calc(var(--umbra-density-table-row) / 2 + 5px)` |
+| `--umbra-toggle-thumb-bg` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-toggle-thumb-inset` | `2px` |
+| `--umbra-toggle-width` | `calc(var(--height) * 1.8)` |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -2033,7 +2909,15 @@ A switch for a setting that takes effect at once: on or off.
 
 A short description of a control, shown on hover and on keyboard focus. Text only: it never holds anything the user could interact with.
 
-**Tokens**: `--umbra-tooltip-bg`, `--umbra-tooltip-border`, `--umbra-tooltip-fg`, `--umbra-tooltip-max-width`, `--umbra-tooltip-radius`.
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-tooltip-bg` | `--umbra-color-base-surface2` (#1b1329) |
+| `--umbra-tooltip-border` | `--umbra-color-base-border-strong` (#47395e) |
+| `--umbra-tooltip-fg` | `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-tooltip-max-width` | `320px` |
+| `--umbra-tooltip-radius` | `--umbra-radius-control` (4px) |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -2062,7 +2946,23 @@ A short description of a control, shown on hover and on keyboard focus. Text onl
 
 The brand-coloured bar at the top: where the user is, the main sections, and the one primary action.
 
-**Tokens**: `--umbra-focus-color`, `--umbra-focus-offset`, `--umbra-nav-font`, `--umbra-nav-gap`, `--umbra-nav-indicator-color`, `--umbra-subnav-indicator-color`, `--umbra-topbar-action-gap`, `--umbra-topbar-action-size`, `--umbra-topbar-bg`, `--umbra-topbar-fg`, `--umbra-topbar-gap`, `--umbra-topbar-height`, `--umbra-topbar-logo-size`, `--umbra-topbar-padding-x`.
+**Tokens**: each with its default. It also reads the tokens of [`SubNav`](#subnav).
+
+| Token | Default |
+|---|---|
+| `--umbra-focus-color` | `--umbra-color-fixed-focus-ring` (#ffb3f5) |
+| `--umbra-focus-offset` | `2px` |
+| `--umbra-nav-font` | `--umbra-font-nav` |
+| `--umbra-nav-gap` | `--umbra-space-7` (24px) |
+| `--umbra-nav-indicator-color` | `currentColor` |
+| `--umbra-topbar-action-gap` | `--umbra-space-2` (4px) |
+| `--umbra-topbar-action-size` | `--umbra-density-control-height` (36px at the default density) |
+| `--umbra-topbar-bg` | `--umbra-color-brand` (#2a2f8f) |
+| `--umbra-topbar-fg` | `var(--umbra-color-on-brand, #fff)` |
+| `--umbra-topbar-gap` | `--umbra-space-6` (20px) |
+| `--umbra-topbar-height` | `--umbra-size-top-bar-height` (60px) |
+| `--umbra-topbar-logo-size` | `40px` |
+| `--umbra-topbar-padding-x` | `--umbra-space-4` (12px) |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -2092,7 +2992,14 @@ The brand-coloured bar at the top: where the user is, the main sections, and the
 
 The direction of a change: up, down or flat.
 
-**Tokens**: `--umbra-trend-arrow-bad`, `--umbra-trend-arrow-gap`, `--umbra-trend-arrow-good`, `--umbra-trend-arrow-neutral`.
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-trend-arrow-bad` | `--umbra-color-semantic-danger` (#f0455a) |
+| `--umbra-trend-arrow-gap` | `--umbra-space-1` (2px) |
+| `--umbra-trend-arrow-good` | `--umbra-color-semantic-success` (#16b877) |
+| `--umbra-trend-arrow-neutral` | `--umbra-color-base-text-muted` (#948da2) |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -2117,7 +3024,11 @@ The direction of a change: up, down or flat.
 
 Wraps the app once. Supplies the theme, density, icon map and shortcut registry to every component.
 
-**Tokens**: `--umbra-dir`, `--umbra-icon-size`.
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-icon-size` | `1.25em` |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -2141,7 +3052,11 @@ Wraps the app once. Supplies the theme, density, icon map and shortcut registry 
 
 The same `context`, `density`, `brand` and `tokens` as the provider, for one subtree.
 
-**Tokens**: `--umbra-dir`, `--umbra-icon-size`.
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-icon-size` | `1.25em` |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -2161,7 +3076,16 @@ The same `context`, `density`, `brand` and `tokens` as the provider, for one sub
 
 A value coloured by where it falls on a five-step ramp.
 
-**Tokens**: `--umbra-value-pill-bg`, `--umbra-value-pill-fg`, `--umbra-value-pill-font`, `--umbra-value-pill-min-width`, `--umbra-value-pill-padding`, `--umbra-value-pill-radius`.
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-value-pill-bg` | `var(--fill)` |
+| `--umbra-value-pill-fg` | `var(--ink)` |
+| `--umbra-value-pill-font` | `--umbra-font-label` or `--umbra-font-body` |
+| `--umbra-value-pill-min-width` | `3em`; `2.6em`; `2.2em` |
+| `--umbra-value-pill-padding` | `1px var(--umbra-space-3)`; `0 var(--umbra-space-2)`; `var(--umbra-space-1) var(--umbra-space-4)` |
+| `--umbra-value-pill-radius` | `--umbra-radius-pill` (999px) or `--umbra-radius-control` (4px) |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -2192,7 +3116,23 @@ A value coloured by where it falls on a five-step ramp.
 
 Side navigation for a modal, a settings screen or one column of a page.
 
-**Tokens**: `--umbra-dir`, `--umbra-icon-size`, `--umbra-vertical-nav-bg`, `--umbra-vertical-nav-current-bg`, `--umbra-vertical-nav-current-fg`, `--umbra-vertical-nav-fg`, `--umbra-vertical-nav-gap`, `--umbra-vertical-nav-padding`, `--umbra-vertical-nav-radius`, `--umbra-vertical-nav-rail-below`, `--umbra-vertical-nav-rail-width`, `--umbra-vertical-nav-row-height`, `--umbra-vertical-nav-stripe-width`, `--umbra-vertical-nav-width`.
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-icon-size` | `1.25em` |
+| `--umbra-vertical-nav-bg` | `transparent` |
+| `--umbra-vertical-nav-current-bg` | `--umbra-color-fixed-selected` (#6a1fd6) |
+| `--umbra-vertical-nav-current-fg` | `--umbra-color-fixed-on-selected` (#ffffff) |
+| `--umbra-vertical-nav-fg` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-vertical-nav-gap` | `--umbra-space-1` (2px) |
+| `--umbra-vertical-nav-padding` | `--umbra-space-3` (8px) |
+| `--umbra-vertical-nav-radius` | `--umbra-radius-control` (4px) |
+| `--umbra-vertical-nav-rail-below` | `160px` |
+| `--umbra-vertical-nav-rail-width` | `calc(var(--row) + 2 * var(--pad))` |
+| `--umbra-vertical-nav-row-height` | `--umbra-density-control-height` (36px at the default density) |
+| `--umbra-vertical-nav-stripe-width` | `3px` |
+| `--umbra-vertical-nav-width` | `240px` |
 
 | Prop | Type | Purpose |
 |---|---|---|

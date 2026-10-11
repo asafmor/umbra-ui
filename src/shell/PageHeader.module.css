@@ -37,8 +37,8 @@
   --pad: var(--umbra-page-header-padding, var(--umbra-density-card-padding));
   --muted: currentColor;
   --rule: color-mix(in oklab, currentColor 40%, transparent);
-  --umbra-focus-color: var(--umbra-color-on-brand-focus, #fff);
-  --umbra-badge-ring: var(--umbra-page-header-fg, var(--umbra-color-on-brand, #fff));
+  --focus-color: var(--umbra-color-on-brand-focus, #fff);
+  --badge-ring: var(--umbra-page-header-fg, var(--umbra-color-on-brand, #fff));
   background: var(--umbra-page-header-bg, var(--umbra-color-brand));
   color: var(--umbra-page-header-fg, var(--umbra-color-on-brand, #fff));
 }
@@ -136,8 +136,8 @@ a.crumb:focus-visible {
   display: flex;
   align-items: center;
   /* The avatar or entity icon inside takes the header's size, whatever its own `size` prop. */
-  --umbra-avatar-size: var(--media);
-  --umbra-entity-icon-size: var(--media);
+  --avatar-size: var(--media);
+  --entity-icon-size: var(--media);
 }
 
 .media[data-small] {

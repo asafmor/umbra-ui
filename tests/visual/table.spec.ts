@@ -1643,8 +1643,10 @@ test.describe('parts and tokens, more', () => {
       document.body.style.setProperty('--umbra-table-focus-offset', '1px');
     });
     expect((await more.boundingBox())!.height).toBe(18);
+    // The table passes its default on as a private property: the public token stays the app's.
+    expect(await more.evaluate((el) => getComputedStyle(el).getPropertyValue('--focus-offset'))).toBe('1px');
     expect(await more.evaluate((el) => getComputedStyle(el).getPropertyValue('--umbra-focus-offset'))).toBe(
-      '1px',
+      '',
     );
     // And the components' own tokens still work when set on the table itself.
     await page.evaluate(() => {

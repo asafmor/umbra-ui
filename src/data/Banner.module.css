@@ -64,8 +64,8 @@
    * are drawn one pixel from their control, so the whole ring lies on the fill (the padding and the
    * border leave three pixels) and none of it on the page, where the dark ring could not be seen.
    */
-  --umbra-focus-color: var(--umbra-banner-focus-color, var(--fg));
-  --umbra-focus-offset: var(--umbra-banner-focus-offset, 1px);
+  --focus-color: var(--umbra-banner-focus-color, var(--fg));
+  --focus-offset: var(--umbra-banner-focus-offset, 1px);
 }
 
 .root[data-variant='solid'][data-tone='accent'] {
@@ -131,9 +131,9 @@
   display: flex;
   flex: none;
   margin-inline-end: calc(-1 * var(--umbra-space-3));
-  --umbra-icon-button-size: var(--umbra-banner-dismiss-size, var(--row));
+  --icon-button-size: var(--umbra-banner-dismiss-size, var(--row));
   /* It reaches the banner's edge, so its ring is drawn inside it. */
-  --umbra-focus-offset: var(--umbra-banner-focus-offset, calc(-1 * var(--umbra-state-focus-ring-width)));
+  --focus-offset: var(--umbra-banner-focus-offset, calc(-1 * var(--umbra-state-focus-ring-width)));
 }
 
 /*
@@ -181,7 +181,7 @@
   }
 
   .root:not([data-compact]) > .icon ~ .actions {
-    padding-inline-start: calc(var(--umbra-icon-size, 1.25em) + var(--umbra-space-3));
+    padding-inline-start: calc(var(--umbra-icon-size, var(--icon-size, 1.25em)) + var(--umbra-space-3));
   }
 }
 

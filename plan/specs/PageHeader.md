@@ -48,6 +48,8 @@ On a band the text is white or near-black, whichever has more contrast with the 
 
 `--umbra-page-header-bg`, `--umbra-page-header-fg`, `--umbra-page-header-border`, `--umbra-page-header-padding`, `--umbra-page-header-radius`, `--umbra-page-header-title-font`, `--umbra-page-header-media-size` (56px; a control's height when compact), `--umbra-page-header-media-size-small` (32px).
 
+Defaults for what is inside, as private properties, never as public tokens: the media takes the header's size (`--avatar-size`, `--entity-icon-size`), and on a band the focus rings and a badge's ring take a colour that shows on it (`--focus-color`, `--badge-ring`). The app's own value of the global token, set on any ancestor, wins over these defaults (2026-10-11, `plan/decisions/07-customisation.md`, "Tokens"). So `--umbra-avatar-size`, `--umbra-entity-icon-size`, `--umbra-focus-color` or `--umbra-badge-ring` set by the app also apply inside the header.
+
 ### 2. Props
 
 | Prop | Type | Default | Purpose |

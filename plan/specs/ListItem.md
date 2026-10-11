@@ -56,6 +56,8 @@ States: hover, pressed, selected, unread, read, accent, disabled, focus.
 
 `--umbra-list-item-bg`, `--umbra-list-item-color`, `--umbra-list-item-secondary-color`, `--umbra-list-item-read-color`, `--umbra-list-item-unread-color`, `--umbra-list-item-hover-bg`, `--umbra-list-item-selected-bg`, `--umbra-list-item-selected-stripe`, `--umbra-list-item-stripe-width`, `--umbra-list-item-min-height`, `--umbra-list-item-padding-x`, `--umbra-list-item-padding-y`, `--umbra-list-item-gap`, `--umbra-list-item-title-font`, `--umbra-list-item-center-bg`, `--umbra-list-item-focus-offset` (the ring offset of controls in `trailing`, inwards by default because the part clips). The minimum height follows the density level. Hover and press use the global mix steps `--umbra-state-hover-lighten` and `--umbra-state-press-darken`.
 
+`--umbra-list-item-focus-offset` is the default offset of the rings inside (inwards, because it clips), passed on as the private `--focus-offset`: `--umbra-focus-offset` set by the app on any ancestor wins over it (2026-10-11).
+
 ### 2. Props
 
 | Prop | Type | Default | Purpose |

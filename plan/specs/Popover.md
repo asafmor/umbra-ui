@@ -43,6 +43,8 @@ States: open, closed, entering, exiting. Data attributes on the root: `data-size
 
 `--umbra-popover-bg`, `--umbra-popover-border`, `--umbra-popover-radius`, `--umbra-popover-shadow`, `--umbra-popover-padding`, `--umbra-popover-min-width`, `--umbra-popover-max-width`, `--umbra-popover-title-font`. Padding follows the density level.
 
+The fade of a `ScrollArea` inside blends into the popover's background, through the private `--scroll-fade-color`; `--umbra-scroll-fade-color` set by the app on any ancestor wins (2026-10-11).
+
 ### 2. Props
 
 | Prop | Type | Default | Purpose |
