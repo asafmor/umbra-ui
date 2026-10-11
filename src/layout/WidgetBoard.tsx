@@ -18,6 +18,7 @@ import { cx, renderPart, type Part } from '../utils/parts';
 import { Card, type CardProps } from './Card';
 import layout from './layout.module.css';
 import { ScrollArea } from './ScrollArea';
+import { packBoard } from './packBoard';
 import { LayoutProvider, useSlot, type SlotProps } from './useSlot';
 import styles from './WidgetBoard.module.css';
 import { passThrough, type RootAttributes } from '../utils/passThrough';
@@ -130,7 +131,12 @@ function useCollapseAll(collapseAllLabel: string, expandAllLabel: string): Widge
   return {
     allCollapsed,
     // Ids the board does not know (a widget that is not mounted now) keep their state.
-    onPress: () => setCollapsed(allCollapsed ? [...collapsed].filter((id) => !ids.includes(id)) : [...ids]),
+    onPress: () =>
+      setCollapsed(
+        allCollapsed
+          ? [...collapsed].filter((id) => !ids.includes(id))
+          : [...new Set([...collapsed, ...ids])],
+      ),
     children: allCollapsed ? expandAllLabel : collapseAllLabel,
   };
 }
@@ -167,9 +173,10 @@ export interface WidgetBoardGridProps extends BlockProps {
 }
 
 /**
- * The packed grid, in a `ScrollArea`. Rows are one pixel high and each item spans its measured height,
- * so the grid's dense placement puts every item in the first free place from the top: the items stay
- * in source order in the page, and nothing is positioned by script.
+ * The packed grid, in a `ScrollArea`. The CSS grid gives the columns and their widths; the script reads
+ * each item's height and gives it a column and a top (`packBoard`). The items are positioned inside
+ * their grid columns, so they stay in source order in the page and a board of any height works: there
+ * is no row per pixel to run out of (a browser stops at a few thousand grid rows).
  */
 function Grid({
   minColumnWidth,
@@ -180,39 +187,96 @@ function Grid({
   children,
 }: WidgetBoardGridProps) {
   const grid = useRef<HTMLDivElement>(null);
-  // After every render: items come and go, and one observer watches them all.
+  const ruler = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
     const el = grid.current;
-    if (!el) return;
+    if (!el || !ruler.current) return;
+    // What was last written on each item: only a place that has changed is written again. Plain
+    // properties, not custom ones: those are inherited, and a new value would have every element inside
+    // the card styled again.
+    const written = new WeakMap<HTMLElement, { column: number; span: number; top: number; asked: string }>();
+    // One pass: the spans are written, every height is read in one layout, the places are written.
     const place = () => {
       const css = getComputedStyle(el);
       const gap = parseFloat(css.columnGap) || 0;
-      const items = [...el.children] as HTMLElement[];
-      // The columns the board has are counted with no span set: a span wider than the board would add
-      // a column of its own, and then be counted.
-      for (const item of items) item.style.gridColumnEnd = '';
       const count = css.gridTemplateColumns.split(' ').length;
+      const items = [...el.children] as HTMLElement[];
+      el.dataset.packed = '';
       // Widths first: a span changes the width of an item, and with it the height that is read next.
-      for (const item of items) {
-        item.style.gridColumnEnd = `span ${Math.min(Math.max(1, Number(item.dataset.span) || 1), count)}`;
-      }
-      const heights = items.map((item) => item.firstElementChild?.getBoundingClientRect().height ?? 0);
+      const spans = items.map((item) => Math.min(Math.max(1, Number(item.dataset.span) || 1), count));
       items.forEach((item, i) => {
-        item.style.gridRowEnd = `span ${Math.ceil(heights[i]! + gap)}`;
+        const was = written.get(item);
+        if (was?.span === spans[i] && was?.asked === item.dataset.span) return;
+        item.style.gridColumn = `${was?.column ?? 1} / span ${spans[i]}`;
+        written.delete(item);
       });
+      // While a card moves (its caret was pressed) every card keeps its column and only follows; the
+      // packing its end height asks for comes once, when it has come to rest.
+      const moving = !!el.querySelector(':scope > * > [data-resizing]');
+      const heights = items.map((item) => item.getBoundingClientRect().height);
+      const { placed, end } = packBoard(
+        items.map((item, i) => ({
+          span: spans[i]!,
+          // A whole number of pixels, so cards are drawn on the pixel grid.
+          advance: Math.ceil(heights[i]! + gap),
+          column: moving ? written.get(item)?.column : undefined,
+        })),
+        count,
+      );
+      items.forEach((item, i) => {
+        const { column, span, top } = placed[i]!;
+        const was = written.get(item);
+        if (was?.column !== column || was.span !== span)
+          item.style.gridColumn = `${column + 1} / span ${span}`;
+        if (was?.top !== top) item.style.top = `${top}px`;
+        written.set(item, { column, span, top, asked: item.dataset.span ?? '' });
+      });
+      const height = `${Math.max(0, end - gap)}px`;
+      if (el.style.height !== height) el.style.height = height;
     };
-    place();
     // A card that collapses with its caret changes height frame by frame, and the cards under it follow.
-    const observer = new ResizeObserver(place);
-    observer.observe(el);
-    for (const item of el.children) if (item.firstElementChild) observer.observe(item.firstElementChild);
-    return () => observer.disconnect();
-  });
+    // The width is watched on the ruler, not on the grid: the grid's height is set here.
+    const sizes = new ResizeObserver(place);
+    sizes.observe(ruler.current);
+    const watched = new Set<Element>();
+    const watch = () => {
+      for (const item of el.children) {
+        if (watched.has(item)) continue;
+        watched.add(item);
+        sizes.observe(item);
+      }
+      for (const item of watched) {
+        if (item.parentElement === el) continue;
+        watched.delete(item);
+        sizes.unobserve(item);
+      }
+    };
+    const itemsChanged = new MutationObserver(() => {
+      watch();
+      place();
+    });
+    itemsChanged.observe(el, { childList: true });
+    // A card that has come to rest, or a new `span`.
+    const stateChanged = new MutationObserver(place);
+    stateChanged.observe(el, {
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['data-resizing', 'data-span'],
+    });
+    watch();
+    place();
+    return () => {
+      sizes.disconnect();
+      itemsChanged.disconnect();
+      stateChanged.disconnect();
+    };
+  }, []);
   return (
     <ScrollArea aria-label={label} fade={false}>
       {/* The cards belong to the board: a `Stack` around the board must not count or collapse them. */}
       <LayoutProvider value={null}>
-        <div className={styles.clip}>
+        <div>
+          <div ref={ruler} aria-hidden="true" className={styles.ruler} />
           <div
             ref={grid}
             role="list"
