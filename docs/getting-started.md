@@ -14,7 +14,7 @@ npm install @fontsource/figtree @fontsource/barlow-condensed lucide-react
 <!-- pre-release: remove at 0.1.0 -->
 
 > **Not on npm yet.** Until `0.1.0` is published, the third line is
-> `npm install github:asafmor/umbra-ui`. It clones the repository and builds the package on your machine,
+> `npm install github:asafmor/umbra-ui`. It downloads the repository and builds the package on your machine,
 > so it takes a few minutes.
 
 <!-- /pre-release -->

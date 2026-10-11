@@ -95,8 +95,8 @@ the first run has worked.
 
 ## Installing from GitHub
 
-`npm install github:asafmor/umbra-ui` clones the whole repository, with its history and the baseline
-images of the visual tests (about 250 MB), installs the development dependencies and builds the package.
+`npm install github:asafmor/umbra-ui` downloads the whole repository, with the baseline images of the
+visual tests (about 180 MB), installs the development dependencies and builds the package.
 It takes minutes and is meant for trying an unreleased commit only. The package on npm holds `dist/`,
 the README, the licence and the changelog: about 200 kB.
 

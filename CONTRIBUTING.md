@@ -68,8 +68,8 @@ users cannot notice need none.
 
 The visual tests compare every story with a stored image. When your change alters how something looks,
 run `npm run test:visual:update`, **look at every image that changed**, and commit them with the code.
-Prefer adding a variant to an existing story over adding a story: each story costs about fifteen
-images (`plan/decisions/06-docs-and-testing.md`, "Baseline images").
+Prefer adding a variant to an existing story over adding a story: each story costs twelve images or more
+(`plan/decisions/06-docs-and-testing.md`, "Baseline images").
 
 ### The `screenshots/` folder
 

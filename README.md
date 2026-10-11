@@ -19,7 +19,7 @@ npm install umbra-ui
 <!-- pre-release: remove at 0.1.0 -->
 
 > **Not on npm yet.** Until `0.1.0` is published, install from GitHub instead:
-> `npm install github:asafmor/umbra-ui`. That clones the whole repository and builds the package on your
+> `npm install github:asafmor/umbra-ui`. That downloads the whole repository and builds the package on your
 > machine, so it is slow; it is meant for trying the library before the release only.
 
 <!-- /pre-release -->
