@@ -222,6 +222,10 @@ function Root({
         document.addEventListener('pointerup', end, { once: true, capture: true });
         document.addEventListener('pointercancel', end, { once: true, capture: true });
       }}
+      // A key is never part of the press: it may arrive before the timer above has run.
+      onKeyDownCapture={() => {
+        press.current.active = false;
+      }}
     >
       <ScrollArea onReachEnd={onReachEnd} aria-label={ariaLabel} className={styles.scroll}>
         <ListContext value={list}>{content}</ListContext>
