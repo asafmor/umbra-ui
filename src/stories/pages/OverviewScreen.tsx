@@ -78,7 +78,7 @@ const count = (id: keyof Region & string, header: string, priority: number) =>
   numberColumn<Region>({ id, header, accessor: id, width: 52, priority, sortDescFirst: true });
 
 const regionColumns: DataTableColumn<Region>[] = [
-  numberColumn({ id: 'pos', header: 'Pos', accessor: 'pos', width: 52, align: 'start', priority: 'always' }),
+  numberColumn({ id: 'pos', header: 'Rank', accessor: 'pos', width: 52, align: 'start', priority: 'always' }),
   {
     id: 'name',
     header: 'Region',
@@ -88,10 +88,10 @@ const regionColumns: DataTableColumn<Region>[] = [
     rowHeader: true,
   },
   count('orders', 'Ord', 2),
-  count('won', 'Won', 1),
+  count('done', 'Done', 1),
   count('open', 'Open', 0),
-  count('lost', 'Lost', 0),
-  count('points', 'Pts', 3),
+  count('late', 'Late', 0),
+  count('value', 'Val', 3),
 ];
 
 /** The inbox card: a filter with counts above a grouped message list. */
