@@ -907,7 +907,25 @@ The confirm step before an action that cannot be undone. An alert dialog: it ope
 
 The two-line status of a `TopBar`, with a short value in a chip, usually the time.
 
-**Tokens**: none of its own.
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-context-block-bg` | `var(--umbra-color-brand-inset, color-mix(in srgb, var(--umbra-color-brand), var(--umbra-color-on-brand, #fff) 14%))` |
+| `--umbra-context-block-chip-bg` | `transparent` |
+| `--umbra-context-block-chip-border` | `currentColor` |
+| `--umbra-context-block-chip-font` | `700 var(--umbra-density-label-size) / 1.231 var(--umbra-font-family-body)` |
+| `--umbra-context-block-chip-padding-x` | `--umbra-space-3` (8px) |
+| `--umbra-context-block-chip-padding-y` | `--umbra-space-1` (2px) |
+| `--umbra-context-block-chip-radius` | `--umbra-radius-control` (4px) |
+| `--umbra-context-block-gap` | `--umbra-space-4` (12px) |
+| `--umbra-context-block-hover-bg` | `color-mix(in oklab, currentColor 12%, var(--bg))` |
+| `--umbra-context-block-max-width` | `none` |
+| `--umbra-context-block-padding-x` | `--umbra-space-4` (12px) |
+| `--umbra-context-block-padding-y` | `--umbra-space-2` (4px) |
+| `--umbra-context-block-primary-font` | `700 var(--umbra-density-label-size) / 1.231 var(--umbra-font-family-body)` |
+| `--umbra-context-block-radius` | `--umbra-radius-control` (4px) |
+| `--umbra-context-block-secondary-font` | `400 var(--umbra-density-label-size) / 1.231 var(--umbra-font-family-body)` |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -924,6 +942,7 @@ The two-line status of a `TopBar`, with a short value in a chip, usually the tim
 | `style` | `CSSProperties` |  |
 | `id` | `string` | The `id` of the root element. |
 | `href` | `string` | Makes the block a link. |
+| `variant` | `"plain" \| "filled"` | `filled` sets the block on a surface of its own, a little lighter or darker than the bar it is on, whatever the brand colour. |
 | `disabled` | `boolean` |  |
 | `onPress` | `(() => void)` | Makes the block a button. |
 
@@ -4354,7 +4373,7 @@ Side navigation for a modal, a settings screen or one column of a page.
 | `--umbra-vertical-nav-rail-width` | `calc(var(--row) + 2 * var(--pad))` |
 | `--umbra-vertical-nav-row-height` | `--umbra-density-control-height` (36px at the default density) |
 | `--umbra-vertical-nav-stripe-width` | `3px` |
-| `--umbra-vertical-nav-width` | `240px` |
+| `--umbra-vertical-nav-width` | `100%` or `240px` |
 
 | Prop | Type | Purpose |
 |---|---|---|

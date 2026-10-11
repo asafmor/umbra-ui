@@ -196,8 +196,8 @@ An independent reviewer (with three sub-reviewers) checked 11 components, the pl
 | OP-1 | `Planner` | The same as T-1 of review 1 | `pages-planning--planning`: focus "Next month", Enter | open |
 | MC-1 | `Heatmap` | An `Infinity` value (or `steps={NaN}`) throws and unmounts the tree | `values:[[Infinity,1],[2,3]]` | open |
 | MC-6 | `Heatmap`, `Scatter`, `LineChart` (shared `Frame`) | Focus drops to `<body>` when the plot has focus and the chart switches to `loading` or `error` | Focus the plot, set `loading` | open |
-| SL-2 | `EntitySwitcher` | Picker open with focus on a row; the app sets `loading` or shortens `items`: focus goes to `<body>` with the picker still open | 3 items, ArrowDown twice, `loading: true` | open |
-| SL-7 | `HorizontalScroller` | A `next` or `previous` given as a function part loses focus to `<body>` when the end is reached (the story's "Own buttons" row) | Press the custom "next" to the end | open |
+| SL-2 | `EntitySwitcher` | Picker open with focus on a row; the app sets `loading` or shortens `items`: focus goes to `<body>` with the picker still open | 3 items, ArrowDown twice, `loading: true` | fixed: focus goes to the replacing row, the current row, the field or the picker |
+| SL-7 | `HorizontalScroller` | A `next` or `previous` given as a function part loses focus to `<body>` when the end is reached (the story's "Own buttons" row) | Press the custom "next" to the end | fixed: `holdFocus`, for any button, the app's own included |
 | X-2 | `ActionsOverflow` | If the menu chunk fails to load, the "more" button toggles `aria-expanded` and shows nothing: no error, no fallback, the actions are unreachable; a retry happens only on every second press | `route.abort()` on `Menu-*.js`, `layout-card-on-demand--fits-until-the-window-shrinks` at 700px | open |
 
 ### Major
@@ -205,7 +205,7 @@ An independent reviewer (with three sub-reviewers) checked 11 components, the pl
 | Id | Component | Finding | Reproduce | Status |
 |---|---|---|---|---|
 | X-3 | Rows of actions with `staysInRow` controls | A 380px card with a `SearchField`, a `Select` and two buttons: the title shrinks to 0px, the select is cut, and the "more" button is clipped 56px outside the card; the search field never narrows; with seven kept controls a `Checkbox` label wraps one letter per line | Harness | open |
-| SL-3 | `ContextBlock` in `TopBar` | With `live` and no `time`, the chip arrives after the bar measured and the bar never steps: a fresh load at 880px keeps both lines and the nav is cut; a 1px resize corrects it | Fresh load at 880px | open |
+| SL-3 | `ContextBlock` in `TopBar` | With `live` and no `time`, the chip arrives after the bar measured and the bar never steps: a fresh load at 880px keeps both lines and the nav is cut; a 1px resize corrects it | Fresh load at 880px | fixed: the bar watches its slots and starts again when one grows |
 | OP-2 | `Spotlight` and the shortcut registry | During a non-interactive tour, registry shortcuts still run; a modal they open lands under the dim with focus inside it | `pages-analysis--analysis`: Shift+T, then `?` | open |
 | OP-3 | Shortcut registry | `?` and every bare-key shortcut do nothing while focus is on a checkbox or a range input: `isTypingTarget` counts any `INPUT` | Focus a checkbox, press `?` | open |
 | MC-2 | `PieIndicator` | `layout="block"` with `showValue` never shows the value at any width; the baseline shows it missing | `meters-pieindicator--variants` | open |
@@ -213,10 +213,10 @@ An independent reviewer (with three sub-reviewers) checked 11 components, the pl
 | MC-4 | `Scatter`, `Heatmap` (`points`) | One `NaN` coordinate blanks the chart | One NaN point | open |
 | MC-5 | `Sparkline` | The last point is never coloured by its band: the `.marker` class fill beats the `fill` attribute | `thresholds` on a line | open |
 | MC-7 | `Scatter` | A small point under a larger bubble of a later series cannot be hovered | Two series at (5,5), sizes 1 and 100 | open |
-| SL-1 | `WidgetBoard` | Firefox: a board taller than about 10,000px loses its tail (120 widgets end at "Widget 50", 69 overlap); Chromium is fine | 120 widgets in Firefox | open |
-| SL-4 | `WidgetBoard` / content-sized `Card` | A caret collapse ends with one painted frame of the full-height card before the collapsed state (87 → 226 → 70px) | `layout-widgetboard--default`, press a caret | open |
-| SL-5 | `HorizontalScroller` | ArrowRight on a `Select` trigger inside an item moves to the next item and also changes the select's value | An item holding a `Select` | open |
-| SL-6 | `HorizontalScroller` | `--umbra-horizontal-scroller-button-size` does nothing | Set 51px, 36px drawn | open |
+| SL-1 | `WidgetBoard` | Firefox: a board taller than about 10,000px loses its tail (120 widgets end at "Widget 50", 69 overlap); Chromium is fine | 120 widgets in Firefox | fixed: the script places the items, the grid has no rows; any height |
+| SL-4 | `WidgetBoard` / content-sized `Card` | A caret collapse ends with one painted frame of the full-height card before the collapsed state (87 → 226 → 70px) | `layout-widgetboard--default`, press a caret | fixed: the body goes in the frame the animation ends (as O-1) |
+| SL-5 | `HorizontalScroller` | ArrowRight on a `Select` trigger inside an item moves to the next item and also changes the select's value | An item holding a `Select` | fixed: a `Select` trigger keeps its arrow keys |
+| SL-6 | `HorizontalScroller` | `--umbra-horizontal-scroller-button-size` does nothing | Set 51px, 36px drawn | fixed: the token sizes the buttons |
 
 ### Minor
 
@@ -224,7 +224,7 @@ An independent reviewer (with three sub-reviewers) checked 11 components, the pl
 |---|---|---|---|
 | X-4 | `ActionsOverflow` | A press kept while the chunk loads cannot be taken back: Escape, Tab away or a press elsewhere, and the menu still opens on arrival and takes the focus | open |
 | X-5 | Root attributes | `SplitButton` drops `id` and `aria-describedby`; `ColorScaleEditor` drops `aria-describedby`; every chart drops `aria-describedby` in all data states | open |
-| X-6 | `ContextBlock` | A fixed `time` rendered on a server in another time zone gives a hydration mismatch; the spec should name `timeFormat.timeZone` | open |
+| X-6 | `ContextBlock` | A fixed `time` rendered on a server in another time zone gives a hydration mismatch; the spec should name `timeFormat.timeZone` | fixed: without a time zone the time is written in the browser; same markup on both sides |
 | X-7 | `thresholds.spec.ts` | Covers no tier 2 meter: a mutation of `PieIndicator` or `DivergingMeter` bands passes this file | open |
 | X-8 | `Card` popover | The app unmounts a collapsed card while its popover has focus: focus on `<body>` | open |
 | X-9 | `ActionsOverflow` | Menu open, row widened, Escape: focus goes to the first control of the row, not to an action that came back (matches the stated rule; noted) | open |
@@ -246,19 +246,19 @@ An independent reviewer (with three sub-reviewers) checked 11 components, the pl
 | MC-15 | Both meters | For one pixel of width the label is cut while the value still shows | open |
 | MC-16 | `Scatter`, `Heatmap` | 5,000 marks: 104 to 138ms per resize; Scatter with `labels` 357 to 458ms per resize and 143ms per arrow key | open |
 | MC-17 | Docs | The `valueDomain` doc says lowest and highest, the code rounds; `--umbra-sparkline-width` is missing from the spec's token list | open |
-| SL-8 | `EntitySwitcher` | With a disabled current entity the steppers lose their place | open |
-| SL-9 | `EntitySwitcher` | No search field, opened while loading: when rows arrive focus stays on the dialog and arrows do nothing | open |
-| SL-10 | `EntitySwitcher` | With text in the search, the first Escape only clears it (the spec says Escape closes) | open |
-| SL-11 | `EntitySwitcher` | `--umbra-entity-switcher-picker-width` on an ancestor has no effect (the picker is in the provider root) | open |
-| SL-12 | `EntitySwitcher` | An ungrouped entity after grouped ones reads as part of the last group | open |
-| SL-13 | `ContextBlock` | The generated table says "Tokens: none of its own"; all 11 exist and work | open |
-| SL-14 | `ContextBlock` | The weight in the two font tokens is ignored | open |
-| SL-15 | `ContextBlock` | A plain block's hidden lines are in a hover-only tooltip: not reachable by keyboard | open |
-| SL-16 | `WidgetBoard` | With `span` there are holes and widgets 6 and 7 sit above 5 | open |
-| SL-17 | `WidgetBoard` | "Collapse all" drops ids the board does not know | open |
-| SL-18 | `WidgetBoard` | 400 widgets: worst frame 68ms on a caret, 159ms on "expand all" | open |
-| SL-19 | `HorizontalScroller` | Arrow keys stop at an item whose first control is a `Toggle` | open |
-| SL-20 | Story | `shell-contextblock--shrink` scrolls its frame sideways by 8 to 16px at 1024x600 | open |
+| SL-8 | `EntitySwitcher` | With a disabled current entity the steppers lose their place | fixed: the steppers go to the neighbours of the current entity |
+| SL-9 | `EntitySwitcher` | No search field, opened while loading: when rows arrive focus stays on the dialog and arrows do nothing | fixed: the current row takes the focus when the rows arrive |
+| SL-10 | `EntitySwitcher` | With text in the search, the first Escape only clears it (the spec says Escape closes) | fixed in the spec: the first Escape empties the field, the `SearchField` rule; code unchanged |
+| SL-11 | `EntitySwitcher` | `--umbra-entity-switcher-picker-width` on an ancestor has no effect (the picker is in the provider root) | fixed for every popover: the overlay takes the tokens of its anchor (decision 07) |
+| SL-12 | `EntitySwitcher` | An ungrouped entity after grouped ones reads as part of the last group | fixed: a line sets them apart |
+| SL-13 | `ContextBlock` | The generated table says "Tokens: none of its own"; all 11 exist and work | fixed: the generator lists them |
+| SL-14 | `ContextBlock` | The weight in the two font tokens is ignored | fixed: the font tokens are taken whole |
+| SL-15 | `ContextBlock` | A plain block's hidden lines are in a hover-only tooltip: not reachable by keyboard | fixed: a tab stop while a bar hides a line |
+| SL-16 | `WidgetBoard` | With `span` there are holes and widgets 6 and 7 sit above 5 | fixed: no widget above an earlier one of its column; the room above a spanning widget stays empty, by design |
+| SL-17 | `WidgetBoard` | "Collapse all" drops ids the board does not know | fixed: unknown ids are kept |
+| SL-18 | `WidgetBoard` | 400 widgets: worst frame 68ms on a caret, 159ms on "expand all" | fixed: one read pass a frame, only changed places written, observers kept; rendering 400 cards in React remains |
+| SL-19 | `HorizontalScroller` | Arrow keys stop at an item whose first control is a `Toggle` | fixed: a checkbox or switch does not stop the arrow keys |
+| SL-20 | Story | `shell-contextblock--shrink` scrolls its frame sideways by 8 to 16px at 1024x600 | fixed: the story's bars are no wider than the frame |
 
 ### Verified correct
 
@@ -270,15 +270,15 @@ Found by the owner while using the Storybook. Each is a requirement of the fix p
 
 | Id | Where | Finding | Status |
 |---|---|---|---|
-| O-1 | `WidgetBoard` (analysis page) | Collapsing a card is not smooth: it flickers before closing (the same as SL-4) | open |
+| O-1 | `WidgetBoard` (analysis page) | Collapsing a card is not smooth: it flickers before closing (the same as SL-4) | fixed: the body goes in the frame the animation ends; cards keep their column while one moves |
 | O-2 | `DataTable` (table page) | When the width cannot show every column, the user cannot choose which columns to show or hide, nor resize or reorder them. **Changes the decision "no end-user column editing"**: the table gets a column menu (show, hide, reorder, resize, reset), controlled by the app so it can save the choice | open |
-| O-3 | Table page, "Views" card (`VerticalNav`) | The items hug the left and leave the right of the card empty: they should fill the width | open |
+| O-3 | Table page, "Views" card (`VerticalNav`) | The items hug the left and leave the right of the card empty: they should fill the width | fixed: the nav fills its container; 240px only as a column of the page |
 | O-4 | Selected and highlighted rows | The left edge stripe is unwanted on: the selected item of a `VerticalNav`, the highlighted row of the command palette, the selected option of an open `Select` or `Menu`. It stays on list items of the inbox kind and on table rows. The second cue that is not colour must remain (a check, a weight change) | open |
 | O-5 | Inbox page, favourite button (`IconButton` toggle) | A pressed star is an outline star in an outlined box: it should be a filled, coloured star, and a pointer press should not leave a focus ring | open |
 | O-6 | Theming | Changing the brand colour changes little: everything stays purple and magenta. Brand and context should visibly drive the look. **Changes the decision "violet (selected) and magenta (primary action) are fixed"**: they become defaults derived from the brand, still overridable as tokens | open |
 | O-7 | `LevelMeter` rows (list and detail page) | Each meter starts right after its label, so the meters do not line up: labels need their own column and the meters theirs | open |
 | O-8 | Table page | The `ActionBar` of the selection is hidden under the table's summary row | open |
-| O-9 | `ContextBlock` | An optional background, slightly lighter or darker than the bar it sits in, as in the source | open |
+| O-9 | `ContextBlock` | An optional background, slightly lighter or darker than the bar it sits in, as in the source | fixed: `variant="filled"`, from the brand; `plain` stays the default |
 | O-10 | Theming | One global setting for how opaque card backgrounds are over the app background | open |
 
 ## Review 3: the package, the checks, the docs, the examples, the open items (2026-10-11)
