@@ -681,6 +681,26 @@ test.describe('right to left', () => {
     expect(travel).toBe('-1');
   });
 
+  test('the direction comes from `dir`, not from the language of the page', async ({ page }) => {
+    // The story sets a Hebrew locale, so `lang` is there too. A page that only sets `dir="rtl"` has
+    // none, and a rule that the build turned into `:lang(ar, he, …)` would not apply to it.
+    await rtl(page, 'meters-progressbar--right-to-left');
+    const bar = page.getByRole('progressbar', { name: 'Syncing' });
+    const travel = () => bar.evaluate((el) => getComputedStyle(el).getPropertyValue('--travel').trim());
+    expect(await travel()).toBe('-1');
+    await page.evaluate(() => {
+      for (const el of document.querySelectorAll('[lang]')) el.removeAttribute('lang');
+    });
+    expect(await page.locator('[lang]').count()).toBe(0);
+    await expect(bar).toHaveCSS('direction', 'rtl');
+    expect(await travel()).toBe('-1');
+    // And it follows `dir` back.
+    await page.evaluate(() => {
+      for (const el of document.querySelectorAll('[dir="rtl"]')) el.setAttribute('dir', 'ltr');
+    });
+    expect(await travel()).toBe('1');
+  });
+
   test('LevelMeter: the scale, the marker and the end labels mirror', async ({ page }) => {
     await rtl(page, 'meters-levelmeter--right-to-left');
     const meter = page.getByRole('meter', { name: 'Skill level' }).first();
