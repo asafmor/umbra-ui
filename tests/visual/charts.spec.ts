@@ -712,6 +712,25 @@ test.describe('labels are measured in the chart’s font, so none is cut (C2, C3
   });
 });
 
+test('a legend glyph is drawn with the dash of its line (C5)', async ({ page }) => {
+  for (const [story, id, series] of [
+    ['charts-radarchart--interaction', 'several', { a: 'Region 1', b: 'Region 2', c: 'Region 3' }],
+    ['charts-linechart--interaction', 'controlled', { plan: 'Plan', actual: 'Actual' }],
+  ] as const) {
+    await open(page, story, 1920, 1080);
+    const chart = tile(page, id);
+    const dashes: string[] = [];
+    for (const [seriesId, name] of Object.entries(series)) {
+      const line = chart.locator(`[data-series="${seriesId}"] path[class*="line"]`);
+      const glyph = chart.getByRole('button', { name, exact: true }).locator('svg > path').first();
+      const drawn = await line.getAttribute('stroke-dasharray');
+      expect(await glyph.getAttribute('stroke-dasharray'), `${story} ${name}`).toBe(drawn);
+      dashes.push(drawn ?? 'solid');
+    }
+    expect(dashes).toEqual(['solid', '6 3', '2 3'].slice(0, dashes.length));
+  }
+});
+
 test.describe('right to left (C1)', () => {
   /** Where every label of every chart sits inside its drawing, by tile. */
   const labelPlaces = (page: Page) =>

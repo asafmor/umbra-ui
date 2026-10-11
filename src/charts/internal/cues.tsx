@@ -11,7 +11,12 @@ export const fills = ['square', 'stripes', 'dots'] as const;
 /** `square` is a solid fill; the other two are outlined, with the pattern inside. */
 export type FillKind = (typeof fills)[number];
 
-/** Four shapes and three dashes: the pair repeats only after twelve series. */
+/**
+ * Four shapes and three dashes, each taken in turn: every one of the twelve pairs is used before one
+ * repeats, so twelve lines differ without colour (`lineCues`). With the eight colours of the palette, a
+ * colour and cue together repeat after 24 series.
+ */
+export const lineCues = pointShapes.length * dashes.length;
 export const pointShape = (index: number): PointShapeKind => pointShapes[index % pointShapes.length]!;
 export const dash = (index: number) => dashes[index % dashes.length];
 /**
@@ -49,7 +54,11 @@ export function PointShape({
   return <circle cx={x} cy={y} r={s * 1.1} {...common} />;
 }
 
-/** The legend marker of a line or radar series: a piece of its line with its point shape. */
+/**
+ * The legend marker of a line or radar series: a piece of its line with its point shape. The piece is
+ * two markers wide and drawn at the chart's own scale, so the dash is the line's dash and can be told
+ * from the other dashes on both sides of the shape.
+ */
 export function LineGlyph({
   shape,
   dash: dashArray,
@@ -61,14 +70,14 @@ export function LineGlyph({
 }) {
   return (
     <svg
-      viewBox="0 0 14 14"
+      viewBox="0 0 28 14"
       aria-hidden="true"
       data-part="marker"
       data-kind={shape}
-      style={{ flex: 'none', width: 'var(--umbra-series-marker-size, 0.875rem)', color }}
+      style={{ flex: 'none', width: 'calc(2 * var(--umbra-series-marker-size, 0.875rem))', color }}
     >
-      <path d="M0 7h14" stroke="currentColor" strokeWidth="2" strokeDasharray={dashArray && '3 2'} />
-      <PointShape shape={shape} x={7} y={7} size={3} />
+      <path d="M0 7h28" stroke="currentColor" strokeWidth="2" strokeDasharray={dashArray} />
+      <PointShape shape={shape} x={14} y={7} size={3} />
     </svg>
   );
 }
