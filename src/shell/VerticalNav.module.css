@@ -16,13 +16,17 @@
   font: var(--umbra-font-body);
 }
 
-/* As a column of the page (a child of `Columns`) it has a width of its own. */
-[data-umbra='columns'] > .root {
+/*
+ * Beside other content in a row it has a width of its own: in a `Columns` (known without the script,
+ * so on a page a server rendered too), and in a flex row of the app's own (`data-in-row`).
+ */
+[data-umbra='columns'] > .root,
+.root.root[data-in-row] {
   width: var(--umbra-vertical-nav-width, 240px);
 }
 
 /* With a weight, the slot decides the width. */
-.root.root:not([data-size='content']) {
+.root.root.root:not([data-size='content']) {
   flex: 1 1 0;
   width: auto;
 }
@@ -31,7 +35,7 @@
   display: none;
 }
 
-.root.root[data-collapsed='user'] {
+.root.root.root[data-collapsed='user'] {
   flex: 0 0 auto;
   width: var(--umbra-vertical-nav-rail-width, calc(var(--row) + 2 * var(--pad)));
 }
