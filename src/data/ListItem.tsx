@@ -16,8 +16,11 @@ interface BlockProps {
 }
 
 export interface ListItemRootProps extends BlockProps {
-  /** `message`: sender and tag on the first line, title and time on the second. */
-  variant?: 'default' | 'message';
+  /**
+   * `message`: sender and tag on the first line, title and time on the second. `pair`: two sides that
+   * mirror each other around a centre (set by `opposite`).
+   */
+  variant?: 'default' | 'message' | 'pair';
   /** `compact` is one control high, for leaderboards and short lists. Otherwise the height follows the density level. */
   size?: 'default' | 'compact';
   /** Violet fill with an edge stripe. Inside a `List`, selection sets it. */
@@ -74,8 +77,39 @@ const block = (part: string, className: string | undefined, Element: 'div' | 'sp
 const Leading = block('leading', styles.leading);
 const Content = block('content', styles.content);
 const Overline = block('overline', styles.overline);
-const Description = block('description', styles.description);
+export interface ListItemDescriptionProps extends BlockProps {
+  /** The most lines the text wraps to before it ends in an ellipsis. */
+  lines?: number;
+}
+
+function Description({ lines = 1, className, style, children }: ListItemDescriptionProps) {
+  return (
+    <div
+      data-part="description"
+      data-lines={lines > 1 ? lines : undefined}
+      className={cx(styles.description, className)}
+      style={{ ...(lines > 1 && { ['--lines' as string]: lines }), ...style }}
+    >
+      {children}
+    </div>
+  );
+}
 const End = block('end', styles.end);
+const Center = block('center', styles.center, 'span');
+
+export interface ListItemSideProps extends BlockProps {
+  /** The second side: its pieces start at the centre and its text is aligned to the start. */
+  opposite?: boolean;
+}
+
+/** One side of a `pair` row. Put the pieces in reading order, from the row's edge to its centre. */
+function Side({ opposite, className, style, children }: ListItemSideProps) {
+  return (
+    <div data-part={opposite ? 'opposite' : 'side'} className={cx(styles.side, className)} style={style}>
+      {children}
+    </div>
+  );
+}
 export type ListItemMetaProps = BlockProps & ChangeHighlightProps;
 
 function Meta({ className, style, children, ...change }: ListItemMetaProps) {
@@ -143,6 +177,15 @@ export interface ListItemProps extends Omit<ListItemRootProps, 'children'>, Chan
   title?: ReactNode;
   /** A second line under the title. */
   description?: ReactNode;
+  /** The most lines the description wraps to, for a row that holds a paragraph beside an icon or image. */
+  descriptionLines?: number;
+  /**
+   * The second side of a two-sided row: `title`, `leading` and `meta` are the first side, and these mirror
+   * them on the other side of `center`. Sets the `pair` variant.
+   */
+  opposite?: { title: ReactNode; leading?: ReactNode; meta?: ReactNode };
+  /** What stands between the two sides of a `pair` row: a short text or an icon. */
+  center?: ReactNode;
   /** A small line above the title, for example a sender. */
   overline?: ReactNode;
   /** Leading node: an avatar or icon. */
@@ -164,8 +207,10 @@ export interface ListItemProps extends Omit<ListItemRootProps, 'children'>, Chan
     leading?: Part<{ children: ReactNode }>;
     overline?: Part<{ children: ReactNode }>;
     title?: Part<ListItemTitleProps>;
-    description?: Part<{ children: ReactNode }>;
+    description?: Part<ListItemDescriptionProps>;
     meta?: Part<{ children: ReactNode }>;
+    opposite?: Part<ListItemSideProps>;
+    center?: Part<{ children: ReactNode }>;
     unread?: Part<ListItemUnreadProps>;
     trailing?: Part<{ children: ReactNode }>;
   };
@@ -175,6 +220,9 @@ export interface ListItemProps extends Omit<ListItemRootProps, 'children'>, Chan
 export function ListItem({
   title,
   description,
+  descriptionLines,
+  opposite,
+  center,
   overline,
   leading,
   meta,
@@ -187,6 +235,42 @@ export function ListItem({
   ...rest
 }: ListItemProps) {
   const [change, root] = splitChange(rest);
+  if (opposite) {
+    const icon = (node: ReactNode) =>
+      node && renderPart(parts?.leading, { children: node }, (p) => <Leading>{p.children}</Leading>);
+    const value = (node: ReactNode, live?: ChangeHighlightProps) =>
+      node && renderPart(parts?.meta, { children: node }, (p) => <Meta {...live}>{p.children}</Meta>);
+    return (
+      <Root {...root} variant="pair" interactive={root.interactive ?? !!(href || onPress)}>
+        <Side>
+          {root.accent && accentLabel && <span className={styles.srOnly}>{accentLabel}</span>}
+          {renderPart(parts?.title, { href, onPress, disabled: root.disabled, children: title }, (p) => (
+            <Title {...p} />
+          ))}
+          {icon(leading)}
+          {value(meta, change)}
+        </Side>
+        {center != null &&
+          renderPart(parts?.center, { children: center }, (p) => <Center>{p.children}</Center>)}
+        {renderPart(
+          parts?.opposite,
+          {
+            opposite: true,
+            children: (
+              <>
+                {value(opposite.meta)}
+                {icon(opposite.leading)}
+                <Title>{opposite.title}</Title>
+              </>
+            ),
+          },
+          (p) => (
+            <Side {...p} />
+          ),
+        )}
+      </Root>
+    );
+  }
   return (
     <Root {...root} interactive={root.interactive ?? !!(href || onPress)}>
       {leading && renderPart(parts?.leading, { children: leading }, (p) => <Leading>{p.children}</Leading>)}
@@ -198,8 +282,8 @@ export function ListItem({
           <Title {...p} />
         ))}
         {description &&
-          renderPart(parts?.description, { children: description }, (p) => (
-            <Description>{p.children}</Description>
+          renderPart(parts?.description, { lines: descriptionLines, children: description }, (p) => (
+            <Description {...p} />
           ))}
       </Content>
       {(meta || trailing || root.unread) && (
@@ -226,6 +310,8 @@ ListItem.Overline = Overline;
 ListItem.Title = Title;
 ListItem.Description = Description;
 ListItem.End = End;
+ListItem.Side = Side;
+ListItem.Center = Center;
 ListItem.Meta = Meta;
 ListItem.Unread = Unread;
 ListItem.Trailing = Trailing;
