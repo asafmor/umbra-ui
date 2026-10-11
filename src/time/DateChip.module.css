@@ -174,3 +174,10 @@
     display: none;
   }
 }
+
+/* Narrower still, the chip gives up its side padding: a round pill around the number. */
+@container umbra-schedule (max-width: 36px) {
+  .chip {
+    padding-inline: 0;
+  }
+}

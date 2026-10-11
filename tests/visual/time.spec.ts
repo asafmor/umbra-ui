@@ -437,8 +437,8 @@ test.describe('Time: WeekStrip', () => {
       }) => {
         await openStory(page, story, { density });
         await page.evaluate(() => document.fonts.ready);
-        // From days wide enough for the long name down to the narrowest day a planner allows (40px).
-        const { down, up } = await sweep(page.getByRole('grid', { name, exact: true }), 1000, 280);
+        // From days wide enough for the long name down to days of 29px, narrower than a planner allows (40px).
+        const { down, up } = await sweep(page.getByRole('grid', { name, exact: true }), 1000, 203);
         expect(down.filter((at) => at.cut).map((at) => at.width)).toEqual([]);
         // The steps are a function of the width: the same on the way up as on the way down.
         expect(up).toEqual(down);
@@ -481,15 +481,17 @@ test.describe('Time: WeekStrip', () => {
       expect(heights).toHaveLength(21);
       expect(Math.min(...heights), density).toBeGreaterThanOrEqual(24);
       // The mark of hidden items is a button of its own.
-      // It is drawn as small as its text, and pressed 24 pixels around its middle.
+      // The mark of hidden items is a button of its own: 24 pixels each way, all of it its own to press.
       const pressed = await page.locator('[data-part="hiddenItems"]').evaluate((mark) => {
         const { x, y, width, height } = mark.getBoundingClientRect();
-        const [cx, cy] = [x + width / 2, y + height / 2];
-        return [-11.5, 11.5].flatMap((dx) =>
-          [-11.5, 11.5].map((dy) => document.elementFromPoint(cx + dx, cy + dy) === mark),
+        const corners = [3, width - 3].flatMap((dx) =>
+          [1, height - 1].map((dy) => document.elementFromPoint(x + dx, y + dy) === mark),
         );
+        return { width, height, corners };
       });
-      expect(pressed, density).toEqual([true, true, true, true]);
+      expect(pressed.width, density).toBeGreaterThanOrEqual(24);
+      expect(pressed.height, density).toBeGreaterThanOrEqual(24);
+      expect(pressed.corners, density).toEqual([true, true, true, true]);
     }
     // What is drawn keeps its size: the small slot is 16px at the compact density, in a 24px cell.
     await openStory(page, 'time-weekstrip--changes', { density: 'compact' });

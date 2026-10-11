@@ -50,8 +50,7 @@
  * that (16px at the compact density) and keeps its look: the cell around it is what is pressed, and
  * only a cell that can be pressed is made taller, so a strip that is only read stays as low as it was.
  */
-.cell[data-action],
-.cell:has(.hiddenItems) {
+.cell[data-action] {
   min-height: 24px;
 }
 
@@ -97,13 +96,15 @@
 }
 
 /*
- * The mark of a day with more items than slots: a button that opens their list. It is drawn as its
- * text and no larger, so the date beside it keeps its room; what is pressed is 24px around it.
+ * The mark of a day with more items than slots: a button that opens their list, 24px each way (WCAG
+ * 2.5.8). It reaches into the padding under it and no further, so a header is no taller with it
+ * than its chip makes it, and nothing of it lies under the cell of another day or slot.
  */
 .hiddenItems {
-  position: relative;
   flex: none;
-  margin: 0;
+  min-width: 24px;
+  height: 24px;
+  margin: 0 0 calc(var(--gap) / -2);
   margin-inline-start: var(--umbra-space-1);
   padding: 0;
   border: 0;
@@ -114,16 +115,6 @@
   font: var(--umbra-font-label);
   font-variant-numeric: tabular-nums;
   cursor: pointer;
-}
-
-.hiddenItems::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: max(100%, 24px);
-  height: 24px;
-  translate: -50% -50%;
 }
 
 .hiddenItems:hover,

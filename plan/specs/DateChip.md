@@ -82,6 +82,7 @@ Inside a day of a `WeekStrip` or `Planner` (the size container `umbra-schedule`)
 | 3 | 64px or less | the month beside the number goes ("Sep 28" becomes "28") |
 | 4 | 52px or less (44px for `size="small"`) | a chip with a weekday and a number shows the number alone |
 | 5 | 48px or less | `weekday="auto"` without a number: the short name becomes the narrow one |
+| 6 | 36px or less | the chip gives up its side padding: a round pill around the number, whole down to a room of 24px |
 
 **The number is never drawn cut**: a number cut short would read as another day ("14" as "1"). The weekday gives way first, at every step. Each width is the room the widest text of its step needs at the spacious density, the largest font (en-US, the default font), so nothing is cut at any density; a browser test narrows a strip pixel by pixel at the three densities and both sizes. Where the texts still do not fit side by side (a longer weekday name in another locale, a larger font from the token), the weekday is what is shortened, with an ellipsis, and the number keeps its width.
 
