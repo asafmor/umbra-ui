@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, type CSSProperties, type ReactNode } from 'react';
+import { createContext, useContext, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { ButtonBase } from '../basics/Button';
 import { Icon as BuiltInIcon, IconSlot, RawIcon } from '../provider/icons';
 import { cx, renderPart, type Part } from '../utils/parts';
@@ -16,6 +16,9 @@ const toneIcons: Record<BannerTone, ReactNode> = {
   neutral: <RawIcon name="message" />,
   accent: <RawIcon name="tip" />,
 };
+
+const TAB_STOPS =
+  'a[href], button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex="0"]';
 
 interface BannerContextValue {
   tone: BannerTone;
@@ -70,9 +73,26 @@ function Root({
   children,
 }: BannerRootProps) {
   const [uncontrolled, setUncontrolled] = useState(defaultOpen);
+  const ref = useRef<HTMLDivElement>(null);
   if (!(open ?? uncontrolled)) return null;
   const announce = live ?? (tone === 'danger' ? 'assertive' : 'polite');
   const dismiss = () => {
+    // The banner takes the focused button with it. The focus goes where Tab would have gone: to the
+    // next control after the banner, or to the one before it when the banner was the last.
+    // ponytail: document order of plain controls; it ignores positive tabindex values and shadow roots.
+    const banner = ref.current;
+    if (banner?.contains(document.activeElement)) {
+      const stops = [...document.querySelectorAll<HTMLElement>(TAB_STOPS)].filter(
+        (el) => !banner.contains(el) && el.getClientRects().length > 0,
+      );
+      const after = (el: HTMLElement) =>
+        !!(banner.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING);
+      const next = stops.find(after) ?? stops.filter((el) => !after(el)).pop();
+      requestAnimationFrame(() => {
+        if (!banner.isConnected && (!document.activeElement || document.activeElement === document.body))
+          next?.focus();
+      });
+    }
     setUncontrolled(false);
     onDismiss?.();
   };
@@ -84,6 +104,7 @@ function Root({
       data-variant={variant}
       data-emphasis={emphasis}
       data-compact={compact || undefined}
+      ref={ref}
       className={cx(styles.root, className)}
       style={style}
     >

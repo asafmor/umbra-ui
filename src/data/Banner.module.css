@@ -59,8 +59,13 @@
   --border: var(--umbra-banner-border, transparent);
   --icon: var(--umbra-banner-icon-color, var(--fg));
   --stripe: color-mix(in oklab, var(--fg) 70%, var(--bg));
-  /* The pink ring has too little contrast on a filled banner; rings inside it take the text colour. */
-  --umbra-focus-color: var(--fg);
+  /*
+   * The pink ring has too little contrast on a filled banner; rings inside it take the text colour. They
+   * are drawn one pixel from their control, so the whole ring lies on the fill (the padding and the
+   * border leave three pixels) and none of it on the page, where the dark ring could not be seen.
+   */
+  --umbra-focus-color: var(--umbra-banner-focus-color, var(--fg));
+  --umbra-focus-offset: var(--umbra-banner-focus-offset, 1px);
 }
 
 .root[data-variant='solid'][data-tone='accent'] {
@@ -126,10 +131,24 @@
   display: flex;
   flex: none;
   margin-inline-end: calc(-1 * var(--umbra-space-3));
-  --umbra-icon-button-size: var(--row);
+  --umbra-icon-button-size: var(--umbra-banner-dismiss-size, var(--row));
+  /* It reaches the banner's edge, so its ring is drawn inside it. */
+  --umbra-focus-offset: var(--umbra-banner-focus-offset, calc(-1 * var(--umbra-state-focus-ring-width)));
 }
 
-/* Compact: one line. The title keeps its width as long as it can; the description truncates first. */
+/*
+ * Compact: one line at every width. The title keeps its width as long as it can; the description
+ * truncates first. Below the width of its actions they are cut off instead of taking a second line.
+ */
+.root[data-compact] {
+  flex-wrap: nowrap;
+}
+
+.root[data-compact] > .actions {
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+
 .root[data-compact] .content {
   display: flex;
   gap: var(--umbra-space-3);
