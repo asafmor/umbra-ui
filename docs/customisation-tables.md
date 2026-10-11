@@ -482,7 +482,7 @@ The confirm step before an action that cannot be undone. An alert dialog: it ope
 
 A table of rows and columns that fills its slot and scrolls inside it: sorting, selection, groups, pinned columns, and columns that hide by priority as it narrows.
 
-**Tokens**: `--umbra-change-down`, `--umbra-change-neutral`, `--umbra-change-up`, `--umbra-focus-color`, `--umbra-group-header-bg`, `--umbra-group-header-color`, `--umbra-group-header-font`, `--umbra-group-header-height`, `--umbra-scroll-fade-color`, `--umbra-table-border-color`, `--umbra-table-caption-color`, `--umbra-table-cell-padding-x`, `--umbra-table-change-down`, `--umbra-table-change-neutral`, `--umbra-table-change-up`, `--umbra-table-color`, `--umbra-table-detail-bg`, `--umbra-table-edge-padding-x`, `--umbra-table-font`, `--umbra-table-footer-bg`, `--umbra-table-header-active-color`, `--umbra-table-header-bg`, `--umbra-table-header-border-color`, `--umbra-table-header-color`, `--umbra-table-header-font`, `--umbra-table-header-group-color`, `--umbra-table-header-height`, `--umbra-table-highlight-bg`, `--umbra-table-highlight-marker`, `--umbra-table-hover-bg`, `--umbra-table-pin-border-color`, `--umbra-table-row-bg`, `--umbra-table-row-height`, `--umbra-table-selected-bg`, `--umbra-table-stripe-bg`, `--umbra-table-stripe-width`.
+**Tokens**: `--umbra-change-down`, `--umbra-change-neutral`, `--umbra-change-up`, `--umbra-checkbox-small-size`, `--umbra-focus-color`, `--umbra-focus-offset`, `--umbra-group-header-bg`, `--umbra-group-header-color`, `--umbra-group-header-font`, `--umbra-group-header-height`, `--umbra-radio-bg`, `--umbra-radio-border`, `--umbra-radio-border-width`, `--umbra-radio-mark-color`, `--umbra-radio-selected-bg`, `--umbra-scroll-fade-color`, `--umbra-table-border-color`, `--umbra-table-caption-color`, `--umbra-table-cell-padding-x`, `--umbra-table-change-down`, `--umbra-table-change-neutral`, `--umbra-table-change-up`, `--umbra-table-color`, `--umbra-table-control-size`, `--umbra-table-detail-bg`, `--umbra-table-edge-padding-x`, `--umbra-table-focus-offset`, `--umbra-table-font`, `--umbra-table-footer-bg`, `--umbra-table-header-active-color`, `--umbra-table-header-bg`, `--umbra-table-header-border-color`, `--umbra-table-header-color`, `--umbra-table-header-font`, `--umbra-table-header-group-color`, `--umbra-table-header-height`, `--umbra-table-highlight-bg`, `--umbra-table-highlight-marker`, `--umbra-table-hover-bg`, `--umbra-table-pin-border-color`, `--umbra-table-row-bg`, `--umbra-table-row-height`, `--umbra-table-selected-bg`, `--umbra-table-stripe-bg`, `--umbra-table-stripe-width`.
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -495,12 +495,12 @@ A table of rows and columns that fills its slot and scrolls inside it: sorting, 
 | `onSortChange` | `((sort: DataTableSort[]) => void)` |  |
 | `multiSort` | `boolean` | Shift+click or Shift+Enter on a header adds it to the sort instead of replacing it. |
 | `manualSorting` | `boolean` | The rows arrive sorted (by a server): headers still show and report the sort, the table does not reorder. |
-| `selectionMode` | `"none" \| "single" \| "multiple"` | `single` and `multiple` add a checkbox column and let the user select rows. |
+| `selectionMode` | `"none" \| "single" \| "multiple"` | Lets the user select rows, and adds a column for it: a radio per row in `single`, a checkbox in `multiple`. |
 | `selectedIds` | `string[]` | Controlled selection: the ids of the selected rows. |
 | `defaultSelectedIds` | `string[]` |  |
 | `onSelectionChange` | `((ids: string[]) => void)` |  |
-| `selectRowLabel` | `((row: Row) => string)` | Accessible name of a row's checkbox. |
-| `selectAllLabel` | `string` | Accessible name of the header checkbox, or of the checkbox column in `single`. |
+| `selectRowLabel` | `((row: Row) => string)` | Accessible name of a row's checkbox or radio. |
+| `selectAllLabel` | `string` | Accessible name of the header checkbox, or of the radio column in `single`. |
 | `highlightedRowIds` | `string[]` | Ids of rows shown with a stronger fill and an edge marker: "my row" in a ranking. |
 | `rowHighlight` | `((row: Row) => boolean)` | The same, as a function. |
 | `highlightLabel` | `string` | What assistive technology hears for a highlighted row. |
@@ -523,6 +523,7 @@ A table of rows and columns that fills its slot and scrolls inside it: sorting, 
 | `expandableHidden` | `boolean` | While columns are hidden, each row gets a control that shows their labels and values under the row. |
 | `showDetailsLabel` | `string` | Accessible names of that control. |
 | `hideDetailsLabel` | `string` |  |
+| `hiddenColumnsLabel` | `((count: number) => string)` | Accessible name of the mark in the header that says columns are hidden ("+3"), from their number. The mark is shown while columns are hidden and rows cannot show them (no `expandableHidden`). |
 | `skeletonRows` | `number` | Number of skeleton rows shown while `loading`. |
 | `height` | `number \| "content" \| "fill"` | `fill` (default) takes the height of the parent, and falls back to the content's height in a parent that has none (flowing content, a popover, a modal body, an accordion panel). `content` is always as tall as the content, and shows every row (no virtualisation). A number is a height in pixels. |
 | `loadingMore` | `boolean` | Shows a skeleton row after the last row while more rows load. |
@@ -545,7 +546,7 @@ A table of rows and columns that fills its slot and scrolls inside it: sorting, 
 | `onRetry` | `(() => void)` | Adds a retry button to the error state. |
 | `retryLabel` | `string` | Label of the retry button. |
 
-**Parts**: `header`, `headerCell`, `sortIndicator`, `row`, `cell`, `groupHeader`, `detail`, `footer`, `skeleton`, `empty`, `error`.
+**Parts**: `header`, `headerCell`, `sortIndicator`, `hiddenIndicator`, `row`, `cell`, `groupHeader`, `detail`, `footer`, `skeleton`, `empty`, `error`.
 
 **Blocks**: `DataTable.Root`, `DataTable.Header`, `DataTable.HeaderCell`, `DataTable.SortIndicator`, `DataTable.Body`, `DataTable.Row`, `DataTable.Cell`, `DataTable.GroupRow`, `DataTable.Footer`.
 

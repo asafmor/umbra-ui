@@ -144,9 +144,15 @@ export function offsetsOf(heights: number[]): number[] {
 
 /**
  * The items to render for a scroll position: those that touch `[top, top + height]`, plus `overscan`
- * items on each side. `end` is exclusive.
+ * items before them and `overscanAfter` after them (the same number unless given). `end` is exclusive.
  */
-export function windowRange(offsets: number[], top: number, height: number, overscan: number) {
+export function windowRange(
+  offsets: number[],
+  top: number,
+  height: number,
+  overscan: number,
+  overscanAfter = overscan,
+) {
   const count = offsets.length - 1;
   // First item whose bottom is below `position`.
   const find = (position: number) => {
@@ -161,7 +167,7 @@ export function windowRange(offsets: number[], top: number, height: number, over
   };
   const first = find(Math.max(0, top));
   const last = find(Math.max(0, top) + Math.max(0, height));
-  return { start: Math.max(0, first - overscan), end: Math.min(count, last + 1 + overscan) };
+  return { start: Math.max(0, first - overscan), end: Math.min(count, last + 1 + overscanAfter) };
 }
 
 /** The ids from `anchor` to `target` in display order, both included. Only `target` when there is no anchor. */
@@ -171,6 +177,37 @@ export function rangeIds(order: string[], anchor: string | null, target: string)
   if (to < 0) return [];
   if (from < 0) return [target];
   return order.slice(Math.min(from, to), Math.max(from, to) + 1);
+}
+
+/** Where a Shift range starts, and the selection it is added to. */
+export interface SelectionMemo {
+  anchor: string | null;
+  base: string[];
+}
+
+/**
+ * The selection after one step: a toggle of `id`, or (with `range`) the rows from the anchor to `id`
+ * added to what was selected when the range began. `anchor` begins a new range at `id`: the first
+ * Shift+Arrow of a run starts where the focus is, not at the last row toggled.
+ */
+export function selectStep(
+  mode: 'single' | 'multiple' | 'none',
+  selected: string[],
+  memo: SelectionMemo,
+  id: string,
+  options: { range?: boolean; anchor?: boolean },
+  order: () => string[],
+): { ids: string[]; memo: SelectionMemo } {
+  const isSelected = selected.includes(id);
+  if (mode === 'single') {
+    return { ids: isSelected && !options.range ? [] : [id], memo: { anchor: id, base: [] } };
+  }
+  if (options.range) {
+    const next = options.anchor || memo.anchor === null ? { anchor: id, base: selected } : memo;
+    return { ids: [...new Set([...next.base, ...rangeIds(order(), next.anchor, id)])], memo: next };
+  }
+  const ids = isSelected ? selected.filter((other) => other !== id) : [...selected, id];
+  return { ids, memo: { anchor: id, base: ids } };
 }
 
 // `changeDirection` lives with the shared highlight; it is still tested with the table's rules.

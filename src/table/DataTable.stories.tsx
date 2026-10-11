@@ -13,6 +13,7 @@ import { Tag } from '../data/Tag';
 import { TrendArrow } from '../data/TrendArrow';
 import { ValuePill } from '../data/ValuePill';
 import { Checkbox } from '../inputs/Checkbox';
+import { Select } from '../inputs/Select';
 import { Card } from '../layout/Card';
 import { Columns } from '../layout/Columns';
 import { Stack } from '../layout/Stack';
@@ -69,25 +70,29 @@ function Pair({ lead, children }: { lead: ReactNode; children: ReactNode }) {
 
 // --- Ranking -------------------------------------------------------------------------------------------
 
-const zone = (position: number): DataTableRowAccent | undefined =>
-  position <= 4
-    ? { color: 'var(--umbra-color-semantic-info)', label: 'Top group' }
-    : position === 5
-      ? { color: 'var(--umbra-color-semantic-warning)', label: 'Play-off place' }
-      : position > 17
-        ? { color: 'var(--umbra-color-semantic-danger)', label: 'Bottom group' }
+// The stripe says how a region stands against its plan. The first cell shows the meaning in a tooltip.
+const standing = (region: Region): DataTableRowAccent | undefined =>
+  region.revenue >= 6000
+    ? { color: 'var(--umbra-color-semantic-info)', label: 'Ahead of plan' }
+    : region.returned >= 5
+      ? { color: 'var(--umbra-color-semantic-warning)', label: 'Many returns' }
+      : region.revenue < 3000
+        ? { color: 'var(--umbra-color-semantic-danger)', label: 'Behind plan' }
         : undefined;
 
-const position = (region: Region) => regions.indexOf(region) + 1;
+const rank = (region: Region) => regions.indexOf(region) + 1;
+const count = (id: 'shipped' | 'pending' | 'returned', header: string, priority: number) =>
+  numberColumn<Region>({ id, header, accessor: id, width: 84, priority, sortable: true });
 
 const rankingColumns: DataTableColumn<Region>[] = [
   numberColumn({
-    id: 'pos',
-    header: 'Pos',
-    description: 'Position in the ranking',
-    accessor: position,
+    id: 'rank',
+    header: '#',
+    headerLabel: 'Rank',
+    description: 'Place by revenue',
+    accessor: rank,
     align: 'start',
-    width: 76,
+    width: 64,
     priority: 'always',
     sortable: true,
     sortDescFirst: false,
@@ -102,15 +107,16 @@ const rankingColumns: DataTableColumn<Region>[] = [
     priority: 1,
     sortable: true,
   }),
-  numberColumn({ id: 'won', header: 'Won', accessor: 'won', width: 64, priority: 2, sortable: true }),
-  numberColumn({ id: 'open', header: 'Open', accessor: 'open', width: 64, priority: 1, sortable: true }),
-  numberColumn({ id: 'lost', header: 'Lost', accessor: 'lost', width: 64, priority: 2, sortable: true }),
+  count('shipped', 'Shipped', 2),
+  count('pending', 'Pending', 1),
+  count('returned', 'Returned', 2),
   numberColumn({
-    id: 'points',
-    header: 'Pts',
-    headerLabel: 'Points',
-    accessor: 'points',
-    width: 64,
+    id: 'revenue',
+    header: 'Revenue',
+    description: 'In thousands',
+    accessor: 'revenue',
+    format: (value) => new Intl.NumberFormat('en').format(value as number),
+    width: 88,
     priority: 3,
     sortable: true,
   }),
@@ -134,7 +140,7 @@ const stateStatus: Record<Order['state'], Status> = { open: 'warning', packed: '
 const stateLabel: Record<Order['state'], string> = { open: 'Open', packed: 'Packed', sent: 'Sent' };
 const fewOrders = orders(14);
 
-/** A ranking: position stripes that carry a zone, one highlighted row, striped rows and sortable headers. */
+/** A ranking: edge stripes that carry a standing (named in a tooltip on the first cell), one highlighted row, striped rows and sortable headers. */
 export const Ranking: Story = {
   render: () => (
     <Columns style={fill}>
@@ -148,7 +154,7 @@ export const Ranking: Story = {
           dividers={false}
           highlightedRowIds={['r5']}
           highlightLabel="Your region"
-          rowAccent={(region) => zone(position(region))}
+          rowAccent={standing}
         />
       </Card>
       <Card title="Schedule" padding="none">
@@ -374,13 +380,22 @@ export const Numeric: Story = {
 // --- Sorting -------------------------------------------------------------------------------------------
 
 const sortColumns: DataTableColumn<Person>[] = [
-  { id: 'name', header: 'Name', accessor: 'name', rowHeader: true, priority: 'always', sortable: true },
-  { id: 'team', header: 'Team', accessor: 'team', sortable: true },
+  {
+    id: 'name',
+    header: 'Name',
+    accessor: 'name',
+    rowHeader: true,
+    priority: 'always',
+    sortable: true,
+    width: { min: 80 },
+  },
+  { id: 'team', header: 'Team', accessor: 'team', sortable: true, width: { min: 80 } },
   {
     id: 'role',
     header: 'Role',
     accessor: 'role',
     sortable: true,
+    width: { min: 80 },
     description: 'Sorted by seniority, not by name',
     sortFn: (a, b) =>
       ['Analyst', 'Planner', 'Reviewer', 'Lead'].indexOf(a.role) -
@@ -1133,7 +1148,7 @@ export const PartsAndBlocks: Story = {
               row: ({ row, ...props }) => <DataTable.Row {...props} data-team={row.team} />,
               // A node replaces the part.
               sortIndicator: (
-                <span data-part="sort-indicator" aria-hidden="true">
+                <span data-part="sortIndicator" aria-hidden="true">
                   ↕
                 </span>
               ),
@@ -1169,5 +1184,274 @@ export const PartsAndBlocks: Story = {
       </Stack>
       <BlocksCard />
     </Columns>
+  ),
+};
+
+// --- Wrapping text -------------------------------------------------------------------------------------
+
+interface Note {
+  id: string;
+  item: string;
+  owner: string;
+  note: string;
+}
+const noteTexts = [
+  'Packed and waiting for the carrier.',
+  'The customer asked for delivery after the tenth; the label was printed again with the new date and the old one was destroyed.',
+  'Two units were replaced before packing.',
+  'Held for a check of the address, which has no building number. Person C called twice and left a message.',
+];
+const notesOf = (count: number): Note[] =>
+  Array.from({ length: count }, (_, i) => ({
+    id: `n${i + 1}`,
+    item: `Item ${i + 1}`,
+    owner: `Person ${String.fromCharCode(65 + ((i * 7) % 26))}`,
+    note: noteTexts[i % noteTexts.length]!,
+  }));
+const noteColumns = (wrap: boolean): DataTableColumn<Note>[] => [
+  { id: 'item', header: 'Item', accessor: 'item', rowHeader: true, priority: 'always', width: 88 },
+  { id: 'note', header: 'Note', accessor: 'note', wrap, priority: 'always', width: { min: 140, flex: 1 } },
+  { id: 'owner', header: 'Owner', accessor: 'owner', priority: 'always', width: 96 },
+];
+const wrapping = noteColumns(true);
+const oneLine = noteColumns(false);
+const fewNotes = notesOf(6);
+const manyNotes = notesOf(210);
+
+/**
+ * Column `wrap`: the text takes the lines it needs and the row grows with it. Without it (the default)
+ * the text is one line, cut with an ellipsis. A table with a wrapping column is not virtualised by
+ * `virtualize="auto"`, because its rows are not one height: all 210 rows are in the page.
+ */
+export const Wrapping: Story = {
+  render: () => (
+    <Columns style={fill}>
+      <Stack>
+        <Card title="Wrapping" padding="none">
+          <DataTable aria-label="Wrapping" data={fewNotes} getRowId={(note) => note.id} columns={wrapping} />
+        </Card>
+        <Card title="One line" padding="none">
+          <DataTable aria-label="One line" data={fewNotes} getRowId={(note) => note.id} columns={oneLine} />
+        </Card>
+      </Stack>
+      <Card title="210 wrapping rows" padding="none">
+        <DataTable
+          aria-label="210 wrapping rows"
+          data={manyNotes}
+          getRowId={(note) => note.id}
+          columns={wrapping}
+          striped
+        />
+      </Card>
+    </Columns>
+  ),
+};
+
+// --- Virtualisation and sticky groups, set by hand -------------------------------------------------------
+
+const forty = people(40);
+const twoHundredTen = orders(210);
+// Text only: 210 rows are all in the page, and each one is checked for accessibility.
+const textColumns = scheduleColumns.filter((column) => column.id !== 'state');
+
+/**
+ * `virtualize` set by hand: on for a short table, off for a long one (every row is in the page).
+ * And `stickyGroups={false}`: group header rows scroll away with their rows.
+ */
+export const VirtualizeAndSticky: Story = {
+  render: () => (
+    <Columns style={fill}>
+      <Card title="virtualize, 40 rows" padding="none">
+        <DataTable
+          aria-label="Virtualised by hand"
+          data={forty}
+          getRowId={(person) => person.id}
+          columns={basicColumns}
+          virtualize
+        />
+      </Card>
+      <Card title="virtualize off, 210 rows" padding="none">
+        <DataTable
+          aria-label="Not virtualised"
+          data={twoHundredTen}
+          getRowId={(order) => order.id}
+          columns={textColumns}
+          virtualize={false}
+        />
+      </Card>
+      <Card title="Groups that do not stick" padding="none">
+        <DataTable
+          aria-label="Groups that do not stick"
+          data={groupedOrders}
+          getRowId={(order) => order.id}
+          columns={orderColumns}
+          groupBy="state"
+          groups={stateGroups}
+          stickyGroups={false}
+        />
+      </Card>
+    </Columns>
+  ),
+};
+
+// --- Virtualisation with groups and with detail rows -----------------------------------------------------
+
+const threeThousand = orders(3000);
+const sixHundred = orders(600);
+const wideColumns: DataTableColumn<Order>[] = [
+  { id: 'item', header: 'Item', accessor: 'item', rowHeader: true, priority: 'always', width: { min: 110 } },
+  { id: 'category', header: 'Category', accessor: 'category', priority: 2, width: { min: 150 } },
+  { id: 'owner', header: 'Owner', accessor: 'owner', priority: 1, width: { min: 150 } },
+  {
+    id: 'state',
+    header: 'Status',
+    accessor: 'state',
+    priority: 1,
+    width: { min: 150 },
+    cell: (order) => (
+      <StatusIndicator status={stateStatus[order.state]}>{stateLabel[order.state]}</StatusIndicator>
+    ),
+  },
+  numberColumn({ id: 'amount', header: 'Amount', accessor: 'amount', format, priority: 3, width: 96 }),
+];
+
+function VirtualGroupsCard() {
+  const [collapsed, setCollapsed] = useState<string[]>([]);
+  return (
+    <Card
+      title="3,000 orders in groups"
+      padding="none"
+      style={fill}
+      parts={footer(<Log>Collapsed: {collapsed.join(', ') || 'none'}</Log>)}
+    >
+      <DataTable
+        aria-label="3,000 orders in groups"
+        data={threeThousand}
+        getRowId={(order) => order.id}
+        columns={orderColumns}
+        groupBy="category"
+        collapsibleGroups
+        collapsedGroups={collapsed}
+        onCollapsedGroupsChange={setCollapsed}
+      />
+    </Card>
+  );
+}
+
+/**
+ * Virtualised tables with rows of more than one kind: group header rows (the header of the group at the
+ * top stays rendered so it can stick), and the detail rows of `expandableHidden`, whose heights are
+ * measured one by one.
+ */
+export const VirtualisedGroups: Story = {
+  render: () => (
+    <div style={{ display: 'flex', gap: 16, height: '100%' }}>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <VirtualGroupsCard />
+      </div>
+      <div style={{ width: 400, flex: 'none' }}>
+        <Card title="600 orders, details under a row" padding="none" style={fill}>
+          <DataTable
+            aria-label="600 orders with details"
+            data={sixHundred}
+            getRowId={(order) => order.id}
+            columns={wideColumns}
+            expandableHidden
+          />
+        </Card>
+      </div>
+    </div>
+  ),
+};
+
+// --- A Select in a cell ----------------------------------------------------------------------------------
+
+const roleOptions = ['Analyst', 'Planner', 'Reviewer', 'Lead'].map((role) => ({ id: role, label: role }));
+
+function SelectCard() {
+  const [roles, setRoles] = useState<Record<string, string>>({});
+  const columns = useMemo<DataTableColumn<Person>[]>(
+    () => [
+      { id: 'name', header: 'Name', accessor: 'name', rowHeader: true, priority: 'always' },
+      { id: 'team', header: 'Team', accessor: 'team', priority: 1 },
+      {
+        id: 'role',
+        header: 'Role',
+        accessor: (person) => roles[person.id] ?? person.role,
+        priority: 'always',
+        width: 150,
+        cell: (person, { value }) => (
+          <Select
+            aria-label={`Role of ${person.name}`}
+            variant="inCell"
+            size="small"
+            fullWidth
+            options={roleOptions}
+            value={value as string}
+            onChange={(role) => setRoles((all) => ({ ...all, [person.id]: role }))}
+          />
+        ),
+      },
+      numberColumn({ id: 'tasks', header: 'Tasks', accessor: 'tasks', priority: 2 }),
+    ],
+    [roles],
+  );
+  const changed = Object.entries(roles).map(([id, role]) => `${id} ${role}`);
+  return (
+    <Card
+      title="A Select in a cell"
+      padding="none"
+      style={fill}
+      parts={footer(<Log>Changed: {changed.join(', ') || 'none'}</Log>)}
+    >
+      <DataTable aria-label="Roles" data={eight} getRowId={(person) => person.id} columns={columns} />
+    </Card>
+  );
+}
+
+/**
+ * A `Select` in a cell. The cell is the tab stop: Enter opens the list, the arrow keys and Enter choose,
+ * Escape closes the list and, pressed again, returns to the cell.
+ */
+export const SelectInCell: Story = { render: () => <SelectCard /> };
+
+// --- The mark for hidden columns -------------------------------------------------------------------------
+
+/**
+ * While columns are hidden for lack of width, a mark in the header says how many ("+3"); its tooltip, on
+ * hover and on keyboard focus, lists them. The `hiddenIndicator` part replaces it (a function or a node)
+ * or, with `null`, removes it together with its narrow column.
+ */
+export const HiddenColumns: Story = {
+  render: () => (
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'start' }}>
+      <Box width={330} height={170} label="The mark">
+        <DataTable
+          aria-label="With the mark"
+          data={five}
+          getRowId={(person) => person.id}
+          columns={narrowColumns}
+        />
+      </Box>
+      <Box width={330} height={170} label="A function">
+        <DataTable
+          aria-label="With a custom mark"
+          data={five}
+          getRowId={(person) => person.id}
+          columns={narrowColumns}
+          hiddenColumnsLabel={(count) => `${count} more columns`}
+          parts={{ hiddenIndicator: ({ children }) => <strong aria-hidden="true">{children}</strong> }}
+        />
+      </Box>
+      <Box width={330} height={170} label="null: no mark and no column">
+        <DataTable
+          aria-label="Without the mark"
+          data={five}
+          getRowId={(person) => person.id}
+          columns={narrowColumns}
+          parts={{ hiddenIndicator: null }}
+        />
+      </Box>
+    </div>
   ),
 };

@@ -17,12 +17,18 @@
   height: 100%;
   min-width: 0;
   min-height: 0;
-  color: var(--umbra-table-color, var(--umbra-color-base-text-primary));
+  --ink: var(--umbra-table-color, var(--umbra-color-base-text-primary));
+  color: var(--ink);
   font: var(--umbra-table-font, var(--umbra-font-table-cell));
-  /* The table clips, so focus rings are drawn inside the cells and the controls in them. */
-  --umbra-focus-offset: calc(-1 * var(--umbra-state-focus-ring-width));
+  /*
+   * Two tokens of other components get the table's own default for what is inside it; a custom
+   * property cannot fall back to the value it would have inherited, so each has a table token that an
+   * app sets from any ancestor instead.
+   * The table clips, so focus rings are drawn inside the cells and the controls in them.
+   */
+  --umbra-focus-offset: var(--umbra-table-focus-offset, calc(-1 * var(--umbra-state-focus-ring-width)));
   /* The library's own controls at table density. */
-  --umbra-icon-button-size: calc(var(--row-h) - 2px);
+  --umbra-icon-button-size: var(--umbra-table-control-size, calc(var(--row-h) - 2px));
 }
 
 /* `height="content"`, and what `fill` falls back to by itself in a parent without a height. */
@@ -194,6 +200,72 @@
     var(--umbra-table-pin-border-color, var(--umbra-color-base-border-strong));
 }
 
+/*
+ * The radio of a row where one row can be selected, in the look of Radio and with its tokens, at the
+ * size of the small checkbox of the other mode.
+ */
+.radio {
+  --size: var(--umbra-checkbox-small-size, calc(var(--umbra-density-table-row) / 2 + 2px));
+  --fill: var(--umbra-radio-selected-bg, var(--umbra-color-fixed-selected));
+
+  position: relative;
+  cursor: pointer;
+}
+
+.radioMark {
+  position: relative;
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  width: var(--size);
+  height: var(--size);
+  border: var(--umbra-radio-border-width, calc(var(--umbra-border-width) * 2)) solid
+    var(--umbra-radio-border, var(--umbra-color-base-border-control));
+  border-radius: 50%;
+  background: var(--umbra-radio-bg, transparent);
+}
+
+/* The pointer target is at least 24px. */
+.radioMark::after {
+  content: '';
+  position: absolute;
+  inset: min(0px, (var(--size) - 24px) / 2);
+}
+
+/* Chosen is the filled ring and the dot, so it does not depend on colour. */
+.radioMark::before {
+  content: '';
+  width: 40%;
+  height: 40%;
+  border-radius: 50%;
+  background: var(--umbra-radio-mark-color, var(--umbra-color-fixed-on-selected));
+  opacity: 0;
+}
+
+.radio[data-selected] > .radioMark {
+  border-color: var(--fill);
+  background: var(--fill);
+}
+
+.radio[data-selected] > .radioMark::before {
+  opacity: 1;
+}
+
+.radio:not([data-disabled]):hover > .radioMark {
+  border-color: var(--umbra-color-base-text-primary);
+}
+
+.radio:has(:focus-visible) > .radioMark {
+  outline: var(--umbra-state-focus-ring-width) solid
+    var(--umbra-focus-color, var(--umbra-color-fixed-focus-ring));
+  outline-offset: var(--umbra-focus-offset, 2px);
+}
+
+.radio[data-disabled] {
+  opacity: var(--umbra-state-disabled-opacity);
+  cursor: default;
+}
+
 /* --- Header --------------------------------------------------------------------------------------- */
 
 .headerCell,
@@ -230,6 +302,13 @@
 .headerLabel {
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* The mark that says columns are hidden: "+3", centred in its narrow column. */
+.headerCell.hiddenMark {
+  padding: 0;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
 }
 
 /* A sortable header is one button as wide as the cell. */
@@ -320,7 +399,7 @@
   font-weight: 700;
 }
 
-/* Selected: violet, plus the checked box as the cue that is not colour. */
+/* Selected: violet, plus the checked box (or the filled radio) as the cue that is not colour. */
 .row[data-selected] {
   --bg: var(
     --umbra-table-selected-bg,
@@ -332,8 +411,8 @@
   cursor: pointer;
 }
 
-/* Hover lightens the row across its full width. */
-.body > .row[data-kind='row']:hover > .cell {
+/* Hover lightens the row across its full width. A disabled row does not answer. */
+.body > .row[data-kind='row']:not([data-disabled]):hover > .cell {
   background: var(
     --umbra-table-hover-bg,
     color-mix(in oklab, var(--umbra-color-base-text-primary) 8%, var(--bg))
@@ -341,20 +420,30 @@
 }
 
 .body > .row[data-interactive]:active > .cell {
-  background: color-mix(in oklab, #000 14%, var(--bg));
+  background: color-mix(in oklab, #000 var(--umbra-state-press-darken), var(--bg));
 }
 
-/* Disabled: the content is dimmed, the fill is not, so pinned cells stay opaque. */
+/*
+ * Disabled: the content is dimmed to the disabled opacity, the fill is not, so pinned cells stay opaque.
+ * Bare text is mixed into the fill (in sRGB, which is what an opacity composites as); an element takes
+ * the opacity itself and the undimmed colour, so nothing is dimmed twice.
+ */
 .row[data-disabled] {
   cursor: default;
 }
 
+.row[data-disabled] > .cell {
+  color: color-mix(in srgb, var(--ink) calc(var(--umbra-state-disabled-opacity) * 100%), var(--bg));
+}
+
 .row[data-disabled] > .cell > * {
+  color: var(--ink);
   opacity: var(--umbra-state-disabled-opacity);
 }
 
-.row[data-disabled] > .cell {
-  color: color-mix(in oklab, currentColor 55%, var(--bg));
+/* The row's own control is already dimmed by its disabled state. */
+.row[data-disabled] > .cell > .widget {
+  opacity: 1;
 }
 
 /* The edge stripe of an accent, or the marker of a highlighted row: drawn at the row's start. */
@@ -384,6 +473,11 @@
 .skeleton {
   display: inline-block;
   vertical-align: middle;
+}
+
+/* The named part around a placeholder: it adds no box. */
+.skeletonPart {
+  display: contents;
 }
 
 /* --- Group header rows, in the look of GroupHeader -------------------------------------------------- */
@@ -442,7 +536,10 @@
 .detailCell.detailCell {
   padding: 0;
   white-space: normal;
-  background: var(--umbra-table-detail-bg, color-mix(in oklab, #000 18%, var(--surface)));
+  background: var(
+    --umbra-table-detail-bg,
+    color-mix(in oklab, #000 var(--umbra-state-press-darken), var(--surface))
+  );
 }
 
 .detail {
@@ -471,26 +568,27 @@
 }
 
 /* --- Changed values: the shared highlight (src/internal/ChangeHighlight), with the table's tokens --- */
+/* Its parts are matched by both spellings of their names (kebab-case until 2026-10-11, camelCase after). */
 
-.root [data-part='change-flash'] {
+.root :is([data-part='change-flash'], [data-part='changeFlash']) {
   background: var(
     --umbra-table-change-neutral,
     var(--umbra-change-neutral, var(--umbra-color-base-text-primary))
   );
 }
 
-.root [data-part='change-flash'][data-direction='up'] {
+.root :is([data-part='change-flash'], [data-part='changeFlash'])[data-direction='up'] {
   background: var(--umbra-table-change-up, var(--umbra-change-up, var(--umbra-color-semantic-success)));
 }
 
-.root [data-part='change-flash'][data-direction='down'] {
+.root :is([data-part='change-flash'], [data-part='changeFlash'])[data-direction='down'] {
   background: var(--umbra-table-change-down, var(--umbra-change-down, var(--umbra-color-semantic-danger)));
 }
 
-.root [data-part='change-sign'][data-direction='up'] {
+.root :is([data-part='change-sign'], [data-part='changeSign'])[data-direction='up'] {
   color: var(--umbra-table-change-up, var(--umbra-change-up, var(--umbra-color-semantic-success)));
 }
 
-.root [data-part='change-sign'][data-direction='down'] {
+.root :is([data-part='change-sign'], [data-part='changeSign'])[data-direction='down'] {
   color: var(--umbra-table-change-down, var(--umbra-change-down, var(--umbra-color-semantic-danger)));
 }
