@@ -19,6 +19,7 @@ import layout from './layout.module.css';
 import { ScrollArea } from './ScrollArea';
 import { gapStyle, type SpaceToken } from './Stack';
 import { LayoutProvider, useSlot, type SlotProps } from './useSlot';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
 /** What `previous` and `next` receive. */
 export interface HorizontalScrollerButtonProps {
@@ -26,7 +27,7 @@ export interface HorizontalScrollerButtonProps {
   onPress: () => void;
 }
 
-export interface HorizontalScrollerRootProps extends SlotProps, DataStateProps {
+export interface HorizontalScrollerRootProps extends SlotProps, DataStateProps, RootAttributes {
   /** The width of every item: pixels, or any CSS length. Without it each item keeps its own width. */
   itemWidth?: number | string | undefined;
   /** Overrides the gap between items, which otherwise follows the density level. */
@@ -202,6 +203,7 @@ function Root({
 
   return (
     <div
+      {...passThrough(slot)}
       {...props}
       ref={ref}
       data-umbra="horizontal-scroller"

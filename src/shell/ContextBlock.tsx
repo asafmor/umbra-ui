@@ -5,6 +5,7 @@ import { useHoverTip } from '../internal/TruncatedText';
 import type { LinkRenderProps } from '../utils/link';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './ContextBlock.module.css';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
 interface BlockProps {
   className?: string | undefined;
@@ -12,7 +13,7 @@ interface BlockProps {
   children?: ReactNode | undefined;
 }
 
-export interface ContextBlockRootProps extends BlockProps {
+export interface ContextBlockRootProps extends BlockProps, RootAttributes {
   /** Makes the block a button. */
   onPress?: (() => void) | undefined;
   /** Makes the block a link. */
@@ -38,6 +39,7 @@ function Root({
   className,
   style,
   children,
+  ...rest
 }: ContextBlockRootProps) {
   // Inside a `TopBar` the bar says how many steps to take; elsewhere the lines just end in an ellipsis.
   const level = useContext(ContextShrinkContext);
@@ -59,7 +61,7 @@ function Root({
   return (
     <>
       {/* The root holds the ref and the state: an app's router link may not pass a ref on. */}
-      <span ref={ref} {...shared}>
+      <span ref={ref} {...passThrough(rest)} {...shared}>
         {href !== undefined ? (
           disabled ? (
             <a role="link" aria-disabled="true" {...control}>

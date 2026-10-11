@@ -13,6 +13,7 @@ import {
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './SummaryTile.module.css';
 import { defined } from '../utils/defined';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
 interface BlockProps {
   className?: string | undefined;
@@ -20,7 +21,7 @@ interface BlockProps {
   children?: ReactNode | undefined;
 }
 
-export interface SummaryTileRootProps extends BlockProps, SlotProps {
+export interface SummaryTileRootProps extends BlockProps, SlotProps, RootAttributes {
   /** Makes the whole tile one link. */
   href?: string | undefined;
   /** Makes the whole tile one button. */
@@ -51,6 +52,7 @@ function Root({
   // The slot element is separate from the control: in tab mode the layout gives it the tab panel role.
   return (
     <div
+      {...passThrough(slot)}
       {...props}
       ref={ref}
       aria-busy={loading || undefined}

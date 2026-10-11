@@ -45,6 +45,7 @@ import styles from './Planner.module.css';
 import { placeItems, type ScheduleItem } from './ScheduleSlot';
 import strip from './WeekStrip.module.css';
 import { useSelectedDate } from './WeekStrip';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
 interface PlannerContextValue {
   month: IsoMonth;
@@ -68,7 +69,7 @@ function usePlanner() {
   return planner;
 }
 
-export interface PlannerRootProps extends SlotProps {
+export interface PlannerRootProps extends SlotProps, RootAttributes {
   /** The month shown, as `'2026-10'`. Controlled. */
   month?: IsoMonth | undefined;
   /** The month shown at first. Defaults to the month of `today`. */
@@ -137,6 +138,7 @@ function Root({
   const fill = heightProps(height);
   return (
     <div
+      {...passThrough(slotProps)}
       {...props}
       ref={ref}
       data-umbra="planner"
@@ -532,6 +534,7 @@ export function Planner({
   const { toolbar, ...gridParts } = parts ?? {};
   return (
     <Root
+      {...passThrough(grid)}
       {...{ month, defaultMonth, onMonthChange, minMonth, maxMonth, today, weekStartsOn, height }}
       {...{ size, priority, minWidth, minHeight, label, className, style }}
       aria-label={ariaLabel}

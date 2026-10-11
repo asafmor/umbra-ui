@@ -6,8 +6,9 @@ import { useShortcut } from '../provider/UmbraProvider';
 import { renderPart, type Part } from '../utils/parts';
 import { ButtonBase, Spinner, type ButtonVariant } from './Button';
 import styles from './Button.module.css';
+import { type RootAttributes } from '../utils/passThrough';
 
-export interface IconButtonProps {
+export interface IconButtonProps extends RootAttributes {
   icon: ReactNode;
   /** Required. The accessible name and the tooltip text. */
   label: string;

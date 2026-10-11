@@ -8,6 +8,7 @@ import type { LinkRenderProps } from '../utils/link';
 import { cx, renderPart, type Part } from '../utils/parts';
 import type { IsoDate } from './dates';
 import styles from './ScheduleSlot.module.css';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
 interface BlockProps {
   className?: string | undefined;
@@ -18,7 +19,7 @@ interface BlockProps {
 /** A colour of the series palette (`--umbra-color-series-1` to `-8`), for categories without a meaning. */
 export type ScheduleSlotSeries = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
-export interface ScheduleSlotRootProps extends BlockProps {
+export interface ScheduleSlotRootProps extends BlockProps, RootAttributes {
   /** What the colour means. */
   tone?: Tone | undefined;
   /** A free colour (any CSS colour) for a category of the app. Replaces `tone`. */
@@ -81,6 +82,7 @@ function Root({
   className,
   style,
   children,
+  ...rest
 }: ScheduleSlotRootProps) {
   // The element is the app's own when `renderLink` draws it, so it is found from a marker inside it.
   const marker = useRef<HTMLSpanElement>(null);
@@ -95,6 +97,7 @@ function Root({
   );
   const tip = useHoverTip(element, tooltip, labelCut);
   const common = {
+    ...passThrough(rest),
     ...toneProps(tone, color ?? (series && `var(--umbra-color-series-${series})`), style),
     'data-umbra': 'schedule-slot',
     'data-variant': variant,
@@ -183,6 +186,7 @@ export function ScheduleSlot({
   if (loading) {
     return renderPart(parts?.skeleton, {}, () => (
       <span
+        {...passThrough({ ...root, 'aria-label': undefined })}
         data-umbra="schedule-slot"
         data-part="skeleton"
         data-loading=""

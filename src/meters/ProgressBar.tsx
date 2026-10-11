@@ -28,6 +28,7 @@ import {
 } from './scale';
 import { defined } from '../utils/defined';
 import { tooNarrow } from './fit';
+import { passThrough, rootRender, type RootAttributes } from '../utils/passThrough';
 
 /** One coloured part of a stacked bar. */
 export interface ProgressBarStackItem {
@@ -76,7 +77,7 @@ interface BlockProps {
   style?: CSSProperties | undefined;
 }
 
-export interface ProgressBarRootProps extends BlockProps {
+export interface ProgressBarRootProps extends BlockProps, RootAttributes {
   /** The current value. A stacked bar defaults to the sum of its parts. `null` or nothing means there is no value: the bar is empty, and says so. */
   value?: number | null | undefined;
   min?: number | undefined;
@@ -143,6 +144,7 @@ function Root({
   tooltip = true,
   className,
   style,
+  'aria-label': ariaLabel,
   ...rest
 }: ProgressBarRootProps) {
   const ref = useRef<HTMLDivElement>(null);
@@ -234,26 +236,35 @@ function Root({
     return (
       <div
         ref={ref}
+        {...passThrough(rest)}
         {...shared}
         data-loading
         aria-busy="true"
-        role={rest['aria-label'] ? 'group' : undefined}
-        aria-label={rest['aria-label']}
+        role={ariaLabel ? 'group' : undefined}
+        aria-label={ariaLabel}
       >
         {content}
       </div>
     );
   }
-  const scale = { minValue: min, maxValue: range ? max : min + 1, 'aria-label': rest['aria-label'] };
+  const scale = { minValue: min, maxValue: range ? max : min + 1, 'aria-label': ariaLabel };
   return (
     <>
       {kind === 'meter' ? (
-        <AriaMeter ref={ref} {...defined(shared)} {...defined(scale)} value={value} valueLabel={spoken}>
+        <AriaMeter
+          ref={ref}
+          {...rootRender('div', rest)}
+          {...defined(shared)}
+          {...defined(scale)}
+          value={value}
+          valueLabel={spoken}
+        >
           {content}
         </AriaMeter>
       ) : (
         <AriaProgressBar
           ref={ref}
+          {...rootRender('div', rest)}
           {...defined(shared)}
           {...defined(scale)}
           value={value}

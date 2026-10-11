@@ -15,8 +15,9 @@ import {
 import { useDateGrid } from './grid';
 import { placeItems, type ScheduleItem } from './ScheduleSlot';
 import styles from './WeekStrip.module.css';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
-export interface WeekStripRootProps {
+export interface WeekStripRootProps extends RootAttributes {
   /** An empty or error state, shown in place of the grid by the same element. */
   state?: ReactNode | undefined;
   /** The day that holds the tab stop until the user moves: today, or the chosen day. */
@@ -40,18 +41,25 @@ function Root({
   className,
   style,
   children,
+  ...rest
 }: WeekStripRootProps) {
   const [ref, handlers] = useDateGrid<HTMLDivElement>({ initial: initialDate });
   // The same element holds the empty or error state, so the focus has somewhere to go when it leaves.
   if (state) {
     return (
-      <div data-umbra="week-strip" className={cx(styles.state, className)} style={style}>
+      <div
+        {...passThrough(rest)}
+        data-umbra="week-strip"
+        className={cx(styles.state, className)}
+        style={style}
+      >
         {state}
       </div>
     );
   }
   return (
     <div
+      {...passThrough(rest)}
       {...handlers}
       ref={ref}
       role="grid"

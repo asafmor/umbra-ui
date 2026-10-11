@@ -15,6 +15,7 @@ import { defined } from '../utils/defined';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './Stepper.module.css';
 import { useFieldControl } from './useField';
+import { passThrough } from '../utils/passThrough';
 
 /** One choice of a stepper in options mode. */
 export interface StepperOption {
@@ -122,6 +123,7 @@ function Root<T extends string | number = string | number>({
   className,
   style,
   children,
+  ...rest
 }: StepperRootProps<T>) {
   const valueId = useId();
   const [own, setOwn] = useState<T | null>(defaultValue ?? null);
@@ -183,6 +185,7 @@ function Root<T extends string | number = string | number>({
   };
   return (
     <div
+      {...passThrough(rest)}
       data-umbra="stepper"
       data-size={size}
       data-disabled={control.disabled || undefined}

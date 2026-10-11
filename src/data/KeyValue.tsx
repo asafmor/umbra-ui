@@ -19,6 +19,7 @@ import {
 } from '../internal/ChangeHighlight';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './KeyValue.module.css';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
 type Orientation = 'inline' | 'stacked';
 type Align = 'start' | 'end';
@@ -37,7 +38,7 @@ interface BlockProps {
   children?: ReactNode | undefined;
 }
 
-export interface KeyValueRootProps extends BlockProps {
+export interface KeyValueRootProps extends BlockProps, RootAttributes {
   /** `inline`: label and value side by side. `stacked`: the label above the value. */
   orientation?: Orientation | undefined;
   /** Where the value sits. Default: `end` when inline, `start` when stacked. */
@@ -57,6 +58,7 @@ function Row({
   className,
   style,
   children,
+  ...rest
 }: KeyValueRootProps & { part?: string | undefined }) {
   const list = useContext(ListContext);
   const direction = orientation ?? list?.orientation ?? 'inline';
@@ -64,6 +66,7 @@ function Row({
   const Element = list ? 'div' : 'dl';
   return (
     <Element
+      {...passThrough(rest)}
       data-umbra="key-value"
       data-part={part ?? (list ? 'item' : undefined)}
       data-highlighted={highlighted || undefined}
@@ -194,7 +197,8 @@ KeyValue.Label = Label;
 KeyValue.Value = Value;
 KeyValue.Hint = Hint;
 
-export interface KeyValueListRootProps extends BlockProps, Omit<ChangeHighlightProps, 'changeValue'> {
+export interface KeyValueListRootProps
+  extends BlockProps, Omit<ChangeHighlightProps, 'changeValue'>, RootAttributes {
   /** `rows`: one row per item, sharing one label column. `columns`: side by side. `grid`: in `columns` columns. */
   layout?: 'rows' | 'columns' | 'grid' | undefined;
   /** Most columns of the `grid` layout. Fewer are used when the list is narrow. */
@@ -234,11 +238,13 @@ function ListRoot({
   className,
   style,
   children,
+  ...rest
 }: KeyValueListRootProps) {
   // Only real rows make a description list: around skeleton rows and messages the element has another
   // role. It stays the same element, so the focus it holds after a retry survives the change of state.
   return (
     <dl
+      {...passThrough(rest)}
       role={state ? (ariaLabel ? 'group' : 'presentation') : undefined}
       aria-label={ariaLabel}
       aria-busy={state === 'loading' || undefined}

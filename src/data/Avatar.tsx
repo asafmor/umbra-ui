@@ -12,6 +12,7 @@ import { RawIcon } from '../provider/icons';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './Avatar.module.css';
 import { initialsOf } from './entity';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
 export type AvatarSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 export type AvatarShape = 'circle' | 'square';
@@ -26,7 +27,7 @@ interface BlockProps {
   style?: CSSProperties | undefined;
 }
 
-export interface AvatarRootProps extends BlockProps {
+export interface AvatarRootProps extends BlockProps, RootAttributes {
   /** Fixed size. Without it the avatar is as tall as a control, so it follows the density level. */
   size?: AvatarSize | undefined;
   shape?: AvatarShape | undefined;
@@ -35,10 +36,11 @@ export interface AvatarRootProps extends BlockProps {
   children?: ReactNode | undefined;
 }
 
-function Root({ size, shape, ring, className, style, children }: AvatarRootProps) {
+function Root({ size, shape, ring, className, style, children, ...rest }: AvatarRootProps) {
   const group = useContext(GroupContext);
   return (
     <span
+      {...passThrough(rest)}
       data-umbra="avatar"
       data-size={size ?? group?.size ?? 'density'}
       data-shape={shape ?? group?.shape ?? 'circle'}
@@ -157,7 +159,7 @@ Avatar.Initials = Initials;
 Avatar.Fallback = Fallback;
 Avatar.Status = Status;
 
-export interface AvatarGroupRootProps extends BlockProps {
+export interface AvatarGroupRootProps extends BlockProps, RootAttributes {
   /** Size and shape of every avatar in the group. */
   size?: AvatarSize | undefined;
   shape?: AvatarShape | undefined;
@@ -175,9 +177,11 @@ function GroupRoot({
   className,
   style,
   children,
+  ...rest
 }: AvatarGroupRootProps) {
   return (
     <div
+      {...passThrough(rest)}
       ref={ref}
       role="group"
       aria-label={ariaLabel}

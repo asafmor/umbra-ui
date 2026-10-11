@@ -15,6 +15,7 @@ import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './Comparison.module.css';
 import shared from './shared.module.css';
 import { useFitLevel } from '../internal/useFitLevel';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
 interface BlockProps {
   className?: string | undefined;
@@ -66,7 +67,7 @@ function leaderOf({ values: [a, b], lowerIsBetter }: Pick<ComparisonRow, 'values
   return a > b !== !!lowerIsBetter ? 0 : 1;
 }
 
-export interface ComparisonRootProps extends BlockProps, SlotProps {
+export interface ComparisonRootProps extends BlockProps, SlotProps, RootAttributes {
   /** `strip` is one line: the two names around one pair of values. */
   variant?: 'table' | 'strip' | undefined;
   /** Shown in place of the children when the rows do not fit the height, even without their bars. */
@@ -93,6 +94,7 @@ function Root({
   const sized = heightProps(height);
   return (
     <div
+      {...passThrough(slotProps)}
       {...props}
       ref={ref}
       data-umbra="comparison"

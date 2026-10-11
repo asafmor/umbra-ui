@@ -12,6 +12,7 @@ import {
   type NavRootProps,
 } from './nav';
 import styles from './SubNav.module.css';
+import { passThrough } from '../utils/passThrough';
 
 interface BlockProps {
   className?: string | undefined;
@@ -71,6 +72,7 @@ function Frame({
   const [labelHidden, setLabelHidden] = useState(false);
   return (
     <nav
+      {...passThrough(list)}
       aria-label={ariaLabel}
       data-umbra="sub-nav"
       className={cx(navClass('sub', className), styles.root)}

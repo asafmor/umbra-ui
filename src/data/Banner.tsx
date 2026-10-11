@@ -3,6 +3,7 @@ import { ButtonBase } from '../basics/Button';
 import { Icon as BuiltInIcon, IconSlot, RawIcon } from '../provider/icons';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './Banner.module.css';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
 export type BannerTone = 'info' | 'success' | 'warning' | 'danger' | 'neutral' | 'accent';
 export type BannerVariant = 'subtle' | 'solid' | 'outline';
@@ -38,7 +39,7 @@ interface BlockProps {
   children?: ReactNode | undefined;
 }
 
-export interface BannerRootProps extends BlockProps {
+export interface BannerRootProps extends BlockProps, RootAttributes {
   /** What the message is. Each tone has its own colour and its own default icon. */
   tone?: BannerTone | undefined;
   /** `subtle`: tinted fill. `solid`: filled with the tone colour. `outline`: border only. */
@@ -71,6 +72,7 @@ function Root({
   className,
   style,
   children,
+  ...rest
 }: BannerRootProps) {
   const [uncontrolled, setUncontrolled] = useState(defaultOpen);
   const ref = useRef<HTMLDivElement>(null);
@@ -98,6 +100,7 @@ function Root({
   };
   return (
     <div
+      {...passThrough(rest)}
       role={announce === 'off' ? undefined : announce === 'assertive' ? 'alert' : 'status'}
       data-umbra="banner"
       data-tone={tone}

@@ -14,6 +14,7 @@ import { useShrinkLevel } from '../internal/useShrinkLevel';
 import { Icon, IconSlot, RawIcon } from '../provider/icons';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './ActionBar.module.css';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
 export type ActionBarTone = 'neutral' | 'info' | 'success' | 'warning' | 'danger';
 export type ActionBarGroupKind = 'primary' | 'secondary' | 'tertiary';
@@ -51,7 +52,7 @@ interface BlockProps {
   children?: ReactNode | undefined;
 }
 
-export interface ActionBarRootProps extends BlockProps {
+export interface ActionBarRootProps extends BlockProps, RootAttributes {
   /** `inline`: in the flow, at the bottom of a page, card or modal. `floating`: over the bottom of its container. */
   variant?: 'inline' | 'floating' | undefined;
   /** Shows a `floating` bar. Its container needs `position: relative`. */
@@ -76,6 +77,7 @@ function Root({
   className,
   style,
   children,
+  ...rest
 }: ActionBarRootProps) {
   const ref = useRef<HTMLDivElement>(null);
   // Step 1: secondary and tertiary actions keep only their icon. Step 2: the actions take a second line.
@@ -98,6 +100,7 @@ function Root({
   }, [shown]);
   return (
     <div
+      {...passThrough(rest)}
       ref={ref}
       role="group"
       aria-label={ariaLabel}

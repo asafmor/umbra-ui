@@ -23,6 +23,7 @@ import { useShrinkLevel } from '../internal/useShrinkLevel';
 import { textColourOn } from '../provider/contrast';
 import { Icon, IconSlot } from '../provider/icons';
 import type { LinkRenderProps } from '../utils/link';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './Card.module.css';
 import { ScrollArea, type ScrollAreaProps } from './ScrollArea';
@@ -87,7 +88,7 @@ function heightWithoutBody(element: HTMLElement) {
   return height;
 }
 
-export interface CardRootProps extends BlockProps, SlotProps {
+export interface CardRootProps extends BlockProps, SlotProps, RootAttributes {
   /** `tinted` takes more of the context tint; `neutral` ignores it. */
   tone?: 'default' | 'tinted' | 'neutral' | undefined;
   /** `band` fills the header with the brand colour, or the header's `bandColor`. */
@@ -287,6 +288,7 @@ function Root({
   return (
     <HeaderRefContext value={header}>
       <section
+        {...passThrough(slot)}
         {...props}
         ref={ref}
         aria-labelledby={ariaLabel || !hasTitle ? undefined : titleId}

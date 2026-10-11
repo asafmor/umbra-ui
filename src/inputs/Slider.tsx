@@ -22,6 +22,7 @@ import { useInOverflowMenu } from '../internal/contexts';
 import { bandColour } from './bandColour';
 import styles from './Slider.module.css';
 import { useFieldControl } from './useField';
+import { rootRender } from '../utils/passThrough';
 
 /** One number, or the two ends of a range. */
 export type SliderValue = number | readonly [number, number];
@@ -134,6 +135,7 @@ function Root<T extends SliderValue = SliderValue>({
   className,
   style,
   children,
+  ...rest
 }: SliderRootProps<T>) {
   const control = useFieldControl({ id, invalid, disabled });
   const range = Array.isArray(value ?? defaultValue);
@@ -163,6 +165,7 @@ function Root<T extends SliderValue = SliderValue>({
   };
   return (
     <AriaSlider<number | number[]>
+      {...rootRender('div', rest)}
       data-umbra="slider"
       data-variant={variant}
       data-size={size}

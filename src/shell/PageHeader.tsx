@@ -16,6 +16,7 @@ import { Icon } from '../provider/icons';
 import { cx, renderPart, type Part } from '../utils/parts';
 import type { LinkRenderProps } from '../utils/link';
 import styles from './PageHeader.module.css';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
 // What gives way as the header narrows, in this order. After the last step the title truncates.
 const steps = ['meta', 'actions', 'subtitle', 'media'] as const;
@@ -41,7 +42,7 @@ interface BlockProps {
   children?: ReactNode | undefined;
 }
 
-export interface PageHeaderRootProps extends BlockProps {
+export interface PageHeaderRootProps extends BlockProps, RootAttributes {
   /** `tinted` is a panel in the context tint. `band` fills with the brand colour, or `bandColor`. */
   tone?: 'default' | 'tinted' | 'band' | undefined;
   /** Colour of the band (hex or `rgb()`); the text colour is chosen for contrast with it. */
@@ -60,6 +61,7 @@ function Root({
   className,
   style,
   children,
+  ...rest
 }: PageHeaderRootProps) {
   const bar = useRef<HTMLDivElement>(null);
   const row = useRef<HTMLDivElement>(null);
@@ -71,6 +73,7 @@ function Root({
   const onBand = tone === 'band' && bandColor ? textColourOn(bandColor)?.colour : undefined;
   return (
     <div
+      {...passThrough(rest)}
       data-umbra="page-header"
       data-tone={tone}
       data-size={size}

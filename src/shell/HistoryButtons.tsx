@@ -4,6 +4,7 @@ import { Menu } from '../overlays/Menu';
 import { Icon } from '../provider/icons';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './HistoryButtons.module.css';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
 /** One place the user was, for the menu of recent entries. */
 export interface HistoryEntry {
@@ -13,7 +14,7 @@ export interface HistoryEntry {
   icon?: ReactNode | undefined;
 }
 
-export interface HistoryButtonsProps {
+export interface HistoryButtonsProps extends RootAttributes {
   /** Router mode: whether there is somewhere to go. Leave both out to use the browser history. */
   canGoBack?: boolean | undefined;
   canGoForward?: boolean | undefined;
@@ -86,6 +87,7 @@ export function HistoryButtons({
   parts,
   className,
   style,
+  ...rest
 }: HistoryButtonsProps) {
   const browserBack = useSyncExternalStore(subscribe, browserCan('canGoBack'), always);
   const browserForward = useSyncExternalStore(subscribe, browserCan('canGoForward'), always);
@@ -113,6 +115,7 @@ export function HistoryButtons({
 
   return (
     <div
+      {...passThrough(rest)}
       role="group"
       aria-label={ariaLabel}
       data-umbra="history-buttons"

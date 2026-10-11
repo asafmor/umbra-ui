@@ -11,8 +11,9 @@ import { useShortcut } from '../provider/UmbraProvider';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './PrimaryAction.module.css';
 import { defined } from '../utils/defined';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
-export interface PrimaryActionProps {
+export interface PrimaryActionProps extends RootAttributes {
   /** What the action does now. It changes with the state of the app ("Continue", "Review 3 items"). */
   label: string;
   /** A second, smaller line under the label. */
@@ -86,6 +87,7 @@ export function PrimaryAction({
   parts,
   className,
   style,
+  ...rest
 }: PrimaryActionProps) {
   const root = useRef<HTMLDivElement>(null);
   const forced = useContext(ForceCollapseContext);
@@ -153,6 +155,7 @@ export function PrimaryAction({
   };
   return (
     <div
+      {...passThrough(rest)}
       ref={root}
       data-umbra="primary-action"
       data-collapsed={collapsed || undefined}

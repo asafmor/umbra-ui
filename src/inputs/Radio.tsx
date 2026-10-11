@@ -17,6 +17,7 @@ import {
 import styles from './Radio.module.css';
 import { FieldContext, noField, useFieldControl } from './useField';
 import { defined } from '../utils/defined';
+import { rootRender } from '../utils/passThrough';
 
 export type RadioVariant = 'default' | 'card';
 
@@ -30,11 +31,20 @@ export interface RadioRootProps extends BlockProps {
   'aria-label'?: string | undefined;
 }
 
-function Root({ value, disabled, 'aria-label': ariaLabel, className, style, children }: RadioRootProps) {
+function Root({
+  value,
+  disabled,
+  'aria-label': ariaLabel,
+  className,
+  style,
+  children,
+  ...rest
+}: RadioRootProps) {
   const slots = useTextSlots();
   const describedBy = [...slots.describedBy, useContext(GroupDescribedBy)].filter(Boolean).join(' ');
   return (
     <AriaRadio
+      {...rootRender('label', { ...rest, id: undefined })}
       data-umbra="radio"
       data-variant={useContext(VariantContext)}
       {...defined({ className: cx(styles.root, className), style })}
@@ -160,6 +170,7 @@ function GroupRoot({
   className,
   style,
   children,
+  ...rest
 }: RadioGroupRootProps) {
   const slots = useTextSlots();
   const control = useFieldControl({
@@ -172,6 +183,7 @@ function GroupRoot({
   });
   return (
     <AriaRadioGroup
+      {...rootRender('div', rest)}
       data-umbra="radio-group"
       data-variant={variant}
       {...defined({ className: cx(groupClass, className), style, value, defaultValue, onChange })}

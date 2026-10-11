@@ -27,6 +27,7 @@ import { OverlayContainerContext } from '../internal/contexts';
 import { focusableIn, moveFocusFrom } from '../internal/focus';
 import { useReturnFocusOnClose, useOpenState } from './shared';
 import { defined } from '../utils/defined';
+import { passThrough, rootRender, type RootAttributes } from '../utils/passThrough';
 
 export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'full';
 export type ModalVariant = 'dialog' | 'alertdialog' | 'drawer';
@@ -190,7 +191,7 @@ const focusable =
   'a[href], button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])';
 
 /** The panel and its dialog element. Traps focus, and gives it back when the modal closes. */
-function Content({ className, style, children }: BlockProps) {
+function Content({ className, style, children, ...rest }: BlockProps & RootAttributes) {
   const modal = useModal();
   const narrow = useNarrow();
   const dialog = useRef<HTMLElement>(null);
@@ -253,6 +254,7 @@ function Content({ className, style, children }: BlockProps) {
 
   return (
     <AriaModal
+      {...rootRender('div', rest)}
       data-umbra="modal"
       data-variant={modal.variant}
       data-side={modal.variant === 'drawer' ? modal.side : undefined}
@@ -468,7 +470,8 @@ export interface ModalProps
   extends
     Omit<ModalRootProps, 'children'>,
     Pick<ModalHeaderProps, 'icon' | 'title' | 'description' | 'hideClose' | 'closeLabel'>,
-    BlockProps {
+    BlockProps,
+    RootAttributes {
   /** A button that opens the modal. Leave out to control it with `open`. */
   trigger?: ReactNode | undefined;
   /** Tabs or filters that stay fixed under the header. */
@@ -530,7 +533,7 @@ export function Modal({
     <Root {...root}>
       {trigger && <Trigger>{trigger}</Trigger>}
       <Overlay>
-        <Content className={className} style={style}>
+        <Content {...passThrough({ ...root, 'aria-label': undefined })} className={className} style={style}>
           {renderPart(parts?.header, headerProps, (p) => (
             <Header {...p} />
           ))}
@@ -562,7 +565,8 @@ Modal.Close = Close;
 export interface ConfirmDialogProps
   extends
     Pick<ModalProps, 'open' | 'defaultOpen' | 'onOpenChange' | 'trigger' | 'icon' | 'size'>,
-    BlockProps {
+    BlockProps,
+    RootAttributes {
   title: ReactNode;
   /** What will happen, in a sentence. */
   description?: ReactNode | undefined;
@@ -610,6 +614,7 @@ export function ConfirmDialog({
   className,
   style,
   children,
+  ...rest
 }: ConfirmDialogProps) {
   const [isOpen, setOpen] = useOpenState(controlled, defaultOpen, onOpenChange);
   const [loading, setLoading] = useState(false);
@@ -629,6 +634,7 @@ export function ConfirmDialog({
   };
   return (
     <Modal
+      {...passThrough(rest)}
       variant="alertdialog"
       open={isOpen}
       // While the confirm action runs, nothing closes the dialog.

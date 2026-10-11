@@ -21,6 +21,7 @@ import { Icon, IconSlot } from '../provider/icons';
 import { cx, renderPart, type Part } from '../utils/parts';
 import type { LinkRenderProps } from '../utils/link';
 import styles from './VerticalNav.module.css';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
 /** One entry. `items` inside an entry makes a group that opens and closes; groups do not nest. */
 export interface VerticalNavItem {
@@ -64,7 +65,7 @@ interface BlockProps {
   children?: ReactNode | undefined;
 }
 
-export interface VerticalNavRootProps extends BlockProps, SlotProps {
+export interface VerticalNavRootProps extends BlockProps, SlotProps, RootAttributes {
   /** The current item. */
   value?: string | undefined;
   /** Called with the id of the item the user chose. */
@@ -157,6 +158,7 @@ function Root({
   };
   return (
     <nav
+      {...passThrough(slot)}
       {...props}
       ref={ref}
       aria-label={ariaLabel}

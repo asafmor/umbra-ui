@@ -2,8 +2,9 @@ import type { CSSProperties, ReactNode } from 'react';
 import { cx } from '../utils/parts';
 import styles from './layout.module.css';
 import { useSlot, type SlotProps as SlotLayoutProps } from './useSlot';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
-export interface SlotProps extends SlotLayoutProps {
+export interface SlotProps extends SlotLayoutProps, RootAttributes {
   className?: string | undefined;
   style?: CSSProperties | undefined;
   children?: ReactNode | undefined;
@@ -17,6 +18,7 @@ export function Slot({ className, style, children, ...slot }: SlotProps) {
   const { ref, props } = useSlot<HTMLDivElement>(slot);
   return (
     <div
+      {...passThrough(slot)}
       {...props}
       ref={ref}
       data-umbra="slot"

@@ -3,8 +3,9 @@ import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './Badge.module.css';
 import shared from './shared.module.css';
 import { toneProps, type Tone } from './tone';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
-export interface BadgeRootProps {
+export interface BadgeRootProps extends RootAttributes {
   /** What the colour means. `accent` is the fixed violet. */
   tone?: Tone | undefined;
   /** A custom colour (any CSS colour). Replaces `tone`. */
@@ -16,9 +17,10 @@ export interface BadgeRootProps {
   children?: ReactNode | undefined;
 }
 
-function Root({ tone = 'accent', color, anchored, className, style, children }: BadgeRootProps) {
+function Root({ tone = 'accent', color, anchored, className, style, children, ...rest }: BadgeRootProps) {
   return (
     <span
+      {...passThrough(rest)}
       {...toneProps(tone, color, style)}
       data-umbra="badge"
       data-anchored={anchored || undefined}

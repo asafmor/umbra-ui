@@ -20,6 +20,7 @@ import { warn } from '../utils/dev';
 import type { LinkRenderProps } from '../utils/link';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './nav.module.css';
+import { type RootAttributes } from '../utils/passThrough';
 
 /** One navigation entry. `items` inside an entry makes a dropdown. */
 export interface NavItem {
@@ -46,7 +47,7 @@ export interface NavItemProps {
   children?: ReactNode | undefined;
 }
 
-export interface NavRootProps {
+export interface NavRootProps extends RootAttributes {
   /** The active item. */
   value?: string | undefined;
   /** Called with the id of the item the user chose. */

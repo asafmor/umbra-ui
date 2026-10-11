@@ -28,6 +28,7 @@ import {
   type ShortcutRegistry,
 } from './shortcuts';
 import styles from './UmbraProvider.module.css';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
 export type Density = (typeof densities)[number];
 export type ContextPreset = (typeof contextPresets)[number];
@@ -39,7 +40,7 @@ export type ContextTint = ContextPreset | (string & {});
  */
 export type TokenOverrides = Partial<Record<TokenName | (string & {}), string | number | undefined>>;
 
-export interface UmbraScopeProps {
+export interface UmbraScopeProps extends RootAttributes {
   /** Brand colour, used by the TopBar. Text on it is computed for contrast. Hex or `rgb()`. */
   brand?: string | undefined;
   /** Context tint for the page background and tinted cards. */
@@ -169,7 +170,12 @@ export function UmbraScope({ className, style, children, ...scope }: UmbraScopeP
   const attributes = useScope(scope);
   return (
     <ScopeContext value={attributes}>
-      <div {...attributes} className={cx(styles.scope, className)} style={{ ...attributes.style, ...style }}>
+      <div
+        {...passThrough(scope)}
+        {...attributes}
+        className={cx(styles.scope, className)}
+        style={{ ...attributes.style, ...style }}
+      >
         {children}
       </div>
     </ScopeContext>
@@ -241,6 +247,7 @@ export function UmbraProvider({
       <UmbraContext value={value}>
         <ScopeContext value={attributes}>
           <div
+            {...passThrough(scope)}
             {...attributes}
             data-umbra-root=""
             className={cx(styles.scope, className)}

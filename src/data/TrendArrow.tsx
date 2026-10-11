@@ -4,6 +4,7 @@ import { cx, renderPart, type Part } from '../utils/parts';
 import { IconPart, type IconPartProps } from './IconPart';
 import shared from './shared.module.css';
 import styles from './TrendArrow.module.css';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
 export type TrendDirection = 'up' | 'down' | 'flat';
 export type TrendTone = 'good' | 'bad' | 'neutral';
@@ -20,15 +21,16 @@ interface BlockProps {
   children?: ReactNode | undefined;
 }
 
-export interface TrendArrowRootProps extends BlockProps {
+export interface TrendArrowRootProps extends BlockProps, RootAttributes {
   direction: TrendDirection;
   /** The colour of the arrow. */
   tone?: TrendTone | undefined;
 }
 
-function Root({ direction, tone = 'neutral', className, style, children }: TrendArrowRootProps) {
+function Root({ direction, tone = 'neutral', className, style, children, ...rest }: TrendArrowRootProps) {
   return (
     <span
+      {...passThrough(rest)}
       data-umbra="trend-arrow"
       data-direction={direction}
       data-tone={tone}

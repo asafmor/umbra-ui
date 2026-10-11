@@ -11,6 +11,7 @@ import { useNarrow } from '../internal/useNarrow';
 import { ScopeProvider, useScope, type ContextTint } from '../provider/UmbraProvider';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './AppShell.module.css';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
 interface ShellContextValue {
   mainId: string;
@@ -26,7 +27,7 @@ interface BlockProps {
   children?: ReactNode | undefined;
 }
 
-export interface AppShellRootProps extends BlockProps {
+export interface AppShellRootProps extends BlockProps, RootAttributes {
   /** `flat` removes the gradient and pattern. */
   background?: 'gradient' | 'flat' | undefined;
   /** Text of the "skip to content" link, the first focus stop. */
@@ -39,6 +40,7 @@ function Root({
   className,
   style,
   children,
+  ...rest
 }: AppShellRootProps) {
   const narrow = useNarrow();
   const [pageContext, setPageContext] = useState<ContextTint>();
@@ -49,6 +51,7 @@ function Root({
     <ShellContext value={shell}>
       <ScopeProvider value={scope}>
         <div
+          {...passThrough(rest)}
           {...scope}
           data-umbra="app-shell"
           data-background={background}

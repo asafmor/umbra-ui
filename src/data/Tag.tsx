@@ -7,6 +7,7 @@ import { IconPart, type IconPartProps } from './IconPart';
 import shared from './shared.module.css';
 import styles from './Tag.module.css';
 import { toneColour, toneProps, type Tone } from './tone';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
 interface BlockProps {
   className?: string | undefined;
@@ -14,7 +15,7 @@ interface BlockProps {
   children?: ReactNode | undefined;
 }
 
-export interface TagRootProps extends BlockProps {
+export interface TagRootProps extends BlockProps, RootAttributes {
   /** What the colour means. */
   tone?: Tone | undefined;
   /** A custom colour (any CSS colour). Replaces `tone`. */
@@ -39,6 +40,7 @@ function Root({
   className,
   style,
   children,
+  ...rest
 }: TagRootProps) {
   const striped = stripe ? ({ '--stripe': toneColour(stripe), ...style } as CSSProperties) : style;
   const ref = useRef<HTMLSpanElement>(null);
@@ -51,6 +53,7 @@ function Root({
   return (
     <>
       <span
+        {...passThrough(rest)}
         {...toneProps(tone, color, striped)}
         ref={ref}
         data-umbra="tag"
@@ -170,6 +173,7 @@ export function Tag({
   if (loading) {
     return renderPart(parts?.skeleton, {}, () => (
       <span
+        {...passThrough(root)}
         data-umbra="tag"
         data-part="skeleton"
         data-loading=""

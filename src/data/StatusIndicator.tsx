@@ -5,6 +5,7 @@ import { IconPart } from './IconPart';
 import shared from './shared.module.css';
 import styles from './StatusIndicator.module.css';
 import { toneProps } from './tone';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
 export type Status = 'success' | 'warning' | 'danger' | 'info' | 'neutral';
 
@@ -23,7 +24,7 @@ interface BlockProps {
   children?: ReactNode | undefined;
 }
 
-export interface StatusIndicatorRootProps extends BlockProps {
+export interface StatusIndicatorRootProps extends BlockProps, RootAttributes {
   status?: Status | undefined;
   /** A custom colour (any CSS colour). Replaces the colour of `status`; the shape stays. */
   color?: string | undefined;
@@ -44,9 +45,11 @@ function Root({
   className,
   style,
   children,
+  ...rest
 }: StatusIndicatorRootProps) {
   return (
     <span
+      {...passThrough(rest)}
       {...toneProps(status, color, style)}
       data-umbra="status-indicator"
       data-status={status}

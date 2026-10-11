@@ -20,6 +20,7 @@ import { linear, numberFormat } from './internal/scales';
 import { toneColours } from './internal/tones';
 import { useChartSize } from './internal/useChartSize';
 import styles from './Sparkline.module.css';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
 /** What `formatSummary` receives: the numbers a screen reader hears in place of the drawing. */
 export interface SparklineStats {
@@ -72,7 +73,7 @@ function useSpark() {
   return spark;
 }
 
-export interface SparklineRootProps {
+export interface SparklineRootProps extends RootAttributes {
   /** The values, in order. `null` is a missing value: a gap in the line, no bar. */
   data: readonly (number | null | undefined)[];
   /**
@@ -163,6 +164,7 @@ function Root({
   className,
   style,
   children,
+  ...rest
 }: SparklineRootProps) {
   const ref = useRef<HTMLSpanElement>(null);
   const { width, height } = useChartSize(ref);
@@ -268,6 +270,7 @@ function Root({
   return (
     <>
       <span
+        {...passThrough(rest)}
         ref={ref}
         data-umbra="sparkline"
         data-variant={variant}

@@ -18,6 +18,7 @@ import type { LinkRenderProps } from '../utils/link';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './ShortcutBar.module.css';
 import { defined } from '../utils/defined';
+import { rootRender, type RootAttributes } from '../utils/passThrough';
 
 /** One pinned shortcut. */
 export interface ShortcutBarItem {
@@ -59,7 +60,7 @@ export interface ShortcutBarItemPartProps {
   children: ReactNode;
 }
 
-export interface ShortcutBarProps {
+export interface ShortcutBarProps extends RootAttributes {
   /** The shortcuts, as data. */
   items?: ShortcutBarItem[] | undefined;
   /** The shortcuts, as `ShortcutBar.Item` blocks. */
@@ -114,6 +115,7 @@ export function ShortcutBar({
   parts,
   className,
   style,
+  ...rest
 }: ShortcutBarProps) {
   const { icons } = useUmbra();
   const list = useRef<HTMLDivElement>(null);
@@ -189,6 +191,7 @@ export function ShortcutBar({
 
   return (
     <Toolbar
+      {...rootRender('div', rest)}
       aria-label={ariaLabel}
       data-umbra="shortcut-bar"
       data-mode={iconsOnly ? 'icons' : 'labels'}

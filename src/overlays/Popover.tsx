@@ -38,6 +38,7 @@ import {
   type OverlayPlacement,
 } from './shared';
 import { defined } from '../utils/defined';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
 interface PopoverContextValue {
   titleId: string;
@@ -86,7 +87,7 @@ function Trigger({ children }: { children?: ReactNode | undefined }) {
   );
 }
 
-export interface PopoverContentProps extends OpenProps, Omit<BlockProps, 'children'> {
+export interface PopoverContentProps extends OpenProps, Omit<BlockProps, 'children'>, RootAttributes {
   /** The element to open against, when there is no `Popover.Trigger`. Use it with `open`. */
   anchorRef?: RefObject<Element | null> | undefined;
   /** Side of the anchor and alignment along it. It flips to the other side to stay in the window. */
@@ -127,6 +128,7 @@ function Content({
   className,
   style,
   children,
+  ...rest
 }: PopoverContentProps) {
   const scope = useScopeAttributes();
   const layer = useOverlayLayer('popover');
@@ -268,8 +270,9 @@ function Content({
       // The trigger points at the panel with `aria-controls`, so the panel carries that id.
       render={(props) => (
         <div
+          {...passThrough(rest)}
           {...(props as React.JSX.IntrinsicElements['div'])}
-          id={fromTrigger?.id}
+          id={fromTrigger?.id ?? (passThrough(rest).id as string | undefined)}
           role="dialog"
           tabIndex={-1}
           // A `label` names the dialog; the trigger's id, which React Aria adds by itself, would win over it.

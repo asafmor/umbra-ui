@@ -22,6 +22,7 @@ import { warn } from '../utils/dev';
 import { cx, renderPart, type Part } from '../utils/parts';
 import { toAriaPlacement, useOpenState, useOverlayLayer, type OverlayPlacement } from './shared';
 import styles from './Spotlight.module.css';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
 /** What a spotlight points at: a ref, a CSS selector, or a function that returns the element. */
 export type SpotlightTarget = RefObject<Element | null> | string | (() => Element | null | undefined);
@@ -101,7 +102,7 @@ interface BlockProps {
   children?: ReactNode | undefined;
 }
 
-export interface SpotlightRootProps extends BlockProps {
+export interface SpotlightRootProps extends BlockProps, RootAttributes {
   /** The element to light. */
   target?: SpotlightTarget | undefined;
   /** Controlled state. */
@@ -143,6 +144,7 @@ function Root({
   className,
   style,
   children,
+  ...rest
 }: SpotlightRootProps) {
   const scope = useScopeAttributes();
   const layer = useOverlayLayer('spotlight');
@@ -287,6 +289,7 @@ function Root({
     : [{ inset: 0 }];
   return createPortal(
     <div
+      {...passThrough(rest)}
       {...scope}
       data-umbra-layer={layer['data-umbra-layer']}
       data-react-aria-top-layer={layer['data-react-aria-top-layer']}
@@ -376,7 +379,7 @@ function Callout({
       const box = el.getBoundingClientRect();
       const shift = (start: number, end: number, size: number) =>
         Math.max(EDGE - start, 0) + Math.min(size - EDGE - end, 0);
-      let x = shift(box.left, box.right, window.innerWidth);
+      const x = shift(box.left, box.right, window.innerWidth);
       let y = shift(box.top, box.bottom, window.innerHeight);
       // Moved back in along the line, it lies over the target: it goes below it, or above, where one
       // of the two has the room. Where none has, it stays over the target's edge.

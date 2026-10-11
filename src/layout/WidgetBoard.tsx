@@ -20,6 +20,7 @@ import layout from './layout.module.css';
 import { ScrollArea } from './ScrollArea';
 import { LayoutProvider, useSlot, type SlotProps } from './useSlot';
 import styles from './WidgetBoard.module.css';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
 /** Identifies one widget of a board. */
 export type WidgetBoardId = string;
@@ -44,7 +45,7 @@ interface BlockProps {
   children?: ReactNode | undefined;
 }
 
-export interface WidgetBoardRootProps extends BlockProps, SlotProps {
+export interface WidgetBoardRootProps extends BlockProps, SlotProps, RootAttributes {
   /** Controlled: the ids of the collapsed widgets. */
   collapsedIds?: WidgetBoardId[] | undefined;
   defaultCollapsedIds?: WidgetBoardId[] | undefined;
@@ -90,6 +91,7 @@ function Root({
   return (
     <BoardContext value={board}>
       <div
+        {...passThrough(slot)}
         {...props}
         ref={ref}
         data-umbra="widget-board"

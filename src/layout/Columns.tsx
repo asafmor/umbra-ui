@@ -6,6 +6,7 @@ import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './layout.module.css';
 import { LayoutProvider, useLayoutParent, useSlot, type SlotProps } from './useSlot';
 import { gapStyle, type SpaceToken } from './Stack';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
 /** Props of the default tab strip, passed to a `tabs` part function. */
 export interface ColumnsTabsProps {
@@ -13,7 +14,7 @@ export interface ColumnsTabsProps {
   onSelect: (id: string) => void;
 }
 
-export interface ColumnsProps extends SlotProps {
+export interface ColumnsProps extends SlotProps, RootAttributes {
   /** Overrides the gap, which otherwise follows the density level. */
   gap?: SpaceToken | undefined;
   /**
@@ -61,6 +62,7 @@ export function Columns({
   return (
     <LayoutProvider value={layout.value}>
       <div
+        {...passThrough(slot)}
         {...props}
         ref={ref}
         data-umbra="columns"

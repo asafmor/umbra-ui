@@ -40,6 +40,7 @@ import {
   type OverlayPlacement,
 } from './shared';
 import { defined } from '../utils/defined';
+import { passThrough, rootRender, withoutPassThrough, type RootAttributes } from '../utils/passThrough';
 
 /** One row of a menu. `items` inside it makes a submenu. */
 export interface MenuItemData {
@@ -351,6 +352,7 @@ function Surface({
   className,
   style,
   children,
+  ...rest
 }: Omit<PanelProps, 'entries' | 'shared' | 'aria-label'> & { children: ReactNode }) {
   const scope = useScopeAttributes();
   const layer = useOverlayLayer('popover');
@@ -358,6 +360,7 @@ function Surface({
   const root = useRootMenuState(!!open, onOpenChange);
   const popover = (
     <AriaPopover
+      {...rootRender('div', rest)}
       {...scope}
       {...defined(layer)}
       ref={flipWhenCut}
@@ -415,7 +418,7 @@ const pressable = (trigger: ReactNode) =>
     trigger
   );
 
-export interface MenuProps {
+export interface MenuProps extends RootAttributes {
   /** The rows, as data. */
   items?: MenuEntry[] | undefined;
   /** The rows, as `Menu.Item`, `Menu.Section`, `Menu.Separator` and `Menu.Sub` blocks. */
@@ -566,6 +569,7 @@ function Context({
   };
   return (
     <div
+      {...passThrough({ ...menu, 'aria-label': undefined })}
       data-umbra="menu-context"
       className={cx(styles.context, className)}
       style={style}
@@ -590,7 +594,8 @@ function Context({
         style={{ left: point?.x, top: point?.y }}
       />
       <Menu
-        {...menu}
+        {...withoutPassThrough(menu)}
+        aria-label={menu['aria-label']}
         anchorRef={anchor}
         open={!!point}
         onOpenChange={(next) => {

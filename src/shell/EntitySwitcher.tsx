@@ -18,6 +18,7 @@ import { Icon } from '../provider/icons';
 import type { LinkRenderProps } from '../utils/link';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './EntitySwitcher.module.css';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
 /** Identifies one entity of a switcher. */
 export type EntitySwitcherId = string;
@@ -100,7 +101,7 @@ interface BlockProps {
   style?: CSSProperties | undefined;
 }
 
-export interface EntitySwitcherRootProps extends BlockProps {
+export interface EntitySwitcherRootProps extends BlockProps, RootAttributes {
   /** The entities to choose from. */
   items: EntitySwitcherItem[];
   /** Controlled: the id of the current entity. */
@@ -173,6 +174,7 @@ function Root({
   className,
   style,
   children,
+  ...rest
 }: EntitySwitcherRootProps) {
   const [ownValue, setOwnValue] = useState(defaultValue);
   const id = value ?? ownValue;
@@ -243,6 +245,7 @@ function Root({
   return (
     <SwitcherContext value={switcher}>
       <div
+        {...passThrough(rest)}
         ref={root}
         data-umbra="entity-switcher"
         data-shrink={level}

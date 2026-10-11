@@ -22,6 +22,7 @@ import { cx, renderPart, type Part } from '../../utils/parts';
 import styles from '../Chart.module.css';
 import { fitTooltip, levelFor, placeTooltip, type Measure } from './scales';
 import { measurer, useChartSize } from './useChartSize';
+import { passThrough, type RootAttributes } from '../../utils/passThrough';
 
 /** One data point, as the app receives it in `onPointPress`. */
 export interface ChartPoint {
@@ -63,7 +64,7 @@ export interface ChartParts {
 }
 
 /** Props every chart takes. The loading, empty and error props are the same as on every data component. */
-export interface ChartCommonProps extends DataStateProps {
+export interface ChartCommonProps extends DataStateProps, RootAttributes {
   /** Accessible name of the chart. Required unless `aria-labelledby` is set. */
   'aria-label'?: string | undefined;
   /** Id of the element that names the chart, for example a card title. */
@@ -230,6 +231,7 @@ export function Frame<M extends FrameModel>({
   height,
   className,
   style,
+  ...rest
 }: FrameProps<M>) {
   const uid = useId().replace(/[^a-zA-Z0-9]/g, '');
   const rootRef = useRef<HTMLElement>(null);
@@ -428,6 +430,7 @@ export function Frame<M extends FrameModel>({
 
   return (
     <figure
+      {...passThrough(rest)}
       ref={rootRef}
       data-umbra={kind}
       data-level={level}

@@ -10,6 +10,7 @@ import {
   type NavItemProps,
   type NavRootProps,
 } from './nav';
+import { passThrough } from '../utils/passThrough';
 
 export interface PrimaryNavRootProps extends NavRootProps {
   /** Replace or hide named pieces. */
@@ -20,7 +21,13 @@ export interface PrimaryNavRootProps extends NavRootProps {
 
 function Root({ 'aria-label': label = 'Main', className, style, ...list }: PrimaryNavRootProps) {
   return (
-    <nav aria-label={label} data-umbra="primary-nav" className={navClass('primary', className)} style={style}>
+    <nav
+      {...passThrough(list)}
+      aria-label={label}
+      data-umbra="primary-nav"
+      className={navClass('primary', className)}
+      style={style}
+    >
       <NavList {...list} />
     </nav>
   );

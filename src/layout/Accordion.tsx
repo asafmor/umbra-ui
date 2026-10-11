@@ -16,6 +16,7 @@ import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './Accordion.module.css';
 import { ScrollArea } from './ScrollArea';
 import { LayoutProvider, useSlot, type SlotProps } from './useSlot';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
 interface AccordionContextValue {
   open: string[];
@@ -52,7 +53,7 @@ interface BlockProps {
   children?: ReactNode | undefined;
 }
 
-interface RootBaseProps extends BlockProps, SlotProps {
+interface RootBaseProps extends BlockProps, SlotProps, RootAttributes {
   /** May every section be closed? Only matters for `type="single"`; when `false`, the open section stays open. */
   collapsible?: boolean | undefined;
   /** `plain`: rules between the sections. `card`: each section looks like a card. */
@@ -133,6 +134,7 @@ function Root({
 
   return (
     <div
+      {...passThrough(slot)}
       {...props}
       ref={ref}
       role={ariaLabel ? 'group' : undefined}

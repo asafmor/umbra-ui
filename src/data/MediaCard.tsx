@@ -18,6 +18,7 @@ import { ListItem } from './ListItem';
 import styles from './MediaCard.module.css';
 import { Tag } from './Tag';
 import { useFitLevel } from '../internal/useFitLevel';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
 interface BlockProps {
   className?: string | undefined;
@@ -28,7 +29,7 @@ interface BlockProps {
 /** The id of the title, so the card is named by it. */
 const TitleId = createContext<string | undefined>(undefined);
 
-export interface MediaCardRootProps extends BlockProps, SlotProps {
+export interface MediaCardRootProps extends BlockProps, SlotProps, RootAttributes {
   /**
    * `hero`: a large image with a large title. `compact`: a small image at the side. `pair`: two sides
    * around a centre, as the `pair` row of `ListItem`.
@@ -64,6 +65,7 @@ function Root({
   const level = useFitLevel(ref, loading ? 0 : 4, variant);
   return (
     <article
+      {...passThrough(slotProps)}
       aria-labelledby={label ? undefined : titleId}
       {...props}
       ref={ref}

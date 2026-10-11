@@ -3,6 +3,7 @@ import type { spaces } from '../styles/tokens.generated';
 import { cx } from '../utils/parts';
 import styles from './layout.module.css';
 import { LayoutProvider, useLayoutParent, useSlot, type SlotProps } from './useSlot';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
 /** A step of the spacing scale (`--umbra-space-<n>`). */
 export type SpaceToken = (typeof spaces)[number];
@@ -10,7 +11,7 @@ export type SpaceToken = (typeof spaces)[number];
 export const gapStyle = (gap: SpaceToken | undefined): CSSProperties | undefined =>
   gap === undefined ? undefined : { gap: `var(--umbra-space-${gap})` };
 
-export interface StackProps extends SlotProps {
+export interface StackProps extends SlotProps, RootAttributes {
   /** Overrides the gap, which otherwise follows the density level. */
   gap?: SpaceToken | undefined;
   /** `collapse` shrinks the lowest-priority cards to their headers when they cannot all fit. */
@@ -27,6 +28,7 @@ export function Stack({ gap, overflow = 'collapse', className, style, children, 
   return (
     <LayoutProvider value={layout.value}>
       <div
+        {...passThrough(slot)}
         {...props}
         ref={ref}
         data-umbra="stack"

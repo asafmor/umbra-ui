@@ -22,6 +22,7 @@ import { cx, renderPart, type Part } from '../utils/parts';
 import { HistoryButtons } from './HistoryButtons';
 import { NavHoldContext } from './nav';
 import styles from './TopBar.module.css';
+import { passThrough, type RootAttributes } from '../utils/passThrough';
 
 interface BlockProps {
   className?: string | undefined;
@@ -45,14 +46,14 @@ const TopBarContext = createContext<TopBarContextValue>({ level: 0, moreLabel: '
 const CONTEXT_STEPS = 2;
 const NavRefContext = createContext<RefObject<HTMLDivElement | null> | null>(null);
 
-export interface TopBarRootProps extends BlockProps {
+export interface TopBarRootProps extends BlockProps, RootAttributes {
   /** Overrides the brand colour for this bar only. Text on it is computed for contrast. */
   brand?: string | undefined;
   /** Accessible name of the menu that holds the actions when they do not fit. */
   moreLabel?: string | undefined;
 }
 
-function Root({ brand, moreLabel = 'More actions', className, style, children }: TopBarRootProps) {
+function Root({ brand, moreLabel = 'More actions', className, style, children, ...rest }: TopBarRootProps) {
   const scope = useScope({ brand });
   const nav = useRef<HTMLDivElement>(null);
   // Whether the nav has moved all it can. A ref, because the nav reports in its
@@ -96,6 +97,7 @@ function Root({ brand, moreLabel = 'More actions', className, style, children }:
             <ContextShrinkContext value={Math.min(taken, CONTEXT_STEPS)}>
               <ForceCollapseContext value={level >= 4}>
                 <header
+                  {...passThrough(rest)}
                   {...scope}
                   ref={root}
                   data-umbra="top-bar"
@@ -219,6 +221,7 @@ function Search({
       <IconButton
         icon={<Icon name="search" />}
         label={label}
+        data-part="search"
         shortcut={shortcut}
         onPress={() => {
           if (palette) change(!open);
