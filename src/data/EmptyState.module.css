@@ -22,6 +22,13 @@
   text-align: center;
 }
 
+/* Safari before 17.6 has no `safe` alignment and would drop the line, leaving the block at the top. */
+@supports not (justify-content: safe center) {
+  .root[data-variant='block'] {
+    justify-content: center;
+  }
+}
+
 .root[data-variant='block'] > * {
   flex: none;
   max-width: 100%;

@@ -32,6 +32,10 @@ const blockNames = (): Plugin => ({
 export default defineConfig({
   plugins: [react(), blockNames()],
   build: {
+    // The minimum browsers of the README. Lightning CSS, which minifies the stylesheet, adds prefixes
+    // and merges rules for these versions, and rewrites what they lack: scripts/check-browsers.mjs
+    // holds the same versions, and fails when they differ or when a rewrite reached the stylesheet.
+    cssTarget: ['chrome117', 'edge117', 'firefox121', 'safari16.2'],
     lib: {
       entry: { index: 'src/index.ts', charts: 'src/charts/index.ts' },
       formats: ['es'],

@@ -119,11 +119,11 @@
 }
 
 .panel[data-side='start'],
-.panel[data-side='end']:dir(rtl) {
+.panel[data-side='end']:is([dir='rtl'], [dir='rtl'] *) {
   --from: calc(-100% * var(--umbra-motion-scale)) 0;
 }
 
-.panel[data-side='start']:dir(rtl) {
+.panel[data-side='start']:is([dir='rtl'], [dir='rtl'] *) {
   --from: calc(100% * var(--umbra-motion-scale)) 0;
 }
 

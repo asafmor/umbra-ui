@@ -216,7 +216,7 @@
   transform-origin: top right;
 }
 
-.root[data-collapsed] .badge:dir(rtl) {
+.root[data-collapsed] .badge:is([dir='rtl'], [dir='rtl'] *) {
   transform-origin: top left;
 }
 

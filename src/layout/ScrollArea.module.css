@@ -105,13 +105,13 @@
 }
 
 /* The start edge is on the right when the direction is right to left. */
-.root[data-axis='horizontal'] > .fade[data-edge='start']:dir(rtl),
-.fade[data-edge='inline-start']:dir(rtl) {
+.root[data-axis='horizontal'] > .fade[data-edge='start']:is([dir='rtl'], [dir='rtl'] *),
+.fade[data-edge='inline-start']:is([dir='rtl'], [dir='rtl'] *) {
   background: linear-gradient(to left, var(--fade), transparent);
 }
 
-.root[data-axis='horizontal'] > .fade[data-edge='end']:dir(rtl),
-.fade[data-edge='inline-end']:dir(rtl) {
+.root[data-axis='horizontal'] > .fade[data-edge='end']:is([dir='rtl'], [dir='rtl'] *),
+.fade[data-edge='inline-end']:is([dir='rtl'], [dir='rtl'] *) {
   background: linear-gradient(to right, var(--fade), transparent);
 }
 
