@@ -481,8 +481,15 @@ test.describe('Time: WeekStrip', () => {
       expect(heights).toHaveLength(21);
       expect(Math.min(...heights), density).toBeGreaterThanOrEqual(24);
       // The mark of hidden items is a button of its own.
-      const mark = await box(page.locator('[data-part="hiddenItems"]'));
-      expect(Math.min(mark.width, mark.height), density).toBeGreaterThanOrEqual(24);
+      // It is drawn as small as its text, and pressed 24 pixels around its middle.
+      const pressed = await page.locator('[data-part="hiddenItems"]').evaluate((mark) => {
+        const { x, y, width, height } = mark.getBoundingClientRect();
+        const [cx, cy] = [x + width / 2, y + height / 2];
+        return [-11.5, 11.5].flatMap((dx) =>
+          [-11.5, 11.5].map((dy) => document.elementFromPoint(cx + dx, cy + dy) === mark),
+        );
+      });
+      expect(pressed, density).toEqual([true, true, true, true]);
     }
     // What is drawn keeps its size: the small slot is 16px at the compact density, in a 24px cell.
     await openStory(page, 'time-weekstrip--changes', { density: 'compact' });

@@ -97,15 +97,13 @@
 }
 
 /*
- * The mark of a day with more items than slots: a button that opens their list. It is 24px to press
- * and takes the room of its line of text only (the margin gives the rest back), so the header of a day
- * is as tall with it as without.
+ * The mark of a day with more items than slots: a button that opens their list. It is drawn as its
+ * text and no larger, so the date beside it keeps its room; what is pressed is 24px around it.
  */
 .hiddenItems {
+  position: relative;
   flex: none;
-  min-width: 24px;
-  height: 24px;
-  margin: calc((1lh - 24px) / 2) 0;
+  margin: 0;
   margin-inline-start: var(--umbra-space-1);
   padding: 0;
   border: 0;
@@ -116,6 +114,16 @@
   font: var(--umbra-font-label);
   font-variant-numeric: tabular-nums;
   cursor: pointer;
+}
+
+.hiddenItems::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: max(100%, 24px);
+  height: 24px;
+  translate: -50% -50%;
 }
 
 .hiddenItems:hover,
