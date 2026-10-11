@@ -1,18 +1,30 @@
 // Pure maths shared by the charts: scales, ticks, formatting, the "show less" levels and label layout.
-// Nothing here touches the DOM, so all of it is unit-tested (src/charts/scales.test.ts).
+// Nothing here touches the DOM (label widths come in as a measurer), so all of it is unit-tested (src/charts/scales.test.ts).
 import { scaleBand, scaleLinear, scalePoint, scaleUtc } from 'd3-scale';
 
+/** The width of a label in pixels, in the chart's font. */
+export type Measure = (text: string) => number;
+
 /**
- * Estimated width of a label, without measuring the DOM. The factor is on the wide side for the body
- * font, so a layout made from it leaves a little room instead of clipping.
+ * The width of a label. With a measurer it is the real width (`measurer` in useChartSize.ts measures
+ * the text in the chart's font). With a font size it is an estimate, for where there is no DOM: the
+ * factor is on the wide side for the body font.
  */
-export const textWidth = (text: string, fontSize: number) => text.length * fontSize * 0.58;
+export const textWidth = (text: string, font: number | Measure) =>
+  typeof font === 'number' ? text.length * font * 0.58 : font(text);
 
 /** Cuts a label to the room it has, ending in an ellipsis. SVG text cannot do this by itself. */
-export function truncate(text: string, room: number, fontSize: number) {
-  if (textWidth(text, fontSize) <= room) return text;
-  const chars = Math.floor(room / (fontSize * 0.58)) - 1;
-  return chars < 1 ? '' : text.slice(0, chars).trimEnd() + '…';
+export function truncate(text: string, room: number, font: number | Measure) {
+  if (textWidth(text, font) <= room) return text;
+  const cut = (chars: number) => text.slice(0, chars).trimEnd() + '…';
+  // The longest cut that fits: widths grow with the number of characters, so search by halves.
+  let [low, high] = [0, text.length - 1];
+  while (low < high) {
+    const middle = Math.ceil((low + high) / 2);
+    if (textWidth(cut(middle), font) <= room) low = middle;
+    else high = middle - 1;
+  }
+  return low < 1 ? '' : cut(low);
 }
 
 /** Keeps at most `max` items, evenly spread and always including the first. */
@@ -94,15 +106,58 @@ export function dateFormat(locale: string | undefined, options?: Intl.DateTimeFo
 }
 
 /**
- * Where the tooltip sits relative to its point, so that it stays inside the plot: above the point
- * unless the point is in the top half, and aligned to the side of the plot the point is on. With the
- * tooltip no wider than two thirds of the plot, it cannot leave it sideways.
+ * Where the tooltip would like to sit relative to its point: above the point unless the point is in
+ * the top half, and aligned to the side of the plot the point is on.
  */
 export function placeTooltip(x: number, y: number, width: number, height: number) {
   return {
     align: x < width / 3 ? ('start' as const) : x > (2 * width) / 3 ? ('end' as const) : ('center' as const),
     side: y < height / 2 ? ('below' as const) : ('above' as const),
   };
+}
+
+export interface Rect {
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
+}
+
+/**
+ * The top left corner of the tooltip, so that it is never cut. It keeps the wanted side and alignment
+ * and stays inside the chart when it fits there. A tooltip larger than the room the chart has leaves
+ * the chart on that side (it is drawn above everything), and one that would leave the window takes
+ * the other side or is moved back in.
+ */
+export function fitTooltip(input: {
+  /** The point, in window pixels. */
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  align: 'start' | 'center' | 'end';
+  side: 'above' | 'below';
+  chart: Rect;
+  window: Rect;
+  /** Distance from the point. */
+  offset?: number;
+}) {
+  const { x, y, width, height, align, chart, window: w, offset = 10 } = input;
+  const into = (value: number, size: number, from: number, to: number) =>
+    Math.max(Math.min(value, to - size), from);
+  let left = align === 'start' ? x : align === 'end' ? x - width : x - width / 2;
+  // Sideways the tooltip is simply moved back in: into the chart when it is narrower, and into the window.
+  if (width <= chart.right - chart.left) left = into(left, width, chart.left, chart.right);
+  left = into(left, width, w.left, w.right);
+
+  type Side = 'above' | 'below';
+  const at = (side: Side) => (side === 'above' ? y - offset - height : y + offset);
+  const fits = (side: Side, box: Rect) =>
+    side === 'above' ? at(side) >= box.top : at(side) + height <= box.bottom;
+  const sides: Side[] = [input.side, input.side === 'above' ? 'below' : 'above'];
+  // Up and down it must not cover the point: a side inside the chart, or else a side inside the window.
+  const side = sides.find((s) => fits(s, chart)) ?? sides.find((s) => fits(s, w)) ?? input.side;
+  return { left, top: into(at(side), height, w.top, w.bottom), side };
 }
 
 /** A point on a circle. Angles are in degrees, clockwise from 12 o'clock. */
@@ -128,6 +183,7 @@ export function polarLayout(
   height: number,
   labels: readonly { text: string; angle: number }[],
   fontSize: number,
+  measure: Measure | number = fontSize,
   gap = 8,
 ) {
   const cx = width / 2;
@@ -143,11 +199,12 @@ export function polarLayout(
     return { text, sin, cos, centred };
   });
   for (const p of parts) {
-    const w = textWidth(p.text, fontSize);
+    const w = textWidth(p.text, measure);
     if (!p.centred) radius = Math.min(radius, (cx - edge - w) / Math.abs(p.sin) - gap);
     // Labels above and below need a line of height; side labels need half a line.
     const room = cy - edge - (p.centred ? line : line / 2);
-    if (Math.abs(p.cos) > 0.01) radius = Math.min(radius, room / Math.abs(p.cos) - (p.centred ? gap : 0));
+    // The gap counts for every label: a side label close to the top is pushed up by it as well.
+    if (Math.abs(p.cos) > 0.01) radius = Math.min(radius, room / Math.abs(p.cos) - gap);
   }
   radius = Math.max(radius, Math.min(width, height) / 4, 0);
   const placed: PolarLabel[] = parts.map((p) => {
@@ -158,7 +215,7 @@ export function polarLayout(
       : cy - (radius + gap) * p.cos + fontSize * 0.35;
     const room = p.centred ? width - 2 * edge : p.sin > 0 ? width - edge - x : x - edge;
     return {
-      text: truncate(p.text, room, fontSize),
+      text: truncate(p.text, room, measure),
       x,
       y,
       anchor: p.centred ? 'middle' : p.sin > 0 ? 'start' : 'end',
@@ -185,6 +242,8 @@ export function cartesianMargins(options: {
   leftLabels: number;
   /** Extra room at the end of the plot, for labels drawn there. */
   endLabels?: number;
+  /** Width of the last label under the plot, which is centred on the plot's end. */
+  endTick?: number;
   /** Room above the plot for value labels. */
   topLabels?: boolean;
   leftTitle?: boolean;
@@ -196,7 +255,7 @@ export function cartesianMargins(options: {
   const labels = level < 2;
   return {
     top: labels && options.topLabels ? fontSize + 8 : 8,
-    right: (labels ? endLabels : 0) + 12,
+    right: Math.max((labels ? endLabels : 0) + 12, (options.endTick ?? 0) / 2 + 2),
     bottom: fontSize + 12 + (options.bottomTitle ? title : 0),
     left: leftLabels + 10 + (options.leftTitle ? title : 0),
   };

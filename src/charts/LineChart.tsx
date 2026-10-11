@@ -31,7 +31,6 @@ import {
   niceDomain,
   numberFormat,
   points as pointScale,
-  textWidth,
   time,
   truncate,
 } from './internal/scales';
@@ -146,7 +145,7 @@ function Root({
   if (kind !== 'category') xs.sort((a, b) => +a - +b);
   const names = xs.map(String);
 
-  const build = ({ width, height, fontSize, level, hidden }: BuildInput): LineModel => {
+  const build = ({ width, height, fontSize, measure, level, hidden }: BuildInput): LineModel => {
     const shown = all.filter((s) => !hidden.includes(s.id));
     const axes = level < 4;
     const numbers = (shown.length ? shown : all).flatMap((s) =>
@@ -160,7 +159,7 @@ function Root({
     const domain = yDomain ?? niceDomain(numbers, area);
     const endRoom =
       common.labels && level < 2
-        ? Math.min(Math.max(...shown.map((s) => textWidth(s.label, fontSize)), 0) + 10, width * 0.3)
+        ? Math.min(Math.max(...shown.map((s) => measure(s.label)), 0) + 10, width * 0.3)
         : 0;
     const margins = (leftLabels: number) =>
       cartesianMargins({
@@ -193,10 +192,8 @@ function Root({
         .map((v) => ({ at: scale(v), label: format(v) }));
       yTicks = yAll;
     }
-    const leftRoom = axes
-      ? Math.min(Math.max(...yTicks.map((t) => textWidth(t.label, fontSize)), 0), width * 0.3)
-      : 0;
-    yTicks = yTicks.map((t) => ({ ...t, label: truncate(t.label, leftRoom, fontSize) }));
+    const leftRoom = axes ? Math.min(Math.max(...yTicks.map((t) => measure(t.label)), 0), width * 0.3) : 0;
+    yTicks = yTicks.map((t) => ({ ...t, label: truncate(t.label, leftRoom, measure) }));
     m = margins(leftRoom);
     const left = m.left;
     const right = Math.max(width - m.right, left + 1);
@@ -223,7 +220,7 @@ function Root({
         xTicks = scale.ticks(count).map((v) => ({ at: scale(v), label: xText(v) }));
       }
     }
-    xTicks = fitTicks(xTicks, right - left, fontSize, true);
+    xTicks = fitTicks(xTicks, right - left, fontSize, true, measure);
 
     const most = Math.max(...shown.map((s) => s.data.length), 1);
     const dense = (right - left) / most < 14;
@@ -264,7 +261,7 @@ function Root({
         points: drawn,
         end:
           endRoom && last
-            ? { x: last.x + 8, y: last.y, text: truncate(s.label, endRoom - 10, fontSize) }
+            ? { x: last.x + 8, y: last.y, text: truncate(s.label, endRoom - 10, measure) }
             : undefined,
       };
     });
@@ -350,7 +347,7 @@ function Series() {
             </g>
           ))}
           {s.end && (
-            <text data-part="series-label" x={s.end.x} y={s.end.y + frame.model.fontSize * 0.35}>
+            <text data-part="seriesLabel" x={s.end.x} y={s.end.y + frame.model.fontSize * 0.35}>
               {s.end.text}
             </text>
           )}

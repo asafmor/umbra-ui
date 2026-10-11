@@ -30,7 +30,6 @@ import {
   niceDomain,
   numberFormat,
   stack,
-  textWidth,
   truncate,
 } from './internal/scales';
 
@@ -136,7 +135,7 @@ function Root({
     ),
   }));
 
-  const build = ({ width, height, fontSize, level, hidden }: BuildInput): BarModel => {
+  const build = ({ width, height, fontSize, measure, level, hidden }: BuildInput): BarModel => {
     const shown = all.filter((s) => !hidden.includes(s.id));
     const axes = level < 4;
     const labelled = !!common.labels && level < 2;
@@ -160,7 +159,7 @@ function Root({
       linear(domain, [0, length]).ticks(
         clamp(Math.floor(length / (horizontal ? fontSize * 5 : fontSize * 3)), 2, 8),
       );
-    const widest = (labels: string[]) => Math.max(...labels.map((l) => textWidth(l, fontSize)), 0);
+    const widest = (labels: string[]) => Math.max(...labels.map((l) => measure(l)), 0);
     const endRoom = labelled && horizontal ? widest(extent.map(format)) + 6 : 0;
     const margins = (leftLabels: number) =>
       cartesianMargins({
@@ -168,6 +167,8 @@ function Root({
         fontSize,
         leftLabels,
         endLabels: endRoom,
+        // The last value of a sideways chart is written under the end of the plot.
+        endTick: horizontal && axes ? measure(format(domain[1])) : 0,
         topLabels: (labelled && !horizontal) || (horizontal && labelsAbove(annotations, () => true)),
         leftTitle: !!yTitle,
         bottomTitle: !!xTitle,
@@ -221,7 +222,7 @@ function Root({
           anchor: down ? 'end' : 'start',
           text,
         });
-      else if (textWidth(text, fontSize) <= size + 6)
+      else if (measure(text) <= size + 6)
         labels.push({ x: at, y: end + (down ? fontSize + 2 : -5), anchor: 'middle', text });
     };
     categories.forEach((category, c) => {
@@ -280,7 +281,7 @@ function Root({
       .map((v) => ({ at: value(v), label: format(v) }));
     const categoryTicks: AxisTick[] = categories.map((c) => ({
       at: band(c) + band.width / 2,
-      label: horizontal ? truncate(c, leftRoom, fontSize) : c,
+      label: horizontal ? truncate(c, leftRoom, measure) : c,
     }));
 
     return {
@@ -288,8 +289,8 @@ function Root({
       box: { left, top, right, bottom },
       axes,
       xTicks: horizontal
-        ? fitTicks(valueTicks, right - left, fontSize, true)
-        : fitTicks(categoryTicks, right - left, fontSize, true),
+        ? fitTicks(valueTicks, right - left, fontSize, true, measure)
+        : fitTicks(categoryTicks, right - left, fontSize, true, measure),
       yTicks: horizontal ? fitTicks(categoryTicks, bottom - top, fontSize, false) : valueTicks,
       gridX: horizontal ? valueTicks.map((t) => t.at) : [],
       gridY: horizontal ? [] : valueTicks.map((t) => t.at),
@@ -385,7 +386,7 @@ function Bars() {
 function ValueLabels() {
   const { model } = useFrame<BarModel>();
   return (
-    <g data-part="value-labels">
+    <g data-part="valueLabels">
       {model.labels.map((l, i) => (
         <text key={i} className={styles.valueLabel} x={l.x} y={l.y} textAnchor={l.anchor}>
           {l.text}

@@ -117,7 +117,7 @@ function Root({
       : `${format(d.value)} (${percent(total ? d.value / total : 0)})`;
   const fullTotal = single ? max : sum(all);
 
-  const build = ({ width, height, fontSize, level, hidden }: BuildInput): DonutModel => {
+  const build = ({ width, height, fontSize, measure, level, hidden }: BuildInput): DonutModel => {
     const shown = all.filter((d) => !hidden.includes(d.id));
     const total = single ? max : sum(shown);
     // First the angles, to know where labels go; then the radius that leaves room for them.
@@ -133,7 +133,7 @@ function Root({
             : [],
         )
       : [];
-    const layout = polarLayout(width, height, wanted, fontSize);
+    const layout = polarLayout(width, height, wanted, fontSize, measure);
     const outer = Math.max(layout.radius - (labelled ? 0 : 1), 0);
     const inner = Math.max(outer - (thickness ?? donutThickness(outer)), 0);
     const arcs = donutArcs(
@@ -256,12 +256,12 @@ function Center({ value, label }: DonutChartCenterProps) {
     <foreignObject x={model.cx - side / 2} y={model.cy - side / 2} width={side} height={side}>
       <div data-part="center" className={styles.center} style={{ ['--inner' as string]: `${side}px` }}>
         {value != null && (
-          <span data-part="center-value" className={styles.centerValue}>
+          <span data-part="centerValue" className={styles.centerValue}>
             {value}
           </span>
         )}
         {label != null && level < 2 && side >= 72 && (
-          <span data-part="center-label" className={styles.centerLabel}>
+          <span data-part="centerLabel" className={styles.centerLabel}>
             {label}
           </span>
         )}

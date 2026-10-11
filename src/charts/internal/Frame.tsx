@@ -17,8 +17,8 @@ import { heightProps } from '../../internal/height';
 import { SeriesMarker, type SeriesMarkerKind } from '../../internal/SeriesMarker';
 import { cx, renderPart, type Part } from '../../utils/parts';
 import styles from '../Chart.module.css';
-import { levelFor, placeTooltip } from './scales';
-import { useChartSize } from './useChartSize';
+import { levelFor, placeTooltip, type Measure } from './scales';
+import { measurer, useChartSize } from './useChartSize';
 
 /** One data point, as the app receives it in `onPointPress`. */
 export interface ChartPoint {
@@ -144,6 +144,8 @@ export interface BuildInput {
   width: number;
   height: number;
   fontSize: number;
+  /** The width of a label in the chart's font. */
+  measure: Measure;
   level: number;
   hidden: readonly string[];
 }
@@ -153,6 +155,7 @@ interface FrameValue {
   width: number;
   height: number;
   fontSize: number;
+  measure: Measure;
   level: number;
   uid: string;
   active: PointModel | null;
@@ -293,7 +296,8 @@ export function Frame<M extends FrameModel>({
   const showLegend = legendNode != null && legendNode !== false;
 
   const drawn = !state && plot.width > 0 && plot.height > 0;
-  const model = drawn ? build({ ...plot, level, hidden }) : null;
+  const measure = measurer(plot.font, plot.fontSize);
+  const model = drawn ? build({ ...plot, measure, level, hidden }) : null;
   const rows = model?.rows.filter((row) => row.length) ?? [];
   const all = rows.flat();
   const active = (activeKey && all.find((p) => p.key === activeKey.key)) || null;
@@ -390,7 +394,7 @@ export function Frame<M extends FrameModel>({
       )}
       <div ref={plotRef} className={styles.plot} data-part="plot">
         {state === 'loading' && (
-          <div className={styles.state} aria-hidden="true">
+          <div className={styles.state} data-part="skeleton" aria-hidden="true">
             {renderPart(parts?.skeleton, {}, () => skeleton)}
           </div>
         )}
@@ -425,7 +429,9 @@ export function Frame<M extends FrameModel>({
           >
             <svg width={plot.width} height={plot.height} role="presentation" className={styles.svg}>
               <FrameContext
-                value={{ model, ...plot, level, uid, active, highlight, pointProps } satisfies FrameValue}
+                value={
+                  { model, ...plot, measure, level, uid, active, highlight, pointProps } satisfies FrameValue
+                }
               >
                 <g key={signature} className={styles.draw}>
                   {children}
@@ -490,7 +496,7 @@ export function Frame<M extends FrameModel>({
 /** The outline of the hovered or focused point: the focus ring when it was reached by keyboard. */
 function Ring({ point, keyboard }: { point: PointModel; keyboard: boolean }) {
   const o = point.outline;
-  const props = { className: styles.ring, 'data-part': 'focus-ring', 'data-keyboard': keyboard || undefined };
+  const props = { className: styles.ring, 'data-part': 'focusRing', 'data-keyboard': keyboard || undefined };
   if (o.type === 'circle') return <circle cx={point.x} cy={point.y} r={o.r + 3} {...props} />;
   if (o.type === 'path') return <path d={o.d} transform={o.transform} {...props} />;
   return <rect x={o.x - 2} y={o.y - 2} width={o.width + 4} height={o.height + 4} rx={3} {...props} />;

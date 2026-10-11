@@ -16,7 +16,7 @@ const tile = (page: Page, id: string) => page.locator(`[data-tile="${id}"] figur
 const sized = (page: Page, size: string, nth = 0) => page.locator(`[data-size="${size}"] figure`).nth(nth);
 const marks = (chart: Locator) => chart.getByRole('listbox');
 const tooltip = (chart: Locator) => chart.locator('[data-part="tooltip"]');
-const ring = (chart: Locator) => chart.locator('[data-part="focus-ring"]');
+const ring = (chart: Locator) => chart.locator('[data-part="focusRing"]');
 /** The accessible name of the point the arrow keys are on. */
 const current = async (chart: Locator) => {
   const id = await marks(chart).getAttribute('aria-activedescendant');
@@ -144,10 +144,10 @@ test.describe('LineChart', () => {
       return {
         level: await chart.getAttribute('data-level'),
         legend: await has(chart, 'legend').count(),
-        labels: await has(chart, 'series-label').count(),
-        titles: await chart.locator('[data-part="x-title"], [data-part="y-title"]').count(),
+        labels: await has(chart, 'seriesLabel').count(),
+        titles: await chart.locator('[data-part="xTitle"], [data-part="yTitle"]').count(),
         axes: await has(chart, 'axes').count(),
-        ticks: await chart.locator('[data-part="x-ticks"] text').count(),
+        ticks: await chart.locator('[data-part="xTicks"] text').count(),
       };
     };
     expect(await parts('420x270')).toEqual({
@@ -199,7 +199,7 @@ test.describe('LineChart', () => {
     await expect(tile(page, 'missing').getByRole('option', { name: /^Sensor 1/ })).toHaveCount(8);
     // The ordinal axis names its levels, and points carry their own shape.
     const ordinal = tile(page, 'ordinal');
-    await expect(ordinal.locator('[data-part="y-ticks"] text')).toHaveText(['Tier C', 'Tier B', 'Tier A']);
+    await expect(ordinal.locator('[data-part="yTicks"] text')).toHaveText(['Tier C', 'Tier B', 'Tier A']);
     await expect(ordinal.getByRole('option', { name: 'Service level, 2019: Tier C' })).toHaveCount(1);
     await expect(ordinal.locator('[data-shape="triangle"]')).toHaveCount(3);
   });
@@ -340,10 +340,10 @@ test.describe('BarChart', () => {
       return {
         level: await chart.getAttribute('data-level'),
         legend: await has(chart, 'legend').count(),
-        labels: await chart.locator('[data-part="value-labels"] text').count(),
-        titles: await chart.locator('[data-part="x-title"], [data-part="y-title"]').count(),
+        labels: await chart.locator('[data-part="valueLabels"] text').count(),
+        titles: await chart.locator('[data-part="xTitle"], [data-part="yTitle"]').count(),
         axes: await has(chart, 'axes').count(),
-        ticks: await chart.locator('[data-part="x-ticks"] text').count(),
+        ticks: await chart.locator('[data-part="xTicks"] text').count(),
       };
     };
     expect(await parts('420x270')).toEqual({
@@ -366,8 +366,8 @@ test.describe('BarChart', () => {
     });
     expect(await parts('140x80')).toMatchObject({ level: '4', legend: 0, labels: 0, titles: 0, axes: 0 });
     // Horizontal: the category labels on the left thin out as the chart gets shorter.
-    const tall = sized(page, '330x230', 1).locator('[data-part="y-ticks"] text');
-    const short = sized(page, '210x120').locator('[data-part="y-ticks"] text');
+    const tall = sized(page, '330x230', 1).locator('[data-part="yTicks"] text');
+    const short = sized(page, '210x120').locator('[data-part="yTicks"] text');
     await expect(tall).toHaveCount(8);
     await expect(short).toHaveCount(4);
   });
@@ -377,7 +377,7 @@ test.describe('BarChart', () => {
   }) => {
     await open(page, 'charts-barchart--variants');
     // Stacked: the label is the total of the stack.
-    await expect(tile(page, 'stacked').locator('[data-part="value-labels"] text')).toHaveText([
+    await expect(tile(page, 'stacked').locator('[data-part="valueLabels"] text')).toHaveText([
       '84',
       '92',
       '101',
@@ -388,7 +388,7 @@ test.describe('BarChart', () => {
     const up = (await diverging.getByRole('option', { name: 'Inbound, Jan: 14' }).boundingBox())!;
     const down = (await diverging.getByRole('option', { name: 'Outbound, Jan: 3' }).boundingBox())!;
     expect(down.y).toBeGreaterThanOrEqual(up.y + up.height - 1);
-    await expect(diverging.locator('[data-part="y-ticks"] text').first()).not.toContainText('-');
+    await expect(diverging.locator('[data-part="yTicks"] text').first()).not.toContainText('-');
     // By sign: negative bars are striped as well as red.
     const sign = tile(page, 'sign');
     await expect(sign.locator('[data-pattern="stripes"]')).toHaveCount(2);
@@ -443,8 +443,8 @@ test.describe('DonutChart', () => {
         level: await chart.getAttribute('data-level'),
         legend: await has(chart, 'legend').count(),
         labels: await chart.locator('[data-part="labels"] text').count(),
-        caption: await has(chart, 'center-label').count(),
-        value: await has(chart, 'center-value').count(),
+        caption: await has(chart, 'centerLabel').count(),
+        value: await has(chart, 'centerValue').count(),
       };
     };
     expect(await parts('320x260')).toEqual({ level: '0', legend: 1, labels: 4, caption: 1, value: 1 });
@@ -452,9 +452,9 @@ test.describe('DonutChart', () => {
     expect(await parts('110x100')).toEqual({ level: '2', legend: 0, labels: 0, caption: 0, value: 1 });
     expect(await parts('56x56')).toEqual({ level: '3', legend: 0, labels: 0, caption: 0, value: 0 });
     // The single-value ring of the source: about 80px, with its percentage inside.
-    await expect(has(sized(page, '80x80'), 'center-value')).toHaveText('81%');
-    await inside(has(sized(page, '80x80'), 'center-value'), sized(page, '80x80'));
-    await expect(has(sized(page, '48x48'), 'center-value')).toHaveCount(0);
+    await expect(has(sized(page, '80x80'), 'centerValue')).toHaveText('81%');
+    await inside(has(sized(page, '80x80'), 'centerValue'), sized(page, '80x80'));
+    await expect(has(sized(page, '48x48'), 'centerValue')).toHaveCount(0);
     await expect(sized(page, '48x48').getByRole('option')).toHaveAccessibleName(/81%/);
   });
 });
@@ -492,24 +492,25 @@ test.describe('RadarChart', () => {
     await open(page, 'charts-radarchart--shrink');
     const parts = async (size: string) => {
       const chart = sized(page, size);
-      for (const label of await chart.locator('[data-part="axis-labels"] text').all())
+      for (const label of await chart.locator('[data-part="axisLabels"] text').all())
         await inside(label, chart);
       return {
         level: await chart.getAttribute('data-level'),
         legend: await has(chart, 'legend').count(),
-        values: await has(chart, 'value-label').count(),
-        labels: await chart.locator('[data-part="axis-labels"] text').count(),
+        values: await has(chart, 'valueLabel').count(),
+        labels: await chart.locator('[data-part="axisLabels"] text').count(),
       };
     };
     expect(await parts('380x300')).toEqual({ level: '0', legend: 1, values: 8, labels: 8 });
-    expect(await parts('280x230')).toEqual({ level: '1', legend: 0, values: 7, labels: 8 });
+    // Measured in the chart's font, all eight names fit with their values here.
+    expect(await parts('280x230')).toEqual({ level: '1', legend: 0, values: 8, labels: 8 });
     expect(await parts('210x170')).toEqual({ level: '2', legend: 0, values: 0, labels: 8 });
     expect(await parts('140x120')).toEqual({ level: '3', legend: 0, values: 0, labels: 0 });
     expect(await parts('56x56')).toEqual({ level: '3', legend: 0, values: 0, labels: 0 });
     // Labels too long for their room end in an ellipsis instead of leaving the chart.
     const long = sized(page, '230x200');
-    await expect(long.locator('[data-part="axis-labels"] text').first()).toContainText('…');
-    for (const label of await long.locator('[data-part="axis-labels"] text').all()) await inside(label, long);
+    await expect(long.locator('[data-part="axisLabels"] text').first()).toContainText('…');
+    for (const label of await long.locator('[data-part="axisLabels"] text').all()) await inside(label, long);
   });
 });
 
@@ -562,5 +563,52 @@ test.describe('height', () => {
     const inPanel = page.getByRole('figure', { name: 'Chart in a panel' });
     expect(await plot(inPanel)).toBe(240);
     await expect(marks(inPanel).getByRole('option')).toHaveCount(6);
+  });
+});
+
+/** Every label drawn in a chart that sticks out of its drawing, with how far on each side. */
+const cutLabels = (page: Page) =>
+  page.evaluate(() =>
+    [...document.querySelectorAll('figure svg text')].flatMap((text) => {
+      const svg = text.closest('svg')!.getBoundingClientRect();
+      const box = text.getBoundingClientRect();
+      const out = Math.max(
+        svg.left - box.left,
+        box.right - svg.right,
+        svg.top - box.top,
+        box.bottom - svg.bottom,
+      );
+      return out > 0.5 ? [`${text.textContent}: ${out.toFixed(1)}px`] : [];
+    }),
+  );
+
+test.describe('labels are measured in the chart’s font, so none is cut (C2, C3, C11)', () => {
+  for (const chart of ['barchart', 'donutchart', 'linechart', 'radarchart']) {
+    test(`${chart}: at every size and density`, async ({ page }) => {
+      test.setTimeout(90_000);
+      for (const [width, height] of [
+        [1024, 600],
+        [1280, 720],
+        [1920, 1080],
+      ] as const) {
+        for (const density of ['compact', 'default', 'spacious']) {
+          await open(page, `charts-${chart}--variants&globals=density:${density}`, width, height);
+          await expect(page.locator('figure svg').first()).toBeAttached();
+          expect(await cutLabels(page), `${width}x${height} ${density}`).toEqual([]);
+        }
+      }
+    });
+  }
+
+  test('the last value under a sideways bar chart has room, and stays on its grid line', async ({ page }) => {
+    await open(page, 'charts-barchart--variants', 1024, 600);
+    const chart = tile(page, 'thresholds');
+    const last = has(chart, 'xTicks').locator('text').last();
+    await expect(last).toHaveText('100%');
+    const [label, svg] = [(await last.boundingBox())!, (await chart.locator('svg').boundingBox())!];
+    expect(label.x + label.width).toBeLessThanOrEqual(svg.x + svg.width);
+    // Centred on the end of the plot, where the last grid line is.
+    const line = (await has(chart, 'grid').locator('line').last().boundingBox())!;
+    expect(Math.abs(label.x + label.width / 2 - line.x)).toBeLessThan(1.5);
   });
 });

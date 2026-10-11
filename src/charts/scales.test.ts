@@ -5,6 +5,7 @@ import {
   bands,
   cartesianMargins,
   dateFormat,
+  fitTooltip,
   labelsThatFit,
   levelFor,
   linear,
@@ -88,6 +89,31 @@ test('labels are truncated to their room', () => {
   expect(truncate('Anything', 5, 12)).toBe('');
 });
 
+test('labels are measured, not estimated, when a measurer is given', () => {
+  // A font in which every character is 10px wide, and a percent sign 20px.
+  const measure = (text: string) => [...text].reduce((w, c) => w + (c === '%' ? 20 : 10), 0);
+  expect(textWidth('100%', measure)).toBe(50);
+  expect(truncate('100%', 50, measure)).toBe('100%');
+  // The cut is the longest that fits with its ellipsis.
+  expect(truncate('Region 12', 60, measure)).toBe('Regio…');
+  expect(truncate('Region 12', 19, measure)).toBe('');
+  // The last label under a sideways chart is centred on the plot's end: half of it needs room.
+  const margins = cartesianMargins({ level: 0, fontSize: 12, leftLabels: 0, endTick: measure('100%') });
+  expect(margins.right).toBe(27);
+  expect(cartesianMargins({ level: 0, fontSize: 12, leftLabels: 0 }).right).toBe(12);
+});
+
+test('a side label close to the top of a ring stays inside the box (C3)', () => {
+  const measure = (text: string) => text.length * 7;
+  const fontSize = 14;
+  for (const angle of [12, 15, 20, 340, 345, 348, 160, 195]) {
+    const { labels } = polarLayout(560, 480, [{ text: 'Other 8%', angle }], fontSize, measure);
+    // The text reaches about three quarters of the font size above its baseline, and a quarter below.
+    expect(labels[0]!.y - fontSize * 0.75).toBeGreaterThanOrEqual(0);
+    expect(labels[0]!.y + fontSize * 0.25).toBeLessThanOrEqual(480);
+  }
+});
+
 test('the level rises as the width or the height falls below each threshold', () => {
   const widths = [360, 280, 220, 150];
   const heights = [240, 190, 150, 100];
@@ -121,6 +147,37 @@ test('the tooltip flips at the edges of the plot', () => {
   expect(placeTooltip(10, 150, 300, 200)).toEqual({ align: 'start', side: 'above' });
   expect(placeTooltip(150, 150, 300, 200)).toEqual({ align: 'center', side: 'above' });
   expect(placeTooltip(290, 20, 300, 200)).toEqual({ align: 'end', side: 'below' });
+});
+
+test('the tooltip is never cut: it stays in the chart when it fits, and leaves it when it does not', () => {
+  const window = { left: 0, top: 0, right: 1000, bottom: 600 };
+  const chart = { left: 100, top: 200, right: 500, bottom: 308 };
+  const base = { width: 120, height: 40, chart, window };
+  // Room above the point inside the chart.
+  expect(fitTooltip({ ...base, x: 300, y: 290, align: 'center', side: 'above' })).toEqual({
+    left: 240,
+    top: 240,
+    side: 'above',
+  });
+  // No room above in the chart, room below: the other side.
+  expect(fitTooltip({ ...base, x: 300, y: 230, align: 'center', side: 'above' }).side).toBe('below');
+  // Taller than the chart has room for on either side (74px in a 108px chart): it leaves the chart, whole.
+  const tall = fitTooltip({ ...base, height: 74, x: 300, y: 250, align: 'center', side: 'above' });
+  expect(tall).toEqual({ left: 240, top: 166, side: 'above' });
+  // At the top of the window it goes below the point instead.
+  const top = fitTooltip({
+    ...base,
+    height: 74,
+    chart: { ...chart, top: 10, bottom: 118 },
+    x: 300,
+    y: 60,
+    align: 'center',
+    side: 'above',
+  });
+  expect(top).toEqual({ left: 240, top: 70, side: 'below' });
+  // Sideways it is moved back into the chart, or into the window when it is wider than the chart.
+  expect(fitTooltip({ ...base, x: 490, y: 290, align: 'center', side: 'above' }).left).toBe(380);
+  expect(fitTooltip({ ...base, width: 450, x: 120, y: 290, align: 'end', side: 'above' }).left).toBe(0);
 });
 
 test('polar coordinates start at 12 o’clock and go clockwise', () => {
