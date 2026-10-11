@@ -11,7 +11,7 @@ A coloured chip for one entry of a schedule: an icon and a label, coloured by a 
 - A category label that is not an entry in time: use `Tag`.
 - A status with a dot: use `StatusIndicator`.
 - A number coloured by how good it is: use `ValuePill`.
-- An entry with several fields (the source's fixture chip with two codes and a side): compose it from the blocks, or give the `slot` part of the holder your own node.
+- An entry with several fields (the source has one with two codes and a side): compose it from the blocks, or give the `slot` part of the holder your own node.
 
 ## Evidence
 
@@ -58,7 +58,7 @@ States: hover and pressed (button and link), focus (ring drawn inwards), `select
 | `size` | `default` \| `small` | `default` | |
 | `display` | `auto` \| `full` \| `icon` | `auto` | |
 | `fullWidth` | boolean | `false` | Fills its container |
-| `selected` / `selectedLabel` | boolean / string | `false` / "Selected" | |
+| `selected` / `selectedLabel` | boolean / string | `false` / "Selected" | The word is said after the label, and after `aria-label` when the app names the slot |
 | `disabled` | boolean | `false` | |
 | `onPress` | function | — | Makes it a button |
 | `href` / `renderLink` | string / function | — | Makes it a link; `renderLink` receives `LinkRenderProps` |
@@ -101,4 +101,11 @@ Resolved 2026-10-11 (under the owner's delegation):
 - **The stripe look** of the reference is `filled`; the source's outlined squares are `outlined`; rest and travel are `empty`.
 - **Icon only is CSS**: the label is taken out of sight by a container query, not by measuring, so a strip of 21 slots costs nothing as it resizes. The 64px limit is fixed in the stylesheet (a container query cannot read a token).
 - **Selected is a ring, not violet**: the fill already carries the category, so a second fill would hide it. The ring is a shape, which is the cue that is not colour.
-- **The source's multi-field fixture chip is not a variant**: it is domain-specific. The blocks and the holders' `slot` part cover it.
+- **The source's chip with several fields is not a variant**: it is domain-specific. The blocks and the holders' `slot` part cover it.
+
+Resolved in the fix pass of review 1 (2026-10-11):
+
+- **A selected slot with `aria-label` says that it is selected** (T-8): the name replaces the content, so `selectedLabel` is added to it ("Workshop, Selected").
+- **`--umbra-schedule-slot-font` resizes the small slot too** (T-10): the smaller font of `size="small"` is the default of the token, not a size set after it.
+- **Where an item is placed** (T-7; `placeItems`): an item takes the slot it names when that is one of the day's slots (a whole number from 0, under `slotsPerDay`) and free. Any other item takes the first free slot: one without `slot`, one past the last line, one that is not a whole number, one whose slot is taken. An item is counted as hidden ("+N") only when its day is full.
+- **An item whose `date` is not a date is left out**, with a warning in development (`plan/specs/Planner.md`, "Dates").

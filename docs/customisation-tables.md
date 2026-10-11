@@ -1051,7 +1051,7 @@ A pill with the number of a day: the header of a day in a `WeekStrip` or a `Plan
 |---|---|
 | `--umbra-date-chip-bg` | `color-mix(in oklab, var(--umbra-color-base-text-primary) 10%, transparent)` |
 | `--umbra-date-chip-fg` | `--umbra-color-base-text-primary` (#f5f3f8) |
-| `--umbra-date-chip-font` | `--umbra-font-label` |
+| `--umbra-date-chip-font` | `var(--font)` |
 | `--umbra-date-chip-height` | `calc(var(--umbra-density-label-size) + 10px)` or `calc(var(--umbra-density-label-size) + 4px)` |
 | `--umbra-date-chip-outside-bg` | `transparent` |
 | `--umbra-date-chip-outside-fg` | `--umbra-color-base-text-muted` (#948da2) |
@@ -2916,7 +2916,7 @@ A coloured chip for one entry of a schedule: an icon and a label, coloured by it
 | `--umbra-schedule-slot-bg` | `var(--fill)` |
 | `--umbra-schedule-slot-border` | `var(--line)` |
 | `--umbra-schedule-slot-fg` | `var(--ink)` |
-| `--umbra-schedule-slot-font` | `--umbra-font-label` |
+| `--umbra-schedule-slot-font` | `var(--font)` |
 | `--umbra-schedule-slot-gap` | `--umbra-space-2` (4px) |
 | `--umbra-schedule-slot-height` | `calc(var(--umbra-density-table-row) + 2px)` or `max(16px, calc(var(--umbra-density-table-row) - 6px))` |
 | `--umbra-schedule-slot-padding-x` | `--umbra-space-3` (8px) or `--umbra-space-2` (4px) |

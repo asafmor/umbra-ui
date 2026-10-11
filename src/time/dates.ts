@@ -11,6 +11,7 @@ import {
   startOfWeek as startOfWeekOf,
   today as todayIn,
 } from '@internationalized/date';
+import { warn } from '../utils/dev';
 
 /** A day as text: `'2026-10-11'`. */
 export type IsoDate = string;
@@ -22,7 +23,10 @@ export type WeekdayFormat = 'long' | 'short' | 'narrow';
 
 const dayNames = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const;
 
-/** Parses a day; an invalid text is an error that names the value, not a wrong date. */
+/**
+ * Parses a day; an invalid text is an error that names the value, not a wrong date. What an app gives
+ * never gets here unchecked: the components pass it through `validDate` first.
+ */
 const parse = (date: IsoDate): CalendarDate => {
   try {
     return parseDate(date);
@@ -40,6 +44,28 @@ export const isIsoDate = (value: unknown): value is IsoDate => {
     return false;
   }
 };
+
+/** A month, `'2026-10'`. A whole day is taken as its month. */
+export const isIsoMonth = (value: unknown): value is IsoMonth =>
+  typeof value === 'string' && (/^\d{4}-\d{2}$/.test(value) ? isIsoDate(`${value}-01`) : isIsoDate(value));
+
+const warned = new Set<string>();
+/**
+ * The one rule for a date or a month an app gives that is not one (plan/specs/Planner.md, "Dates"):
+ * never an error on the screen and never a wrong date. The value comes back as `undefined`, for the
+ * caller's fallback, and development builds say so once.
+ */
+export function validDate<T extends string | null | undefined>(
+  value: T,
+  name: string,
+  kind: 'date' | 'month' = 'date',
+): T | undefined {
+  if (value == null || (kind === 'month' ? isIsoMonth(value) : isIsoDate(value))) return value;
+  const message = `${name}: "${value}" is not a ${kind} (expected the form ${kind === 'month' ? '2026-10' : '2026-10-11'}). It is ignored.`;
+  if (!warned.has(message)) warn(message);
+  warned.add(message);
+  return undefined;
+}
 
 /** The current day where the user is. */
 export const todayIso = (): IsoDate => todayIn(getLocalTimeZone()).toString();
