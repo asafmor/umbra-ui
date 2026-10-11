@@ -842,8 +842,10 @@ const SELECT = '__select';
 const EXPAND = '__expand';
 const GROUP = '__group';
 const UTILITY_WIDTH = 40;
-/** Rows rendered above and below the visible ones. */
+/** Rows rendered beyond the visible ones, on the side the table is not scrolling towards. */
 const OVERSCAN = 8;
+/** The rendered rows are renewed when the window has moved by this many rows. */
+const OVERSCAN_STEP = 4;
 /** `virtualize="auto"` starts above this many rows. */
 const VIRTUAL_FROM = 200;
 
@@ -1075,7 +1077,8 @@ export function DataTable<Row>({
   const [expanded, setExpanded] = useState<string[]>([]);
   const [size, setSize] = useState<{ width: number; height: number } | null>(null);
   const [widthMetrics, setWidthMetrics] = useState(defaultWidthMetrics);
-  const [scrollTop, setScrollTop] = useState(0);
+  // Where the window of rendered rows was last taken, and which way the table was scrolling then.
+  const [scroll, setScroll] = useState({ top: 0, direction: 0 });
   const [metrics, setMetrics] = useState({
     row: 26,
     group: 30,
@@ -1191,26 +1194,38 @@ export function DataTable<Row>({
     ],
     [columns, groupKey],
   );
+  // The engine's state keeps its identity while nothing in it changes: the engine sorts and groups
+  // again whenever it is handed a new array, and the table renders on every scroll step.
+  const sorting = useMemo(
+    () => sort.map(({ id, direction }) => ({ id, desc: direction === 'desc' })),
+    [sort],
+  );
+  const columnVisibility = useMemo(
+    () => Object.fromEntries([...(hiddenKey ? hiddenKey.split('\n') : []), GROUP].map((id) => [id, false])),
+    [hiddenKey],
+  );
+  const rowSelection = useMemo(
+    () => Object.fromEntries(selectedIds.map((id) => [id, true as const])),
+    [selectedIds],
+  );
+  const grouping = useMemo(() => (groupKey ? [GROUP] : []), [groupKey]);
+  const engineState = useMemo(
+    () => ({ sorting, columnVisibility, rowSelection, grouping }),
+    [sorting, columnVisibility, rowSelection, grouping],
+  );
   // The engine wants rows that are objects; the cast only narrows the type it sees.
   const table = useTable<typeof features, Row & RowData>({
     features,
     data: data as (Row & RowData)[],
     columns: defs,
     getRowId,
-    state: {
-      sorting: sort.map(({ id, direction }) => ({ id, desc: direction === 'desc' })),
-      columnVisibility: Object.fromEntries([...fit.hidden, GROUP].map((id) => [id, false])),
-      rowSelection: Object.fromEntries(selectedIds.map((id) => [id, true as const])),
-      grouping: groupKey ? [GROUP] : [],
-    },
+    state: engineState,
     onSortingChange: (updater) => {
-      const current = sort.map(({ id, direction }) => ({ id, desc: direction === 'desc' }));
-      const next = typeof updater === 'function' ? updater(current) : updater;
+      const next = typeof updater === 'function' ? updater(sorting) : updater;
       setSort(next.map(({ id, desc }) => ({ id, direction: desc ? 'desc' : 'asc' })));
     },
     onRowSelectionChange: (updater) => {
-      const current = Object.fromEntries(selectedIds.map((id) => [id, true as const]));
-      const next = typeof updater === 'function' ? updater(current) : updater;
+      const next = typeof updater === 'function' ? updater(rowSelection) : updater;
       setSelectedIds(Object.keys(next).filter((id) => next[id]));
     },
     manualSorting,
@@ -1260,7 +1275,10 @@ export function DataTable<Row>({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- `data[0]` only decides the default alignment
   }, [columns, fit, selectable, showExpander, data[0]]);
   const totalWidth = size ? cols.reduce((sum, c) => sum + c.width, 0) : undefined;
-  const hiddenColumns = columns.filter((column) => fit.hidden.includes(column.id));
+  const hiddenColumns = useMemo(
+    () => columns.filter((column) => fit.hidden.includes(column.id)),
+    [columns, fit],
+  );
 
   useEffect(() => {
     if (size) onHiddenColumnsChange?.(hiddenKey ? hiddenKey.split('\n') : []);
@@ -1331,23 +1349,43 @@ export function DataTable<Row>({
   );
   const indexByKey = useMemo(() => new Map(items.map((item, index) => [item.key, index])), [items]);
   const viewHeight = size?.height ?? 600;
-  const range = !virtual
-    ? { start: 0, end: items.length }
-    : windowRange(offsets, scrollTop - metrics.head, viewHeight, OVERSCAN);
+  // One more screen of rows is rendered in the direction of travel, so a fast scroll does not outrun them.
+  const ahead = Math.max(OVERSCAN, Math.ceil(viewHeight / metrics.row));
+  const windowAt = (top: number, direction: number) =>
+    windowRange(
+      offsets,
+      top - metrics.head,
+      viewHeight,
+      direction < 0 ? ahead : OVERSCAN,
+      direction > 0 ? ahead : OVERSCAN,
+    );
+  const range = !virtual ? { start: 0, end: items.length } : windowAt(scroll.top, scroll.direction);
 
   useEffect(() => {
     const el = viewport();
     if (!el || !virtual) return;
-    const onScroll = () => {
+    let last = el.scrollTop;
+    const update = (sync: boolean) => {
+      const direction = Math.sign(el.scrollTop - last) || scroll.direction;
+      last = el.scrollTop;
       // The same height the render used. With the viewport's own height, a table measured while its
       // tab panel was still hidden would never agree with the render, and update without end.
-      const next = windowRange(offsets, el.scrollTop - metrics.head, viewHeight, OVERSCAN);
-      if (next.start !== range.start || next.end !== range.end) setScrollTop(el.scrollTop);
+      const next = windowAt(el.scrollTop, direction);
+      // A few rows at a time: a render per row is wasted work, and a screen of rows at once is a long frame.
+      const count = offsets.length - 1;
+      const moved = (a: number, b: number, edge: number) =>
+        Math.abs(a - b) >= OVERSCAN_STEP || (a !== b && a === edge);
+      if (!moved(next.start, range.start, 0) && !moved(next.end, range.end, count)) return;
+      // In a scroll event the rows are rendered before the frame is painted, so no gap is ever shown.
+      if (sync) flushSync(() => setScroll({ top: el.scrollTop, direction }));
+      else setScroll({ top: el.scrollTop, direction });
     };
-    onScroll();
+    const onScroll = () => update(true);
+    update(false);
     el.addEventListener('scroll', onScroll, { passive: true });
     return () => el.removeEventListener('scroll', onScroll);
-  }, [virtual, offsets, metrics.head, viewHeight, range.start, range.end]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `windowAt` is made from the values listed
+  }, [virtual, offsets, metrics.head, viewHeight, ahead, range.start, range.end, scroll.direction]);
 
   // Row heights are read from the rows themselves, so density, tokens and tall cell content are all
   // taken into account. Every row is assumed to be as tall as the first; detail rows are measured one by one.
@@ -1376,34 +1414,35 @@ export function DataTable<Row>({
 
   const headKeys = [...(columnGroups?.length ? ['head-groups'] : []), 'head'];
   const hasFooter = cols.some((c) => c.def?.footer !== undefined);
+  // The key of every row, for the keyboard: built once per display list, not per scroll step.
+  const allKeys = useMemo(
+    () => [
+      ...(columnGroups?.length ? ['head-groups'] : []),
+      'head',
+      ...items.map((item) => item.key),
+      ...(hasFooter ? ['foot'] : []),
+    ],
+    [items, hasFooter, columnGroups?.length],
+  );
   const adapter = useMemo<GridAdapter | null>(
     () =>
       virtual
         ? {
-            keys: [...headKeys, ...items.map((item) => item.key), ...(hasFooter ? ['foot'] : [])],
+            keys: allKeys,
             ensure: (key) => {
               const el = viewport();
               const index = indexByKey.get(key);
               if (!el || index === undefined || (index >= range.start && index < range.end)) return;
-              el.scrollTop =
+              const top =
                 index < range.start ? offsets[index]! : offsets[index + 1]! + metrics.head - el.clientHeight;
-              flushSync(() => setScrollTop(el.scrollTop));
+              const direction = Math.sign(top - el.scrollTop);
+              el.scrollTop = top;
+              flushSync(() => setScroll({ top: el.scrollTop, direction }));
             },
             onActiveRow: setActiveKey,
           }
         : null,
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- `headKeys` is derived from `columnGroups`
-    [
-      virtual,
-      items,
-      indexByKey,
-      range.start,
-      range.end,
-      offsets,
-      metrics.head,
-      hasFooter,
-      columnGroups?.length,
-    ],
+    [virtual, allKeys, indexByKey, range.start, range.end, offsets, metrics.head],
   );
 
   // --- Selection -------------------------------------------------------------------------------------
@@ -1423,6 +1462,53 @@ export function DataTable<Row>({
     (highlightChanges === true || (Array.isArray(highlightChanges) && highlightChanges.includes(column.id)));
   const linkColumn = (cols.find((c) => c.def?.rowHeader) ?? cols.find((c) => c.def))?.id;
   const firstDataColumn = cols.find((c) => c.def)?.id;
+
+  // What is rendered for a row, the header or the footer is kept until something it is made from
+  // changes. A scroll step, or a move of the keyboard focus, changes none of it: the rows that stay in
+  // the window are then the very same elements, which React does not render again.
+  const rendered = useMemo(
+    () => new Map<string, ReactNode>(),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- every value the row, header and footer renderers below read
+    [
+      items,
+      cols,
+      hiddenColumns,
+      size?.width,
+      selectedIds,
+      highlightedIds,
+      expanded,
+      collapsed,
+      sort,
+      loading,
+      parts,
+      columnGroups,
+      multiSort,
+      selectionMode,
+      rowHighlight,
+      rowAccent,
+      rowHref,
+      isRowDisabled,
+      onRowAction,
+      selectRowLabel,
+      selectAllLabel,
+      highlightLabel,
+      collapsibleGroups,
+      stickyGroups,
+      collapseGroupLabel,
+      expandGroupLabel,
+      showDetailsLabel,
+      hideDetailsLabel,
+      highlightChanges,
+      increasedLabel,
+      decreasedLabel,
+      onCollapsedGroupsChange,
+    ],
+  );
+  const once = (key: string, render: () => ReactNode) => {
+    // eslint-disable-next-line react-hooks/immutability -- a cache: filling it does not change what is rendered
+    if (!rendered.has(key)) rendered.set(key, render());
+    return rendered.get(key);
+  };
 
   const layout = (c: Col<Row>, index: number) => ({
     columnId: c.id,
@@ -1491,46 +1577,48 @@ export function DataTable<Row>({
     });
   }
 
-  const header = renderPart(
-    parts?.header,
-    {
-      children: (
-        <>
-          {spans.length > 0 && (
-            <Row rowKey="head-groups" index={1} data-kind="header">
-              {spans.map(({ group, first, index, span }) =>
-                group ? (
-                  <HeaderCell
-                    key={`${group.id}:${first.id}`}
-                    {...layout(first, index)}
-                    columnId={`group:${group.id}`}
-                    align="center"
-                    pinEdge={false}
-                    colSpan={span}
-                    scope="colgroup"
-                    className={styles.columnGroup}
-                  >
-                    {group.header}
-                  </HeaderCell>
-                ) : (
-                  <td
-                    key={first.id}
-                    colSpan={span}
-                    data-pin={first.pin}
-                    className={styles.headerFiller}
-                    style={pinStyle(first.pin, first.pinOffset)}
-                  />
-                ),
-              )}
+  const header = once('header', () =>
+    renderPart(
+      parts?.header,
+      {
+        children: (
+          <>
+            {spans.length > 0 && (
+              <Row rowKey="head-groups" index={1} data-kind="header">
+                {spans.map(({ group, first, index, span }) =>
+                  group ? (
+                    <HeaderCell
+                      key={`${group.id}:${first.id}`}
+                      {...layout(first, index)}
+                      columnId={`group:${group.id}`}
+                      align="center"
+                      pinEdge={false}
+                      colSpan={span}
+                      scope="colgroup"
+                      className={styles.columnGroup}
+                    >
+                      {group.header}
+                    </HeaderCell>
+                  ) : (
+                    <td
+                      key={first.id}
+                      colSpan={span}
+                      data-pin={first.pin}
+                      className={styles.headerFiller}
+                      style={pinStyle(first.pin, first.pinOffset)}
+                    />
+                  ),
+                )}
+              </Row>
+            )}
+            <Row rowKey="head" index={headKeys.length} data-kind="header">
+              {cols.map(headerCell)}
             </Row>
-          )}
-          <Row rowKey="head" index={headKeys.length} data-kind="header">
-            {cols.map(headerCell)}
-          </Row>
-        </>
-      ),
-    },
-    (p) => <Header {...p} />,
+          </>
+        ),
+      },
+      (p) => <Header {...p} />,
+    ),
   );
 
   // --- Body ----------------------------------------------------------------------------------------------
@@ -1557,7 +1645,9 @@ export function DataTable<Row>({
   const toggleExpanded = (id: string) =>
     setExpanded((ids) => (ids.includes(id) ? ids.filter((other) => other !== id) : [...ids, id]));
 
-  const renderItem = (index: number, parked = false) => {
+  const renderItem = (index: number, parked = false) =>
+    once(`${parked ? 'parked' : 'item'}:${items[index]!.key}`, () => renderItemNow(index, parked));
+  const renderItemNow = (index: number, parked: boolean) => {
     const item = items[index]!;
     const rowIndex = headKeys.length + index + 1;
     if (item.kind === 'group') {
@@ -1783,29 +1873,31 @@ export function DataTable<Row>({
     stateContent &&
     renderPart(states.error ? parts?.error : parts?.empty, { children: stateContent }, (p) => p.children);
 
-  const leafRows = leaves.map((row) => row.original);
   const footer =
     hasFooter &&
     !loading &&
     !state &&
-    renderPart(
-      parts?.footer,
-      {
-        children: (
-          <Row rowKey="foot" index={headKeys.length + items.length + 1} data-kind="footer">
-            {cols.map((c, i) => {
-              const content = c.def?.footer;
-              return (
-                <Cell key={c.id} {...layout(c, i)} numeric={c.numeric} rowHeader={c.def?.rowHeader}>
-                  {typeof content === 'function' ? content(leafRows) : content}
-                </Cell>
-              );
-            })}
-          </Row>
-        ),
-      },
-      (p) => <Footer {...p} />,
-    );
+    once('footer', () => {
+      const leafRows = leaves.map((row) => row.original);
+      return renderPart(
+        parts?.footer,
+        {
+          children: (
+            <Row rowKey="foot" index={headKeys.length + items.length + 1} data-kind="footer">
+              {cols.map((c, i) => {
+                const content = c.def?.footer;
+                return (
+                  <Cell key={c.id} {...layout(c, i)} numeric={c.numeric} rowHeader={c.def?.rowHeader}>
+                    {typeof content === 'function' ? content(leafRows) : content}
+                  </Cell>
+                );
+              })}
+            </Row>
+          ),
+        },
+        (p) => <Footer {...p} />,
+      );
+    });
 
   return (
     <GridAdapterContext value={adapter}>

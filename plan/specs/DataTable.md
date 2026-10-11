@@ -164,13 +164,18 @@ Tooltips: one tooltip serves the whole table, in the look of `Tooltip`. It shows
 
 Data states: `loading` sets `aria-busy` and shows skeleton rows in the real columns, hidden from assistive technology. The error state is an `alert`. `loadingMore` is announced through a `status` region.
 
-Virtualisation: only the rows in view (plus 8 on each side) are rendered, between two spacer rows; row heights are read from the rendered rows, so density and tokens are followed, and all rows are assumed equally tall (detail rows are measured one by one). The row that holds the tab stop and the header of the group at the top stay rendered outside the window.
+Virtualisation: only the rows in view are rendered, plus 8 behind them and one more screen of rows ahead of them in the direction of travel, between two spacer rows. The window moves in steps of four rows, and in a scroll event it is rendered before the frame is painted, so no empty band shows however fast the table is scrolled. What is rendered for a row is kept while nothing it is made from changes, so a scroll step renders only the rows that enter the window. Row heights are read from the rendered rows, so density and tokens are followed, and all rows are assumed equally tall (detail rows are measured one by one). The row that holds the tab stop and the header of the group at the top stay rendered outside the window.
 
 `highlightChanges`: when a cell's value changes for the same row id, the cell flashes once (1.2s, fading): green with ▲ for a larger number, red with ▼ for a smaller one, neutral without a sign otherwise. The sign stays 4s. With reduced motion there is no flash, only the sign. Numbers are never counted up.
 
 ## Open questions
 
 None.
+
+Resolved 2026-10-11 (review fixes):
+
+- **Scrolling 10,000 rows** (review D1, D2). Three causes, three fixes. (1) The sort order, the selection and the hidden columns were handed to the engine as new objects on every render, so its memo never held and every scroll step sorted all the rows again: each is now memoised on its own input. (2) Every scroll step rendered every row in the window, the header (whose "all selected" check walks all rows) and the footer total: what is rendered for each is now cached until one of its inputs changes, so React skips the rows that stay. (3) The window was renewed after the frame was painted, with 8 rows of overscan, so a fast wheel showed an empty band: it is now renewed inside the scroll event, with one screen of rows ahead. Measured with headless Chromium on 2026-10-11 (script time from the browser's own counter, median of 3 runs, 26px a frame for 180 frames): 2,183ms and 90 renders before, 217ms and 45 renders after (sorted: 2,177ms and 179 sorts of the 10,000 rows before, 205ms and no sort after); 300 Arrow Down presses 2.39s before, 0.86s after; wheel at 400px an event: an empty band of up to 505px and 41 frames over 33ms before, none of either after. `tests/visual/table.spec.ts` holds a guard: no sort while scrolling, fewer than 90 rows in the page, no empty band, and a ceiling on script time.
+- **The app keeps `data`, `columns`, `sort` and `selectedIds` stable** (state or a memo). A new `data` array is sorted again; new inline callbacks (`getRowId`, `rowAccent`, a `parts` object) only cost a render of the rows in the window when the app itself renders, not on a scroll step.
 
 Resolved 2026-10-11:
 

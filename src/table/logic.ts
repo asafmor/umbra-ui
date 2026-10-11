@@ -144,9 +144,15 @@ export function offsetsOf(heights: number[]): number[] {
 
 /**
  * The items to render for a scroll position: those that touch `[top, top + height]`, plus `overscan`
- * items on each side. `end` is exclusive.
+ * items before them and `overscanAfter` after them (the same number unless given). `end` is exclusive.
  */
-export function windowRange(offsets: number[], top: number, height: number, overscan: number) {
+export function windowRange(
+  offsets: number[],
+  top: number,
+  height: number,
+  overscan: number,
+  overscanAfter = overscan,
+) {
   const count = offsets.length - 1;
   // First item whose bottom is below `position`.
   const find = (position: number) => {
@@ -161,7 +167,7 @@ export function windowRange(offsets: number[], top: number, height: number, over
   };
   const first = find(Math.max(0, top));
   const last = find(Math.max(0, top) + Math.max(0, height));
-  return { start: Math.max(0, first - overscan), end: Math.min(count, last + 1 + overscan) };
+  return { start: Math.max(0, first - overscan), end: Math.min(count, last + 1 + overscanAfter) };
 }
 
 /** The ids from `anchor` to `target` in display order, both included. Only `target` when there is no anchor. */

@@ -747,6 +747,67 @@ test.describe('virtualisation', () => {
     expect(amounts).toEqual([...amounts].sort((a, b) => b - a));
     await expect(table.locator('tfoot [data-col="amount"]')).toHaveText('25,091,660');
   });
+
+  // A guard against a gross regression, not a benchmark. Measured on 2026-10-11 for this scroll (26px a
+  // frame for 180 frames, sorted): about 0.2s of script and 45 renders; before the rows were memoised
+  // and the engine's state was kept stable it was 2.2s, 90 renders and 179 sorts of the 10,000 rows.
+  test('performance guard: scrolling a sorted table neither sorts again nor renders every row', async ({
+    page,
+  }) => {
+    test.slow();
+    await open(page, 'virtualised');
+    const table = grid(page, '10,000 orders');
+    await header(table, 'Amount').getByRole('button').click();
+    await expect(header(table, 'Amount')).toHaveAttribute('aria-sort', 'descending');
+    // Storybook's accessibility addon checks the story once after it renders: let it finish first.
+    await page.waitForTimeout(3000);
+    await page.evaluate(() => {
+      const w = window as unknown as { sorts: number };
+      w.sorts = 0;
+      const sort = Array.prototype.sort;
+      Array.prototype.sort = function (this: unknown[], compare?: (a: unknown, b: unknown) => number) {
+        if (this.length >= 10000) w.sorts++;
+        return sort.call(this, compare);
+      };
+    });
+    const cdp = await page.context().newCDPSession(page);
+    await cdp.send('Performance.enable');
+    const script = async () =>
+      (await cdp.send('Performance.getMetrics')).metrics.find((m) => m.name === 'ScriptDuration')!.value;
+    const before = await script();
+    const seen = await viewport(table).evaluate(
+      (view) =>
+        new Promise<{ rows: number; gap: number }>((resolve) => {
+          const el = view.querySelector('table')!;
+          const worst = { rows: 0, gap: 0 };
+          let frame = 0;
+          const step = () => {
+            const rows = el.querySelectorAll('tbody > tr[data-kind="row"]');
+            worst.rows = Math.max(worst.rows, rows.length);
+            // The part of the body with no row drawn in it.
+            const box = view.getBoundingClientRect();
+            const top = box.top + el.tHead!.offsetHeight;
+            const bottom = box.top + view.clientHeight - el.tFoot!.offsetHeight;
+            worst.gap = Math.max(
+              worst.gap,
+              rows[0]!.getBoundingClientRect().top - top,
+              bottom - rows[rows.length - 1]!.getBoundingClientRect().bottom,
+            );
+            if (frame++ === 180) return resolve(worst);
+            // Every tenth frame jumps most of a screen, as a fast wheel does.
+            view.scrollTop += frame % 10 ? 26 : 400;
+            requestAnimationFrame(step);
+          };
+          requestAnimationFrame(step);
+        }),
+    );
+    const seconds = (await script()) - before;
+    expect(await page.evaluate(() => (window as unknown as { sorts: number }).sorts)).toBe(0);
+    expect(seen.rows).toBeLessThan(90);
+    expect(seen.gap).toBeLessThan(1);
+    // About seven times what was measured, and still under what it was before the fix.
+    expect(seconds).toBeLessThan(1.5);
+  });
 });
 
 test.describe('data states', () => {

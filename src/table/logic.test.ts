@@ -102,6 +102,9 @@ describe('windowRange', () => {
     expect(offsets[1000]).toBe(20000);
     expect(windowRange(offsets, 0, 100, 2)).toEqual({ start: 0, end: 8 });
     expect(windowRange(offsets, 1000, 100, 2)).toEqual({ start: 48, end: 58 });
+    // More rows in the direction of travel.
+    expect(windowRange(offsets, 1000, 100, 2, 10)).toEqual({ start: 48, end: 66 });
+    expect(windowRange(offsets, 1000, 100, 10, 2)).toEqual({ start: 40, end: 58 });
   });
 
   it('is clamped at both ends', () => {
