@@ -13,7 +13,9 @@
   background: var(--umbra-change-neutral, var(--umbra-color-base-text-primary));
   opacity: 0;
   /* Reduced motion sets the scale to 0: no flash, and the sign alone says which way the value moved. */
-  animation: umbra-change-flash calc(1200ms * var(--umbra-motion-scale)) var(--umbra-motion-easing-exit);
+  animation: umbra-change-flash
+    calc(var(--umbra-change-duration, var(--umbra-motion-duration-flash)) * var(--umbra-motion-scale))
+    var(--umbra-motion-easing-exit);
 }
 
 .flash[data-direction='up'] {
