@@ -105,3 +105,4 @@ Resolved 2026-10-11:
 - The root is a `div` (React Aria's meter), so it cannot sit inside a `<p>`: a line of text that holds one is a `div`. It is `inline-flex` and aligns to the middle of the line. Compromise, recorded: no `span` root.
 - Fuller option taken: the continuous variant, `segments`, three sizes, a block layout, `highlightChanges`.
 - Shared with `DivergingMeter`: the tone paints (`src/meters/tone.module.css`) and the "value hides first" check, moved out of `ProgressBar.tsx` into `src/meters/fit.ts`.
+- **The `div` root stays** (looked at again in the integration pass, 2026-10-11): React Aria's meter draws a `div` and warns when it is given another element. A `span` root needs the meter rebuilt on the hooks; not done.

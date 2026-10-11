@@ -113,3 +113,4 @@ Resolved 2026-10-11 (under the owner's delegation):
 - **The summary does not follow the width**: marks dropped for lack of room are still in the text for assistive technology.
 - **No `highlightChanges`**: a new item moves every mark; there is no single value to flash.
 - **Loading has a name**: an image needs one, so `loadingLabel` ("Loading") stands in while there is no summary.
+- **Three vocabularies of shapes, by job** (recorded in the integration pass, 2026-10-11): the outcome marks here (a shape per tone: dot, ring, half, square, diamond, dash), the legend swatches of a series (`src/internal/SeriesMarker.tsx`) and the points drawn at data coordinates in a chart (`src/charts/internal/cues.tsx`, which `Scatter` uses like `LineChart`). They are not merged: an outcome is not a series, and a ring or a half has no meaning as a series marker.

@@ -144,3 +144,7 @@ Resolved 2026-10-11 (review 2):
 
 - `renderLink` on `Card`, `Card.Header` and `Card.Title` (2026-10-11): `href` rendered a plain `<a>`, so an app's router could not take the link. It receives the shared `LinkRenderProps`, as on the navigation components.
 - A collapse with nothing to animate (reduced motion, or no change of height) removes the body in the same frame; it used to stay for one more render, which a test saw about one run in four.
+- **The popover of a layout-collapsed card is rendered inside the provider's root** (integration pass, 2026-10-11): rendered into `<body>`, nothing in the moved body answered a press or a key (`plan/layout.md`, "Mechanism").
+- **A content-sized card gives way before a collapsed card loses any of its header** (integration pass, 2026-10-11): `plan/layout.md`, rule 3.
+- **Controls that cannot be menu rows stay in the header** (integration pass, 2026-10-11) when its actions overflow, as the same elements (`plan/decisions/07-customisation.md`). The actions are always rendered through `ActionsOverflow`.
+- **`id`, `data-*` and `aria-*` reach the root** (integration pass, 2026-10-11), as on every component.

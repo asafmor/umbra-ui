@@ -95,3 +95,4 @@ Resolved 2026-10-11 (under the owner's delegation):
 - **Both `minColumnWidth` and `columns`.**
 - **Widgets are identified by `id`** on `WidgetBoard.Widget`; the board's state is `collapsedIds` with `onCollapsedChange` (decision 07).
 - **No animated change of column**: only the vertical movement is animated, by the pressed card's own height animation. Recorded as weaker than a full animated reflow.
+- **No animated change of column stays** (integration pass, 2026-10-11): a change of the number of columns comes from a resize, and layout changes are instant while the window is resized (`plan/interaction.md`). Not a weakness by that rule.

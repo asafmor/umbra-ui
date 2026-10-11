@@ -101,3 +101,4 @@ Resolved 2026-10-11 (under the owner's delegation):
 - **No `loading` state**: it is an input.
 - **The name inside a `FormField`**: React Aria names a thumb through the slider's group, and a name is not followed through two references, so the thumb's `aria-labelledby` is pointed at the field's label directly.
 - **Vertical has no shrink steps**: its labels are beside the track, where narrowing the height does not make them collide as soon.
+- **Among actions that overflow it stays in the row** (integration pass, 2026-10-11): as `Stepper`.

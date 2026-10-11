@@ -98,3 +98,4 @@ Resolved 2026-10-11 (under the owner's delegation):
 - **`wrap`** defaults by mode: a list of options goes round, as in the evidence; numbers stop at their ends.
 - **No `loading` state**: it is an input; a field that waits for its options is `disabled` by the form.
 - **A press on a `FormField` label focuses the value** (integration pass, 2026-10-11): a `<label>` only activates native controls, so the field label gives the focus itself to a control that is not one (`src/inputs/fieldParts.tsx`).
+- **Among actions that overflow it stays in the row** (integration pass, 2026-10-11): it cannot be a row of a menu (`staysInRow`); inside a component of the app, where the row cannot see it, it draws nothing in the menu.

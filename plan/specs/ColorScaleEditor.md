@@ -95,3 +95,4 @@ Resolved 2026-10-11 (under the owner's delegation):
 - **Rows scroll with the browser's thin scrollbar**, not `ScrollArea`: the rows hold popups and focus rings that `ScrollArea`'s fades would cover. Recorded as a difference in look.
 - **No `required`**: `minStops` says how many stops there must be.
 - **Row keys are positions**: a stop has no identity besides its place, so a draft typed in one row does not follow a stop that moves past it (it cannot: boundaries do not cross).
+- **Its value drives the tier 2 components too** (tested in the integration pass, 2026-10-11): `Slider`, `PieIndicator`, `Sparkline` and `Heatmap` take the same list. The rows keep the browser's scrollbar, for the reason above.

@@ -100,3 +100,4 @@ Resolved 2026-10-11 (under the owner's delegation):
 - **Hover previews** the value under the pointer; the value changes on press.
 - **Full colour**: the warning colour (amber), no new token.
 - **Half-step targets are smaller than 24px** (see above): recorded as a known limit rather than doubling the size of every star.
+- **Half-step targets stay smaller than 24px** (integration pass, 2026-10-11): the whole star is a 24px target of the radio for its full value, and the half is reached with the arrow keys; WCAG 2.2 target size allows it (the full-star target is the equivalent control). Among actions that overflow the rating stays in the row (`staysInRow`).
