@@ -2,7 +2,9 @@
 
 An overview dashboard that fills the window and never scrolls.
 
-- **Stats**: `SummaryTile` and `StatValue` with `TrendArrow`, `ProgressBar` and `LevelMeter`.
+- **Stats**: `SummaryTile` and `StatValue` with `TrendArrow`, `Sparkline`, `ProgressBar` and `LevelMeter`.
+- **The bar**: a `ContextBlock` with a clock, and the `ShortcutsSheet` (the help button, or `?`).
+- **A week** of deliveries in a `WeekStrip`.
 - **Charts** from `umbra-ui/charts`: a line chart and a bar chart that share one interactive `Legend`,
   and a donut chart.
 - **Data**: a small sortable `DataTable` whose columns hide by priority, a `List`, a `Banner`.

@@ -1,4 +1,13 @@
-import { Package, RefreshCw, RotateCcw, UserPlus, Wallet } from 'lucide-react';
+import {
+  CircleHelp,
+  ClipboardCheck,
+  Package,
+  RefreshCw,
+  RotateCcw,
+  Truck,
+  UserPlus,
+  Wallet,
+} from 'lucide-react';
 import { useMemo, useState } from 'react';
 import {
   AppShell,
@@ -7,7 +16,9 @@ import {
   Card,
   Columns,
   CommandPalette,
+  ContextBlock,
   DataTable,
+  IconButton,
   Legend,
   LevelMeter,
   List,
@@ -17,6 +28,7 @@ import {
   PrimaryNav,
   ProgressBar,
   SegmentedFilter,
+  ShortcutsSheet,
   Slot,
   Stack,
   StatusIndicator,
@@ -26,14 +38,16 @@ import {
   TopBar,
   TrendArrow,
   UmbraProvider,
+  WeekStrip,
   type Command,
   type ContextPreset,
   type DataTableColumn,
   type Density,
+  type ScheduleItem,
   type Shortcut,
   type Status,
 } from 'umbra-ui';
-import { BarChart, DonutChart, LineChart } from 'umbra-ui/charts';
+import { BarChart, DonutChart, LineChart, Sparkline } from 'umbra-ui/charts';
 import { activity, channels, dashboardData, productLines, recentOrders, regions, type Order } from './data';
 
 const densities: Density[] = ['compact', 'default', 'spacious'];
@@ -47,6 +61,18 @@ const orderStatus: Record<Order['status'], Status> = {
   Sent: 'success',
   Returned: 'danger',
 };
+// The week of the date in the bar. Each kind has its own icon, so none rests on its colour.
+const WEEK = '2026-10-12';
+const weekKinds: Pick<ScheduleItem, 'label' | 'tone' | 'icon'>[] = [
+  { label: 'Delivery', tone: 'success', icon: <Truck /> },
+  { label: 'Stock count', tone: 'info', icon: <ClipboardCheck /> },
+];
+const weekItems: ScheduleItem[] = [0, 0, 1, 2, 3, 3, 4].map((day, i) => ({
+  id: `w${i}`,
+  date: `2026-10-${12 + day}`,
+  ...weekKinds[i % 2]!,
+}));
+
 const orderColumns: DataTableColumn<Order>[] = [
   { id: 'id', header: 'Order', accessor: 'id', width: 72, priority: 'always', rowHeader: true },
   { id: 'client', header: 'Client', accessor: 'client', sortable: true, priority: 2 },
@@ -132,13 +158,10 @@ export function App() {
             logo="U"
             nav={<PrimaryNav items={channels} value={channel} onChange={setChannel} />}
             commandPalette={<CommandPalette commands={commands} includeShortcuts />}
-            context={
-              <>
-                <b>Mon 12 Oct 2026</b>
-                <br />
-                Quarter close in 6 days
-              </>
+            actions={
+              <ShortcutsSheet trigger={<IconButton icon={<CircleHelp />} label="Keyboard shortcuts" />} />
             }
+            context={<ContextBlock primary="Mon 12 Oct 2026" secondary="Quarter close in 6 days" live />}
             primaryAction={
               <PrimaryAction
                 label="Refresh"
@@ -194,7 +217,16 @@ export function App() {
                 icon={<Wallet />}
                 title="Revenue"
                 value={money(data.total)}
-                caption="This year"
+                caption={
+                  <Sparkline
+                    aria-label="Revenue by month"
+                    variant="area"
+                    lastPoint
+                    data={data.revenue[0]!.data.map((_, month) =>
+                      data.revenue.reduce((sum, region) => sum + region.data[month]!.y, 0),
+                    )}
+                  />
+                }
                 trend={<TrendArrow direction="up" value="8%" />}
                 loading={loading}
               />
@@ -202,7 +234,15 @@ export function App() {
                 icon={<Package />}
                 title="Orders"
                 value={data.orderCount.toLocaleString('en-GB')}
-                caption="This year"
+                caption={
+                  <Sparkline
+                    aria-label="Orders by product line"
+                    variant="bars"
+                    data={data.orders[0]!.values.map((_, line) =>
+                      data.orders.reduce((sum, region) => sum + region.values[line]!, 0),
+                    )}
+                  />
+                }
                 trend={<TrendArrow direction="up" value="3%" />}
                 loading={loading}
               />
@@ -291,6 +331,16 @@ export function App() {
                         meta={entry.when}
                       />
                     )}
+                  />
+                </Card>
+                {/* The first to give way: a week is worth less here than the orders and the activity. */}
+                <Card title="This week" size={0.7} priority={-1} minHeight={128}>
+                  <WeekStrip
+                    aria-label="Deliveries and stock counts this week"
+                    startDate={WEEK}
+                    today={WEEK}
+                    items={weekItems}
+                    slotSize="small"
                   />
                 </Card>
               </Stack>

@@ -1,31 +1,46 @@
-import { Building2, ClipboardList, Plus, Settings as SettingsIcon } from 'lucide-react';
+import {
+  Building2,
+  CalendarRange,
+  CircleHelp,
+  ClipboardList,
+  Plus,
+  Route,
+  Settings as SettingsIcon,
+} from 'lucide-react';
 import { useMemo, useState } from 'react';
 import {
   AppShell,
   Card,
   CommandPalette,
   EmptyState,
+  EntitySwitcher,
+  IconButton,
   Link,
   Page,
   PrimaryAction,
   PrimaryNav,
   ShortcutBar,
+  ShortcutsSheet,
+  Spotlight,
   SubNav,
   TopBar,
   UmbraProvider,
   type Command,
   type NavItem,
   type Shortcut,
+  type SpotlightStep,
 } from 'umbra-ui';
 import { clients, initialOrders } from './data';
 import { navigate, renderLink, useHashRoute } from './router';
 import { Clients } from './sections/Clients';
 import { Orders } from './sections/Orders';
+import { Planner } from './sections/Planner';
 import { defaultSettings, Settings } from './sections/Settings';
 
 const sections: NavItem[] = [
   { id: 'clients', label: 'Clients', href: '#/clients' },
   { id: 'orders', label: 'Orders', href: '#/orders' },
+  { id: 'planner', label: 'Planner', href: '#/planner' },
   { id: 'settings', label: 'Settings', href: '#/settings' },
 ];
 
@@ -35,7 +50,37 @@ const shortcuts: Shortcut[] = [
   { id: 'app.clients', keys: 'Alt+1', label: 'Go to clients', action: () => navigate('/clients') },
   { id: 'app.orders', keys: 'Alt+2', label: 'Go to orders', action: () => navigate('/orders') },
   { id: 'app.settings', keys: 'Alt+3', label: 'Go to settings', action: () => navigate('/settings') },
+  { id: 'app.planner', keys: 'Alt+4', label: 'Go to the planner', action: () => navigate('/planner') },
   { id: 'app.newOrder', keys: 'N', label: 'New order', action: () => navigate('/orders/new') },
+  // No action: the tour button binds it while it is mounted.
+  { id: 'app.tour', keys: 'Shift+T', label: 'Take the tour', group: 'Help' },
+];
+
+// The tour points at parts of the frame by the attributes the library puts on them.
+const tour: SpotlightStep[] = [
+  {
+    target: '[data-umbra="primary-nav"]',
+    title: 'Four sections',
+    body: 'Each is a route: the back and forward buttons walk through the ones you visited.',
+  },
+  {
+    // The search trigger has no attribute of its own: it is found by its name.
+    target: '[data-umbra="top-bar"] [aria-label="Search"]',
+    title: 'Search everything',
+    body: 'Pages, clients and actions. Ctrl+K or ⌘K opens it from anywhere.',
+  },
+  {
+    target: '[data-umbra="primary-action"]',
+    title: 'A new order',
+    body: 'The one main action of the app is always here.',
+    placement: 'bottom end',
+  },
+  {
+    target: '[data-umbra="page"]',
+    title: 'The page',
+    body: 'It fills the window and never scrolls: lists and tables scroll inside their cards.',
+    placement: 'top',
+  },
 ];
 
 const commands: Command[] = [
@@ -54,6 +99,15 @@ const commands: Command[] = [
     icon: <ClipboardList />,
     href: '#/orders',
     shortcut: 'app.orders',
+  },
+  {
+    id: 'go-planner',
+    label: 'Planner',
+    section: 'Pages',
+    icon: <CalendarRange />,
+    href: '#/planner',
+    shortcut: 'app.planner',
+    keywords: ['calendar', 'month', 'due'],
   },
   {
     id: 'go-settings',
@@ -90,11 +144,13 @@ export function App() {
   const { section, param } = useHashRoute();
   const [settings, setSettings] = useState(defaultSettings);
   const [orders, setOrders] = useState(initialOrders);
+  const [touring, setTouring] = useState(false);
   const open = useMemo(() => orders.filter((order) => order.status === 'Open').length, [orders]);
 
   const pages: Record<string, React.ReactNode> = {
     clients: <Clients selectedId={param} orders={orders} />,
     orders: <Orders orders={orders} onChange={setOrders} editing={param} />,
+    planner: <Planner orders={orders} />,
     settings: <Settings pane={param} settings={settings} onChange={setSettings} />,
   };
 
@@ -121,6 +177,17 @@ export function App() {
                 placeholder="Search pages, clients and actions"
               />
             }
+            actions={
+              <>
+                <IconButton
+                  icon={<Route />}
+                  label="Take the tour"
+                  shortcut="app.tour"
+                  onPress={() => setTouring(true)}
+                />
+                <ShortcutsSheet trigger={<IconButton icon={<CircleHelp />} label="Keyboard shortcuts" />} />
+              </>
+            }
             primaryAction={
               <PrimaryAction
                 label="New order"
@@ -134,6 +201,17 @@ export function App() {
         }
         subNav={
           <SubNav
+            // On the clients page the bar steps through the clients: the page is about one of them.
+            start={
+              section === 'clients' && (
+                <EntitySwitcher
+                  aria-label="Client"
+                  items={clients.map((c) => ({ id: c.id, label: c.name, description: c.region }))}
+                  value={param ?? clients[0]!.id}
+                  onChange={(id) => navigate(`/clients/${id}`)}
+                />
+              )
+            }
             label={sections.find((s) => s.id === section)?.label ?? 'Not found'}
             end={<ShortcutBar aria-label="Pinned clients" items={pinned} renderLink={renderLink} />}
           />
@@ -155,6 +233,7 @@ export function App() {
           </Page>
         )}
       </AppShell>
+      <Spotlight open={touring} onOpenChange={setTouring} steps={tour} />
     </UmbraProvider>
   );
 }

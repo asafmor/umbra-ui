@@ -1,6 +1,6 @@
 # Basic example
 
-A small full-window app: bars, a three-column page, a stack that collapses, and a density switch.
+A small full-window app: bars with a clock, a three-column page, a stack that collapses, and a density switch.
 
 ## Run it here
 

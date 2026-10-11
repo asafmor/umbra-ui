@@ -4,6 +4,7 @@ import {
   AppShell,
   Card,
   Columns,
+  ContextBlock,
   IconButton,
   Page,
   PrimaryAction,
@@ -59,6 +60,7 @@ export function App() {
           <TopBar
             logo="U"
             nav={<PrimaryNav items={sections} value={section} onChange={setSection} />}
+            context={<ContextBlock primary="Region North" secondary="Quarter close in 6 days" live />}
             primaryAction={<PrimaryAction label="Continue" icon={<ArrowRight />} />}
           />
         }

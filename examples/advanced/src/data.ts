@@ -19,6 +19,8 @@ export interface Client {
   owner: string;
   since: number;
   revenue: number;
+  /** Out of five, in halves. */
+  rating: number;
   contacts: Contact[];
 }
 
@@ -51,6 +53,7 @@ export const clients: Client[] = Array.from({ length: 24 }, (_, i) => {
     owner: `Person ${(i % 6) + 1}`,
     since: 2015 + (i % 10),
     revenue: 40_000 + ((i * 37) % 23) * 12_500,
+    rating: 2.5 + ((i * 3) % 6) / 2,
     contacts: Array.from({ length: 2 + (i % 3) }, (_, n) => {
       const person = 10 + i * 3 + n;
       return { name: `Person ${person}`, role: pick(roles, i + n), email: `person${person}@example.com` };
@@ -68,7 +71,7 @@ export const initialOrders: Order[] = Array.from({ length: 40 }, (_, i) => {
     region: client.region,
     status: pick(statuses, i + (i % 4)),
     owner: client.owner,
-    due: `2026-11-${String(1 + ((i * 7) % 28)).padStart(2, '0')}`,
+    due: `2026-11-${String(1 + ((i * 11) % 28)).padStart(2, '0')}`,
     items: 1 + ((i * 3) % 12),
     total: 180 + ((i * 53) % 40) * 45,
     priority: i % 7 === 0,

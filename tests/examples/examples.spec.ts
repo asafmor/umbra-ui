@@ -46,7 +46,7 @@ const apps: Record<ExampleName, Example> = {
     setDensity: (page, density) => segment(page, density).click({ force: true }),
   },
   advanced: {
-    routes: ['#/clients', '#/orders', '#/settings'],
+    routes: ['#/clients', '#/orders', '#/planner', '#/settings'],
     tabRoute: '#/clients',
     setDensity: async (page, density) => {
       await goTo(page, '#/settings');

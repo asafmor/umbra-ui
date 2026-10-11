@@ -66,3 +66,41 @@ test('one legend switches a region off in both charts', async ({ page }) => {
   await page.getByRole('button', { name: 'Region B' }).click();
   await expect(series).not.toHaveCount(0);
 });
+
+test('the bar shows the date with a clock, and ? and the help button open the shortcuts', async ({
+  page,
+}) => {
+  const block = page.locator('[data-umbra="context-block"]');
+  await expect(block).toContainText('Mon 12 Oct 2026');
+  await expect(block.locator('[data-part="chip"]')).toHaveText(/\d{1,2}:\d{2}/);
+
+  await page.keyboard.press('?');
+  const sheet = page.getByRole('dialog', { name: 'Keyboard shortcuts' });
+  await expect(sheet.getByText('Refresh the data')).toBeVisible();
+  await expect(sheet.getByText('Next density level')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(sheet).toBeHidden();
+
+  const help = page.getByRole('button', { name: 'Keyboard shortcuts' });
+  await help.click();
+  await expect(sheet).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(help).toBeFocused();
+});
+
+test('two tiles draw a sparkline that follows the channel, and the week has its seven days', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1920, height: 1080 });
+  const sparklines = page.locator('[data-umbra="summary-tile"] [data-umbra="sparkline"]');
+  await expect(sparklines).toHaveCount(2);
+  const name = await sparklines.first().getAttribute('aria-label');
+  expect(name).toBe('Revenue by month');
+  const drawn = () => sparklines.first().locator('svg').innerHTML();
+  const before = await drawn();
+  expect(before.length).toBeGreaterThan(50);
+
+  const strip = page.locator('[data-umbra="week-strip"]');
+  await expect(strip.getByRole('columnheader')).toHaveCount(7);
+  await expect(strip.locator('[data-umbra="schedule-slot"]:not([data-variant="empty"])')).toHaveCount(7);
+});
