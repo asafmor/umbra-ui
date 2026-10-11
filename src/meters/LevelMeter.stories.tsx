@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { UmbraScope } from '../provider/UmbraProvider';
 import { LevelMeter, type LevelMeterLevel } from './LevelMeter';
-import type { Zone } from './scale';
+import type { Threshold } from '../utils/thresholds';
 import { Board, Panel, Width } from './storyKit';
 import { LiveValues } from '../stories/live';
 
@@ -21,10 +21,10 @@ const levels: LevelMeterLevel[] = [
   { id: 'expert', label: 'Expert', tone: 'ramp-5' },
 ];
 
-const zones: Zone[] = [
-  { from: 0, to: 40, tone: 'danger', label: 'Poor' },
-  { from: 40, to: 70, tone: 'warning', label: 'Fair' },
-  { from: 70, to: 100, tone: 'success', label: 'Good' },
+const zones: Threshold[] = [
+  { from: 0, tone: 'danger', label: 'Poor' },
+  { from: 40, tone: 'warning', label: 'Fair' },
+  { from: 70, tone: 'success', label: 'Good' },
 ];
 
 /** Numeric and named scales, the range, the comparison marker, zones, end labels, tones and sizes. */
@@ -67,7 +67,7 @@ export const Variants: Story = {
       </Panel>
       <Panel title="Zones">
         {[22, 55, 88].map((value) => (
-          <LevelMeter key={value} label="Capacity" value={value} zones={zones} showValue />
+          <LevelMeter key={value} label="Capacity" value={value} thresholds={zones} showValue />
         ))}
       </Panel>
       <Panel title="Tones, sizes, no box">
@@ -130,7 +130,7 @@ export const Vertical: Story = {
           aria-label="Capacity"
           value={62}
           compare={45}
-          zones={zones}
+          thresholds={zones}
           showValue
         />
         <LevelMeter orientation="vertical" aria-label="Estimate" range={[40, 65]} value={58} size="large" />
@@ -170,7 +170,7 @@ export const RightToLeft: Story = {
       </Panel>
       <Panel title="Named and zones">
         <LevelMeter label="Skill level" levels={levels} value="basic" showValue />
-        <LevelMeter label="Capacity" value={85} zones={zones} showValue />
+        <LevelMeter label="Capacity" value={85} thresholds={zones} showValue />
       </Panel>
     </Board>
   ),
@@ -202,7 +202,12 @@ export const InCell: Story = {
                 />
               </td>
               <td style={{ paddingInlineEnd: 'var(--umbra-space-5)' }}>
-                <LevelMeter aria-label={`${row.name} capacity`} size="small" value={row.load} zones={zones} />
+                <LevelMeter
+                  aria-label={`${row.name} capacity`}
+                  size="small"
+                  value={row.load}
+                  thresholds={zones}
+                />
               </td>
             </tr>
           ))}
@@ -293,7 +298,7 @@ export const Customised: Story = {
         />
       </Panel>
       <Panel title="Blocks, composed by hand">
-        <LevelMeter.Root value={60} compare={40} compareLabel="Before" zones={zones} size="large">
+        <LevelMeter.Root value={60} compare={40} compareLabel="Before" thresholds={zones} size="large">
           <LevelMeter.Value />
           <LevelMeter.Strip>
             <LevelMeter.Marker kind="compare" />

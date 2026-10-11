@@ -67,10 +67,3 @@ export function donutArcs(values: readonly number[], options: DonutOptions): Don
 
 /** The ring's default thickness: a fifth of its radius, as in the source's KPI rings. */
 export const donutThickness = (outer: number) => Math.min(Math.max(outer * 0.2, 3), 28);
-
-/** The tone of a value: the last threshold it reaches. */
-export function toneFor<T>(value: number, thresholds: readonly { from: number; tone: T }[] | undefined) {
-  let tone: T | undefined;
-  for (const t of [...(thresholds ?? [])].sort((a, b) => a.from - b.from)) if (value >= t.from) tone = t.tone;
-  return tone;
-}

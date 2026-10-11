@@ -3,8 +3,10 @@ import { useLocale } from 'react-aria-components';
 import { Skeleton } from '../basics/Skeleton';
 import { renderPart, type Part } from '../utils/parts';
 import styles from './Chart.module.css';
+import { resolveThreshold, type ThresholdList, type ThresholdTone } from '../utils/thresholds';
 import { fillKind, FillPattern, fillPaint, seriesColour, type FillKind } from './internal/cues';
-import { donutArcs, donutThickness, ringArc, toneFor } from './internal/donut';
+import { toneColours } from './internal/tones';
+import { donutArcs, donutThickness, ringArc } from './internal/donut';
 import {
   Frame,
   seriesProps,
@@ -26,15 +28,8 @@ export interface DonutSegment {
   marker?: FillKind | undefined;
 }
 
-export type DonutTone = 'default' | 'success' | 'warning' | 'danger' | 'info';
-
-const toneColour: Record<DonutTone, string> = {
-  default: 'var(--umbra-chart-value, var(--umbra-color-series-1))',
-  success: 'var(--umbra-chart-positive, var(--umbra-color-semantic-success))',
-  warning: 'var(--umbra-chart-warning, var(--umbra-color-semantic-warning))',
-  danger: 'var(--umbra-chart-negative, var(--umbra-color-semantic-danger))',
-  info: 'var(--umbra-chart-info, var(--umbra-color-semantic-info))',
-};
+/** Colour of the single value: `default`, or any tone a threshold can have. */
+export type DonutTone = 'default' | ThresholdTone;
 
 /** A round placeholder as tall as the plot allows. Inline, because the skeleton sets its own size. */
 const round = { height: '86%', width: 'auto', maxWidth: '100%', aspectRatio: '1', borderRadius: '50%' };
@@ -46,6 +41,8 @@ interface DonutModel {
   outer: number;
   inner: number;
   track: string;
+  /** The position of the single value's band in `thresholds`. */
+  band?: number | undefined;
   segments: { id: string; d: string; color: string; fill: FillKind; point: PointModel }[];
   labels: (PolarLabel & { id: string })[];
 }
@@ -69,9 +66,14 @@ export interface DonutChartRootProps extends ChartCommonProps {
   gap?: number | undefined;
   /** Colour of the single value. The number in the centre is the cue that does not depend on colour. */
   tone?: DonutTone | undefined;
-  /** Picks the tone from the value: the last entry whose `from` the value reaches. */
-  thresholds?: { from: number; tone: DonutTone }[] | undefined;
-  /** Any CSS colour for the single value; wins over `tone`. */
+  /**
+   * Colours the single value by its band: an ascending list of `{ from, tone?, color?, label? }`, or
+   * plain numbers as boundaries on the value ramp. The band's `label` joins the value text.
+   */
+  thresholds?: ThresholdList | undefined;
+  /** For a scale where low is good: mirrors the colours of the bands. The labels stay. */
+  lowerIsBetter?: boolean | undefined;
+  /** Any CSS colour for the single value; wins over `tone` and `thresholds`. */
   color?: string | undefined;
   /** What the single value is called for screen readers when the chart is named by `aria-labelledby`. */
   valueLabel?: string | undefined;
@@ -92,6 +94,7 @@ function Root({
   gap = 2,
   tone = 'default',
   thresholds,
+  lowerIsBetter,
   color,
   valueLabel = 'Value',
   children,
@@ -102,13 +105,14 @@ function Root({
   const format = common.formatValue ?? numberFormat(locale, { maximumFractionDigits: 2 });
   const percent = numberFormat(locale, { style: 'percent', maximumFractionDigits: 0 });
   const name = common['aria-label'] ?? valueLabel;
+  const band = single ? resolveThreshold(value, thresholds, { lowerIsBetter }) : undefined;
   const all: (DonutSegment & { color: string; fill: FillKind })[] = single
     ? [
         {
           id: 'value',
           label: name,
           value: value ?? 0,
-          color: color ?? toneColour[toneFor(value ?? 0, thresholds) ?? tone],
+          color: color ?? band?.color ?? toneColours[band?.tone ?? tone],
           fill: 'square',
         },
       ]
@@ -116,7 +120,8 @@ function Root({
   const sum = (items: readonly DonutSegment[]) => items.reduce((s, d) => s + Math.max(d.value, 0), 0);
   const text = (d: DonutSegment, total: number) =>
     single
-      ? `${percent(total ? d.value / total : 0)} (${format(d.value)} / ${format(total)})`
+      ? `${percent(total ? d.value / total : 0)} (${format(d.value)} / ${format(total)})` +
+        (band?.label ? ` · ${band.label}` : '')
       : `${format(d.value)} (${percent(total ? d.value / total : 0)})`;
   const fullTotal = single ? max : sum(all);
 
@@ -166,6 +171,7 @@ function Root({
       outer,
       inner,
       track: ringArc(startAngle, startAngle + sweep, outer, inner, sweep < 360 && (roundedCaps ?? single)),
+      band: band?.index,
       segments,
       labels: layout.labels.map((l, i) => ({ ...l, id: wanted[i]!.id })),
     };
@@ -224,6 +230,7 @@ function Segments() {
           <g
             key={s.id}
             className={styles.series}
+            data-band={model.band}
             {...seriesProps(frame, s.id)}
             {...frame.pointProps(s.point)}
           >

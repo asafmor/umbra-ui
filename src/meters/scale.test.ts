@@ -1,17 +1,15 @@
 import { expect, test } from 'vitest';
+import { resolveThreshold, type Threshold } from '../utils/thresholds';
 import {
-  defaultThresholds,
+  bandBoundaries,
+  bandPattern,
   describe,
   outOfRange,
   segmentBounds,
-  thresholdFor,
+  thirdsThresholds,
   tickFractions,
   tickShown,
   toFraction,
-  zoneBoundaries,
-  zoneFor,
-  type Threshold,
-  type Zone,
 } from './scale';
 
 test('a value maps to its share of the scale', () => {
@@ -35,54 +33,33 @@ test('values outside the scale clamp, and a bad scale or value gives 0', () => {
 });
 
 const bands: Threshold[] = [
-  { from: 60, tone: 'success', label: 'High' },
   { from: 0, tone: 'danger', label: 'Low' },
-  { from: 30, tone: 'warning', label: 'Medium' },
+  { from: 30, color: '#f80', label: 'Medium' },
+  { from: 60, tone: 'success', label: 'High' },
 ];
+const pattern = (value: number, lowerIsBetter = false) =>
+  bandPattern(resolveThreshold(value, bands, { lowerIsBetter })!);
 
-test('a value takes the highest threshold that is not above it, in any order of the list', () => {
-  expect(thresholdFor(10, bands)).toMatchObject({ tone: 'danger', label: 'Low', pattern: 'diagonal' });
-  expect(thresholdFor(30, bands)).toMatchObject({ tone: 'warning', label: 'Medium', pattern: 'vertical' });
-  expect(thresholdFor(59.9, bands)?.tone).toBe('warning');
-  expect(thresholdFor(100, bands)).toMatchObject({ tone: 'success', pattern: 'none' });
-  expect(thresholdFor(500, bands)?.tone).toBe('success');
-});
-
-test('a value below every threshold has none', () => {
-  expect(thresholdFor(-1, bands)).toBeUndefined();
-  expect(thresholdFor(5, [])).toBeUndefined();
-});
-
-test('invert swaps the tones and patterns of the bands and keeps their labels', () => {
-  expect(thresholdFor(10, bands, true)).toMatchObject({ tone: 'success', label: 'Low', pattern: 'none' });
-  expect(thresholdFor(40, bands, true)).toMatchObject({ tone: 'warning', label: 'Medium' });
-  expect(thresholdFor(90, bands, true)).toMatchObject({ tone: 'danger', label: 'High', pattern: 'diagonal' });
+test('each band has a pattern by its position, whatever its colour: the top one is solid', () => {
+  expect([10, 30, 100].map((v) => pattern(v))).toEqual(['diagonal', 'vertical', 'none']);
+  expect([10, 40, 90].map((v) => pattern(v, true))).toEqual(['none', 'vertical', 'diagonal']);
 });
 
 test('the default thresholds are thirds of the scale', () => {
-  const thirds = defaultThresholds(0, 90);
+  const thirds = thirdsThresholds(0, 90);
   expect(thirds.map((t) => t.from)).toEqual([0, 30, 60]);
-  expect(thresholdFor(29, thirds)?.tone).toBe('danger');
-  expect(thresholdFor(30, thirds)?.tone).toBe('warning');
-  expect(thresholdFor(60, thirds)?.tone).toBe('success');
+  expect([29, 30, 60].map((v) => resolveThreshold(v, thirds)?.tone)).toEqual([
+    'danger',
+    'warning',
+    'success',
+  ]);
 });
 
-const zones: Zone[] = [
-  { from: 0, to: 40, tone: 'danger', label: 'Poor' },
-  { from: 40, to: 70, tone: 'warning', label: 'Fair' },
-  { from: 70, to: 100, tone: 'success', label: 'Good' },
-];
-
-test('a value belongs to the zone that holds it; a shared edge goes to the later zone', () => {
-  expect(zoneFor(10, zones)?.label).toBe('Poor');
-  expect(zoneFor(40, zones)?.label).toBe('Fair');
-  expect(zoneFor(100, zones)?.label).toBe('Good');
-  expect(zoneFor(120, zones)).toBeUndefined();
-});
-
-test('boundary ticks sit on the inner zone edges only', () => {
-  expect(zoneBoundaries(zones, 0, 100)).toEqual([0.4, 0.7]);
-  expect(zoneBoundaries([{ from: 0, to: 100, tone: 'info' }], 0, 100)).toEqual([]);
+test('boundary ticks sit where a band starts inside the scale', () => {
+  expect(bandBoundaries([{ from: 0 }, { from: 40 }, { from: 70 }], 0, 100)).toEqual([0.4, 0.7]);
+  expect(bandBoundaries([40, 70], 0, 100)).toEqual([0.4, 0.7]);
+  expect(bandBoundaries([{ from: 0, tone: 'info' }], 0, 100)).toEqual([]);
+  expect(bandBoundaries(undefined, 0, 100)).toEqual([]);
 });
 
 test('ticks spread from end to end', () => {

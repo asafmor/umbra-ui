@@ -368,6 +368,7 @@ Compares values across categories: grouped, stacked or diverging around zero, up
 | `--umbra-chart-grid` | `--umbra-color-base-border-control` (#7a6e91) |
 | `--umbra-chart-grid-dash` | `1 4` |
 | `--umbra-chart-grid-width` | `--umbra-border-width` (1px) |
+| `--umbra-chart-info` | `--umbra-color-semantic-info` (#3d9be8) |
 | `--umbra-chart-line-width` | `2px` |
 | `--umbra-chart-negative` | `--umbra-color-semantic-danger` (#f0455a) |
 | `--umbra-chart-outline-width` | `1.5px` |
@@ -382,7 +383,9 @@ Compares values across categories: grouped, stacked or diverging around zero, up
 | `--umbra-chart-track` | `--umbra-color-base-surface3` (#261b38) |
 | `--umbra-chart-track-border` | `--umbra-color-base-border-control` (#7a6e91) |
 | `--umbra-chart-track-border-width` | `--umbra-border-width` (1px) |
+| `--umbra-chart-value` | `--umbra-color-series-1` (#4a94e8) |
 | `--umbra-chart-value-fg` | `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-chart-warning` | `--umbra-color-semantic-warning` (#f2b23a) |
 | `--umbra-focus-color` | `--umbra-color-fixed-focus-ring` (#ffb3f5) |
 | `--umbra-series-marker-size` | `0.875rem` |
 
@@ -400,7 +403,8 @@ Compares values across categories: grouped, stacked or diverging around zero, up
 | `hiddenIds` | `readonly string[]` | Ids of the series that are switched off (controlled). |
 | `defaultHiddenIds` | `readonly string[]` |  |
 | `onHiddenChange` | `((hiddenIds: string[]) => void)` |  |
-| `thresholds` | `BarThreshold[]` | Colours bars by value. Each threshold also has a fill, so the steps differ without colour. |
+| `thresholds` | `ThresholdList<BarThreshold>` | Colours bars by the band of their value: an ascending list of `{ from, tone?, color?, label? }`, or plain numbers as boundaries on the value ramp. Each band also has a fill, so the bands differ without colour, and its `label` joins the value in the tooltip and for screen readers. |
+| `lowerIsBetter` | `boolean` | For a scale where low is good: mirrors the colours and fills of the bands. The labels stay. |
 | `formatValue` | `((value: number) => string)` | Formats a value for labels, the tooltip and screen readers. Defaults to the provider's locale. |
 | `height` | `number \| "content" \| "fill"` | `fill` (default) takes the height of the parent, and falls back to the content's height in a parent that has none (flowing content, a popover, a modal body, an accordion panel). `content` is always as tall as the content: the plot is `--umbra-chart-content-height` (240px) high. A number is a height in pixels. |
 | `description` | `string` | What a screen reader hears after the name. Defaults to a generated summary of the data. |
@@ -931,9 +935,10 @@ A ring that shows one value against a total, or how a total splits into segments
 | `hiddenIds` | `readonly string[]` | Ids of the series that are switched off (controlled). |
 | `defaultHiddenIds` | `readonly string[]` |  |
 | `onHiddenChange` | `((hiddenIds: string[]) => void)` |  |
-| `color` | `string` | Any CSS colour for the single value; wins over `tone`. |
+| `color` | `string` | Any CSS colour for the single value; wins over `tone` and `thresholds`. |
 | `max` | `number` | What a full ring stands for, in the single-value form. |
-| `thresholds` | `{ from: number; tone: DonutTone; }[]` | Picks the tone from the value: the last entry whose `from` the value reaches. |
+| `thresholds` | `ThresholdList` | Colours the single value by its band: an ascending list of `{ from, tone?, color?, label? }`, or plain numbers as boundaries on the value ramp. The band's `label` joins the value text. |
+| `lowerIsBetter` | `boolean` | For a scale where low is good: mirrors the colours of the bands. The labels stay. |
 | `formatValue` | `((value: number) => string)` | Formats a value for labels, the tooltip and screen readers. Defaults to the provider's locale. |
 | `height` | `number \| "content" \| "fill"` | `fill` (default) takes the height of the parent, and falls back to the content's height in a parent that has none (flowing content, a popover, a modal body, an accordion panel). `content` is always as tall as the content: the plot is `--umbra-chart-content-height` (240px) high. A number is a height in pixels. |
 | `description` | `string` | What a screen reader hears after the name. Defaults to a generated summary of the data. |
@@ -1355,13 +1360,15 @@ A strip of ticks with a marker that shows where a value sits on a scale.
 | `aria-label` | `string` | Names a meter that has no visible label. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
-| `tone` | `MeterTone` | Colour of the marker, when no zone or level sets it. |
+| `tone` | `MeterTone` | Colour of the marker, when no band or level sets it. |
 | `loading` | `boolean` | Shows skeletons in place of the ticks and the value. |
 | `orientation` | `"vertical" \| "horizontal"` |  |
 | `size` | `"default" \| "small" \| "large"` |  |
 | `emptyLabel` | `ReactNode` | Shown in place of the value text when there is no value, or the value names no level. |
 | `min` | `number` |  |
 | `max` | `number` |  |
+| `thresholds` | `ThresholdList` | Colours the marker by the band of the value: an ascending list of `{ from, tone?, color?, label? }`, or plain numbers as boundaries on the value ramp. Where a band starts is drawn as a taller tick, and the band's `label` joins the value text. |
+| `lowerIsBetter` | `boolean` | For a scale where low is good: mirrors the colours of the bands. The labels stay. |
 | `formatValue` | `((value: number) => string)` | Text of a position on a numeric scale. A named scale uses the labels of its levels. |
 | `noValueLabel` | `string` | What assistive technology and the tooltip say when there is no value and no range. |
 | `tooltip` | `boolean` | `false` turns off the tooltip that shows the exact value on hover. |
@@ -1371,7 +1378,6 @@ A strip of ticks with a marker that shows where a value sits on a scale.
 | `compare` | `LevelMeterValue` | A second, smaller marker to compare the value with. |
 | `compareLabel` | `string` | Names the comparison marker for assistive technology. |
 | `rangeLabel` | `string` | Names the band for assistive technology. |
-| `zones` | `Zone[]` | Colours the marker by the zone it is in. Zone edges are drawn as taller ticks, and the zone's label is read out. |
 | `boxed` | `boolean` | Draws the box around the ticks. |
 | `highlightChanges` | `boolean` | A changed value flashes softly once: green when a number rose, red when it fell, neutral otherwise. A sign shows the direction without colour. No flash under reduced motion; the sign stays. The value is never counted up or down. |
 | `increasedLabel` | `string` | What a screen reader hears with the sign of a value that rose or fell. |
@@ -1952,8 +1958,8 @@ A bar that fills with a value: progress of a task, or a measured level. Fills th
 | `min` | `number` |  |
 | `max` | `number` |  |
 | `kind` | `"progress" \| "meter"` | `progress` for a task that advances (`role="progressbar"`), `meter` for a measured level (`role="meter"`). |
-| `thresholds` | `boolean \| Threshold[]` | Colours the fill by its level. `true` is thirds of the scale: danger, warning, success. Each band also has a pattern. |
-| `invert` | `boolean` | Reverses the tones of the thresholds, for a scale where low is good. |
+| `thresholds` | `boolean \| ThresholdList` | Colours the fill by the band of the value: an ascending list of `{ from, tone?, color?, label? }`. `true` is thirds of the scale (danger, warning, success); plain numbers are boundaries on the value ramp. Each band also has a pattern, and its `label` joins the value text. |
+| `lowerIsBetter` | `boolean` | For a scale where low is good: mirrors the colours and patterns of the bands. The labels stay. |
 | `segments` | `number \| number[]` | Splits the bar: a number of equal segments, or the values where a segment ends. |
 | `stack` | `ProgressBarStackItem[]` | Several coloured parts, one after another. Replaces the single fill. |
 | `target` | `number` | Draws a tick at a goal value. |
@@ -3084,6 +3090,7 @@ A value coloured by where it falls on a five-step ramp.
 | Prop | Type | Purpose |
 |---|---|---|
 | `value` (required) | `number \| null` | The value. `null` or `undefined` shows `emptyLabel` in a neutral pill. |
+| `thresholds` | `ThresholdList` | Colours the pill by the band of the value, in place of `min` and `max`. Plain numbers are boundaries spread on the value ramp (four give the five steps); a list of `{ from, tone?, color?, label? }` sets each band's colour, and its `label` is read with the value. A value below the first band is neutral. |
 | `formatValue` | `((value: number) => ReactNode)` | Turns the value into what is shown: `(v) => v.toFixed(2)`, or a grade letter. |
 | `showLevel` | `boolean` | Adds a small bar marker of the level, for readers who cannot tell the colours apart. |
 | `levelLabel` | `((level: number, steps: number) => string)` | What a screen reader hears for the marker. |
@@ -3096,8 +3103,7 @@ A value coloured by where it falls on a five-step ramp.
 | `shape` | `"square" \| "circle" \| "pill"` | `square` for values in dense rows, `circle` for grades of one or two characters. |
 | `min` | `number` | The bottom and top of the scale, split into five equal bands. |
 | `max` | `number` |  |
-| `thresholds` | `readonly number[]` | Ascending boundaries, at most four. A value at a boundary belongs to the band above it. |
-| `ramp` | `"higher-is-better" \| "lower-is-better"` | Which end of the scale gets the top of the ramp. |
+| `lowerIsBetter` | `boolean` | For a scale where low is good: the low end gets the top of the ramp. |
 | `highlightChanges` | `boolean` | A changed value flashes softly once: green when a number rose, red when it fell, neutral otherwise. A sign shows the direction without colour. No flash under reduced motion; the sign stays. The value is never counted up or down. |
 | `increasedLabel` | `string` | What a screen reader hears with the sign of a value that rose or fell. |
 | `decreasedLabel` | `string` |  |

@@ -80,9 +80,9 @@ export const Variants: Story = {
           categories={regions}
           series={[{ id: 'done', label: 'Completed', values: [92, 71, 48, 85, 33] }]}
           thresholds={[
-            { from: 0, color: 'var(--umbra-color-semantic-danger)', marker: 'stripes' },
-            { from: 50, color: 'var(--umbra-color-semantic-warning)', marker: 'dots' },
-            { from: 80, color: 'var(--umbra-color-semantic-success)', marker: 'square' },
+            { from: 0, tone: 'danger', marker: 'stripes' },
+            { from: 50, tone: 'warning', marker: 'dots' },
+            { from: 80, tone: 'success', marker: 'square' },
           ]}
           valueDomain={[0, 100]}
           labels

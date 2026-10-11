@@ -160,6 +160,10 @@
   --paint: var(--umbra-color-semantic-info);
 }
 
+.plot > [data-part='marker'][data-tone='accent'] {
+  --paint: var(--umbra-color-fixed-selected);
+}
+
 .plot > [data-part='marker'][data-tone='ramp-1'] {
   --paint: var(--umbra-color-value-ramp-1);
 }
