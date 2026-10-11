@@ -44,6 +44,8 @@ States: hover, pressed, focus, `selected`, `disabled`, `loading`.
 
 `--umbra-summary-tile-bg`, `--umbra-summary-tile-fg`, `--umbra-summary-tile-border`, `--umbra-summary-tile-radius`, `--umbra-summary-tile-padding`, `--umbra-summary-tile-caption-fg`, `--umbra-summary-tile-icon-size`, `--umbra-summary-tile-icon-bg`, `--umbra-summary-tile-selected-bg`, `--umbra-summary-tile-selected-fg`, `--umbra-summary-tile-min-height`, `--umbra-summary-tile-min-width`.
 
+The tile declares `--umbra-slot-min-height`, the minimum height the `Stack` around it reads, from `--umbra-summary-tile-min-height`. That property is reset on every layout child, so it is never inherited and no app value is beaten: it is on the allowlist of `scripts/check-tokens.mjs`.
+
 ### 2. Props
 
 | Prop | Type | Default | Purpose |

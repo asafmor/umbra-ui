@@ -91,7 +91,7 @@ Of the 20 open items of the Milestone 0 review, 17 were found fixed; the rest ar
 | Item | Detail | For |
 |---|---|---|
 | Optional props are not typed `\| undefined` | **Done 2026-10-11.** Every optional member under `src/` is declared `\| undefined` (1973 of them), the library compiles with `exactOptionalPropertyTypes`, and two checks keep it: `scripts/check-optional-props.mjs` in `npm run lint`, and the consumer type check of `npm run check:package`. Rule: `plan/decisions/07-customisation.md`. | Done |
-| Some containers still set another component's token | `Badge`, `Avatar`, `EntityIcon` and the `DataTable` surface: their readers need private defaults first. | Milestone 2 |
+| Some containers still set another component's token | `Badge`, `Avatar`, `EntityIcon` and the `DataTable` surface: their readers need private defaults first. **Done 2026-10-11.** No component declares a public `--umbra-*` property, global tokens included (`focus-color`, `focus-offset`, `icon-size`, `icon-button-size`, `scroll-fade-color`): 29 declarations became private properties that the readers fall back through. `scripts/check-tokens.mjs` (in `npm run lint`) and `tests/visual/tokens.spec.ts` keep it. Rule: `plan/decisions/07-customisation.md`. | Done |
 | Two tooltips still render outside a modal | The truncated-text tooltip and the `DataTable` cell tooltip are inert inside a `Modal`. | Milestone 2 |
 | `Card` costs about 70 KB gzip | Its header overflow pulls in the menu. A lazy menu, or a row rendered through context, would cut it. | Milestone 2 |
 | Tokens declared and never read | `space-0`, `size-min-window-width`, `size-min-window-height`. | Milestone 2 |

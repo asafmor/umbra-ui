@@ -300,7 +300,7 @@ Compares values across categories: grouped, stacked or diverging around zero, up
 
 Triggers an action. Text, with an optional icon.
 
-**Tokens**: `--umbra-button-accent-bg`, `--umbra-button-accent-border`, `--umbra-button-accent-fg`, `--umbra-button-danger-bg`, `--umbra-button-danger-border`, `--umbra-button-danger-fg`, `--umbra-button-ghost-bg`, `--umbra-button-ghost-border`, `--umbra-button-ghost-fg`, `--umbra-button-height`, `--umbra-button-neutral-bg`, `--umbra-button-neutral-border`, `--umbra-button-neutral-fg`, `--umbra-button-padding-x`, `--umbra-button-primary-bg`, `--umbra-button-primary-border`, `--umbra-button-primary-fg`, `--umbra-button-radius`, `--umbra-focus-color`, `--umbra-focus-offset`, `--umbra-icon-button-badge-dot-size`, `--umbra-icon-button-badge-font`, `--umbra-icon-button-badge-padding-x`, `--umbra-icon-button-badge-size`, `--umbra-icon-button-size`.
+**Tokens**: `--umbra-badge-size`, `--umbra-button-accent-bg`, `--umbra-button-accent-border`, `--umbra-button-accent-fg`, `--umbra-button-danger-bg`, `--umbra-button-danger-border`, `--umbra-button-danger-fg`, `--umbra-button-ghost-bg`, `--umbra-button-ghost-border`, `--umbra-button-ghost-fg`, `--umbra-button-height`, `--umbra-button-neutral-bg`, `--umbra-button-neutral-border`, `--umbra-button-neutral-fg`, `--umbra-button-padding-x`, `--umbra-button-primary-bg`, `--umbra-button-primary-border`, `--umbra-button-primary-fg`, `--umbra-button-radius`, `--umbra-focus-color`, `--umbra-focus-offset`, `--umbra-icon-button-badge-dot-size`, `--umbra-icon-button-badge-font`, `--umbra-icon-button-badge-padding-x`, `--umbra-icon-button-badge-size`, `--umbra-icon-button-size`.
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -804,7 +804,7 @@ Back and forward. On their own they drive the browser history; with `onBack` and
 
 A button that shows only an icon. Inside an overflow menu it becomes a menu item with its icon and label.
 
-**Tokens**: `--umbra-button-accent-bg`, `--umbra-button-accent-border`, `--umbra-button-accent-fg`, `--umbra-button-danger-bg`, `--umbra-button-danger-border`, `--umbra-button-danger-fg`, `--umbra-button-ghost-bg`, `--umbra-button-ghost-border`, `--umbra-button-ghost-fg`, `--umbra-button-height`, `--umbra-button-neutral-bg`, `--umbra-button-neutral-border`, `--umbra-button-neutral-fg`, `--umbra-button-padding-x`, `--umbra-button-primary-bg`, `--umbra-button-primary-border`, `--umbra-button-primary-fg`, `--umbra-button-radius`, `--umbra-focus-color`, `--umbra-focus-offset`, `--umbra-icon-button-badge-dot-size`, `--umbra-icon-button-badge-font`, `--umbra-icon-button-badge-padding-x`, `--umbra-icon-button-badge-size`, `--umbra-icon-button-size`.
+**Tokens**: `--umbra-badge-size`, `--umbra-button-accent-bg`, `--umbra-button-accent-border`, `--umbra-button-accent-fg`, `--umbra-button-danger-bg`, `--umbra-button-danger-border`, `--umbra-button-danger-fg`, `--umbra-button-ghost-bg`, `--umbra-button-ghost-border`, `--umbra-button-ghost-fg`, `--umbra-button-height`, `--umbra-button-neutral-bg`, `--umbra-button-neutral-border`, `--umbra-button-neutral-fg`, `--umbra-button-padding-x`, `--umbra-button-primary-bg`, `--umbra-button-primary-border`, `--umbra-button-primary-fg`, `--umbra-button-radius`, `--umbra-focus-color`, `--umbra-focus-offset`, `--umbra-icon-button-badge-dot-size`, `--umbra-icon-button-badge-font`, `--umbra-icon-button-badge-padding-x`, `--umbra-icon-button-badge-size`, `--umbra-icon-button-size`.
 
 | Prop | Type | Purpose |
 |---|---|---|

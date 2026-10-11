@@ -98,7 +98,7 @@ None.
 
 Resolved 2026-10-11 (review fix pass):
 
-- The root sets `--umbra-focus-offset` for the controls inside it (it clips, so their ring is drawn inwards), and the inline variant sets `--umbra-icon-size`. Both now come from the component's own tokens (`--umbra-empty-state-focus-offset`, `--umbra-empty-state-inline-icon-size`), so an app has a way to change them; a bare declaration could not be overridden from an ancestor.
+- The root gives the controls inside it an inward ring (it clips), and each variant its icon size. Both are private properties (`--focus-offset`, `--icon-size`) whose defaults come from the component's own tokens (`--umbra-empty-state-focus-offset`, `--umbra-empty-state-icon-size`, `--umbra-empty-state-inline-icon-size`); `--umbra-focus-offset` or `--umbra-icon-size` set by the app on any ancestor wins over them (2026-10-11).
 - When a state that holds the focus goes away, the focus moves into the component around it (`src/internal/dataState.tsx`, plan/interaction.md).
 
 Resolved 2026-10-10:

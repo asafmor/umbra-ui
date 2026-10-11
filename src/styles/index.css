@@ -37,7 +37,7 @@
 
 :where([data-umbra-scope] :focus-visible) {
   outline: var(--umbra-state-focus-ring-width) solid
-    var(--umbra-focus-color, var(--umbra-color-fixed-focus-ring));
+    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-fixed-focus-ring)));
   outline-offset: var(--umbra-focus-offset, var(--focus-offset, 2px));
 }
 

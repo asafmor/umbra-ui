@@ -44,6 +44,8 @@ States: hover, pressed, focus, disabled, loading. Height follows the density lev
 
 `--umbra-button-height`, `--umbra-button-radius`, `--umbra-button-padding-x`, and per variant `--umbra-button-<variant>-bg` / `-fg` / `-border`.
 
+A filled button (`primary`, `accent`) gives a badge inside it a ring in its text colour through the private `--badge-ring`; `--umbra-badge-ring` set by the app on any ancestor wins.
+
 ### 2. Props
 
 | Prop | Type | Default | Purpose |

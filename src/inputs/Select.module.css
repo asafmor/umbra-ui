@@ -77,7 +77,7 @@
 
 .root:has(> .trigger[data-focus-visible]) {
   outline: var(--umbra-state-focus-ring-width) solid
-    var(--umbra-focus-color, var(--umbra-color-fixed-focus-ring));
+    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-fixed-focus-ring)));
   outline-offset: var(--umbra-focus-offset, var(--focus-offset, 2px));
 }
 
@@ -248,7 +248,7 @@
 
 .scroll:focus-visible {
   outline: var(--umbra-state-focus-ring-width) solid
-    var(--umbra-focus-color, var(--umbra-color-fixed-focus-ring));
+    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-fixed-focus-ring)));
   outline-offset: calc(-1 * var(--umbra-state-focus-ring-width));
 }
 
@@ -288,7 +288,7 @@
 /* Focus stays in the filter field while the arrow keys move through the options; the ring shows where typing goes. */
 .search:has(.searchInput:is([data-focus-visible], :focus-visible)) {
   outline: var(--umbra-state-focus-ring-width) solid
-    var(--umbra-focus-color, var(--umbra-color-fixed-focus-ring));
+    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-fixed-focus-ring)));
   outline-offset: calc(-1 * var(--umbra-state-focus-ring-width));
 }
 

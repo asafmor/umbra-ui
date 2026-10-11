@@ -1,6 +1,6 @@
 .root {
   /* Without a size the mark follows the text around it, like an icon. */
-  --size: var(--umbra-entity-icon-size, 1.25em);
+  --size: var(--umbra-entity-icon-size, var(--entity-icon-size, 1.25em));
 
   display: inline-flex;
   align-items: center;
@@ -11,23 +11,23 @@
 }
 
 .root[data-size='xs'] {
-  --size: var(--umbra-entity-icon-size, 14px);
+  --size: var(--umbra-entity-icon-size, var(--entity-icon-size, 14px));
 }
 
 .root[data-size='sm'] {
-  --size: var(--umbra-entity-icon-size, 18px);
+  --size: var(--umbra-entity-icon-size, var(--entity-icon-size, 18px));
 }
 
 .root[data-size='md'] {
-  --size: var(--umbra-entity-icon-size, 24px);
+  --size: var(--umbra-entity-icon-size, var(--entity-icon-size, 24px));
 }
 
 .root[data-size='lg'] {
-  --size: var(--umbra-entity-icon-size, 32px);
+  --size: var(--umbra-entity-icon-size, var(--entity-icon-size, 32px));
 }
 
 .root[data-size='xl'] {
-  --size: var(--umbra-entity-icon-size, 56px);
+  --size: var(--umbra-entity-icon-size, var(--entity-icon-size, 56px));
 }
 
 .root:is([data-size='lg'], [data-size='xl']) {

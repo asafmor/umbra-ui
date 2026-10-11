@@ -66,7 +66,7 @@
   pointer-events: none;
   opacity: 0;
   transition: opacity var(--umbra-motion-duration-fast);
-  --fade: var(--umbra-scroll-fade-color, var(--umbra-context-card-tint));
+  --fade: var(--umbra-scroll-fade-color, var(--scroll-fade-color, var(--umbra-context-card-tint)));
 }
 
 /* Top and bottom: the main axis of `vertical` and `both`. */

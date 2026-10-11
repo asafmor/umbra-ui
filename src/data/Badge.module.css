@@ -7,13 +7,13 @@
 }
 
 .indicator {
-  --size: var(--umbra-badge-size, var(--umbra-space-5));
+  --size: var(--umbra-badge-size, var(--badge-size, var(--umbra-space-5)));
 
   display: inline-block;
   flex: none;
   min-width: var(--size);
   height: var(--size);
-  padding: 0 var(--umbra-badge-padding-x, var(--umbra-space-2));
+  padding: 0 var(--umbra-badge-padding-x, var(--badge-padding-x, var(--umbra-space-2)));
   border-radius: var(--umbra-badge-radius, var(--umbra-radius-pill));
   background: var(--umbra-badge-bg, var(--tone));
   color: var(--umbra-badge-fg, var(--on-tone));
@@ -22,8 +22,9 @@
    * a filled button) the fill can be close to the badge's own colour; the surface sets the ring to its
    * text colour, which has 4.5:1 or more against it, so the badge keeps its edge on any brand.
    */
-  box-shadow: 0 0 0 var(--umbra-badge-ring-width, 1px) var(--umbra-badge-ring, var(--ring, transparent));
-  font: var(--umbra-badge-font, 700 11px / var(--size) var(--umbra-font-family-body));
+  box-shadow: 0 0 0 var(--umbra-badge-ring-width, 1px)
+    var(--umbra-badge-ring, var(--badge-ring, var(--ring, transparent)));
+  font: var(--umbra-badge-font, var(--badge-font, 700 11px / var(--size) var(--umbra-font-family-body)));
   font-variant-numeric: tabular-nums;
   text-align: center;
   white-space: nowrap;
@@ -35,7 +36,7 @@
 }
 
 .indicator[data-dot] {
-  --size: var(--umbra-badge-dot-size, var(--umbra-space-3));
+  --size: var(--umbra-badge-dot-size, var(--badge-dot-size, var(--umbra-space-3)));
 
   width: var(--size);
   padding: 0;

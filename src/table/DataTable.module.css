@@ -5,7 +5,10 @@
   --pad-x: var(--umbra-table-cell-padding-x, var(--umbra-space-3));
   --edge-x: var(--umbra-table-edge-padding-x, var(--umbra-density-card-padding));
   /* Sticky cells cover what scrolls under them, so every fill is opaque: mixed into the surface below. */
-  --surface: var(--umbra-table-row-bg, var(--umbra-scroll-fade-color, var(--umbra-context-card-tint)));
+  --surface: var(
+    --umbra-table-row-bg,
+    var(--umbra-scroll-fade-color, var(--scroll-fade-color, var(--umbra-context-card-tint)))
+  );
   --line: var(--umbra-table-border-color, var(--umbra-color-base-border-subtle));
   --group-bg: var(
     --umbra-group-header-bg,
@@ -21,14 +24,14 @@
   color: var(--ink);
   font: var(--umbra-table-font, var(--umbra-font-table-cell));
   /*
-   * Two tokens of other components get the table's own default for what is inside it; a custom
-   * property cannot fall back to the value it would have inherited, so each has a table token that an
-   * app sets from any ancestor instead.
+   * Two tokens of other components get the table's own default for what is inside it, through
+   * private properties: the app's `--umbra-focus-offset` or `--umbra-icon-button-size`, set on any
+   * ancestor, still wins. Each default has a table token too.
    * The table clips, so focus rings are drawn inside the cells and the controls in them.
    */
-  --umbra-focus-offset: var(--umbra-table-focus-offset, calc(-1 * var(--umbra-state-focus-ring-width)));
+  --focus-offset: var(--umbra-table-focus-offset, calc(-1 * var(--umbra-state-focus-ring-width)));
   /* The library's own controls at table density. */
-  --umbra-icon-button-size: var(--umbra-table-control-size, calc(var(--row-h) - 2px));
+  --icon-button-size: var(--umbra-table-control-size, calc(var(--row-h) - 2px));
 }
 
 /* `height="content"`, and what `fill` falls back to by itself in a parent without a height. */
@@ -180,7 +183,7 @@
 /* The focused cell: a ring inside it. Never violet, so focus and selection cannot be confused. */
 :is(.cell, .headerCell, .groupCell):focus-visible {
   outline: var(--umbra-state-focus-ring-width) solid
-    var(--umbra-focus-color, var(--umbra-color-fixed-focus-ring));
+    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-fixed-focus-ring)));
   outline-offset: calc(-1 * var(--umbra-state-focus-ring-width));
 }
 
@@ -257,8 +260,8 @@
 
 .radio:has(:focus-visible) > .radioMark {
   outline: var(--umbra-state-focus-ring-width) solid
-    var(--umbra-focus-color, var(--umbra-color-fixed-focus-ring));
-  outline-offset: var(--umbra-focus-offset, 2px);
+    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-fixed-focus-ring)));
+  outline-offset: var(--umbra-focus-offset, var(--focus-offset, 2px));
 }
 
 .radio[data-disabled] {
