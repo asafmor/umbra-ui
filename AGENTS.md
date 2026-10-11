@@ -10,7 +10,7 @@ The design is **inspired by** 40 screenshots of a game UI in `screenshots/`. It 
 
 ## Current state
 
-**Phase: Milestone 1 (core, tier 1) built and reviewed (`plan/reviews/milestone-1.md`). The first release, `0.1.0`, is prepared and waits for the owner's go-ahead (`docs/releasing.md`). Milestone 2 (tier 2) is next (`plan/prompts/milestone-2.md`).** Update this section whenever the phase or the next step changes.
+**Phase: Milestone 1 (core, tier 1) built and reviewed (`plan/reviews/milestone-1.md`). Milestone 2 (tier 2) is next (`plan/prompts/milestone-2.md`). Nothing is published: the first release, `0.1.0`, is rehearsed (`docs/releasing.md`) and happens only when the owner decides the library is ready for production.** Update this section whenever the phase or the next step changes.
 
 | Step | Status | Artifact |
 |---|---|---|
@@ -53,13 +53,13 @@ The owner approved the plan and delegated the open questions (`plan/reviews/mile
 | Fix pass on what the pages and docs work found | done |
 | Three independent reviews (components twice, release readiness) and their fixes | done; what is still open is in `plan/reviews/milestone-1.md` |
 
-**Next step**: the owner's go-ahead for the `0.1.0` release (`docs/releasing.md`; never publish without it). Then Milestone 2 from `plan/prompts/milestone-2.md`, whose order is decided by demand. A batch is built from `plan/prompts/component-brief.md`, one agent per group in its own git worktree with its own `UMBRA_TEST_PORT`, merged into `main` after the full suite passes.
+**Next step**: Milestone 2 from `plan/prompts/milestone-2.md`: first the open items of Milestone 1 listed there, then the tier 2 components, whose order is decided by demand. No release is planned; never publish without the owner's explicit go-ahead. A batch is built from `plan/prompts/component-brief.md`, one agent per group in its own git worktree with its own `UMBRA_TEST_PORT`, merged into `main` after the full suite passes.
 
 ### Known issues
 
 - Open findings of the reviews: `plan/reviews/milestone-1.md` ("Open"), and the status column of `plan/reviews/milestone-0.md`.
 - Several merged fix branches of Milestone 1 do not pass every check at each intermediate commit (grouped commits, baselines regenerated at the tip). Each merge commit on `main` does.
-- Tests run on Chromium only. Firefox and Safari support is stated from the CSS features' ship dates, not from a test run.
+- Automated tests run on Chromium only, by decision: Firefox and Safari are supported from the minimum versions in the README, without automated tests (`plan/decisions/06-docs-and-testing.md`).
 - Commit `88f6b37` fails lint: the `lint` script arrived one commit before its config.
 - Commit `37fc048` ("WIP: …") fails lint (Prettier, three files). Two more WIP commits pass. They were already pushed, so they stay.
 - Commit `973f274` breaks "tests pass at every commit": it adds two navigation tests whose story arrives in the next commit. It was already pushed, so it stays.

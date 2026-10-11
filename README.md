@@ -223,8 +223,8 @@ The stylesheet relies on current CSS, with no fallbacks for older browsers.
 - **Degrade gracefully**: subgrid (the rows of a `KeyValueList` stop sharing one label column; Chrome 111
   is enough without it), `transition-behavior: allow-discrete` (a scrollbar shows while an `Accordion`
   section opens) and `scrollbar-color`.
-- **Tested** in Chromium only, by the automated tests. Firefox and Safari are expected to work from the
-  versions above and are not tested yet; please report what you find.
+- **Tested** automatically in Chromium only. Firefox and Safari are supported from the versions above
+  without automated tests; please report what you find.
 - **React** 19.0 or later. **Node** 20 or later to render on the server; the package is ESM only.
 - **Server rendering**: every component renders with `renderToString` and hydrates without warnings.
   They are client components (they use state, effects and context): with React Server Components, as in

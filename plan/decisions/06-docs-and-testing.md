@@ -59,3 +59,4 @@ A story costs 12 images (15 when `narrow`), about 45 kB each.
 - `npm run release:check` rehearses the version bump on a temporary copy and checks the tarball; CI runs it, with `npm run examples:standalone` (each example, copied out and installed against the packed tarball).
 - Storybook is published to GitHub Pages by `.github/workflows/docs.yml`, started by hand until the owner enables Pages.
 - The docs samples compile under `exactOptionalPropertyTypes`.
+- Browsers: the automated tests run in Chromium only, by the owner's decision. Firefox and Safari are supported from the minimum versions in the README without automated tests; the support rests on the CSS features used and on a manual checklist run before a release (written in Milestone 2).

@@ -67,14 +67,15 @@ Before any Milestone 2 code:
    `npm run release:check`, `npm run test:examples` and
    `npm run test:visual`, and check the latest CI run with `gh run list`.
    Report exact counts. If something fails, fix that first.
-2. Check whether `0.1.0` has been released (`npm view umbra-ui version`, the
-   git tags, CHANGELOG.md). If it has not, do not release it: that needs my
-   explicit go-ahead. If it has, every change from now on is a change to a
-   published package: say so in the changeset, and do not rename or remove a
-   public prop, part, block, token or export without asking me.
-3. Take the "Open after the three reviews" items of
-   plan/reviews/milestone-1.md that are not marked for the owner, and fix
-   them first, each in its own commit with a test, with the checks passing.
+2. The package is not published and will not be in this milestone: I
+   release only when I am confident it is ready for production. Do not ask
+   for a release and do not prepare one beyond keeping `npm run
+   release:check` green. Until then a public prop, part, block, token or
+   export may still be renamed when a rule in plan/decisions/07 requires it:
+   ask me first, and say so in the changeset.
+3. Fix what Milestone 1 left open (the list under "Open items from
+   Milestone 1" below) before any new component, each in its own commit
+   with a test that fails without it, with the checks passing.
 4. Tell me your plan for Milestone 2: the groups, what each needs from the
    others and from tier 1, new dependencies if any (prefer none: the date
    components should use the platform's `Intl` and React Aria's date
@@ -122,6 +123,73 @@ How the work is run (this is what worked in Milestone 1; keep it):
   real browser, and report findings with a severity, a way to reproduce and
   the plan line contradicted. Fix what they find, each fix with a test that
   fails without it. Record the reviews in plan/reviews/milestone-2.md.
+
+Open items from Milestone 1 (plan/reviews/milestone-1.md, "Open after the
+three reviews"). All of these are requirements of Milestone 2; mark each
+done in that file's table as you fix it:
+- Optional props and `| undefined`: every optional public prop, in every
+  props type, part props type and block, accepts an explicit `undefined`, so
+  an app with `exactOptionalPropertyTypes` can write
+  `prop={condition ? value : undefined}`. Turn the option on in the
+  library's own tsconfig and in the type check of `npm run check:package`,
+  so it cannot regress. Do this first: every new component must follow it.
+- A container never sets another component's token. `Badge`, `Avatar`,
+  `EntityIcon` and the `DataTable` surface still do: give the readers
+  private defaults, then remove the overrides. Add a check that fails when a
+  component's stylesheet declares another component's `--umbra-<name>-*`.
+- Tooltips inside a modal: the truncated-text tooltip and the `DataTable`
+  cell tooltip are inert inside a `Modal`. Fix them, with a test that opens
+  each inside a modal by pointer and by keyboard.
+- `Card` costs about 70 KB gzip because its header overflow imports the
+  menu. Load the menu only when a header overflows (or render the row
+  through context), and put the single-import sizes of `Card`, `Button` and
+  `Skeleton` under a limit in `npm run check:package`.
+- Unused tokens: `space-0`, `size-min-window-width` and
+  `size-min-window-height` are declared and never read. Read the two window
+  sizes from `useNarrow` and the stylesheet instead of the literals 1024 and
+  600, and remove `space-0` unless something needs it. Add a check that
+  every token in plan/tokens.json is read somewhere.
+- Baseline images: 12 per story, 177 MB in total, and tier 2 adds 23
+  components. Propose a trim in your plan (for example all three densities
+  at one size, the other two sizes at one density, tints only for stories
+  that show tinted surfaces), with the number of images and megabytes
+  before and after and what coverage is lost, and wait for my answer. The
+  no-page-scroll check must keep running at every size and density either
+  way: it needs no image.
+- Browsers: Firefox and Safari are supported and are not tested
+  automatically; that is decided (plan/decisions/06). Do not add them to
+  Playwright. What supports the claim instead: keep the minimum versions in
+  README.md and docs/getting-started.md true (add a check that fails when
+  the stylesheet uses a CSS feature newer than those versions, or record by
+  hand each new feature and the version that ships it), use no
+  Chromium-only API or CSS without a fallback, and write
+  docs/browser-checks.md: a short manual checklist (the three page stories,
+  overlays, the table, scrollbars, focus rings) a person runs in Firefox and
+  Safari before a release.
+- Source maps (decided, plan/decisions/05): the package keeps shipping one
+  map per module with the source embedded, and no declaration maps. They
+  cost install size only (about 1.5 MB unpacked, three quarters of it the
+  embedded source), never an app's bundle. What is missing is proof and a
+  limit:
+  - `npm run check:package` checks that every published `.js` has its map,
+    that every map has `sourcesContent`, that every `sources` path stays
+    under `src/` (no absolute path, nothing from `node_modules`, no story or
+    test file), and that a position in a built file resolves to the right
+    line of the original (Node's `module.SourceMap` is enough; no new
+    dependency).
+  - `npm run release:check` prints the share of the package that is maps
+    and fails above a packed-size limit you propose from the measured size
+    after Milestone 2, with some headroom.
+  - One example app proves the maps arrive: a test throws inside a
+    component in the development build and checks the stack names a `.tsx`
+    file of the library.
+  - docs/getting-started.md gets a short "Debugging" note: what ships, and
+    that the maps need no setup in Vite. Check what webpack and Next.js
+    need and say it.
+- Storybook on GitHub Pages: I enable Pages and run the workflow myself.
+  When README.md has a line marked for the site's address and I have given
+  it to you, fill it in, with `homepage` in package.json.
+- Not yours: protecting `main`, vulnerability reporting, the release.
 
 Things Milestone 2 must do to what Milestone 1 left:
 - ShortcutsSheet is the help overlay rendered from the shortcut registry.
@@ -199,8 +267,9 @@ Rules:
   well before any choice that changes how developers use the library.
 - When code and spec disagree, fix the spec in the same change and tell me.
 - Do not publish to npm, create a tag or a GitHub release, or change
-  repository settings. A release needs my explicit go-ahead; the steps are
-  in docs/releasing.md.
+  repository settings. I release when I decide the library is ready for
+  production, not at the end of a milestone; the steps are in
+  docs/releasing.md.
 - Keep AGENTS.md current: update "Current state" and "Next step" after each
   group, and the repo map when a folder or a test file is added.
 

@@ -90,12 +90,13 @@ Of the 20 open items of the Milestone 0 review, 17 were found fixed; the rest ar
 
 | Item | Detail | For |
 |---|---|---|
-| Optional props are not typed `\| undefined` | An app with `exactOptionalPropertyTypes` cannot write `prop={condition ? value : undefined}`. Library-wide. | Before or soon after `0.1.0` |
+| Optional props are not typed `\| undefined` | An app with `exactOptionalPropertyTypes` cannot write `prop={condition ? value : undefined}`. Library-wide. | Milestone 2, first |
 | Some containers still set another component's token | `Badge`, `Avatar`, `EntityIcon` and the `DataTable` surface: their readers need private defaults first. | Milestone 2 |
 | Two tooltips still render outside a modal | The truncated-text tooltip and the `DataTable` cell tooltip are inert inside a `Modal`. | Milestone 2 |
 | `Card` costs about 70 KB gzip | Its header overflow pulls in the menu. A lazy menu, or a row rendered through context, would cut it. | Milestone 2 |
-| Tokens declared and never read | `space-0`, `size-min-window-width`, `size-min-window-height`. | Owner |
-| 12 baseline images per story, 177 MB in total | Policy in decision 06; whether to trim captures is open. | Owner |
-| Browsers | Tested on Chromium only. No real screen reader, zoom or touch testing. | Owner |
+| Tokens declared and never read | `space-0`, `size-min-window-width`, `size-min-window-height`. | Milestone 2 |
+| 12 baseline images per story, 177 MB in total | Policy in decision 06; whether to trim captures is open. | Milestone 2 proposes a trim; the owner decides |
+| Browsers | Decided: Firefox and Safari are supported without automated tests (decision 06). Milestone 2 keeps the stated minimum versions true and writes a manual checklist. No real screen reader, zoom or touch testing yet. | Milestone 2 |
+| Source maps | Decided: one map per module with the source embedded stays (decision 05). Milestone 2 adds the checks and a packed-size limit. | Milestone 2 |
 | Repository settings | Protect `main`, enable private vulnerability reporting, enable Pages for the Storybook workflow. | Owner |
-| The `0.1.0` release itself | Prepared and rehearsed (`docs/releasing.md`); needs the owner's go-ahead. | Owner |
+| The `0.1.0` release itself | Prepared and rehearsed (`docs/releasing.md`). Not now: the owner releases when the library is ready for production. | Owner |
