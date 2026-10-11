@@ -4,9 +4,11 @@ import { Button } from '../basics/Button';
 import { BarChart } from '../charts';
 import { ListItem } from '../data/ListItem';
 import { SearchField } from '../inputs/SearchField';
+import { SegmentedFilter } from '../inputs/SegmentedFilter';
 import { Select } from '../inputs/Select';
 import { Card } from '../layout/Card';
 import { Page } from '../layout/Page';
+import { SectionTitle } from '../layout/SectionTitle';
 import { UmbraProvider } from '../provider/UmbraProvider';
 import { AppShell } from '../shell/AppShell';
 import { Log, Rows } from '../stories/placeholders';
@@ -135,9 +137,86 @@ function ModalWithData() {
 
 /**
  * Data inside a modal: the tooltip of a text that is cut, of a table cell and of a table header, a
- * chart's tooltip, and the menu of a card header that does not fit. Each is above the modal.
+ * chart's tooltip, and the menu of a card header when it does not fit (the test narrows the card). Each
+ * is above the modal.
  */
 export const DataInModal: Story = { render: () => <ModalWithData /> };
+
+const statuses = [
+  { id: 'a', label: 'Open orders', count: 12 },
+  { id: 'b', label: 'Waiting for review', count: 3 },
+  { id: 'c', label: 'Closed this quarter', count: 148 },
+  { id: 'd', label: 'Archived', count: 9 },
+];
+const lineActions = (
+  <>
+    <Button size="small">Add a line</Button>
+    <Button size="small">Import lines</Button>
+  </>
+);
+
+/** Rows that show less as they narrow. `data-box` names the box whose width a test sets. */
+function NarrowingRows() {
+  return (
+    <div style={{ display: 'grid', gap: 12, justifyItems: 'start' }}>
+      <div data-box="card" style={{ width: 480, height: 110, display: 'flex' }}>
+        <Card
+          title="Lines of the order"
+          actions={
+            <>
+              <Button>Add a line</Button>
+              <Button>Import lines</Button>
+            </>
+          }
+        >
+          <Rows count={1} prefix="Line" />
+        </Card>
+      </div>
+      <div data-box="section-title" style={{ width: 480 }}>
+        <SectionTitle actions={lineActions}>Recent activity by region</SectionTitle>
+      </div>
+      <div data-box="segmented-filter" style={{ width: 480 }}>
+        <SegmentedFilter aria-label="Orders" items={statuses} defaultValue="b" />
+      </div>
+    </div>
+  );
+}
+
+/**
+ * A card header, a section title and a segmented filter inside a modal. The focus is in the modal for
+ * as long as it is open, and each still shows what its width has room for: after the fonts arrive, and
+ * after it has been narrower.
+ */
+export const RowsInModal: Story = {
+  render: () => (
+    <AppShell background="flat">
+      <Page>
+        <Card title="Orders">
+          <Rows count={12} prefix="Order" />
+          <Modal defaultOpen size="lg" title="Rows that narrow" footer={<Modal.Close>Close</Modal.Close>}>
+            <NarrowingRows />
+          </Modal>
+        </Card>
+      </Page>
+    </AppShell>
+  ),
+};
+
+/** The same rows inside a popover that has the focus. */
+export const RowsInPopover: Story = {
+  render: () => (
+    <AppShell background="flat">
+      <Page>
+        <Card title="Orders">
+          <Popover defaultOpen size="large" trigger={<Button>Lines</Button>} title="Rows that narrow">
+            <NarrowingRows />
+          </Popover>
+          <Rows count={12} prefix="Order" />
+        </Card>
+      </Page>
+    </AppShell>
+  ),
+};
 
 function PaletteAndModal({ globals }: { globals: Globals }) {
   const [last, setLast] = useState('none');

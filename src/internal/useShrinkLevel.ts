@@ -25,6 +25,12 @@ import { focusLost, holdFocus } from './focus';
  *   until nothing in or beside the row is expanded. A web font that arrives because the menu opened
  *   (its rows use another weight) therefore cannot close it.
  *   The restart then runs as soon as the focus is back on the trigger, in the same task.
+ *   Only the rows that hold such a trigger wait, and all rows restart together once more when they
+ *   can. The others restart at once: the rows inside a popover do not wait for the row that opened it.
+ *   A panel that could not have been opened from the row does not make it wait either: a modal, the
+ *   panel the row itself is in, or any panel when the row has no trigger. So a row inside a modal or a
+ *   popover, where the focus is for as long as it is open, restarts like any other, and so does the
+ *   page behind it. (None did: a header measured before the web fonts arrived stayed as it was.)
  * - Focus. When the focused control is rendered again or moves into the "more" menu, focus goes to its
  *   replacement, or to the first control of the row.
  *
@@ -38,6 +44,14 @@ export const isOverflowing = (el: HTMLElement) => el.scrollWidth > el.clientWidt
 // card and the header of an open accordion section are, for as long as they are open.
 const expanded = '[aria-expanded="true"][aria-haspopup]';
 const overlay = '[role="menu"], [role="listbox"], [role="dialog"]';
+/**
+ * The menu, list or popover that holds `el`: a panel that opens from a trigger and goes when the focus
+ * leaves it. Not the dialog of a `Modal`, which stays for as long as the user works in it.
+ */
+const panelOf = (el: Element | null) => {
+  const panel = el?.closest?.(overlay);
+  return panel?.closest('[data-umbra-overlay]') ? panel : null;
+};
 
 // One observer and one font listener for every row. Rows beside each other give way in an order (a
 // `ShortcutBar` before the pages of its `SubNav`), and that order only holds when they start again
@@ -62,9 +76,10 @@ function apply(updates: Update[]) {
   if (todo.length) flushSync(() => todo.forEach((update) => update()));
 }
 
-// A restart waits while a menu opened from any row is showing: restarting unmounts its trigger. When
-// the menu has gone, focus is on nothing for a frame or two before it is given back to the trigger;
-// the wait for that is bounded, in case it never is. One wait for all rows, so they restart once.
+// A row restarts later while a menu opened from it is showing: restarting unmounts its trigger. The
+// other rows restart now, and all of them together when the menu has gone, so that rows beside each
+// other end in their order. When the menu has gone, focus is on nothing for a frame or two before it
+// is given back to the trigger; the wait for that is bounded, in case it never is.
 // `waited` is also set when the focus leaves a menu for nothing, until it lands somewhere (`focusMoved`):
 // a restart that is first asked for in that moment, by a font that arrives just then, would otherwise
 // draw a new trigger while the focus is on nothing, and the focus would never come back.
@@ -76,23 +91,29 @@ const focusMoved = (event: FocusEvent) => {
     waited = false;
     // The focus is back while a restart waits for it: restart now, not in the next frame. A key
     // pressed in that frame would go to a trigger that is about to be drawn again, and be lost.
-    if (frame) queueMicrotask(restartAll);
-  } else if (!event.relatedTarget && (event.target as Element).closest?.(overlay)) {
+    if (frame) queueMicrotask(restartWaited);
+  } else if (!event.relatedTarget && panelOf(event.target as Element)) {
     waited = true;
     lost = 0;
   }
 };
-function restartAll() {
+const restartAsked = () => restartAll(true);
+const restartWaited = () => restartAll(false);
+/** `asked`: something has changed (a font, a width), as opposed to another look at a restart that waits. */
+function restartAll(asked: boolean) {
   cancelAnimationFrame(frame);
   frame = 0;
-  if ([...rows].some((row) => row.busy())) {
+  const free = [...rows].filter((row) => !row.busy());
+  if (free.length < rows.size) {
     waited = true;
     lost = 0;
+    // Once for each change, not in every frame of the wait.
+    if (asked) apply(free.map((row) => row.restart()));
   } else if (!waited || !focusLost() || lost++ >= 10) {
     waited = false;
-    return apply([...rows].map((row) => row.restart()));
+    return apply(free.map((row) => row.restart()));
   }
-  frame = requestAnimationFrame(restartAll);
+  frame = requestAnimationFrame(restartWaited);
 }
 
 function addRow(row: Row) {
@@ -100,12 +121,12 @@ function addRow(row: Row) {
     const changed = new Set(entries.map((entry) => entry.target));
     const updates = [...rows].filter((r) => r.targets.some((t) => changed.has(t))).map((r) => r.resized());
     // A row that has grown restarts every row, so rows beside each other settle in their order.
-    if (updates.includes('restart')) restartAll();
+    if (updates.includes('restart')) restartAll(true);
     else apply(updates as Update[]);
   });
   // Text measured before a web font arrived may have been wider; start again when fonts finish loading.
   if (!rows.size) {
-    document.fonts?.addEventListener('loadingdone', restartAll);
+    document.fonts?.addEventListener('loadingdone', restartAsked);
     document.addEventListener('focusout', focusMoved, true);
     document.addEventListener('focusin', focusMoved, true);
   }
@@ -125,7 +146,7 @@ function addRow(row: Row) {
       }
     }
     if (!rows.size) {
-      document.fonts?.removeEventListener('loadingdone', restartAll);
+      document.fonts?.removeEventListener('loadingdone', restartAsked);
       document.removeEventListener('focusout', focusMoved, true);
       document.removeEventListener('focusin', focusMoved, true);
       cancelAnimationFrame(frame);
@@ -165,13 +186,22 @@ export function useShrinkLevel(
   // Puts focus back after a change of level; set before the change (see `holdFocus`).
   const refocus = useRef<(() => void) | null>(null);
   const shown = useRef(0);
-  /** The update that renders at `next`, keeping focus. Only for a `next` that is not the level shown. */
-  const to = (next: number): Update => {
+  /** Before a change of level: remembers where the focus is, to put it back when the row has settled. */
+  const hold = () => {
     const el = element.current;
     refocus.current ??= holdFocus(el?.parentElement ?? el);
+  };
+  /** The update that renders at `next`, keeping focus. Only for a `next` that is not the level shown. */
+  const to = (next: number): Update => {
+    hold();
     return () => setLevel(next);
   };
   const checking = useRef(false);
+  // A step asked for after a render (below) is not always drawn at once: React may be busy with a
+  // modal that opens, which then focuses a control of the row before the step removes it. So the focus
+  // is read as late as it can be, when the step is rendered.
+  // eslint-disable-next-line react-hooks/refs -- on purpose: what has the focus just before the commit
+  if (level !== shown.current && !refocus.current) hold();
 
   const reset = useRef<unknown[]>([resetKey, max]);
   // eslint-disable-next-line react-hooks/exhaustive-deps -- measured after every render on purpose; `max` bounds it
@@ -208,10 +238,12 @@ export function useShrinkLevel(
     settled.current = widths();
     const scope = el.parentElement ?? el;
     const busy = () => {
-      const active = document.activeElement;
-      return (
-        !!scope.querySelector(expanded) || (!!active && !scope.contains(active) && !!active.closest(overlay))
-      );
+      // A row that has no steps never changes: the trigger of a popover is often such a `Button`.
+      if (!limit.current) return false;
+      if (scope.querySelector(expanded)) return true;
+      // A menu that is closing: its trigger is no longer expanded, and the focus is still in it.
+      const panel = panelOf(document.activeElement);
+      return !!panel && !panel.contains(scope) && !!scope.querySelector('[aria-haspopup]');
     };
     const restart = () => {
       if (shown.current !== 0) return to(0);
