@@ -21,27 +21,27 @@ const grid = { display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))'
 
 function Pressable() {
   const [count, setCount] = useState(0);
-  const [selected, setSelected] = useState('advice');
+  const [selected, setSelected] = useState('inbox');
   return (
     <>
       <div style={grid}>
         <SummaryTile
           icon={<Lightbulb />}
-          title="Advice"
-          value="Insights (8)"
-          selected={selected === 'advice'}
+          title="Inbox"
+          value="8 unread"
+          selected={selected === 'inbox'}
           onPress={() => {
-            setSelected('advice');
+            setSelected('inbox');
             setCount(count + 1);
           }}
         />
         <SummaryTile
           icon={<Users />}
-          title="Duties"
-          value="Shared"
-          selected={selected === 'duties'}
+          title="Access"
+          value="Restricted"
+          selected={selected === 'access'}
           onPress={() => {
-            setSelected('duties');
+            setSelected('access');
             setCount(count + 1);
           }}
         />
@@ -64,20 +64,20 @@ export const Tiles: Story = {
     <div style={{ display: 'grid', gap: 16 }}>
       <Section label="Links (href): icon, title, value, caption and trend">
         <div style={grid}>
-          <SummaryTile href="#advice" icon={<Lightbulb />} title="Advice" value="Insights (8)" />
+          <SummaryTile href="#inbox" icon={<Lightbulb />} title="Inbox" value="8 unread" />
           <SummaryTile
-            href="#reviews"
+            href="#checks"
             icon={<ClipboardList />}
-            title="Review results"
-            value="1 positive / 11 negative"
+            title="Checks"
+            value="9 passed · 2 failed"
             caption="Last 30 days"
             trend={<TrendStandIn down>3</TrendStandIn>}
           />
           <SummaryTile
-            href="#plan"
+            href="#storage"
             title="No icon"
-            value="Plan B · balanced"
-            caption="Chosen in March"
+            value="Archive tier"
+            caption="Changed in March"
             selected
           />
         </div>
@@ -102,27 +102,27 @@ export const InLayout: Story = {
     <Columns style={{ height: '100%' }}>
       <Stack size={4}>
         <Columns size="content">
-          <SummaryTile href="#advice" icon={<Lightbulb />} title="Advice" value="Insights (8)" />
+          <SummaryTile href="#inbox" icon={<Lightbulb />} title="Inbox" value="8 unread" />
           <SummaryTile
-            href="#plan"
+            href="#storage"
             icon={<Target />}
-            title="Primary plan"
-            value="Plan B · balanced, with a long name"
+            title="Storage"
+            value="Archive tier, with a long name"
             selected
           />
           <SummaryTile
-            href="#reviews"
+            href="#checks"
             icon={<ClipboardList />}
-            title="Review results"
-            value="1 positive / 11 negative"
+            title="Checks"
+            value="9 passed · 2 failed"
             trend={<TrendStandIn down>3</TrendStandIn>}
           />
           <SummaryTile
-            href="#duties"
+            href="#access"
             icon={<Users />}
-            title="Duties"
-            value="Shared"
-            caption="Lead and staff"
+            title="Access"
+            value="Restricted"
+            caption="Admins only"
           />
         </Columns>
         <Card title="Schedule">
@@ -147,10 +147,10 @@ export const Narrowing: Story = {
       {widths.map((width) => (
         <Section key={width} label={`${width}px`} width={width}>
           <SummaryTile
-            href="#reviews"
+            href="#checks"
             icon={<ClipboardList />}
-            title="Review results"
-            value="11 negative"
+            title="Automated checks"
+            value="2 failed"
             caption="Last 30 days"
             trend={<TrendStandIn down>3</TrendStandIn>}
           />
@@ -168,7 +168,7 @@ export const Customised: Story = {
         <SummaryTile
           href="#a"
           icon={<Users />}
-          title="Team"
+          title="Owner"
           value="Person A"
           parts={{ icon: <strong style={{ fontSize: 28 }}>PA</strong> }}
         />
@@ -188,7 +188,7 @@ export const Customised: Story = {
         <SummaryTile
           href="#c"
           icon={<Lightbulb />}
-          title="Advice"
+          title="Inbox"
           value="8"
           parts={{
             value: (p) => (
@@ -221,7 +221,7 @@ export const Customised: Story = {
             } as React.CSSProperties
           }
         >
-          <SummaryTile href="#e" icon={<Users />} title="Duties" value="Shared" />
+          <SummaryTile href="#e" icon={<Users />} title="Access" value="Restricted" />
         </div>
       </Section>
       <Section label="Blocks composed by hand" width={260}>

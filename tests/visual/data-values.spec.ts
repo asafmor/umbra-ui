@@ -239,27 +239,27 @@ test.describe('SummaryTile', () => {
     page,
   }) => {
     await open(page, 'data-summarytile--tiles');
-    const advice = page.getByRole('button', { name: /Advice/ });
-    const duties = page.getByRole('button', { name: /Duties/ });
-    await expect(advice).toHaveAttribute('aria-pressed', 'true');
-    await expect(duties).toHaveAttribute('aria-pressed', 'false');
+    const inbox = page.getByRole('button', { name: /Inbox/ });
+    const access = page.getByRole('button', { name: /Access/ });
+    await expect(inbox).toHaveAttribute('aria-pressed', 'true');
+    await expect(access).toHaveAttribute('aria-pressed', 'false');
 
     await page.getByRole('link', { name: /No icon/ }).focus();
     await expect(page.getByRole('link', { name: /No icon/ })).toHaveAttribute('aria-current', 'true');
     await page.keyboard.press('Tab');
-    await expect(advice).toBeFocused();
+    await expect(inbox).toBeFocused();
     await page.keyboard.press('Tab');
-    await expect(duties).toBeFocused();
+    await expect(access).toBeFocused();
     // The focus ring is drawn inside the tile, in the focus colour.
-    await expect(duties).toHaveCSS('outline-style', 'solid');
-    await expect(duties).toHaveCSS('outline-offset', '-2px');
+    await expect(access).toHaveCSS('outline-style', 'solid');
+    await expect(access).toHaveCSS('outline-offset', '-2px');
 
     await page.keyboard.press('Enter');
     await expect(page.getByText('Pressed 1 times')).toBeVisible();
-    await expect(duties).toHaveAttribute('aria-pressed', 'true');
-    await expect(advice).toHaveAttribute('aria-pressed', 'false');
+    await expect(access).toHaveAttribute('aria-pressed', 'true');
+    await expect(inbox).toHaveAttribute('aria-pressed', 'false');
     await expect(
-      page.locator('[data-umbra="summary-tile"][data-selected]', { hasText: 'Duties' }),
+      page.locator('[data-umbra="summary-tile"][data-selected]', { hasText: 'Access' }),
     ).toBeVisible();
     await page.keyboard.press('Space');
     await expect(page.getByText('Pressed 2 times')).toBeVisible();
@@ -274,7 +274,7 @@ test.describe('SummaryTile', () => {
   test('hover lightens a tile and darkens a selected one', async ({ page }) => {
     await open(page, 'data-summarytile--tiles');
     const background = (tile: Locator) => tile.evaluate((el) => getComputedStyle(el).backgroundColor);
-    for (const name of [/Advice Insights/, /No icon/]) {
+    for (const name of [/Inbox 8 unread/, /No icon/]) {
       const tile = page.getByRole('link', { name });
       const rest = await background(tile);
       await tile.hover();
