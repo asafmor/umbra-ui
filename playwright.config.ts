@@ -8,8 +8,9 @@ export default defineConfig({
   testDir: 'tests/visual',
   snapshotPathTemplate: '{testDir}/__screenshots__/{arg}{ext}',
   fullyParallel: true,
-  // A test that passes on a second try is reported as flaky, not hidden.
-  retries: process.env.CI ? 2 : 0,
+  // No retries, in CI either: a retry hides a flaky test. The interaction specs passed five repeats in
+  // a row (1950 of 1950) on 2026-10-11, so a failure is a failure.
+  retries: 0,
   reporter: [['list']],
   use: { baseURL: `http://localhost:${port}`, browserName: 'chromium' },
   // Strict on purpose. With the default colour threshold a dark border that moves on a dark page passes,
