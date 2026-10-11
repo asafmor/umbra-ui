@@ -65,14 +65,6 @@
   contain-intrinsic-block-size: var(--umbra-chart-content-height, 240px);
 }
 
-/* Safari before 17 has no `contain-intrinsic-block-size`: there a minimum height keeps the plot of a
-   chart with `height="content"` open. */
-@supports not (contain-intrinsic-block-size: 1px) {
-  .root[data-height='content'] .plot {
-    min-height: var(--umbra-chart-content-height, 240px);
-  }
-}
-
 .marks {
   position: absolute;
   inset: 0;

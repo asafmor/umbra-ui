@@ -212,25 +212,27 @@ The [README](../README.md#components) has one line on each.
 
 The stylesheet relies on current CSS and has no fallbacks for older browsers.
 
-| Browser         | Minimum | Set by                   |
-| --------------- | ------- | ------------------------ |
-| Chrome and Edge | 117     | subgrid                  |
-| Firefox         | 121     | `:has()`                 |
-| Safari          | 16.2    | `color-mix()` in `oklab` |
+| Browser         | Minimum | Set by                                          |
+| --------------- | ------- | ----------------------------------------------- |
+| Chrome and Edge | 117     | subgrid                                         |
+| Firefox         | 125     | The Popover API                                 |
+| Safari          | 17.0    | The Popover API, `contain-intrinsic-block-size` |
 
-| Feature                               | Used for                                                         | Without it                                                                                    |
-| ------------------------------------- | ---------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| `color-mix()` in `oklab`              | Tints, hover and pressed colours, borders                        | Required: those colours are missing                                                           |
-| `:has()`                              | States that depend on a child (a hovered trigger)                | Required                                                                                      |
-| Container queries                     | Showing less as a component narrows                              | Required: content is cut instead                                                              |
-| `dvh` and `dvw` units                 | The shell is exactly the window                                  | Required                                                                                      |
-| Subgrid                               | One label column for every row of a `KeyValueList`               | Degrades: each row sizes its own label. Chrome 111 is enough.                                 |
-| `transition-behavior: allow-discrete` | Hiding the scrollbar while an `Accordion` panel opens            | Degrades: the scrollbar shows during the transition                                           |
-| `scrollbar-color`, `scrollbar-width`  | Thin scrollbars in Firefox                                       | Degrades: Chrome before 121 and Safari take the `::-webkit-scrollbar` rules                   |
-| `lh` unit                             | Centring a checkbox, a radio or one line of text on its row      | Degrades in Safari 16.2 and 16.3: a few pixels off; nothing is hidden                         |
-| `contain-intrinsic-block-size`        | The 240px of a chart that has no height to fill                  | Safari before 17: `height="content"` has a fallback; give other charts a parent with a height |
-| `safe` alignment                      | An `EmptyState` taller than its slot stays readable from the top | Safari before 17.6: centred by a fallback, cut at both ends when too tall                     |
-| Popover API                           | The chart tooltip, above everything                              | Firefox before 125, Safari before 17: a fixed element, which a clipping ancestor can cut      |
+| Feature                               | Used for                                                         | Without it                                                                                                                 |
+| ------------------------------------- | ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `color-mix()` in `oklab`              | Tints, hover and pressed colours, borders                        | Required: those colours are missing                                                                                        |
+| `:has()`                              | States that depend on a child (a hovered trigger)                | Required                                                                                                                   |
+| Container queries                     | Showing less as a component narrows                              | Required: content is cut instead                                                                                           |
+| `dvh` and `dvw` units                 | The shell is exactly the window                                  | Required                                                                                                                   |
+| Subgrid                               | One label column for every row of a `KeyValueList`               | Degrades: each row sizes its own label. Chrome 111 is enough.                                                              |
+| `transition-behavior: allow-discrete` | Hiding the scrollbar while an `Accordion` panel opens            | Degrades: the scrollbar shows during the transition                                                                        |
+| `scrollbar-color`, `scrollbar-width`  | Thin scrollbars in Firefox                                       | Degrades: Chrome before 121 and Safari take the `::-webkit-scrollbar` rules; Firefox 153 and 154 show their own scrollbars |
+| `lh` unit                             | Centring a checkbox, a radio or one line of text on its row      | Required (Safari 16.4): a few pixels off                                                                                   |
+| `contain-intrinsic-block-size`        | The 240px of a chart that has no height to fill                  | Required (Safari 17): the chart has no height                                                                              |
+| `rx` in CSS                           | The corner radius of the bars of a `BarChart`                    | Safari before 17.4: 2px, whatever `--umbra-chart-bar-radius` says                                                          |
+| Navigation API                        | `HistoryButtons` disable back or forward at the end of history   | Firefox before 147, Safari before 26.2: both stay enabled                                                                  |
+| `safe` alignment                      | An `EmptyState` taller than its slot stays readable from the top | Safari before 17.6: centred by a fallback, cut at both ends when too tall                                                  |
+| Popover API                           | The chart tooltip, above everything                              | Required (Firefox 125, Safari 17): a clipping ancestor can cut the tooltip                                                 |
 
 - `npm run lint` fails when the stylesheet or the code uses a feature newer than the minimums without a
   fallback (`scripts/check-browsers.mjs` holds the list, with the version of each browser that ships it).

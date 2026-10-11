@@ -87,7 +87,9 @@ The history keeps the removed images: the repository does not shrink, it stops g
 
 ## Browsers: what keeps the minimums true (added 2026-10-11)
 
-Minimums: Chrome and Edge 117, Firefox 121, Safari 16.2. No automated test runs in Firefox or Safari.
+Minimums: Chrome and Edge 117, Firefox 125, Safari 17.0. No automated test runs in Firefox or Safari.
+
+**Minimums raised (2026-10-11, owner's delegation)**: Firefox 121 becomes 125 and Safari 16.2 becomes 17.0; Chrome and Edge stay at 117. The check found three things that were not true below them: the `lh` unit (Safari 16.4) put six alignments a few pixels off; a `fill` chart in a parent without a height had no height in Safari before 17 (`contain-intrinsic-block-size`); and the chart tooltip was not in the top layer (the Popover API) in Firefox before 125 and Safari before 17. Honest minimums beat degraded ones nobody tested. The three notes left the script, and so did the `@supports not (contain-intrinsic-block-size: 1px)` fallback of the chart, which no supported browser reads. The rest of this section is as first written, except where it says otherwise.
 
 | What | Where |
 |---|---|
@@ -105,12 +107,21 @@ Minimums: Chrome and Edge 117, Firefox 121, Safari 16.2. No automated test runs 
 | `:dir(rtl)` (Chrome 120, Safari 16.4) in 11 rules of 7 stylesheets. The minifier rewrote each to `:lang(ar, he, …)`, in the package and in the Storybook the tests run on: a page with `dir="rtl"` and no right-to-left `lang` lost those rules in every browser. The tests passed because the stories set a Hebrew locale. | The rules are written `:is([dir='rtl'], [dir='rtl'] *)`. |
 | The direction of a locale was `ltr` for every locale in Firefox before 153, which has no `Intl.Locale` text info. | The script of the locale decides there (unit-tested). |
 | `justify-content: safe center` (Safari 17.6) left an `EmptyState` at the top of its slot. | A `center` fallback inside `@supports not`. A plain fallback line above it does not survive the minifier. |
-| `contain-intrinsic-block-size` (Safari 17) left a chart with `height="content"` without a height. | A `min-height` inside `@supports not`. |
+| `contain-intrinsic-block-size` (Safari 17) left a chart with `height="content"` without a height. | A `min-height` inside `@supports not`. Removed when the minimum Safari became 17.0. |
 
-**Newer than a minimum, kept, each with its note in the script**: the `lh` unit (Safari 16.4), `transition-behavior`, `scrollbar-width` and `scrollbar-color`, the unprefixed `mask`, `backdrop-filter`, `user-select` and `line-clamp`, the Popover API of the chart tooltip (Firefox 125, Safari 17), `Intl.Locale` text info.
+**Newer than a minimum, kept, each with its note in the script** (after the raise): `safe` alignment (Safari 17.6), `transition-behavior` (Firefox 129, Safari 17.4), `scrollbar-width` and `scrollbar-color` (Chrome 121; Safari 18.2 and 26.2), the unprefixed `mask` (Chrome 120), `backdrop-filter` (Safari 18), `user-select` and `line-clamp`, `Intl.Locale` text info (Chrome 130, Firefox 153). The `lh` unit, `contain-intrinsic-block-size` and the Popover API are now within the minimums.
+
+**Found when the minimums were re-verified against browser-compat-data 8.1.5 (2026-10-11)**, by looking up every property, at-rule, selector, function and unit of `dist/styles.css` and every member name of `dist/*.js`, not only the rows of the table:
+
+| Finding | Done |
+|---|---|
+| `rx` as a CSS property (Safari 17.4) had no row: the bars of a `BarChart` had square corners in Safari 17.0 to 17.3. | The bar carries `rx={2}` as an attribute, which the stylesheet overrides where it can; a row and a note. |
+| The Navigation API in `HistoryButtons` (Firefox 147, Safari 26.2) was listed as not used: the pattern missed `window.navigation`. It already had a fallback (both buttons stay enabled). | The pattern finds it; a note. |
+| Firefox 153 and 154 answer `@supports selector(::-webkit-scrollbar)` with true and draw none of the rules (reverted in 155): the thin scrollbars of `ScrollArea` and `Menu` are the browser's own there. | Noted only. Open (owner) below. |
 
 **Open (owner)**
 
-- Safari 16.2 and 16.3 lack the `lh` unit: six alignments are a few pixels off there. Safari 16.4 as the minimum would end that, and would allow `:dir()` together with Chrome 120.
-- A `fill` chart in a parent without a height has no height in Safari before 17 (the fallback covers `height="content"` only), and the chart tooltip is not in the top layer in Firefox before 125 and Safari before 17. Neither has been seen in those browsers: both are on the checklist. Safari 17 and Firefox 125 as the minimums would end both.
+- Closed by the raise: Safari 16.2 and 16.3 lack the `lh` unit (six alignments a few pixels off). `:dir()` still needs Chrome 120.
+- Closed by the raise: a `fill` chart in a parent without a height has no height in Safari before 17, and the chart tooltip is not in the top layer in Firefox before 125 and Safari before 17.
+- Firefox 153 and 154 show their own scrollbars (above). A condition that only Firefox passes, in place of `not selector(::-webkit-scrollbar)`, would end it; it changes two stylesheets and wants a look in Firefox.
 - No real screen reader, zoom or touch testing yet.

@@ -55,7 +55,7 @@ adding one; it is short.
 
 ### Browsers
 
-The tests run in Chromium. Firefox 121 and Safari 16.2 are supported too, so `npm run lint` fails when
+The tests run in Chromium. Firefox 125 and Safari 17.0 are supported too, so `npm run lint` fails when
 the CSS or the code uses a feature newer than the minimum versions (`scripts/check-browsers.mjs`). When
 it does: use an older form, or add a fallback and a note in that file saying what happens without the
 feature. A right-to-left rule is written `.x:is([dir='rtl'], [dir='rtl'] *)`, not `.x:dir(rtl)`.
