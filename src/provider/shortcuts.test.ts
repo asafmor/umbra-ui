@@ -2,6 +2,8 @@ import { expect, test } from 'vitest';
 import {
   conflictMessage,
   formatKeys,
+  keyCaps,
+  listShortcuts,
   matchesKeys,
   ownedShortcut,
   resolveShortcuts,
@@ -110,4 +112,31 @@ test('formats key hints per platform', () => {
   expect(formatKeys('Mod+Shift+K', true)).toBe('⇧⌘K');
   expect(formatKeys('Alt+ArrowLeft', false)).toBe('Alt+←');
   expect(formatKeys('Alt+ArrowRight', true)).toBe('⌥→');
+});
+
+test('the keys one by one, for key caps', () => {
+  expect(keyCaps('Mod+Shift+K', false)).toEqual(['Ctrl', 'Shift', 'K']);
+  expect(keyCaps('Mod+K', true)).toEqual(['⌘', 'K']);
+  expect(keyCaps('?', false)).toEqual(['?']);
+  expect(keyCaps('ArrowUp', false)).toEqual(['↑']);
+});
+
+test('a list of shortcuts holds the labelled ones that own their keys, with group and origin', () => {
+  const library = [...reserved, { id: 'lib.sheet', keys: '?', label: 'Help' }];
+  const registry = resolveShortcuts(
+    [
+      { id: 'app.find', keys: 'Mod+K', label: 'Find', group: 'Search' },
+      { id: 'a', keys: 'G', label: 'A' },
+      { id: 'b', keys: 'g', label: 'B' },
+      { id: 'hidden', keys: 'H', label: '' },
+      { id: 'lib.sheet', keys: 'Mod+/', label: 'Help' },
+    ],
+    library,
+    false,
+  );
+  const listed = listShortcuts(registry, library);
+  // The palette lost its keys to "Find", "a" lost to "b", and a shortcut without a label is not listed.
+  expect(listed.map((s) => s.id).sort()).toEqual(['app.find', 'b', 'lib.sheet']);
+  expect(listed.find((s) => s.id === 'lib.sheet')).toMatchObject({ keys: 'Mod+/', reserved: true });
+  expect(listed.find((s) => s.id === 'app.find')).toMatchObject({ reserved: false, group: 'Search' });
 });
