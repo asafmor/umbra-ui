@@ -9,11 +9,94 @@ import {
 } from 'react';
 import { Tooltip as AriaTooltip, TooltipTriggerStateContext } from 'react-aria-components';
 import tooltipStyles from '../overlays/Tooltip.module.css';
+import { useOverlayLayer } from '../overlays/shared';
 import { useScopeAttributes } from '../provider/UmbraProvider';
 import { defined } from '../utils/defined';
 
 /** Milliseconds before the tip shows on hover, as for `Tooltip`. Keyboard focus shows it at once. */
 const HOVER_DELAY = 500;
+
+/**
+ * Milliseconds the tip stays after the pointer has left its element: time to move the pointer onto the
+ * tip, which stays while the pointer is over it (WCAG 1.4.13), as for `Tooltip`.
+ */
+export const TIP_CLOSE_DELAY = 200;
+
+/**
+ * Internal: the tooltip the library opens by itself, against an element that is not a `Tooltip`
+ * trigger. The one place such a tooltip is rendered: it takes the layer and the container every overlay
+ * takes (`useOverlayLayer`), so inside a modal it is in the modal's layer. The owner holds the open
+ * state and its timer, and is told what the tip wants: `onOpenChange(true)` while the pointer is over
+ * the tip, `(false, TIP_CLOSE_DELAY)` when it leaves, `(false)` on Escape.
+ */
+/** Closes the tip that is open, if any. */
+let closeOpenTip: (() => void) | undefined;
+
+export function Tip({
+  anchor,
+  open,
+  onOpenChange,
+  children,
+}: {
+  anchor: RefObject<HTMLElement | null>;
+  open: boolean;
+  onOpenChange: (open: boolean, delay?: number) => void;
+  children: ReactNode;
+}) {
+  const scope = useScopeAttributes();
+  const layer = useOverlayLayer('tooltip');
+  const change = useRef(onOpenChange);
+  useEffect(() => {
+    change.current = onOpenChange;
+  });
+  useEffect(() => {
+    if (!open) return;
+    // One tip at a time: this one closes the one that was open.
+    const close = () => change.current(false);
+    closeOpenTip?.();
+    closeOpenTip = close;
+    // Escape dismisses it, wherever the focus is, and nothing else: a modal around it stays open.
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      event.stopPropagation();
+      close();
+    };
+    document.addEventListener('keydown', onKey, true);
+    return () => {
+      if (closeOpenTip === close) closeOpenTip = undefined;
+      document.removeEventListener('keydown', onKey, true);
+    };
+  }, [open]);
+  // React Aria's tooltip reads its state from this context, which a `TooltipTrigger` would supply.
+  const state = useMemo(
+    () => ({
+      isOpen: open,
+      shouldSkipAnimation: false,
+      open: () => change.current(true),
+      close: (immediate?: boolean) => change.current(false, immediate ? 0 : TIP_CLOSE_DELAY),
+    }),
+    [open],
+  );
+  return (
+    <TooltipTriggerStateContext value={state}>
+      <AriaTooltip
+        {...scope}
+        {...defined(layer)}
+        triggerRef={anchor}
+        placement="top"
+        offset={6}
+        data-umbra="tooltip"
+        data-umbra-overlay=""
+        {...defined({ className: tooltipStyles.root })}
+        style={scope.style}
+      >
+        <span data-part="body" className={tooltipStyles.body}>
+          {children}
+        </span>
+      </AriaTooltip>
+    </TooltipTriggerStateContext>
+  );
+}
 
 /** True when the element's text is cut short by its ellipsis. */
 const isTruncated = (el: HTMLElement) => el.scrollWidth > el.clientWidth;
@@ -33,81 +116,65 @@ export function useHoverTip(
   /** Hovering the link or button around the element counts, for an element that the control covers. */
   hoverOwner = false,
 ) {
-  const scope = useScopeAttributes();
   const [open, setOpen] = useState(false);
   const latest = useRef(when);
   useEffect(() => {
     latest.current = when;
   });
+  // One timer: a later change replaces a pending one.
+  const timer = useRef<number>(undefined);
+  const later = (change: () => void, delay = 0) => {
+    window.clearTimeout(timer.current);
+    if (delay) timer.current = window.setTimeout(change, delay);
+    else change();
+  };
 
   useEffect(() => {
     const el = element.current;
     if (!el) return;
-    const owner = el.closest<HTMLElement>('a[href], button, [tabindex]') ?? el;
-    let timer: number | undefined;
-    const show = (delay: number) => {
-      window.clearTimeout(timer);
-      timer = window.setTimeout(() => setOpen(latest.current(el)), delay);
-    };
-    const hide = () => {
-      window.clearTimeout(timer);
-      setOpen(false);
-    };
+    // The control around the element: a link, a button or a row. Never a container that only holds the
+    // focus for its content (a modal's dialog), or every tip inside it would answer to any focus.
+    const owner =
+      el.closest<HTMLElement>('a[href], button, [tabindex]:not([role="dialog"], [role="alertdialog"])') ?? el;
+    const show = (delay: number) => later(() => setOpen(latest.current(el)), delay);
+    const hide = () => later(() => setOpen(false));
     const onEnter = () => show(HOVER_DELAY);
-    // `focusin` also reports a link or button inside the element.
-    const onFocus = (event: FocusEvent) => (event.target as Element).matches(':focus-visible') && show(0);
+    // Not at once: the pointer may be on its way to the tip. When it is already there, the tip has been
+    // told (React reports that before this event arrives), and it is the tip that closes.
+    const onLeave = (event: PointerEvent) => {
+      const onTip = (event.relatedTarget as Element | null)?.closest?.('[data-umbra="tooltip"]');
+      if (!onTip) later(() => setOpen(false), TIP_CLOSE_DELAY);
+    };
+    // The focus is on the control itself, or on a link or button inside the element.
+    const onFocus = (event: FocusEvent) => {
+      const target = event.target as Element;
+      if ((target === owner || el.contains(target)) && target.matches(':focus-visible')) show(0);
+    };
     const hovered = hoverOwner ? owner : el;
     hovered.addEventListener('pointerenter', onEnter);
-    hovered.addEventListener('pointerleave', hide);
+    hovered.addEventListener('pointerleave', onLeave);
     hovered.addEventListener('pointerdown', hide);
     owner.addEventListener('focusin', onFocus);
     owner.addEventListener('focusout', hide);
     return () => {
-      window.clearTimeout(timer);
+      window.clearTimeout(timer.current);
       hovered.removeEventListener('pointerenter', onEnter);
-      hovered.removeEventListener('pointerleave', hide);
+      hovered.removeEventListener('pointerleave', onLeave);
       hovered.removeEventListener('pointerdown', hide);
       owner.removeEventListener('focusin', onFocus);
       owner.removeEventListener('focusout', hide);
     };
   }, [element, hoverOwner]);
 
-  // Escape dismisses it, wherever the focus is.
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (event: KeyboardEvent) => event.key === 'Escape' && setOpen(false);
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [open]);
-
   const empty = content === undefined || content === null || content === false || content === '';
-  // React Aria's tooltip reads its state from this context, which a `TooltipTrigger` would supply.
-  const state = useMemo(
-    () => ({
-      isOpen: open && !empty,
-      shouldSkipAnimation: false,
-      open: () => setOpen(true),
-      close: () => setOpen(false),
-    }),
-    [open, empty],
-  );
   return (
-    <TooltipTriggerStateContext value={state}>
-      <AriaTooltip
-        {...scope}
-        triggerRef={element}
-        placement="top"
-        offset={6}
-        data-umbra="tooltip"
-        data-umbra-overlay=""
-        {...defined({ className: tooltipStyles.root })}
-        style={scope.style}
-      >
-        <span data-part="body" className={tooltipStyles.body}>
-          {content}
-        </span>
-      </AriaTooltip>
-    </TooltipTriggerStateContext>
+    <Tip
+      anchor={element}
+      open={open && !empty}
+      onOpenChange={(next, delay) => later(() => setOpen(next), delay)}
+    >
+      {content}
+    </Tip>
   );
 }
 

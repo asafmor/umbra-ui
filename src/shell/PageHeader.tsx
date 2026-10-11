@@ -8,9 +8,8 @@ import {
   type RefObject,
 } from 'react';
 import { ButtonBase } from '../basics/Button';
+import { ActionsOverflow } from '../internal/ActionsOverflow';
 import { useShrinkLevel } from '../internal/useShrinkLevel';
-import { MoreButton } from '../layout/SectionTitle';
-import { ActionsOverflow } from '../overlays/Menu';
 import { textColourOn } from '../provider/contrast';
 import { Tooltip } from '../overlays/Tooltip';
 import { Icon } from '../provider/icons';
@@ -297,13 +296,7 @@ function Actions({ moreLabel = 'More actions', className, style, children }: Pag
   const header = useHeader();
   return (
     <div data-part="actions" className={cx(styles.actions, className)} style={style}>
-      {header.taken('actions') ? (
-        <ActionsOverflow label={moreLabel} trigger={<MoreButton label={moreLabel} />}>
-          {children}
-        </ActionsOverflow>
-      ) : (
-        children
-      )}
+      {header.taken('actions') ? <ActionsOverflow label={moreLabel}>{children}</ActionsOverflow> : children}
     </div>
   );
 }

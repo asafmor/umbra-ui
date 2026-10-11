@@ -3,6 +3,7 @@ import {
   Fragment,
   isValidElement,
   useContext,
+  useId,
   useRef,
   useState,
   type CSSProperties,
@@ -18,10 +19,12 @@ import {
   MenuTrigger,
   Popover as AriaPopover,
   Pressable,
+  RootMenuTriggerStateContext,
   Separator as AriaSeparator,
   SubmenuTrigger,
+  type Key,
 } from 'react-aria-components';
-import { OverflowMenuContext } from '../internal/contexts';
+import { OverflowMenuContext, type OverflowRowProps } from '../internal/contexts';
 import { CheckMark, Hint } from '../internal/menuRow';
 import { Icon, IconSlot } from '../provider/icons';
 import { useScopeAttributes } from '../provider/UmbraProvider';
@@ -309,6 +312,33 @@ interface PanelProps {
   style?: CSSProperties | undefined;
 }
 
+/**
+ * What React Aria's `MenuTrigger` gives a menu and its submenus, for a menu that has no trigger of
+ * that kind: one opened against an anchor, or by the "more" button of a row of actions. Without it a
+ * row chosen in a submenu closes the submenu and leaves the menu open. The submenu stack follows
+ * React Stately's `useMenuTriggerState`.
+ */
+function useRootMenuState(open: boolean, onOpenChange: ((open: boolean) => void) | undefined) {
+  const [stack, setStack] = useState<Key[]>([]);
+  if (!open && stack.length) setStack([]);
+  return {
+    isOpen: open,
+    focusStrategy: null,
+    // Where a context menu opens: this menu has its anchor instead.
+    point: null,
+    setPoint: () => {},
+    setOpen: (next: boolean) => onOpenChange?.(next),
+    open: () => onOpenChange?.(true),
+    toggle: () => onOpenChange?.(!open),
+    close: () => onOpenChange?.(false),
+    expandedKeysStack: stack,
+    openSubmenu: (key: Key, level: number) =>
+      setStack((old) => (level > old.length ? old : [...old.slice(0, level), key])),
+    closeSubmenu: (key: Key, level: number) =>
+      setStack((old) => (old[level] === key ? old.slice(0, level) : old)),
+  };
+}
+
 function Surface({
   sub,
   anchorRef,
@@ -325,7 +355,8 @@ function Surface({
   const scope = useScopeAttributes();
   const layer = useOverlayLayer('popover');
   const flipWhenCut = useFlipWhenCut(maxHeight);
-  return (
+  const root = useRootMenuState(!!open, onOpenChange);
+  const popover = (
     <AriaPopover
       {...scope}
       {...defined(layer)}
@@ -350,6 +381,12 @@ function Surface({
     >
       {children}
     </AriaPopover>
+  );
+  // Inside a `MenuTrigger` or a submenu the state is React Aria's own.
+  return anchorRef ? (
+    <RootMenuTriggerStateContext value={root}>{popover}</RootMenuTriggerStateContext>
+  ) : (
+    popover
   );
 }
 
@@ -588,29 +625,88 @@ function rowsOnly(children: ReactNode): ReactNode {
   });
 }
 
-/**
- * Internal: a "more" button that opens `children` as a menu, for actions that no longer fit in a row.
- * Each `Button` and `IconButton` among them renders as a menu item, and each `Menu` as a submenu.
- */
-export function ActionsOverflow({
+/** A `Button` or `IconButton` as a row of the overflow menu: a toggle is a checkbox item, a link stays a link. */
+function OverflowRow({
   label,
-  trigger,
+  text,
+  href,
+  disabled,
+  pressed,
+  shortcut,
+  onPress,
+  className,
+  children,
+}: OverflowRowProps) {
+  const id = useId();
+  const item = (
+    <AriaMenuItem
+      id={id}
+      {...defined({ 'aria-label': label })}
+      textValue={text ?? label ?? ''}
+      {...defined({ href: disabled ? undefined : href })}
+      isDisabled={disabled}
+      {...defined({ onAction: onPress })}
+      data-part="item"
+      {...defined({ className: cx(styles.item, className) })}
+    >
+      {({ hasSubmenu }) => (
+        <>
+          {children}
+          {shortcut && <Hint id={shortcut} />}
+          {/* At the end of the row, so the icons of the rows stay in one column. */}
+          {pressed !== undefined && <CheckMark shown={pressed} />}
+          {hasSubmenu && <Icon name="chevronRight" part="submenuIndicator" />}
+        </>
+      )}
+    </AriaMenuItem>
+  );
+  // A toggle is a checkbox item. Its state stays the button's own `pressed`.
+  return pressed === undefined ? (
+    item
+  ) : (
+    <AriaMenuSection
+      selectionMode="multiple"
+      selectedKeys={pressed ? [id] : []}
+      {...defined({ className: styles.section })}
+    >
+      {item}
+    </AriaMenuSection>
+  );
+}
+
+const overflowRow = (row: OverflowRowProps) => <OverflowRow {...row} />;
+
+/**
+ * Internal: the menu of `ActionsOverflow` (`src/internal/ActionsOverflow.tsx`), which draws the "more"
+ * button, holds the open state, and loads this module the first time a row of actions does not fit.
+ * `open` also says where the focus goes: `true` is the menu itself, or its first or last row.
+ */
+export function OverflowMenu({
+  label,
+  anchorRef,
+  open,
+  onOpenChange,
   children,
 }: {
   label: string;
-  trigger: ReactNode;
+  anchorRef: RefObject<Element | null>;
+  open: boolean | 'first' | 'last';
+  onOpenChange: (open: boolean) => void;
   children: ReactNode;
 }) {
   return (
-    <MenuTrigger>
-      {trigger}
-      <Surface placement="bottom end">
-        <OverflowMenuContext value={true}>
-          <AriaMenu aria-label={label} data-part="list" {...defined({ className: styles.list })}>
-            {rowsOnly(children)}
-          </AriaMenu>
-        </OverflowMenuContext>
-      </Surface>
-    </MenuTrigger>
+    <Surface anchorRef={anchorRef} open={open !== false} onOpenChange={onOpenChange} placement="bottom end">
+      <OverflowMenuContext value={overflowRow}>
+        <AriaMenu
+          aria-label={label}
+          autoFocus={open || true}
+          onClose={() => onOpenChange(false)}
+          data-part="list"
+          {...defined({ className: styles.list })}
+        >
+          {rowsOnly(children)}
+        </AriaMenu>
+      </OverflowMenuContext>
+    </Surface>
   );
 }

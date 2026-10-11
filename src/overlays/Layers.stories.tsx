@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 import { Button } from '../basics/Button';
+import { BarChart } from '../charts';
+import { ListItem } from '../data/ListItem';
 import { SearchField } from '../inputs/SearchField';
 import { Select } from '../inputs/Select';
 import { Card } from '../layout/Card';
@@ -8,6 +10,7 @@ import { Page } from '../layout/Page';
 import { UmbraProvider } from '../provider/UmbraProvider';
 import { AppShell } from '../shell/AppShell';
 import { Log, Rows } from '../stories/placeholders';
+import { DataTable } from '../table/DataTable';
 import { CommandPalette } from './CommandPalette';
 import { Menu } from './Menu';
 import { Modal } from './Modal';
@@ -72,6 +75,69 @@ function ModalWithOverlays() {
  * is above the modal and can be used: it renders into the modal's layer, not beside it.
  */
 export const InModal: Story = { render: () => <ModalWithOverlays /> };
+
+const lines = [
+  { id: 'a', item: 'Shelf bracket, powder coated, 300 mm, box of 40', note: 'Fragile' },
+  { id: 'b', item: 'Bolt', note: 'None' },
+];
+
+function ModalWithData() {
+  const [last, setLast] = useState('none');
+  return (
+    <AppShell background="flat">
+      <Page>
+        <Card title="Orders">
+          <Rows count={12} prefix="Order" />
+          <Modal defaultOpen size="md" title="Order lines" footer={<Modal.Close>Close</Modal.Close>}>
+            <div style={{ ...column, width: 300, justifyItems: 'stretch' }}>
+              <ListItem
+                size="compact"
+                title="A delivery note that is far too long to fit on one line of this list"
+                onPress={() => setLast('note')}
+              />
+              <div style={{ height: 120 }}>
+                <DataTable
+                  aria-label="Lines"
+                  data={lines}
+                  getRowId={(line) => line.id}
+                  columns={[
+                    { id: 'item', header: 'Item', accessor: 'item', rowHeader: true, width: 180 },
+                    { id: 'note', header: 'Note', accessor: 'note', width: 80, tooltip: 'Handling note' },
+                  ]}
+                />
+              </div>
+              <div style={{ height: 150, display: 'flex' }}>
+                <Card
+                  title="Lines of the order"
+                  actions={
+                    <>
+                      <Button onPress={() => setLast('add')}>Add a line</Button>
+                      <Button onPress={() => setLast('import')}>Import lines</Button>
+                    </>
+                  }
+                >
+                  <BarChart
+                    aria-label="Units by line"
+                    categories={['Bracket', 'Bolt']}
+                    series={[{ id: 'units', label: 'Units', values: [40, 12] }]}
+                    legend={false}
+                  />
+                </Card>
+              </div>
+              <Log>Last: {last}</Log>
+            </div>
+          </Modal>
+        </Card>
+      </Page>
+    </AppShell>
+  );
+}
+
+/**
+ * Data inside a modal: the tooltip of a text that is cut, of a table cell and of a table header, a
+ * chart's tooltip, and the menu of a card header that does not fit. Each is above the modal.
+ */
+export const DataInModal: Story = { render: () => <ModalWithData /> };
 
 function PaletteAndModal({ globals }: { globals: Globals }) {
   const [last, setLast] = useState('none');

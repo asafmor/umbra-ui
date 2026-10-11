@@ -119,6 +119,11 @@ Resolved 2026-10-10:
 - Trailing icons on a row (the source's "opens elsewhere" mark) are part of the label node; there is no prop for them.
 - The check is the library's own icon; it is replaced through `parts.check` (it is not in the provider's icon map yet).
 
+Resolved 2026-10-11 (Milestone 2):
+
+- A menu without a trigger of its own (anchored with `anchorRef`, a context menu, the overflow menu of a header) now gives its submenus the state React Aria's `MenuTrigger` would: a row chosen in a submenu closes the whole menu. Before, it closed the submenu and left the menu open.
+- The overflow menu of a header (`OverflowMenu`, internal) is loaded on demand and draws the buttons it holds as rows itself (`plan/decisions/05-packaging.md`, "Loaded on demand").
+
 Resolved 2026-10-11 (review 2):
 
 - A danger row under the highlight (pointer or arrow keys) takes a lighter red, `--umbra-menu-item-danger-highlight-fg`: the plain danger red was 4.40:1 on the highlight (F14). Measured 4.5:1 or more on all four tints (`tests/visual/regressions.spec.ts`).

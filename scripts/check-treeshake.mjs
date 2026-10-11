@@ -42,8 +42,11 @@ const marks = {
   'the table engine': ['getSortedRowModel', 'getCoreRowModel'],
   d3: ['curveMonotoneX', 'rangeRound'],
   charts: ['bar-chart', 'donut-chart'],
-  // The library's own Menu. (A Button holds React Aria's menu item: it is drawn as one in an overflow menu.)
+  // The library's own Menu.
   menus: ['data-umbra":"menu"', '"data-umbra": "menu"', 'data-umbra":`menu`'],
+  // React Aria's menu and popover: the class names its components give their elements.
+  "React Aria's menu": ['react-aria-MenuItem'],
+  "React Aria's popover": ['react-aria-Popover'],
 };
 const all = Object.keys(marks);
 /**
@@ -54,13 +57,17 @@ const all = Object.keys(marks);
 const cases = [
   { name: 'Skeleton', from: 'index', use: 'Skeleton', gzip: 3, without: all },
   { name: 'Tag', from: 'index', use: 'Tag', gzip: 16, without: all },
-  { name: 'Button', from: 'index', use: 'Button', gzip: 45, without: all },
+  { name: 'Button', from: 'index', use: 'Button', gzip: 34, without: all },
   {
     name: 'Card',
     from: 'index',
     use: 'Card',
-    gzip: 95,
+    // A card loads its header menu and its popover with `import()` (decision 05, "Loaded on demand").
+    // Rollup makes chunks of them, and the ceiling is for what loads first. esbuild is run here without
+    // code splitting, so its one file holds them too.
+    gzip: { esbuild: 92, vite: 44 },
     without: ['DataTable', 'the table engine', 'd3', 'charts'],
+    onDemand: ['menus', "React Aria's menu", "React Aria's popover"],
   },
   {
     name: 'shell + layout',
@@ -94,13 +101,23 @@ const bundle = async (entry) => {
     define: production,
     build: { write: false, minify: true, lib: { entry, formats: ['es'] }, rollupOptions: { external } },
   });
-  const chunks = (Array.isArray(out) ? out : [out]).flatMap((o) => o.output);
+  const chunks = (Array.isArray(out) ? out : [out])
+    .flatMap((o) => o.output)
+    .filter((c) => c.type === 'chunk');
+  // What loads first: the entry and the chunks it imports with `import ... from`. The rest is loaded
+  // on demand, with `import()`.
+  const first = new Set();
+  const visit = (chunk) => {
+    if (!chunk || first.has(chunk)) return;
+    first.add(chunk);
+    for (const name of chunk.imports) visit(chunks.find((c) => c.fileName === name));
+  };
+  chunks.filter((c) => c.isEntry).forEach(visit);
+  const code = (list) => list.map((c) => c.code).join('\n');
   return {
     esbuild: es.outputFiles[0].text,
-    vite: chunks
-      .filter((c) => c.type === 'chunk')
-      .map((c) => c.code)
-      .join('\n'),
+    vite: code([...first]),
+    onDemand: code(chunks.filter((c) => !first.has(c))),
   };
 };
 
@@ -113,17 +130,25 @@ for (const c of cases) {
     entry,
     `import { ${c.use} } from ${JSON.stringify(join(dist, `${c.from}.js`))};\nglobalThis.app = [${names.join(', ')}];\n`,
   );
-  const out = await bundle(entry);
+  const { onDemand, ...out } = await bundle(entry);
   const row = { import: c.name };
+  // What is loaded on demand is in a chunk of its own, and not in what loads first.
+  for (const what of sizesOnly ? [] : (c.onDemand ?? [])) {
+    if (marks[what].some((mark) => out.vite.includes(mark)))
+      fail(`${c.name} (vite): ${what} is in what loads first; it must be loaded on demand`);
+    if (!marks[what].some((mark) => onDemand.includes(mark)))
+      fail(`${c.name} (vite): ${what} is in no chunk loaded on demand`);
+  }
   for (const [bundler, code] of Object.entries(out)) {
     const gzip = gzipSync(code).length;
+    const ceiling = c.gzip[bundler] ?? c.gzip;
     row[`${bundler} min KB`] = kb(code.length);
     row[`${bundler} gzip KB`] = kb(gzip);
     if (sizesOnly) continue;
     if (!code.includes('data-umbra'))
       fail(`${c.name} (${bundler}): the bundle holds no component; is it empty?`);
-    if (gzip > c.gzip * 1024)
-      fail(`${c.name} (${bundler}): ${kb(gzip)} KB gzip, over its ceiling of ${c.gzip} KB`);
+    if (gzip > ceiling * 1024)
+      fail(`${c.name} (${bundler}): ${kb(gzip)} KB gzip, over its ceiling of ${ceiling} KB`);
     for (const what of c.without) {
       const found = marks[what].filter((mark) => code.includes(mark));
       if (found.length) fail(`${c.name} (${bundler}): contains ${what} (${found.join(', ')})`);

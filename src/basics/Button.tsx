@@ -1,15 +1,11 @@
-import { useContext, useId, useRef, type CSSProperties, type ReactNode } from 'react';
+import { useContext, useRef, type CSSProperties, type KeyboardEvent, type ReactNode } from 'react';
 import {
   Button as AriaButton,
   Link as AriaLink,
-  MenuItem as AriaMenuItem,
-  MenuSection as AriaMenuSection,
   ProgressBar as AriaProgressBar,
 } from 'react-aria-components';
 import { ForceCollapseContext, OverflowMenuContext } from '../internal/contexts';
 import { useShrinkLevel } from '../internal/useShrinkLevel';
-import { CheckMark, Hint } from '../internal/menuRow';
-import menuStyles from '../overlays/Menu.module.css';
 import { Tooltip } from '../overlays/Tooltip';
 import { Icon, IconSlot } from '../provider/icons';
 import { useShortcut } from '../provider/UmbraProvider';
@@ -36,10 +32,14 @@ interface BaseProps {
   text?: string | undefined;
   pressed?: boolean | undefined;
   expanded?: boolean | undefined;
+  /** The button opens a menu (`aria-haspopup`). While `expanded` it looks pressed. */
+  popup?: boolean | undefined;
   tooltip?: ReactNode | undefined;
   /** Id of a shortcut: its keys are shown in the tooltip, or at the end of the row in an overflow menu. */
   shortcut?: string | undefined;
-  onPress?: (() => void) | undefined;
+  /** `pointerType` says how it was pressed: `keyboard` and `virtual` are not a pointer. */
+  onPress?: ((event: { pointerType: string }) => void) | undefined;
+  onKeyDown?: ((event: KeyboardEvent) => void) | undefined;
   elementRef?: React.RefObject<HTMLElement | null> | undefined;
   umbra: string;
   className?: string | undefined;
@@ -65,52 +65,30 @@ export function ButtonBase({
   text,
   pressed,
   expanded,
+  popup,
   tooltip,
   shortcut,
   onPress,
+  onKeyDown,
   elementRef,
   umbra,
   className,
   style,
   children,
 }: BaseProps) {
-  const inMenu = useContext(OverflowMenuContext);
-  const id = useId();
-  if (inMenu) {
-    const item = (
-      <AriaMenuItem
-        id={id}
-        {...defined({ 'aria-label': label })}
-        textValue={text ?? label ?? ''}
-        {...defined({ href: disabled ? undefined : href })}
-        isDisabled={disabled || loading}
-        {...defined({ onAction: onPress })}
-        data-part="item"
-        {...defined({ className: cx(menuStyles.item, styles.row) })}
-      >
-        {({ hasSubmenu }) => (
-          <>
-            {children}
-            {shortcut && <Hint id={shortcut} />}
-            {/* At the end of the row, so the icons of the rows stay in one column. */}
-            {pressed !== undefined && <CheckMark shown={pressed} />}
-            {hasSubmenu && <Icon name="chevronRight" part="submenuIndicator" />}
-          </>
-        )}
-      </AriaMenuItem>
-    );
-    // A toggle is a checkbox item. Its state stays the button's own `pressed`.
-    return pressed === undefined ? (
-      item
-    ) : (
-      <AriaMenuSection
-        selectionMode="multiple"
-        selectedKeys={pressed ? [id] : []}
-        {...defined({ className: menuStyles.section })}
-      >
-        {item}
-      </AriaMenuSection>
-    );
+  const row = useContext(OverflowMenuContext);
+  if (row) {
+    return row({
+      label,
+      text,
+      href,
+      disabled: disabled || loading,
+      pressed,
+      shortcut,
+      onPress: onPress && (() => onPress({ pointerType: 'virtual' })),
+      className: styles.row,
+      children,
+    });
   }
   const shared = {
     'data-umbra': umbra,
@@ -139,7 +117,13 @@ export function ButtonBase({
       ref={elementRef as React.RefObject<HTMLButtonElement>}
       type={type}
       isPending={loading}
-      {...defined({ 'aria-pressed': pressed, 'aria-expanded': expanded, onPress })}
+      {...defined({
+        'aria-pressed': pressed,
+        'aria-expanded': expanded,
+        'aria-haspopup': popup ? ('true' as const) : undefined,
+        onPress,
+        onKeyDown,
+      })}
     >
       {children}
     </AriaButton>

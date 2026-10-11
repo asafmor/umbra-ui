@@ -14,9 +14,8 @@ import {
 import { IconButton } from '../basics/IconButton';
 import { ForceCollapseContext } from '../internal/contexts';
 import { isOverflowing, useShrinkLevel } from '../internal/useShrinkLevel';
-import { MoreButton } from '../layout/SectionTitle';
 import type { CommandPaletteProps } from '../overlays/CommandPalette';
-import { ActionsOverflow } from '../overlays/Menu';
+import { ActionsOverflow } from '../internal/ActionsOverflow';
 import { Icon } from '../provider/icons';
 import { ScopeProvider, useScope } from '../provider/UmbraProvider';
 import { cx, renderPart, type Part } from '../utils/parts';
@@ -132,13 +131,7 @@ function Actions({ pinned, className, style, children }: TopBarActionsProps) {
   return (
     <div data-part="actions" className={cx(styles.actions, className)} style={style}>
       {pinned}
-      {children && level >= 2 ? (
-        <ActionsOverflow label={moreLabel} trigger={<MoreButton label={moreLabel} />}>
-          {children}
-        </ActionsOverflow>
-      ) : (
-        children
-      )}
+      {children && level >= 2 ? <ActionsOverflow label={moreLabel}>{children}</ActionsOverflow> : children}
     </div>
   );
 }
