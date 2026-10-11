@@ -145,3 +145,5 @@ Resolved 2026-10-11 (review 2):
 
 - Overlays opened from a modal render into its backdrop (F6): a tooltip in `<body>` was inert and did not describe its control. Tooltips also carry React Aria's top-layer mark, so the page behind a modal never hides them.
 - The backdrop, the drawer and `ConfirmDialog` carry the page's `dir` (F8): the `start` drawer is on the right when the direction is right to left.
+- **Focus when it closes** is never left on nothing: it returns to what had it when the modal opened; a modal that opened without a press (`defaultOpen`, or opened by the app) gives it to its own trigger, and without one to the first control of the page. Below the minimum window, choosing a section in the navigation moves the focus to the "Sections" toggle, since the chosen control is hidden with the list (F18).
+- `ConfirmDialog` `parts` (`cancel`, `confirm`) have a story and a test (F22).

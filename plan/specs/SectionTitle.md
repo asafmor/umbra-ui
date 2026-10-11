@@ -74,3 +74,7 @@ None; it is small enough to rebuild from text and a `Link`.
 None.
 
 Resolved 2026-10-10: `href` renders a plain `<a>`, not a router link (approved after Milestone 0).
+
+Resolved 2026-10-11 (review 2):
+
+- `renderLink` (2026-10-11): `href` rendered a plain `<a>`; the app's router link can now take it, with the shared `LinkRenderProps`.

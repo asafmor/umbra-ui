@@ -16,7 +16,10 @@ export interface ColumnsTabsProps {
 export interface ColumnsProps extends SlotProps {
   /** Overrides the gap, which otherwise follows the density level. */
   gap?: SpaceToken;
-  /** Below the minimum window: `tabs` shows one child at a time, `keep` keeps the columns. */
+  /**
+   * When there is no room for the columns (below the minimum window, or when the children cannot all
+   * have their `minWidth`): `tabs` shows one child at a time, `keep` keeps the columns.
+   */
   narrow?: 'tabs' | 'keep';
   /** Replace or hide named pieces. */
   parts?: { tabs?: Part<ColumnsTabsProps> };
@@ -39,8 +42,10 @@ export function Columns({
   ...slot
 }: ColumnsProps) {
   const { ref, props } = useSlot<HTMLDivElement>(slot);
-  const tabMode = useNarrow() && narrow === 'tabs';
-  const layout = useLayoutParent(ref, { tabs: tabMode });
+  // Tabs below the minimum window, and whenever the children cannot all have their `minWidth`.
+  const windowNarrow = useNarrow();
+  const layout = useLayoutParent(ref, { tabs: windowNarrow && narrow === 'tabs', fit: narrow === 'tabs' });
+  const { tabMode } = layout;
   // Outside tab mode there is no tab state, whatever the list still holds from before.
   const tabState = layout.value.tabs;
   const tabs = (tabState ? layout.tabList : []).map((tab, index) => {

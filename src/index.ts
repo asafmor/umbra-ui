@@ -37,7 +37,7 @@ export type { CardBodyProps, CardHeaderProps, CardProps, CardRootProps, CardTitl
 export { SectionTitle } from './layout/SectionTitle';
 export type { SectionTitleProps } from './layout/SectionTitle';
 export { ScrollArea } from './layout/ScrollArea';
-export type { ScrollAreaProps } from './layout/ScrollArea';
+export type { ScrollAreaProps, ScrollEdge } from './layout/ScrollArea';
 export { Button } from './basics/Button';
 export type { ButtonProps, ButtonVariant } from './basics/Button';
 export { IconButton } from './basics/IconButton';
@@ -65,7 +65,7 @@ export type {
 } from './data/Legend';
 export { EmptyState } from './data/EmptyState';
 export type { EmptyStateProps, EmptyStateRootProps } from './data/EmptyState';
-export type { DataStateProps } from './internal/dataState';
+export type { DataStateContent, DataStateProps } from './internal/dataState';
 export { GroupHeader } from './data/GroupHeader';
 export type {
   GroupHeaderProps,

@@ -11,7 +11,7 @@ import {
   type ReactNode,
   type RefObject,
 } from 'react';
-import { createPortal } from 'react-dom';
+import { createPortal, flushSync } from 'react-dom';
 import { ButtonBase } from '../basics/Button';
 import { Skeleton } from '../basics/Skeleton';
 import { dataState, isContent, type DataStateProps } from '../internal/dataState';
@@ -21,6 +21,7 @@ import { ActionsOverflow } from '../overlays/Menu';
 import { Popover } from '../overlays/Popover';
 import { textColourOn } from '../provider/contrast';
 import { Icon, IconSlot } from '../provider/icons';
+import type { LinkRenderProps } from '../utils/link';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './Card.module.css';
 import { ScrollArea, type ScrollAreaProps } from './ScrollArea';
@@ -205,7 +206,8 @@ function Root({
       if (stopped) return;
       const duration = resizeDuration(element);
       const end = userCollapsed ? heightWithoutBody(element) : element.getBoundingClientRect().height;
-      if (!duration || Math.abs(end - start) < 1) return done();
+      // Nothing to animate (reduced motion): the body goes in this same frame, not one render later.
+      if (!duration || Math.abs(end - start) < 1) return flushSync(done);
       const css = getComputedStyle(element);
       // While it moves, the card's height is the animated one, not its share of the stack.
       element.dataset.resizing = '';
@@ -312,10 +314,14 @@ function Root({
 export interface CardTitleProps extends BlockProps {
   /** Makes the title a link. */
   href?: string;
+  /** Plugs in the app's router link for `href`. Defaults to a plain `<a>`. */
+  renderLink?: (props: LinkRenderProps) => ReactNode;
   onOpen?: () => void;
 }
 
-function Title({ href, onOpen, className, style, children }: CardTitleProps) {
+const plainLink = (props: LinkRenderProps) => <a {...props} />;
+
+function Title({ href, renderLink = plainLink, onOpen, className, style, children }: CardTitleProps) {
   const card = useCard();
   let content = children;
   if (card.collapsedBy === 'layout') {
@@ -332,11 +338,7 @@ function Title({ href, onOpen, className, style, children }: CardTitleProps) {
       </button>
     );
   } else if (href) {
-    content = (
-      <a href={href} className={styles.titleLink}>
-        {children}
-      </a>
-    );
+    content = renderLink({ href, className: styles.titleLink, children });
   } else if (onOpen) {
     content = (
       <button type="button" className={styles.titleLink} onClick={onOpen}>
@@ -373,6 +375,8 @@ export interface CardHeaderProps extends BlockProps {
   bandColor?: string;
   /** Makes the title a link. */
   href?: string;
+  /** Plugs in the app's router link for `href`. Defaults to a plain `<a>`. */
+  renderLink?: (props: LinkRenderProps) => ReactNode;
   onOpen?: () => void;
   /** Accessible name of the overflow menu button. */
   moreLabel?: string;
@@ -414,6 +418,7 @@ function Header({
   headerStyle,
   bandColor,
   href,
+  renderLink,
   onOpen,
   moreLabel = 'More actions',
   parts,
@@ -452,7 +457,7 @@ function Header({
           {icon &&
             renderPart(parts?.icon, { children: icon }, (p) => <IconSlot part="icon">{p.children}</IconSlot>)}
           <div className={styles.titles}>
-            {renderPart(parts?.title, { href, onOpen, children: title }, (p) => (
+            {renderPart(parts?.title, { href, renderLink, onOpen, children: title }, (p) => (
               <Title {...p} />
             ))}
             {subtitle &&
@@ -594,7 +599,7 @@ function Footer({ className, style, children }: BlockProps) {
 export interface CardProps
   extends
     CardRootProps,
-    Pick<CardHeaderProps, 'icon' | 'subtitle' | 'actions' | 'href' | 'onOpen' | 'moreLabel'> {
+    Pick<CardHeaderProps, 'icon' | 'subtitle' | 'actions' | 'href' | 'renderLink' | 'onOpen' | 'moreLabel'> {
   /** Header title. The header is shown when it is set. */
   title?: ReactNode;
   /** Shows the body skeleton. */
@@ -635,6 +640,7 @@ export function Card({
   icon,
   actions,
   href,
+  renderLink,
   onOpen,
   moreLabel,
   empty,
@@ -668,6 +674,7 @@ export function Card({
     subtitle,
     actions,
     href,
+    renderLink,
     onOpen,
     moreLabel,
     parts: { title: parts?.title, actions: parts?.actions },

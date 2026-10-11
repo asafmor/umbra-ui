@@ -76,7 +76,7 @@ export function ScrollArea({
       return { start: position > 1, end: position < max - 1, max, size };
     };
     const none = { start: false, end: false, max: 0, size: 0 };
-    const measure = () => {
+    const measure = (laidOut = false) => {
       // The main axis is the one `start`, `end` and `onReachEnd` are about.
       const main = read(axis === 'horizontal');
       const cross = axis === 'both' ? read(true) : none;
@@ -90,18 +90,22 @@ export function ScrollArea({
       setState((prev) =>
         (Object.keys(next) as (keyof typeof next)[]).every((key) => prev[key] === next[key]) ? prev : next,
       );
-      const reached = next.end ? null : main.max > 1 ? 'end' : `fits:${main.size}`;
+      // "Fits" is only read once the content has been laid out (from the observer): a list that draws
+      // its rows after it mounts is empty for a moment, which is not a first page that is too short.
+      const fits = laidOut && main.size > 0 ? `fits:${main.size}` : atEnd.current;
+      const reached = next.end ? null : main.max > 1 ? 'end' : fits;
       if (reached && reached !== atEnd.current) reachEnd.current?.();
       atEnd.current = reached;
     };
     measure();
-    el.addEventListener('scroll', measure, { passive: true });
+    const onScroll = () => measure();
+    el.addEventListener('scroll', onScroll, { passive: true });
     // Content and slot size both change what overflows.
-    const observer = new ResizeObserver(measure);
+    const observer = new ResizeObserver(() => measure(true));
     observer.observe(el);
     for (const child of el.children) observer.observe(child);
     return () => {
-      el.removeEventListener('scroll', measure);
+      el.removeEventListener('scroll', onScroll);
       observer.disconnect();
     };
   }, [axis, children]);

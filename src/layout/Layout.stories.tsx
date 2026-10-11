@@ -6,6 +6,7 @@ import { Bar, Rows, Value } from '../stories/placeholders';
 import { Card } from './Card';
 import { Columns } from './Columns';
 import { Page } from './Page';
+import { SectionTitle } from './SectionTitle';
 import { Slot } from './Slot';
 import { Stack } from './Stack';
 
@@ -356,6 +357,36 @@ export const CustomTabStrip: Story = {
           <Card title="People">
             <Rows prefix="Person" />
           </Card>
+        </Columns>
+      </Page>
+    </AppShell>
+  ),
+};
+
+/**
+ * `minWidth`: each column needs 360px. In a window where three of them do not fit, `Columns` shows one
+ * at a time with tabs, as it does below the minimum window. The titles are links that go through
+ * `renderLink`, as an app's router link would.
+ */
+export const MinWidth: Story = {
+  render: () => (
+    <AppShell background="flat">
+      <Page>
+        <Columns>
+          {['Orders', 'Reports', 'People'].map((title) => (
+            <Card
+              key={title}
+              title={title}
+              minWidth={360}
+              href={`#${title.toLowerCase()}`}
+              renderLink={(link) => <a {...link} data-router="" />}
+            >
+              <SectionTitle href="#all" renderLink={(link) => <a {...link} data-router="" />}>
+                All {title.toLowerCase()}
+              </SectionTitle>
+              <Rows count={6} prefix={title} />
+            </Card>
+          ))}
         </Columns>
       </Page>
     </AppShell>

@@ -19,7 +19,10 @@ export interface SlotProps {
   size?: number | 'content';
   /** Which child gives way first when space runs out. Higher stays longer; ties give way from the end. Default 0. */
   priority?: number;
-  /** Reserved: `Columns` has no rule that uses it yet, so it has no effect. */
+  /**
+   * The width the child needs. When the children of a `Columns` cannot all have theirs, the `Columns`
+   * shows one child at a time, with tabs, as it does below the minimum window.
+   */
   minWidth?: number;
   /** Below this height a parent `Stack` may collapse the child to its header. */
   minHeight?: number;
@@ -31,6 +34,8 @@ interface SlotInfo {
   element: HTMLElement | null;
   priority: number;
   label: string | undefined;
+  /** Width needed, or 0. */
+  minWidth: number;
   /** Height needed to stay open. */
   min: () => number;
   /** Height when collapsed to a header, or null when the child cannot collapse. */
@@ -74,7 +79,7 @@ interface SlotOptions {
  * with the nearest `Columns` or `Stack`. Spread `props` on the root element and attach `ref` to it.
  */
 export function useSlot<E extends HTMLElement>(slot: SlotProps, options: SlotOptions = {}) {
-  const { size = 1, priority = 0, minHeight } = slot;
+  const { size = 1, priority = 0, minHeight, minWidth = 0 } = slot;
   const label = slot.label ?? options.label;
   const parent = useContext(LayoutContext);
   const id = useId();
@@ -86,6 +91,7 @@ export function useSlot<E extends HTMLElement>(slot: SlotProps, options: SlotOpt
       element: ref.current,
       priority,
       label,
+      minWidth,
       min: () => {
         const element = ref.current;
         if (!element) return 0;
@@ -102,7 +108,7 @@ export function useSlot<E extends HTMLElement>(slot: SlotProps, options: SlotOpt
   const register = parent?.register;
   const changed = parent?.changed;
   useLayoutEffect(() => register?.(id, info), [register, id]);
-  useLayoutEffect(() => changed?.(), [changed, priority, minHeight, label, size]);
+  useLayoutEffect(() => changed?.(), [changed, priority, minHeight, minWidth, label, size]);
 
   const tabs = parent?.tabs;
   const style: CSSProperties = {
@@ -137,7 +143,12 @@ export interface LayoutTab {
 /** The parent side: tracks the children, and applies stack collapse or tab mode. */
 export function useLayoutParent(
   element: RefObject<HTMLElement | null>,
-  mode: { collapse?: boolean; tabs?: boolean },
+  mode: {
+    collapse?: boolean;
+    tabs?: boolean;
+    /** Also go to tabs when the children cannot all have their `minWidth` (layout rule 4). */
+    fit?: boolean;
+  },
 ) {
   const [slots] = useState(() => new Map<string, RefObject<SlotInfo | null>>());
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(() => new Set());
@@ -145,7 +156,9 @@ export function useLayoutParent(
   const [tabList, setTabList] = useState<LayoutTab[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
   const baseId = useId();
-  const { collapse = false, tabs = false } = mode;
+  const { collapse = false, fit = false } = mode;
+  const [cramped, setCramped] = useState(false);
+  const tabs = !!mode.tabs || (fit && cramped);
 
   const apply = useCallback(() => {
     const container = element.current;
@@ -172,6 +185,14 @@ export function useLayoutParent(
       setCollapsed((previous) => (sameSet(previous, next.collapsed) ? previous : next.collapsed));
       setKeepMin(next.fits);
     }
+    if (fit) {
+      // Against the container's own width, which tab mode does not change, so this cannot flip.
+      const gap = parseFloat(getComputedStyle(container).columnGap) || 0;
+      const needed =
+        ordered.reduce((sum, [, info]) => sum + info.current!.minWidth, 0) +
+        gap * Math.max(0, ordered.length - 1);
+      setCramped(ordered.length > 1 && needed > container.clientWidth);
+    }
     if (tabs) {
       const next = ordered.map(([id, info]) => ({ id, label: info.current!.label }));
       setTabList((previous) =>
@@ -181,7 +202,7 @@ export function useLayoutParent(
           : next,
       );
     }
-  }, [element, slots, collapse, tabs]);
+  }, [element, slots, collapse, tabs, fit]);
 
   // Children register and report changes in their layout effects; the tick makes one pass run after them.
   const [tick, setTick] = useState(0);
@@ -203,7 +224,7 @@ export function useLayoutParent(
   // Resizing applies the rules before the next paint, so a collapse is instant (plan/interaction.md).
   useLayoutEffect(() => {
     const container = element.current;
-    if (!container || !collapse) return;
+    if (!container || !(collapse || fit)) return;
     const observer = new ResizeObserver(() => flushSync(apply));
     observer.observe(container);
     // Header heights measured before a web font arrived may be off; apply again when fonts finish loading.
@@ -212,7 +233,7 @@ export function useLayoutParent(
       observer.disconnect();
       document.fonts?.removeEventListener('loadingdone', apply);
     };
-  }, [element, collapse, apply]);
+  }, [element, collapse, fit, apply]);
 
   const activeId = tabs ? (tabList.find((t) => t.id === selected)?.id ?? tabList[0]?.id ?? null) : null;
   const value = useMemo<LayoutParent>(
@@ -227,5 +248,5 @@ export function useLayoutParent(
     }),
     [register, changed, collapse, collapsed, keepMin, tabs, activeId, baseId],
   );
-  return { value, tabList, activeId, select: setSelected };
+  return { value, tabList, activeId, select: setSelected, tabMode: tabs };
 }

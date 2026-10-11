@@ -362,7 +362,14 @@ export function NavList({
   const overflow = items.filter((_, i) => moved.has(i));
   return (
     <NavContext value={nav}>
-      <div ref={list} data-overflow-watch="" className={styles.list} onKeyDown={onKeyDown}>
+      <div
+        ref={list}
+        data-overflow-watch=""
+        // Nothing is left to move or hide: from here "More" itself gives way (its label truncates).
+        data-exhausted={(max > 0 && level === max) || undefined}
+        className={styles.list}
+        onKeyDown={onKeyDown}
+      >
         {items.filter((_, i) => !moved.has(i))}
         {overflow.length > 0 &&
           renderPart(parts?.more, { label: moreLabel, children: overflow }, (p) => (

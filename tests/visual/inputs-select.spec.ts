@@ -490,17 +490,50 @@ test.describe('SearchField', () => {
   test('debounce: onChange waits for a pause in typing; Enter does not wait', async ({ page }) => {
     await open(page, 'inputs-searchfield--debounce');
     const input = page.getByRole('searchbox', { name: 'Debounced' });
-    await input.pressSequentially('order', { delay: 30 });
-    await expect(input).toHaveValue('order');
-    await expect(page.getByText('Value: "". Calls: 0.')).toBeVisible();
-    await expect(page.getByText('Value: "order". Calls: 1.')).toBeVisible();
+    // The times are taken inside the page, where the debounce runs: measured from the test, a busy
+    // machine adds its own delays, and this test failed now and then on a 200ms limit.
+    await page.evaluate(() => {
+      const log: { at: number; what: string }[] = [];
+      (window as unknown as { umbraLog: typeof log }).umbraLog = log;
+      const calls = () => /Calls: (\d+)\./.exec(document.body.textContent ?? '')?.[1] ?? '';
+      let last = calls();
+      document.addEventListener('input', () => log.push({ at: performance.now(), what: 'input' }), true);
+      document.addEventListener(
+        'keydown',
+        (event) => event.key === 'Enter' && log.push({ at: performance.now(), what: 'enter' }),
+        true,
+      );
+      new MutationObserver(() => {
+        const now = calls();
+        if (now !== last) log.push({ at: performance.now(), what: `calls:${now}` });
+        last = now;
+      }).observe(document.body, { subtree: true, childList: true, characterData: true });
+    });
+    const timeline = () =>
+      page.evaluate(() => (window as unknown as { umbraLog: { at: number; what: string }[] }).umbraLog);
+    const at = (log: { at: number; what: string }[], what: string, last = false) =>
+      (last ? log.findLast((entry) => entry.what === what) : log.find((entry) => entry.what === what))!.at;
 
-    await input.pressSequentially(' 12', { delay: 30 });
+    await input.pressSequentially('order');
+    await expect(input).toHaveValue('order');
+    await expect(page.getByText('Value: "order". Calls: 1.')).toBeVisible();
+    let log = await timeline();
+    // One call for the five keys, and not before the pause (400ms) after the last of them.
+    expect(log.filter((entry) => entry.what.startsWith('calls')).map((entry) => entry.what)).toEqual([
+      'calls:1',
+    ]);
+    expect(at(log, 'calls:1') - at(log, 'input', true)).toBeGreaterThanOrEqual(390);
+
+    await input.pressSequentially(' 12');
     await input.press('Enter');
-    await expect(page.getByText('Value: "order 12". Calls: 2.')).toBeVisible({ timeout: 200 });
+    await expect(page.getByText('Value: "order 12". Calls: 2.')).toBeVisible();
+    log = await timeline();
+    // Enter does not wait for the pause.
+    expect(at(log, 'calls:2') - at(log, 'enter')).toBeLessThan(200);
     // Nothing more arrives after the wait.
     await page.waitForTimeout(600);
     await expect(page.getByText('Value: "order 12". Calls: 2.')).toBeVisible();
+    expect((await timeline()).filter((entry) => entry.what.startsWith('calls')).length).toBe(2);
   });
 
   test('collapsible, overlay: it opens over its neighbours, which do not move, and closes when empty and blurred', async ({

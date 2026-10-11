@@ -382,3 +382,135 @@ test('F30 CommandPalette: the input is collapsed when there are no results', asy
   await expect(page.getByText('No results')).toBeVisible();
   await expect(input).toHaveAttribute('aria-expanded', 'false');
 });
+
+test('F22 ConfirmDialog parts: `null` hides the cancel button, a function changes the confirm button', async ({
+  page,
+}) => {
+  await openStory(page, 'overlays-modal--confirm-parts');
+  const dialog = page.getByRole('alertdialog', { name: 'Archive this report?' });
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByRole('button', { name: 'Cancel' })).toHaveCount(0);
+  const confirm = dialog.getByRole('button', { name: 'Archive' });
+  await expect(confirm).toHaveAttribute('data-variant', 'accent');
+  await expect(confirm.locator('svg')).toBeVisible();
+  // With no cancel button the focus starts on the confirm button, and the default behaviour is kept.
+  await expect(confirm).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(dialog).toHaveCount(0);
+  await expect(page.getByText('Result: archived')).toBeVisible();
+  await expectFocusKept(page);
+});
+
+test('F22 Toggle: in a narrow slot the switch keeps its size and nothing leaves the slot', async ({
+  page,
+}) => {
+  await openStory(page, 'inputs-toggle--states');
+  const result = await page.evaluate(() => {
+    const tracks = [...document.querySelectorAll<HTMLElement>('[data-umbra="toggle"] [data-part="track"]')];
+    const bySize = new Map<string, Set<number>>();
+    const outside: string[] = [];
+    for (const track of tracks) {
+      const toggle = track.closest<HTMLElement>('[data-umbra="toggle"]')!;
+      const size = toggle.dataset.size ?? 'default';
+      bySize.set(size, (bySize.get(size) ?? new Set()).add(Math.round(track.getBoundingClientRect().width)));
+      // A wrapper with a fixed width is a narrow slot.
+      const slot = toggle.closest<HTMLElement>('div[style*="width"]');
+      if (!slot) continue;
+      const [a, b] = [toggle.getBoundingClientRect(), slot.getBoundingClientRect()];
+      if (a.right > b.right + 0.5 || a.left < b.left - 0.5) outside.push(toggle.textContent ?? '');
+    }
+    const small = [
+      ...document.querySelectorAll<HTMLElement>(
+        'div[style*="width"] [data-umbra="toggle"][data-size="small"] [data-part="label"]',
+      ),
+    ];
+    return {
+      widths: [...bySize.values()].map((set) => set.size),
+      outside,
+      // A small toggle keeps one line: its label ends in an ellipsis when it is too long.
+      smallOneLine: small.every((label) => getComputedStyle(label).whiteSpace === 'nowrap'),
+      narrow: document.querySelectorAll('div[style*="width"] [data-umbra="toggle"]').length,
+    };
+  });
+  expect(result.narrow).toBeGreaterThan(0);
+  expect(
+    result.widths.every((count) => count === 1),
+    'one track width per size',
+  ).toBe(true);
+  expect(result.outside).toEqual([]);
+  expect(result.smallOneLine).toBe(true);
+});
+
+test('F22 Accordion step 3: when even the headers do not fit, the accordion itself scrolls', async ({
+  page,
+}) => {
+  await openStory(page, 'layout-accordion--limited-height');
+  const accordion = page.locator('[data-umbra="accordion"]').last();
+  // Close every section, then give the accordion less height than its headers need.
+  for (const header of await accordion.locator('button[aria-expanded="true"]').all()) await header.click();
+  await expect(accordion.locator('button[aria-expanded="true"]')).toHaveCount(0);
+  await accordion.evaluate((el) => {
+    el.style.height = '40px';
+    el.style.flex = 'none';
+  });
+  await settle(page);
+  const state = await accordion.evaluate((el) => {
+    const scroller = [el, ...el.querySelectorAll<HTMLElement>('*')].find(
+      (node) =>
+        /auto|scroll/.test(getComputedStyle(node).overflowY) && node.scrollHeight > node.clientHeight + 1,
+    );
+    const d = document.documentElement;
+    return {
+      scrolls: !!scroller,
+      holdsHeaders:
+        !!scroller && [...el.querySelectorAll('button[aria-expanded]')].every((b) => scroller.contains(b)),
+      page: d.scrollHeight - d.clientHeight,
+    };
+  });
+  expect(state).toEqual({ scrolls: true, holdsHeaders: true, page: 0 });
+  // The last header can be brought into view and used.
+  const last = accordion.locator('button[aria-expanded]').last();
+  await last.focus();
+  await expect(last).toBeInViewport();
+});
+
+test('minWidth: columns that cannot all have their minimum width become tabs, in any window', async ({
+  page,
+}) => {
+  // Three columns of 360px: they fit a 1280px window and not a 1100px one, which is not "narrow".
+  await openStory(page, 'layout-page-layouts--min-width', { width: 1280, height: 720 });
+  const columns = page.locator('[data-umbra="columns"]');
+  await expect(columns).not.toHaveAttribute('data-tab-mode');
+  await expect(page.locator('[data-umbra="card"]:visible')).toHaveCount(3);
+  await page.setViewportSize({ width: 1100, height: 720 });
+  await expect(columns).toHaveAttribute('data-tab-mode', 'true');
+  await expect(page.getByRole('tab')).toHaveText(['Orders', 'Reports', 'People']);
+  await expect(page.locator('[data-umbra="card"]:visible')).toHaveCount(1);
+  await page.getByRole('tab', { name: 'Reports' }).click();
+  await expect(page.getByRole('tabpanel', { name: 'Reports' })).toBeVisible();
+  // One answer per width: back and forth over the threshold, and the same on a fresh load.
+  const widths = Array.from({ length: 41 }, (_, i) => 1150 - i);
+  const seen = new Map<number, boolean>();
+  for (const width of [...widths, ...[...widths].reverse()]) {
+    await page.setViewportSize({ width, height: 720 });
+    await settle(page);
+    const tabs = (await columns.getAttribute('data-tab-mode')) !== null;
+    if (seen.has(width)) expect(tabs, `at ${width}`).toBe(seen.get(width));
+    seen.set(width, tabs);
+  }
+  const sequence = widths.map((width) => seen.get(width));
+  expect(sequence.filter((value, i) => i > 0 && value !== sequence[i - 1]).length).toBeLessThanOrEqual(1);
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await expect(columns).not.toHaveAttribute('data-tab-mode');
+});
+
+test("renderLink: the title links of Card and SectionTitle go through the app's link", async ({ page }) => {
+  await openStory(page, 'layout-page-layouts--min-width');
+  const card = page.locator('[data-umbra="card"]').first();
+  const title = card.locator('[data-part="header"] [data-part="title"] a');
+  await expect(title).toHaveAttribute('data-router', '');
+  await expect(title).toHaveAttribute('href', '#orders');
+  const section = card.locator('[data-umbra="section-title"] a');
+  await expect(section).toHaveAttribute('data-router', '');
+  await expect(section).toHaveAttribute('href', '#all');
+});

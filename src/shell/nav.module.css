@@ -156,19 +156,20 @@
 }
 
 /*
- * Nothing left to move: only the current item and "More" are in the list. In a bar narrower still,
+ * Every step is taken (`data-exhausted`): only the current item and "More" are in the list, and the
+ * label of a `SubNav` is hidden. In a bar narrower still,
  * "More" keeps its caret and its label ends in an ellipsis, instead of being cut at the edge.
  */
-.list:not(:has(> [data-part='item']:not([data-active]))) > [data-part='more'] {
+.list[data-exhausted] > [data-part='more'] {
   flex: 0 1 auto;
   min-width: 2.5em;
 }
 
-.list:not(:has(> [data-part='item']:not([data-active]))) > [data-part='more'] > .link {
+.list[data-exhausted] > [data-part='more'] > .link {
   min-width: 0;
 }
 
-.list:not(:has(> [data-part='item']:not([data-active]))) > [data-part='more'] .label {
+.list[data-exhausted] > [data-part='more'] .label {
   flex: 0 1 auto;
   min-width: 0;
   overflow: hidden;

@@ -3,6 +3,7 @@ import { ButtonBase } from '../basics/Button';
 import { useShrinkLevel } from '../internal/useShrinkLevel';
 import { ActionsOverflow } from '../overlays/Menu';
 import { Icon } from '../provider/icons';
+import type { LinkRenderProps } from '../utils/link';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './SectionTitle.module.css';
 
@@ -15,6 +16,8 @@ export interface SectionTitleProps {
   headingLevel?: 2 | 3 | 4 | 5 | 6;
   /** Makes the title a link to a fuller view of the section. */
   href?: string;
+  /** Plugs in the app's router link for `href`. Defaults to a plain `<a>`. */
+  renderLink?: (props: LinkRenderProps) => ReactNode;
   onOpen?: () => void;
   /** A number shown after the title. */
   count?: number;
@@ -47,6 +50,7 @@ export function SectionTitle({
   variant,
   headingLevel = 3,
   href,
+  renderLink = (props) => <a {...props} />,
   onOpen,
   count,
   actions,
@@ -59,9 +63,7 @@ export function SectionTitle({
   const shrunk = useShrinkLevel(ref, actions ? 1 : 0) === 1;
   const look = variant ?? (href || onOpen ? 'link' : 'heading');
   const text = href ? (
-    <a href={href} className={styles.link}>
-      {children}
-    </a>
+    renderLink({ href, className: styles.link, children })
   ) : onOpen ? (
     <button type="button" className={styles.link} onClick={onOpen}>
       {children}

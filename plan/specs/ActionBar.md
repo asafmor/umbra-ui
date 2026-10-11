@@ -106,3 +106,7 @@ Resolved 2026-10-10:
 - The tooltip of an icon-only action comes from the button's own tooltip; no menu is used at any step.
 - The tone icons are imported directly, not through the provider's icon map, like `Banner`. Follow-up: the same map entries.
 - No `dirtyCount` helper: write the text in `status`.
+
+Resolved 2026-10-11 (review 2):
+
+- A floating bar that closes while the focus is in it ("Clear selection") gives the focus back to the control it came from, or to the first control beside the bar (F18).

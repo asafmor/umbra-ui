@@ -136,3 +136,8 @@ Resolved 2026-10-10:
 - 2026-10-11: a `PageHeader` given as the `header` part and an `ActionBar` given as the `footer` part are spaced by the card: a plain header gets the card padding (above and at the sides), the body after any header that is not the card's own gets the padding above, a tinted or band header runs edge to edge with one rule below, and the bar gets the footer's padding and rule (a `strong` bar keeps its own). `--umbra-page-header-padding` and `--umbra-action-bar-padding-x/-y` still override.
 - 2026-10-11: `size="content"` sizes the card by its header plus its body. Before, the body had no height of its own and the card showed only its header.
 - 2026-10-10 (review item 6): the popover moves the content, it does not repeat it. The overflow of `actions` is a `Menu`.
+
+Resolved 2026-10-11 (review 2):
+
+- `renderLink` on `Card`, `Card.Header` and `Card.Title` (2026-10-11): `href` rendered a plain `<a>`, so an app's router could not take the link. It receives the shared `LinkRenderProps`, as on the navigation components.
+- A collapse with nothing to animate (reduced motion, or no change of height) removes the body in the same frame; it used to stay for one more render, which a test saw about one run in four.

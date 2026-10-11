@@ -33,7 +33,9 @@ import { focusLost, holdFocus } from './focus';
 /** True when the element's content is wider than the element (with a pixel of tolerance for rounding). */
 export const isOverflowing = (el: HTMLElement) => el.scrollWidth > el.clientWidth + 1;
 
-const expanded = '[aria-expanded="true"]';
+// The trigger of an open menu, list or dialog. Not everything that is expanded: the caret of an open
+// card and the header of an open accordion section are, for as long as they are open.
+const expanded = '[aria-expanded="true"][aria-haspopup]';
 const overlay = '[role="menu"], [role="listbox"], [role="dialog"]';
 
 // One observer and one font listener for every row. Rows beside each other give way in an order (a

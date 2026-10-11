@@ -50,7 +50,7 @@ On every child (all umbra-ui layout-aware components accept these; wrap anything
 | `size` | number \| `"content"` | `1` | Weight of the share, or hug the content |
 | `priority` | number | `0` | Which child gives way first. Higher stays longer; equal priorities give way from the end of the source order. |
 | `minHeight` | number | per component and density | The height the child needs. A `Stack` holds its open children at it while they all fit, and collapses cards when they do not. |
-| `minWidth` | number | — | Reserved. `Columns` has no rule that uses it in Milestone 0, so it has no effect. |
+| `minWidth` | number | — | The width the child needs. When the children of a `Columns` cannot all have theirs (their sum plus the gaps is more than the `Columns` is wide), it goes to tab mode, as below the minimum window. `narrow="keep"` turns this off too. |
 | `label` | string | the child's title, when it is text | Tab label when `Columns` is in tab mode. A child without one gets its number and a development warning. |
 
 ### 3. Parts
@@ -87,3 +87,4 @@ Resolved 2026-10-10:
 - 2026-10-11: the highest-priority card of a `Stack` stays open when it cannot reach its minimum. Before, every card collapsed and the column was left with headers only (`collapseToFit`, unit-tested).
 - 2026-10-11: a `Slot` stretches its child whatever the child's own `flex` is. A child that is `flex: none` and a size container (a `PageHeader`) was a few pixels wide in a `Slot size="content"`.
 - Batch 1b: the built-in tab strip was replaced by the one `Tabs` draws. Props and the `tabs` part are unchanged.
+- 2026-10-11: `minWidth` has a rule (it shipped as a public prop with no effect). `Columns` compares the sum of its children's `minWidth` and its gaps with its own width, and shows one child at a time, with tabs, when they do not fit. The measure is the container's own width, which tab mode does not change, so the rule has one answer per width. Considered and not chosen: hiding the lowest-priority column (content would be unreachable without a control to bring it back, and tabs are that control already).

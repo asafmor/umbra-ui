@@ -453,3 +453,29 @@ export const Blocks: Story = {
 
 /** Right to left: the `start` drawer is on the right, and the close button on the left. */
 export const DrawerStartRightToLeft: Story = { ...DrawerStart, globals: { direction: 'rtl' } };
+
+function ConfirmWithParts() {
+  const [result, setResult] = useState('nothing yet');
+  return (
+    <>
+      <Log>Result: {result}</Log>
+      <ConfirmDialog
+        defaultOpen
+        trigger={<Button>Archive report</Button>}
+        title="Archive this report?"
+        description="It moves to the archive and can be restored."
+        confirmLabel="Archive"
+        onConfirm={() => setResult('archived')}
+        onCancel={() => setResult('kept')}
+        parts={{
+          // `null` hides: the only way out is a decision. A function changes the default button.
+          cancel: null,
+          confirm: (button) => <Button {...button} variant="accent" iconStart={<Settings />} />,
+        }}
+      />
+    </>
+  );
+}
+
+/** `parts` of a `ConfirmDialog`: `cancel` hidden with `null`, `confirm` changed by a function. */
+export const ConfirmParts: Story = { render: () => <ConfirmWithParts /> };

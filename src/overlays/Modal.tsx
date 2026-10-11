@@ -24,7 +24,7 @@ import { warn } from '../utils/dev';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './Modal.module.css';
 import { OverlayContainerContext } from '../internal/contexts';
-import { moveFocusFrom } from '../internal/focus';
+import { focusableIn, moveFocusFrom } from '../internal/focus';
 import { useReturnFocusOnClose, useOpenState } from './shared';
 
 export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'full';
@@ -206,17 +206,25 @@ function Content({ className, style, children }: BlockProps) {
 
   // What had the focus when the modal opened: the trigger, or a control of the modal below.
   const [opener] = useState(() => document.activeElement as HTMLElement | null);
+  // The modal's own trigger, for a modal that opened without a press (`defaultOpen`, or by the app):
+  // nothing had the focus then, so there is nothing to give it back to.
+  const ownTrigger = useRef<HTMLElement | null>(null);
+  useEffect(() => {
+    const id = dialog.current?.id;
+    ownTrigger.current = id
+      ? document.querySelector<HTMLElement>('[aria-controls="' + CSS.escape(id) + '"]')
+      : null;
+  }, []);
   useEffect(
     () => () => {
       // React Aria gives the focus back, except when a press on the backdrop took it first and the modal
-      // below caught it. Then it sits on nothing, or on a dialog element: send it to the opener.
+      // below caught it, or when nothing had it. Then it sits on nothing, or on a dialog element: send
+      // it to the opener, the modal's trigger, or the first control of the page. Never left on nothing.
       requestAnimationFrame(() => {
         const active = document.activeElement;
-        if (
-          opener?.isConnected &&
-          (!active || active === document.body || active.matches('[role$="dialog"]'))
-        )
-          opener.focus();
+        if (active && active !== document.body && !active.matches('[role$="dialog"]')) return;
+        const from = [opener, ownTrigger.current].find((el) => el?.isConnected && el !== document.body);
+        (from ?? focusableIn(document).find((el) => el.tabIndex >= 0))?.focus();
       });
     },
     [opener],

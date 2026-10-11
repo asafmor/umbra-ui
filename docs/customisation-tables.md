@@ -83,7 +83,7 @@ A stack of sections that open and close. It fills its slot; an open panel scroll
 | `children` | `ReactNode` |  |
 | `size` | `number \| "content"` | Share of the parent's space: a weight, or `"content"` to take the size of the content. Default 1. |
 | `priority` | `number` | Which child gives way first when space runs out. Higher stays longer; ties give way from the end. Default 0. |
-| `minWidth` | `number` | Reserved: `Columns` has no rule that uses it yet, so it has no effect. |
+| `minWidth` | `number` | The width the child needs. When the children of a `Columns` cannot all have theirs, the `Columns` shows one child at a time, with tabs, as it does below the minimum window. |
 | `minHeight` | `number` | Below this height a parent `Stack` may collapse the child to its header. |
 | `label` | `string` | Tab label when a parent `Columns` shows one child at a time. |
 | `type` | `"single" \| "multiple"` | `single`: one section open at a time. `multiple`: any number. |
@@ -357,9 +357,10 @@ The container for one unit of content on a page. Fills the slot its parent gives
 | `children` | `ReactNode` |  |
 | `size` | `number \| "content"` | Share of the parent's space: a weight, or `"content"` to take the size of the content. Default 1. |
 | `priority` | `number` | Which child gives way first when space runs out. Higher stays longer; ties give way from the end. Default 0. |
-| `minWidth` | `number` | Reserved: `Columns` has no rule that uses it yet, so it has no effect. |
+| `minWidth` | `number` | The width the child needs. When the children of a `Columns` cannot all have theirs, the `Columns` shows one child at a time, with tabs, as it does below the minimum window. |
 | `minHeight` | `number` | Below this height a parent `Stack` may collapse the child to its header. |
 | `label` | `string` | Tab label when a parent `Columns` shows one child at a time. |
+| `renderLink` | `((props: LinkRenderProps) => ReactNode)` | Plugs in the app's router link for `href`. Defaults to a plain `<a>`. |
 | `moreLabel` | `string` | Accessible name of the overflow menu button. |
 | `icon` | `ReactNode` | Leading icon or image. |
 | `subtitle` | `ReactNode` | Second line, in the body font. |
@@ -446,7 +447,7 @@ Shares its width among its children. Below the minimum window it shows one child
 | Prop | Type | Purpose |
 |---|---|---|
 | `gap` | `0 \| 4 \| 3 \| 1 \| 2 \| 5 \| 6 \| 7 \| 8 \| 9` | Overrides the gap, which otherwise follows the density level. |
-| `narrow` | `"tabs" \| "keep"` | Below the minimum window: `tabs` shows one child at a time, `keep` keeps the columns. |
+| `narrow` | `"tabs" \| "keep"` | When there is no room for the columns (below the minimum window, or when the children cannot all have their `minWidth`): `tabs` shows one child at a time, `keep` keeps the columns. |
 | `parts` | `see Parts` | Replace or hide named pieces. |
 | `tabsLabel` | `string` | Accessible name of the tab strip. |
 | `className` | `string` |  |
@@ -454,7 +455,7 @@ Shares its width among its children. Below the minimum window it shows one child
 | `children` | `ReactNode` |  |
 | `size` | `number \| "content"` | Share of the parent's space: a weight, or `"content"` to take the size of the content. Default 1. |
 | `priority` | `number` | Which child gives way first when space runs out. Higher stays longer; ties give way from the end. Default 0. |
-| `minWidth` | `number` | Reserved: `Columns` has no rule that uses it yet, so it has no effect. |
+| `minWidth` | `number` | The width the child needs. When the children of a `Columns` cannot all have theirs, the `Columns` shows one child at a time, with tabs, as it does below the minimum window. |
 | `minHeight` | `number` | Below this height a parent `Stack` may collapse the child to its header. |
 | `label` | `string` | Tab label when a parent `Columns` shows one child at a time. |
 
@@ -1580,6 +1581,7 @@ A heading for one section of content inside a card or page, with optional contro
 | `variant` | `"heading" \| "link" \| "rule"` | `link` is chosen automatically when `href` or `onOpen` is set. |
 | `headingLevel` | `4 \| 3 \| 2 \| 5 \| 6` | Heading level. |
 | `href` | `string` | Makes the title a link to a fuller view of the section. |
+| `renderLink` | `((props: LinkRenderProps) => ReactNode)` | Plugs in the app's router link for `href`. Defaults to a plain `<a>`. |
 | `onOpen` | `(() => void)` |  |
 | `count` | `number` | A number shown after the title. |
 | `actions` | `ReactNode` | Trailing controls. They move into an overflow menu when they do not fit. |
@@ -1744,7 +1746,7 @@ Gives `size`, `priority`, `minWidth`, `minHeight` and `label` to content that is
 | `children` | `ReactNode` |  |
 | `size` | `number \| "content"` | Share of the parent's space: a weight, or `"content"` to take the size of the content. Default 1. |
 | `priority` | `number` | Which child gives way first when space runs out. Higher stays longer; ties give way from the end. Default 0. |
-| `minWidth` | `number` | Reserved: `Columns` has no rule that uses it yet, so it has no effect. |
+| `minWidth` | `number` | The width the child needs. When the children of a `Columns` cannot all have theirs, the `Columns` shows one child at a time, with tabs, as it does below the minimum window. |
 | `minHeight` | `number` | Below this height a parent `Stack` may collapse the child to its header. |
 | `label` | `string` | Tab label when a parent `Columns` shows one child at a time. |
 
@@ -1767,7 +1769,7 @@ Shares its height among its children.
 | `children` | `ReactNode` |  |
 | `size` | `number \| "content"` | Share of the parent's space: a weight, or `"content"` to take the size of the content. Default 1. |
 | `priority` | `number` | Which child gives way first when space runs out. Higher stays longer; ties give way from the end. Default 0. |
-| `minWidth` | `number` | Reserved: `Columns` has no rule that uses it yet, so it has no effect. |
+| `minWidth` | `number` | The width the child needs. When the children of a `Columns` cannot all have theirs, the `Columns` shows one child at a time, with tabs, as it does below the minimum window. |
 | `minHeight` | `number` | Below this height a parent `Stack` may collapse the child to its header. |
 | `label` | `string` | Tab label when a parent `Columns` shows one child at a time. |
 
@@ -1882,7 +1884,7 @@ A compact tile that sums up one thing: an icon, a title and one value. The whole
 | `label` | `string` | Tab label when a parent `Columns` shows one child at a time. |
 | `onPress` | `(() => void)` | Makes the whole tile one button. |
 | `priority` | `number` | Which child gives way first when space runs out. Higher stays longer; ties give way from the end. Default 0. |
-| `minWidth` | `number` | Reserved: `Columns` has no rule that uses it yet, so it has no effect. |
+| `minWidth` | `number` | The width the child needs. When the children of a `Columns` cannot all have theirs, the `Columns` shows one child at a time, with tabs, as it does below the minimum window. |
 | `minHeight` | `number` | Below this height a parent `Stack` may collapse the child to its header. |
 | `highlightChanges` | `boolean` | A changed value flashes softly once: green when a number rose, red when it fell, neutral otherwise. A sign shows the direction without colour. No flash under reduced motion; the sign stays. The value is never counted up or down. |
 | `changeValue` | `unknown` | What is compared, when the content is not the value itself (a formatted text). Default: the content, when it is text or a number. |
@@ -1922,7 +1924,7 @@ Switches between views of the same content area. The panel fills the rest of the
 | `children` | `ReactNode` |  |
 | `size` | `number \| "content"` | Share of the parent's space: a weight, or `"content"` to take the size of the content. Default 1. |
 | `priority` | `number` | Which child gives way first when space runs out. Higher stays longer; ties give way from the end. Default 0. |
-| `minWidth` | `number` | Reserved: `Columns` has no rule that uses it yet, so it has no effect. |
+| `minWidth` | `number` | The width the child needs. When the children of a `Columns` cannot all have theirs, the `Columns` shows one child at a time, with tabs, as it does below the minimum window. |
 | `minHeight` | `number` | Below this height a parent `Stack` may collapse the child to its header. |
 | `label` | `string` | Tab label when a parent `Columns` shows one child at a time. |
 
@@ -2206,7 +2208,7 @@ Side navigation for a modal, a settings screen or one column of a page.
 | `size` | `number \| "content"` | Share of the parent's space: a weight, or `"content"` to take the size of the content. Default 1. |
 | `label` | `string` | Tab label when a parent `Columns` shows one child at a time. |
 | `priority` | `number` | Which child gives way first when space runs out. Higher stays longer; ties give way from the end. Default 0. |
-| `minWidth` | `number` | Reserved: `Columns` has no rule that uses it yet, so it has no effect. |
+| `minWidth` | `number` | The width the child needs. When the children of a `Columns` cannot all have theirs, the `Columns` shows one child at a time, with tabs, as it does below the minimum window. |
 | `minHeight` | `number` | Below this height a parent `Stack` may collapse the child to its header. |
 | `expandedIds` | `string[]` | The open groups (controlled). |
 | `defaultExpandedIds` | `string[]` |  |
