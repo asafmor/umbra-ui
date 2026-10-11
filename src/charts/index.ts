@@ -31,3 +31,6 @@ export type {
   ChartTooltipRow,
 } from './internal/Frame';
 export type { LineCurve } from './internal/line';
+// The shared `thresholds` shape, also in the main entry: a chart-only app needs no second import.
+export { rampThresholds, resolveThreshold } from '../utils/thresholds';
+export type { Threshold, ThresholdBand, ThresholdList, ThresholdTone } from '../utils/thresholds';

@@ -15,16 +15,16 @@ import {
 } from '../internal/ChangeHighlight';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './ProgressBar.module.css';
+import { resolveThreshold, type ThresholdList } from '../utils/thresholds';
 import {
-  defaultThresholds,
+  bandPattern,
   describe,
   outOfRange,
   segmentBounds,
-  thresholdFor,
+  thirdsThresholds,
   toFraction,
   type MeterPattern,
   type MeterTone,
-  type Threshold,
 } from './scale';
 import { defined } from '../utils/defined';
 
@@ -86,10 +86,14 @@ export interface ProgressBarRootProps extends BlockProps {
   indeterminate?: boolean | undefined;
   /** Colour of the fill. A matching threshold wins over it. */
   tone?: MeterTone | undefined;
-  /** Colours the fill by its level. `true` is thirds of the scale: danger, warning, success. Each band also has a pattern. */
-  thresholds?: boolean | Threshold[] | undefined;
-  /** Reverses the tones of the thresholds, for a scale where low is good. */
-  invert?: boolean | undefined;
+  /**
+   * Colours the fill by the band of the value: an ascending list of `{ from, tone?, color?, label? }`.
+   * `true` is thirds of the scale (danger, warning, success); plain numbers are boundaries on the value
+   * ramp. Each band also has a pattern, and its `label` joins the value text.
+   */
+  thresholds?: boolean | ThresholdList | undefined;
+  /** For a scale where low is good: mirrors the colours and patterns of the bands. The labels stay. */
+  lowerIsBetter?: boolean | undefined;
   size?: 'thin' | 'default' | 'thick' | undefined;
   /** `inline` puts the label, the bar and the value on one line, for table cells and rows. */
   layout?: 'block' | 'inline' | undefined;
@@ -139,7 +143,7 @@ function Root({
   indeterminate = false,
   tone = 'default',
   thresholds,
-  invert,
+  lowerIsBetter,
   size = 'default',
   layout = 'block',
   segments,
@@ -169,7 +173,9 @@ function Root({
 
   const band =
     thresholds && !stack && !missing
-      ? thresholdFor(value, thresholds === true ? defaultThresholds(min, max) : thresholds, invert)
+      ? resolveThreshold(value, thresholds === true ? thirdsThresholds(min, max) : thresholds, {
+          lowerIsBetter,
+        })
       : undefined;
   const fillTone = band?.tone ?? tone;
 
@@ -195,7 +201,8 @@ function Root({
         {
           fraction: indeterminate ? 1 : toFraction(value, cell.from, cell.to),
           tone: fillTone,
-          pattern: band?.pattern ?? 'none',
+          color: band?.color,
+          pattern: band ? bandPattern(band) : 'none',
           indeterminate,
         },
       ],
@@ -217,7 +224,8 @@ function Root({
     'data-size': size,
     'data-layout': layout,
     'data-variant': stack ? 'stacked' : cells.length > 1 ? 'segmented' : 'plain',
-    'data-tone': stack ? undefined : fillTone,
+    'data-tone': stack ? undefined : band?.color ? 'custom' : fillTone,
+    'data-band': band?.index,
     'data-indeterminate': indeterminate || undefined,
     'data-empty': missing || undefined,
     'data-out-of-range': indeterminate || missing || !range ? undefined : outOfRange(value, min, max),

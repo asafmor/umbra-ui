@@ -30,7 +30,8 @@ Rating pills in table cells, green for high, grey for middling, a grey dash for 
 | Variant | Values | Notes |
 |---|---|---|
 | level | 1 to 5, or none | Computed from `value`. 1 is the worst step of the ramp, 5 the best. |
-| `ramp` | `higher-is-better`, `lower-is-better` | Which end of the scale gets step 5 |
+| `lowerIsBetter` | boolean | The low end of the scale gets step 5 |
+| band look | ramp step, tone, free colour | With a `thresholds` list of bands: a `ramp-` tone is a ramp step, another tone (`success`, `accent`, …) or a `color` fills the pill with it. `data-tone`, `data-band`. |
 | `shape` | `pill`, `square`, `circle` | `square` for dense rows, `circle` for one or two characters |
 | `size` | `small`, `default`, `large` | `small` fits a compact table row |
 
@@ -39,7 +40,8 @@ States: no value (`null`, `undefined` or not a number: neutral surface, `emptyLa
 How the level is found:
 
 - With `min` and `max`: the scale is split into five equal bands. Values outside take the end bands.
-- With `thresholds` (ascending, at most four): a value at a threshold belongs to the band above it. Four thresholds give the five steps. Fewer spread over the whole ramp: one threshold gives steps 1 and 5, two give 1, 3 and 5.
+- With `thresholds` as numbers (ascending boundaries): a value at a boundary belongs to the band above it. Four boundaries give the five steps. Fewer spread over the whole ramp: one gives steps 1 and 5, two give 1, 3 and 5. It is shorthand for a list of bands with `ramp-` tones (`rampThresholds`).
+- With `thresholds` as a list of bands, `{ from, tone?, color?, label? }` (the shared shape of `plan/decisions/07-customisation.md`, "Thresholds"): the pill takes the look of the band the value is in. A band with neither `tone` nor `color`, and a value below the first band, are neutral; the value is still shown. The level marker shows the band's ramp step, or its position spread over the five bars.
 
 ## Customisation
 
@@ -53,8 +55,8 @@ How the level is found:
 |---|---|---|---|
 | `value` | number \| null | — (required) | The value |
 | `min` / `max` | number | `0` / `100` | The scale |
-| `thresholds` | number[] | — | Explicit boundaries; replace `min` and `max` |
-| `ramp` | see above | `higher-is-better` | |
+| `thresholds` | number[] or `Threshold[]` | — | Explicit boundaries or bands; replace `min` and `max` |
+| `lowerIsBetter` | boolean | `false` | Mirrors the ramp, or the looks of the bands (their labels stay) |
 | `formatValue` | function of the value, returns a node | the number | What is shown |
 | `shape` | see above | `pill` | |
 | `size` | see above | `default` | |
@@ -71,7 +73,7 @@ How the level is found:
 
 ### 4. Blocks
 
-`ValuePill.Root` (takes `level` directly), `ValuePill.Value`, `ValuePill.Level`.
+`ValuePill.Root` (takes `level` directly, or a `tone` or a `color` in its place; `band` and `title` set `data-band` and the hover text), `ValuePill.Value`, `ValuePill.Level`.
 
 ## Behaviour as space shrinks
 
@@ -83,12 +85,19 @@ How the level is found:
 
 - Not interactive.
 - The colour is never the only cue: the value itself is always shown. `showLevel` adds a marker that reads without colour (bars, plus "Level 4 of 5" for screen readers), for places where the colour means more than the number says, or for colour-blind use.
-- The text is dark on every ramp step, at 4.5:1 or more; a unit test checks each step against `plan/tokens.json`.
+- The text is dark on every ramp step, at 4.5:1 or more; a unit test checks each step against `plan/tokens.json`. A tone has the same dark text (`accent` its own), and on a free colour the text is white or near-black, whichever has more contrast (`textColourOn`); a colour the library cannot read (not hex or rgb) gets light text.
+- A band's `label` is read after the value (visually hidden text) and shown on hover (`title`).
 - The pill without a value uses the secondary text colour on a neutral surface (above 4.5:1).
 
 ## Open questions
 
 None.
+
+Resolved 2026-10-11 (Milestone 2, one `thresholds` shape):
+
+- `thresholds` also takes the shared list of bands, `Threshold[]`; the plain numbers stay as shorthand, and are no longer cut at four (more boundaries share ramp steps).
+- `ramp="lower-is-better"` became the boolean `lowerIsBetter`, the one name on every component that colours by value (`ProgressBar` had `invert`).
+- A band's label has no visible text in the pill: the pill is as wide as its value. It is on hover and in the screen reader text. Compromise: the hover text is the native `title`, not the library's tooltip, because a pill is drawn by the hundred in tables and stays free of hooks.
 
 Resolved 2026-10-11 (review fix pass):
 
@@ -98,7 +107,6 @@ Resolved 2026-10-11 (review fix pass):
 Resolved 2026-10-10:
 
 - 2026-10-11: `highlightChanges` (plan/interaction.md, "Live updates"), the same as on `DataTable` and from the same code: `src/internal/useChangeHighlight.ts` and `ChangeHighlight.tsx`. The number itself is compared, not the formatted text, so `formatValue` keeps the direction. Tokens: `--umbra-change-up`, `--umbra-change-down`, `--umbra-change-neutral`.
-- `ramp` takes `higher-is-better` or `lower-is-better`.
 - Fewer than four thresholds spread over the whole ramp, so a single pass mark gives the two end colours.
 - A value at a threshold belongs to the band above it.
 - The level marker is five bars of rising height, not a number or a letter.

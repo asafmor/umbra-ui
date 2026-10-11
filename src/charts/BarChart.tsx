@@ -13,7 +13,9 @@ import {
   type CartesianModel,
   type ChartAnnotation,
 } from './internal/cartesian';
-import { fillKind, FillPattern, fillPaint, fills, seriesColour, type FillKind } from './internal/cues';
+import { resolveThreshold, type Threshold, type ThresholdList } from '../utils/thresholds';
+import { fillKind, FillPattern, fillPaint, seriesColour, type FillKind } from './internal/cues';
+import { toneColours } from './internal/tones';
 import {
   Frame,
   seriesProps,
@@ -44,11 +46,9 @@ export interface BarSeries {
   marker?: FillKind | undefined;
 }
 
-export interface BarThreshold {
-  /** Bars whose value reaches this take the colour; the last threshold reached wins. */
-  from: number;
-  color: string;
-  /** The fill that goes with the colour. By default thresholds take the fills in turn. */
+/** A `Threshold` whose fill can be chosen. */
+export interface BarThreshold extends Threshold {
+  /** The fill that goes with the colour. By default the bands take the fills in turn, by position. */
   marker?: FillKind | undefined;
 }
 
@@ -61,6 +61,8 @@ interface BarModel extends CartesianModel {
   bars: {
     seriesId: string;
     paint: number;
+    /** The position of the value's band in `thresholds`. */
+    band?: number | undefined;
     x: number;
     y: number;
     width: number;
@@ -83,8 +85,14 @@ export interface BarChartRootProps extends ChartCommonProps {
   variant?: 'grouped' | 'stacked' | 'diverging' | undefined;
   /** `sign` colours bars by the sign of their value; negative bars are also striped. */
   colorBy?: 'series' | 'sign' | undefined;
-  /** Colours bars by value. Each threshold also has a fill, so the steps differ without colour. */
-  thresholds?: BarThreshold[] | undefined;
+  /**
+   * Colours bars by the band of their value: an ascending list of `{ from, tone?, color?, label? }`, or
+   * plain numbers as boundaries on the value ramp. Each band also has a fill, so the bands differ
+   * without colour, and its `label` joins the value in the tooltip and for screen readers.
+   */
+  thresholds?: ThresholdList<BarThreshold> | undefined;
+  /** For a scale where low is good: mirrors the colours and fills of the bands. The labels stay. */
+  lowerIsBetter?: boolean | undefined;
   /** The range of the value axis. Defaults to round numbers around the data, with zero. */
   valueDomain?: [number, number] | undefined;
   /** Reference lines and bands on the value axis. */
@@ -110,6 +118,7 @@ function Root({
   variant = 'grouped',
   colorBy = 'series',
   thresholds,
+  lowerIsBetter,
   valueDomain,
   annotations,
   xTitle,
@@ -123,7 +132,6 @@ function Root({
   // A diverging chart shows both sides as positive numbers.
   const format = (v: number) => number(diverging ? Math.abs(v) : v);
   const horizontal = orientation === 'horizontal';
-  const sorted = [...(thresholds ?? [])].sort((a, b) => a.from - b.from);
 
   const all = series.map((s, i) => ({
     ...s,
@@ -196,16 +204,20 @@ function Root({
     const zero = value(clamp(0, domain[0], domain[1]));
 
     const paints: Paint[] = [];
-    const paintOf = (s: (typeof all)[number], v: number) => {
-      const index = sorted.findLastIndex((t) => v >= t.from);
-      const paint: Paint =
-        index >= 0
-          ? { color: sorted[index]!.color, fill: sorted[index]!.marker ?? fills[index % fills.length]! }
-          : colorBy === 'sign'
-            ? v < 0
-              ? { color: negative, fill: 'stripes' }
-              : { color: positive, fill: 'square' }
-            : { color: s.color, fill: s.fill };
+    // The band of `thresholds` a value is in. (`band` below is the scale of the categories.)
+    const stepOf = (v: number) => resolveThreshold(v, thresholds, { lowerIsBetter });
+    const paintOf = (s: (typeof all)[number], v: number, step: ReturnType<typeof stepOf>) => {
+      const paint: Paint = step
+        ? {
+            // A band without a colour keeps the colour of its series, and still has its own fill.
+            color: step.color ?? (step.tone ? toneColours[step.tone] : s.color),
+            fill: step.look.marker ?? fillKind(step.cue),
+          }
+        : colorBy === 'sign'
+          ? v < 0
+            ? { color: negative, fill: 'stripes' }
+            : { color: positive, fill: 'square' }
+          : { color: s.color, fill: s.fill };
       const found = paints.findIndex((p) => p.color === paint.color && p.fill === paint.fill);
       return found >= 0 ? found : paints.push(paint) - 1;
     };
@@ -239,17 +251,20 @@ function Root({
           ? { x: Math.min(a, b), y: start, width: length, height: size }
           : { x: start, y: Math.min(a, b), width: size, height: length };
         const mid = start + size / 2;
-        const paint = paintOf(s, v);
+        const step = stepOf(v);
+        const paint = paintOf(s, v, step);
+        const text = step?.label ? `${format(v)} · ${step.label}` : format(v);
         bars.push({
           seriesId: s.id,
           paint,
+          band: step?.index,
           ...rect,
           from: horizontal ? (v < 0 ? 'end' : 'start') : v < 0 ? 'top' : 'bottom',
           point: {
             key: `${s.id}-${c}`,
             group: category,
-            name: `${s.label}, ${category}: ${format(v)}`,
-            valueText: format(v),
+            name: `${s.label}, ${category}: ${text}`,
+            valueText: text,
             color: paints[paint]!.color,
             x: horizontal ? b : mid,
             y: horizontal ? mid : b,
@@ -363,6 +378,7 @@ function Bars() {
           <g
             key={b.point.key}
             className={styles.series}
+            data-band={b.band}
             {...seriesProps(frame, b.seriesId)}
             {...frame.pointProps(b.point)}
           >

@@ -37,7 +37,7 @@ Every part carries `data-part` with its name. Two inner elements that cannot be 
 | shape | plain, segmented (`segments`), stacked (`stack`) | Plain in the default tone carries the reference gradient; the others are flat |
 | `kind` | `progress`, `meter` | `role="progressbar"` for a task, `role="meter"` for a level |
 | `tone` | `default`, `neutral`, `info`, `success`, `warning`, `danger`, `ramp-1` to `ramp-5` | |
-| `thresholds` | `true` or a list of `{ from, tone, label? }` | Colour by fill level. Each band also has a pattern (hatched; the top band is solid), and its `label` joins the value text. `invert` swaps the tones and patterns. |
+| `thresholds` | `true`, a list of `{ from, tone?, color?, label? }`, or number[] | Colour by fill level (the shared shape of `plan/decisions/07-customisation.md`, "Thresholds"). Each band also has a pattern by its position (hatched; the top band is solid), whatever its colour, and its `label` joins the value text. `true` is thirds of the scale; numbers are boundaries on the value ramp. `lowerIsBetter` mirrors the colours and patterns. `data-band` on the root. |
 | `size` | `thin` (4px), `default` (6px), `thick` (18px) | |
 | `layout` | `block`, `inline` | `inline` puts label, bar and value on one line, for cells and rows |
 | `valuePlacement` | `outside`, `inside` | `inside` needs `size="thick"` |
@@ -66,7 +66,7 @@ States: `indeterminate`, `loading`, no value (`data-empty`), out of range (`data
 | `valuePlacement` | see above | `outside` | |
 | `formatValue` | `(value, { min, max, percent }) => string` | rounded percent | Used for the visible value, the stacked parts, the target and `aria-valuetext` |
 | `tone` | see above | `default` | |
-| `thresholds` / `invert` | see above / boolean | — / `false` | |
+| `thresholds` / `lowerIsBetter` | see above / boolean | — / `false` | |
 | `size` | see above | `default` | |
 | `layout` | see above | `block` | |
 | `segments` | number \| number[] | — | A count of equal segments, or the values where a segment ends |
@@ -124,8 +124,9 @@ Resolved 2026-10-10:
 
 - 2026-10-11: `highlightChanges` (plan/interaction.md, "Live updates"), the same as on `DataTable` and from the same code: `src/internal/useChangeHighlight.ts` and `ChangeHighlight.tsx`. The number itself is compared. The fill moves without a transition of its own, as before. Tokens: `--umbra-change-up`, `--umbra-change-down`, `--umbra-change-neutral`.
 - The stacked data prop is `stack`, not `parts`: every component uses `parts` for the customisation layer.
-- A threshold is `{ from, tone, label? }`; the highest `from` not above the value wins. `thresholds={true}` is thirds of the scale: danger, warning, success, with no labels (a built-in label would need translating).
-- `invert` swaps the tones and patterns of the bands; the labels stay with their bands.
+- A threshold is the shared `Threshold`, `{ from, tone?, color?, label? }` (2026-10-11, Milestone 2; it was `{ from, tone, label? }`, declared here): the last `from` not above the value wins, and a band without `tone` and `color` keeps the bar's own `tone`. `thresholds={true}` is thirds of the scale: danger, warning, success, with no labels (a built-in label would need translating). Plain numbers are boundaries on the value ramp.
+- `lowerIsBetter` (2026-10-11; it was `invert`) mirrors the colours and patterns of the bands; the labels stay with their bands.
+- A band with a free `color` gets its pattern like any other, by position, so it never depends on colour alone. The tones gained `accent`, so every tone of a threshold is one of the bar's.
 - The second cue of a threshold is a pattern on the fill, plus the band's label in the value text when one is given.
 - Tones include the five steps of the value ramp (`ramp-1` to `ramp-5`), which `tokens.json` defines for this use.
 - A stacked bar defaults to cycling tones (default, info, success, warning, neutral) and patterns (solid, diagonal, vertical, reverse).

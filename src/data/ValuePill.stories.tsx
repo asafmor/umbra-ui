@@ -29,7 +29,7 @@ export const Variants: Story = {
         </Row>
         <Row label="Lower is better">
           {values.map((v) => (
-            <ValuePill key={v} value={v} ramp="lower-is-better" />
+            <ValuePill key={v} value={v} lowerIsBetter />
           ))}
         </Row>
         <Row label="Thresholds">

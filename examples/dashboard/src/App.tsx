@@ -329,10 +329,10 @@ export function App() {
                         value={4.2}
                         min={1}
                         max={5}
-                        zones={[
-                          { from: 1, to: 2.5, tone: 'danger', label: 'Low' },
-                          { from: 2.5, to: 3.8, tone: 'warning', label: 'Fair' },
-                          { from: 3.8, to: 5, tone: 'success', label: 'Good' },
+                        thresholds={[
+                          { from: 1, tone: 'danger', label: 'Low' },
+                          { from: 2.5, tone: 'warning', label: 'Fair' },
+                          { from: 3.8, tone: 'success', label: 'Good' },
                         ]}
                       />
                     }

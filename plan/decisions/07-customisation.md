@@ -50,4 +50,27 @@ The same idea has the same name in every component. New components follow this l
 | Number of placeholder rows while loading | `skeletonRows` (`List`, `DataTable`, `KeyValueList`, `Legend`) |
 | Height of a component that fills its slot | `height`: `fill` (default; the content's height where there is none to fill), `content`, or pixels. `DataTable`, `List`, the charts (`src/internal/height.ts`). |
 | Loading, empty, error | `loading`, `empty`, `error`, `onRetry`, `retryLabel` (`src/internal/dataState.tsx`) |
+| Colour by value | `thresholds`: one shape on every component, and `lowerIsBetter` for a scale where low is good (decided 2026-10-11, below). |
+
+## Thresholds (decided 2026-10-11)
+
+Every component that colours by value takes the same `thresholds`: `ValuePill`, `ProgressBar`, `LevelMeter`, `BarChart`, `DonutChart`, and what `ColorScaleEditor` will produce. There were four shapes.
+
+| Piece | Decision |
+|---|---|
+| Type | `Threshold = { from: number; tone?: ThresholdTone; color?: string; label?: string }`, in an ascending list: "from this value up, until the next entry". `src/utils/thresholds.ts`, exported from `umbra-ui` and again from `umbra-ui/charts`. |
+| `tone` | `ThresholdTone` = the six tones of `Tone` plus `ramp-1` to `ramp-5`, the steps of the value ramp. One member, not a `tone` and a `level`: there is no question of which wins. `MeterTone` and `DonutTone` are `default` plus `ThresholdTone`, so every tone is drawn by every component. |
+| `color` | Any CSS colour; wins over `tone`, as everywhere. With neither, the band keeps the component's own colour and only adds its label and cue. |
+| Prop type | `ThresholdList` = `readonly Threshold[]` or `readonly number[]`. |
+| Shorthands | Plain numbers are boundaries spread on the value ramp (`rampThresholds`: four give the five steps, one gives `ramp-1` and `ramp-5`); a value below the first is `ramp-1`. Accepted by every component, not only `ValuePill`. `ProgressBar` also keeps `true`: thirds of its scale, danger, warning, success. Both resolve to a `Threshold[]`. |
+| Resolver | `resolveThreshold(value, thresholds, { lowerIsBetter })` returns the band (`index`, `count`, `from`, `label`, `tone`, `color`, `cue`, `level`, `look`) or `undefined` (no value, no list, below the first `from`). Public: an app colours its own cell with the rule the components use. A value at a `from` belongs to that band. An unsorted list is sorted, with one warning in development. |
+| Low is good | `lowerIsBetter` on every component (`ProgressBar` had `invert`, `ValuePill` had `ramp="lower-is-better"`). A boolean that names the meaning. It mirrors the looks over the bands; `from` and `label` stay. |
+| Cue that is not colour | Never taken from the colour, so a free `color` has one: the resolver gives each band a `cue` (its position, mirrored with `lowerIsBetter`), and the component draws its own cue by it. `ProgressBar`: a hatch (the top band solid). `BarChart`: solid, stripes, dots in turn. `ValuePill`: the value itself, and the level marker. `LevelMeter`: taller ticks where bands start. `DonutChart`: the number in the centre. All of them: the `label`. |
+| `label` | Joins the value: visible text in `ProgressBar` and `LevelMeter` ("80% · High"), tooltip and `aria-valuetext` there, tooltip and point name in the charts, hover and screen reader text in `ValuePill`. No legend is built from it. |
+| Extras | A component may extend the type with optional members only, so one list fits all: `BarThreshold` adds `marker` (the fill). `LevelMeter`'s `zones` (with a `to`) became `thresholds`. |
+| State for CSS | `data-band` (the band's position, from 0) on the pill, the bar, the meter, each chart bar and the donut's segment. `tests/visual/thresholds.spec.ts` holds that one list gives the same bands everywhere. |
+
+`ColorScaleEditor` emits a `Threshold[]`, ascending, each entry with `from` and a `color` or a `tone`, and a `label` when the user named the band. Its value is JSON-safe: the first `from` is the bottom of its scale, never `-Infinity` (which only the number shorthand produces).
+
+**Rejected**: a `level: 1..5` member beside `tone` (two ways to say a colour); a required `to` (gaps are an entry with no tone); patterns chosen per colour (a free colour would have none).
 

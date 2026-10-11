@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { UmbraScope } from '../provider/UmbraProvider';
 import { ProgressBar, type ProgressBarStackItem } from './ProgressBar';
-import type { Threshold } from './scale';
+import type { Threshold } from '../utils/thresholds';
 import { Board, Panel, Width } from './storyKit';
 import { LiveValues } from '../stories/live';
 
@@ -119,7 +119,7 @@ export const Thresholds: Story = {
             kind="meter"
             value={value}
             thresholds={bands}
-            invert
+            lowerIsBetter
             showValue
           />
         ))}
@@ -154,7 +154,14 @@ export const EdgeValues: Story = {
         <ProgressBar label="Full" value={100} showValue />
       </Panel>
       <Panel title="Outside the scale">
-        <ProgressBar label="Over: budget used" kind="meter" value={120} showValue thresholds={bands} invert />
+        <ProgressBar
+          label="Over: budget used"
+          kind="meter"
+          value={120}
+          showValue
+          thresholds={bands}
+          lowerIsBetter
+        />
         <ProgressBar label="Negative" kind="meter" value={-20} showValue />
         <ProgressBar label="Segmented, over" value={9} max={5} segments={5} showValue />
       </Panel>
@@ -258,7 +265,7 @@ export const InCell: Story = {
                   layout="inline"
                   value={row.used}
                   thresholds
-                  invert
+                  lowerIsBetter
                   showValue
                 />
               </td>

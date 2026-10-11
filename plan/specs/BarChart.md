@@ -36,7 +36,7 @@ Bars above and below a horizontal zero line, one series up and one down, over ti
 | `orientation` | `vertical`, `horizontal` | Horizontal puts the categories on the left |
 | `variant` | `grouped`, `stacked`, `diverging` | `diverging`: every second series is drawn on the other side of zero and all values read as positive (source: 36). Stacks put negative values below zero |
 | `colorBy` | `series`, `sign` | `sign`: positive bars solid green, negative bars red and striped |
-| `thresholds` | `{ from, color, marker? }[]` | Colour by value; each step also has its own fill |
+| `thresholds` | a list of `{ from, tone?, color?, label?, marker? }`, or number[] | Colour by the band of the value (the shared shape of `plan/decisions/07-customisation.md`, "Thresholds"); each band also has its own fill, by position (solid, stripes, dots) or from `marker`, and its `label` joins the value in the tooltip and the point's name. `lowerIsBetter` mirrors colours and fills. `data-band` on each bar. |
 | `labels` | boolean | Grouped: each value. Stacked and diverging: the total of each side. A label wider than its bar is left out |
 | `annotations` | line or band | On the value axis |
 | series cue | fill: solid, stripes, dots | Taken in turn by position, in the Legend's own marker kinds |
@@ -58,7 +58,7 @@ Shared by the four charts: `--umbra-chart-font`, `--umbra-chart-fg` (axis and la
 | `orientation` | see above | `vertical` | |
 | `variant` | see above | `grouped` | |
 | `colorBy` | see above | `series` | |
-| `thresholds` | see above | — | |
+| `thresholds` / `lowerIsBetter` | see above / boolean | — / `false` | |
 | `valueDomain` | `[min, max]` | round numbers around the data, with zero | Range of the value axis |
 | `annotations` | as in `LineChart` | — | `axis` is ignored: always the value axis |
 | `xTitle` / `yTitle` | string | — | Titles of the horizontal and vertical axis |
@@ -115,6 +115,12 @@ Bars share the plot evenly and get narrower with it. In a horizontal chart the c
 ## Open questions
 
 None.
+
+Resolved 2026-10-11 (Milestone 2, one `thresholds` shape):
+
+- A threshold is the shared `Threshold` (it was `{ from, color, marker? }` with a required colour): a `tone` or a free `color`; a band with neither keeps the colour of its series and still has its own fill. `BarThreshold` extends it with the one extra this chart needs, the optional `marker` (the fill).
+- A band with a free `color` gets a fill by its position like any other, so it never depends on colour alone.
+- The legend still lists the series, not the bands: an app that wants a key of the bands passes the same list to `Legend`.
 
 Resolved 2026-10-11:
 

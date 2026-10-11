@@ -171,7 +171,9 @@ export type {
   LevelMeterValue,
   LevelMeterValueProps,
 } from './meters/LevelMeter';
-export type { MeterPattern, MeterTone, Threshold, Zone } from './meters/scale';
+export type { MeterPattern, MeterTone } from './meters/scale';
+export { rampThresholds, resolveThreshold } from './utils/thresholds';
+export type { Threshold, ThresholdBand, ThresholdList, ThresholdTone } from './utils/thresholds';
 export { Checkbox, CheckboxGroup } from './inputs/Checkbox';
 export type {
   CheckboxGroupProps,

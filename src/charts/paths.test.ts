@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { expect, test } from 'vitest';
 import { annotationMarks, fitTicks } from './internal/cartesian';
 import { dash, fillKind, lineCues, pointShape, seriesColour } from './internal/cues';
-import { donutArcs, donutThickness, ringArc, toneFor } from './internal/donut';
+import { donutArcs, donutThickness, ringArc } from './internal/donut';
 import { areaPath, isIsolated, linePath, spread } from './internal/line';
 import { polygonPath, radarAngles, radarPoints, radarRing } from './internal/radar';
 
@@ -45,20 +45,10 @@ test('a gap shortens segments, and rounded caps change the path', () => {
   expect(ringArc(0, 90, 50, 40, true)).not.toBe(ringArc(0, 90, 50, 40, false));
 });
 
-test('thickness follows the radius within limits, and thresholds pick a tone', () => {
+test('thickness follows the radius within limits', () => {
   expect(donutThickness(40)).toBe(8);
   expect(donutThickness(5)).toBe(3);
   expect(donutThickness(400)).toBe(28);
-  const thresholds = [
-    { from: 80, tone: 'good' },
-    { from: 0, tone: 'bad' },
-    { from: 50, tone: 'fair' },
-  ];
-  expect(toneFor(34, thresholds)).toBe('bad');
-  expect(toneFor(50, thresholds)).toBe('fair');
-  expect(toneFor(92, thresholds)).toBe('good');
-  expect(toneFor(-1, thresholds)).toBeUndefined();
-  expect(toneFor(10, undefined)).toBeUndefined();
 });
 
 test('radar points sit along their axes at the share of the maximum', () => {
