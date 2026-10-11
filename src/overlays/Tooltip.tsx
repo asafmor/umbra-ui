@@ -3,7 +3,7 @@ import { Focusable, Tooltip as AriaTooltip, TooltipTrigger } from 'react-aria-co
 import { OverflowMenuContext } from '../internal/contexts';
 import { useScopeAttributes, useShortcut } from '../provider/UmbraProvider';
 import { cx, renderPart, type Part } from '../utils/parts';
-import { toAriaPlacement, type OverlayPlacement } from './shared';
+import { toAriaPlacement, useOverlayLayer, type OverlayPlacement } from './shared';
 import styles from './Tooltip.module.css';
 
 export interface TooltipProps {
@@ -18,6 +18,11 @@ export interface TooltipProps {
   placement?: OverlayPlacement;
   /** Milliseconds before it shows on hover. Keyboard focus shows it at once. */
   delay?: number;
+  /**
+   * Milliseconds it stays after the pointer has left the control: time to move the pointer onto the
+   * tooltip, which stays while the pointer is over it.
+   */
+  closeDelay?: number;
   /** Gap between the control and the tooltip, in pixels. */
   offset?: number;
   /** Controlled state. */
@@ -53,6 +58,7 @@ export function Tooltip({
   shortcut,
   placement = 'top',
   delay = 500,
+  closeDelay = 200,
   offset = 6,
   open,
   defaultOpen,
@@ -64,6 +70,7 @@ export function Tooltip({
   style,
 }: TooltipProps) {
   const scope = useScopeAttributes();
+  const layer = useOverlayLayer('tooltip');
   const hint = useShortcut(shortcut, undefined);
   const inMenu = useContext(OverflowMenuContext);
   const empty = (node: ReactNode) => node === undefined || node === null || node === false || node === '';
@@ -71,12 +78,18 @@ export function Tooltip({
   if (inMenu || (empty(content) && empty(title) && !hint)) return children;
 
   const child = isValidElement<{ disabled?: boolean }>(children) ? children : null;
+  const standIn = (wrapper: HTMLSpanElement | null) => {
+    const control = wrapper?.firstElementChild;
+    if (!wrapper || !(control instanceof HTMLElement)) return;
+    wrapper.setAttribute('aria-label', control.getAttribute('aria-label') ?? control.textContent ?? '');
+    control.inert = true;
+  };
   const wrapped = wrap ?? child?.props.disabled === true;
   const trigger = wrapped ? (
-    // The control inside is inert, so the wrapper stands in for it: it reads as a disabled button with
-    // the control's name, and the tooltip is its description.
+    // The wrapper stands in for the control: it reads as a disabled button with the control's name, and
+    // the tooltip is its description. The control itself is made inert, so there is one button, not two.
     <Focusable>
-      <span role="button" aria-disabled="true" data-part="wrapper" className={styles.wrapper}>
+      <span ref={standIn} role="button" aria-disabled="true" data-part="wrapper" className={styles.wrapper}>
         {children}
       </span>
     </Focusable>
@@ -88,7 +101,9 @@ export function Tooltip({
   return (
     <TooltipTrigger
       delay={delay}
-      closeDelay={0}
+      // Long enough to move the pointer from the control onto the tooltip, which then stays while the
+      // pointer is over it (WCAG 1.4.13, hoverable).
+      closeDelay={closeDelay}
       isOpen={open}
       defaultOpen={defaultOpen}
       onOpenChange={onOpenChange}
@@ -97,8 +112,11 @@ export function Tooltip({
       {trigger}
       <AriaTooltip
         {...scope}
+        {...layer}
         placement={toAriaPlacement(placement)}
         offset={offset}
+        // React Aria keeps what carries this out of the inert page behind a modal.
+        data-react-aria-top-layer="true"
         data-umbra="tooltip"
         data-umbra-overlay=""
         data-rich={!empty(title) || undefined}

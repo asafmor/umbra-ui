@@ -11,6 +11,30 @@
   box-sizing: border-box;
 }
 
+/*
+ * The overlay layers (plan/tokens.json, "layer"). React Aria writes its own z-index on the element,
+ * so these are important. Modal and palette set theirs in their own files.
+ */
+[data-umbra-layer='popover'] {
+  z-index: var(--umbra-layer-popover) !important;
+}
+
+[data-umbra-layer='tooltip'] {
+  z-index: var(--umbra-layer-tooltip) !important;
+}
+
+/*
+ * Direction as a number, for what CSS has no logical form of: the side of an inset stripe, the turn of
+ * a caret. 1 left to right, -1 right to left. The provider's root and every portal carry `dir`.
+ */
+[dir='ltr'] {
+  --umbra-dir: 1;
+}
+
+[dir='rtl'] {
+  --umbra-dir: -1;
+}
+
 :where([data-umbra-scope] :focus-visible) {
   outline: var(--umbra-state-focus-ring-width) solid
     var(--umbra-focus-color, var(--umbra-color-fixed-focus-ring));

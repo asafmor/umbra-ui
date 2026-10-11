@@ -29,6 +29,9 @@ const base = [
   ...entries(t.size).map(([k, v]) => [`size-${kebab(k)}`, px(v)]),
   ...entries(t.motion.duration).map(([k, v]) => [`motion-duration-${k}`, `${v}ms`]),
   ...entries(t.motion.easing).map(([k, v]) => [`motion-easing-${k}`, v]),
+  ...entries(t.layer)
+    .filter(([k]) => !k.startsWith('$'))
+    .map(([k, v]) => [`layer-${k}`, v]),
   ['state-disabled-opacity', t.state.disabledOpacity],
   ['state-focus-ring-width', px(t.state.focusRingWidth)],
   ['state-stripe-strength', t.state.stripeStrength],

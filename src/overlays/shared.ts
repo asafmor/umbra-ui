@@ -1,5 +1,6 @@
 // What Popover, Tooltip and Menu share: the placement type and the open state.
-import { useCallback, useEffect, useState, type RefObject } from 'react';
+import { useCallback, useContext, useEffect, useState, type RefObject } from 'react';
+import { OverlayContainerContext } from '../internal/contexts';
 
 export type OverlaySide = 'top' | 'bottom' | 'start' | 'end';
 export type OverlayAlign = 'start' | 'center' | 'end';
@@ -109,4 +110,13 @@ export function useReturnFocusOnClose(open: boolean, inside: RefObject<Element |
     return () => cancelAnimationFrame(frame);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- runs when the overlay opens or closes
   }, [open]);
+}
+
+/**
+ * Props for a React Aria popover or tooltip: its layer (`--umbra-layer-*`), and where it is rendered,
+ * which is inside the modal it was opened from when there is one.
+ */
+export function useOverlayLayer(layer: 'popover' | 'tooltip') {
+  const container = useContext(OverlayContainerContext);
+  return { 'data-umbra-layer': layer, UNSTABLE_portalContainer: container ?? undefined };
 }

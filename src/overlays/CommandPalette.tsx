@@ -93,6 +93,10 @@ export interface CommandPaletteProps {
   backLabel?: string;
   /** The key hints in the footer. */
   moveHint?: string;
+  /** The names of the keys in the footer hints. */
+  enterKeyLabel?: string;
+  backspaceKeyLabel?: string;
+  escapeKeyLabel?: string;
   runHint?: string;
   backHint?: string;
   closeHint?: string;
@@ -156,6 +160,9 @@ function Panel({
   resultsLabel = 'Results',
   backLabel = 'Back',
   moveHint = 'Move',
+  enterKeyLabel = 'Enter',
+  backspaceKeyLabel = 'Backspace',
+  escapeKeyLabel = 'Esc',
   runHint = 'Run',
   backHint = 'Back',
   closeHint = 'Close',
@@ -333,7 +340,8 @@ function Panel({
           autoFocus
           role="combobox"
           aria-label={label}
-          aria-expanded="true"
+          // Collapsed when there is nothing to move through (no results, an error).
+          aria-expanded={ordered.length > 0}
           aria-controls={`${id}-list`}
           aria-autocomplete="list"
           aria-activedescendant={active >= 0 ? optionId(active) : undefined}
@@ -455,9 +463,9 @@ function Panel({
           children: (
             <>
               {hint('↑↓', moveHint)}
-              {hint('Enter', runHint)}
-              {pages.length > 0 && hint('Backspace', backHint)}
-              {hint('Esc', pages.length > 0 ? backHint : closeHint)}
+              {hint(enterKeyLabel, runHint)}
+              {pages.length > 0 && hint(backspaceKeyLabel, backHint)}
+              {hint(escapeKeyLabel, pages.length > 0 ? backHint : closeHint)}
             </>
           ),
         },
@@ -500,7 +508,15 @@ export function CommandPalette({
       className={styles.overlay}
       style={scope.style}
     >
-      <Modal data-umbra="command-palette" className={cx(styles.root, className)} style={style}>
+      <Modal
+        data-umbra="command-palette"
+        // Opened over a modal it is not inside that modal: React Aria leaves what carries this
+        // reachable, and does not pull focus back into the modal below. On the panel, not the scrim:
+        // a press on the scrim is still a press outside.
+        data-react-aria-top-layer="true"
+        className={cx(styles.root, className)}
+        style={style}
+      >
         <Dialog ref={dialog} aria-label={label} className={styles.dialog}>
           <Panel {...panel} shortcut={shortcut} label={label} close={() => setOpen(false)} />
         </Dialog>

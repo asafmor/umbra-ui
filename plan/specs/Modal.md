@@ -112,7 +112,7 @@ Global tokens added: `size.modalSm`, `size.modalMd`, `size.modalLg`, `size.modal
 - Focus moves in on open: to `initialFocusRef`, else an element marked `data-autofocus` or `autoFocus`, else (alert dialog) the first footer action, else the first control outside the header, else the close button. It is trapped inside, and returns to what had it before on close.
 - The close button is the last focus stop of the header.
 - Closing: Escape, a press on the backdrop, the close button, a `Modal.Close`, or `open={false}`. Every one except the prop asks `onRequestClose` first.
-- Stacking: a modal opened from a modal is on top; Escape and an outside press close only the top one. A popover, menu or tooltip opened inside a modal is above it.
+- Stacking: a modal opened from a modal is on top; Escape and an outside press close only the top one. A popover, menu, select list, suggestion list or tooltip opened inside a modal is rendered **into the modal's backdrop element** (not beside it in `<body>`), so it is above the modal and inside what the modal leaves reachable; a tooltip there still describes its control. The command palette opens over a modal (`Mod+K`): it is the top layer, takes the focus into its input, and gives it back to the modal when it closes. Layer order: `plan/tokens.json`, "layer" (`--umbra-layer-popover` < `-tooltip` < `-modal` < `-palette`; within a layer the overlay opened later is on top). `--umbra-modal-z-index` overrides the modal's layer.
 - Rendered in a portal, with the density, context tint, brand and tokens of where it was opened.
 - Motion: 240ms. The backdrop fades; the panel fades with an 8px rise; a drawer fades and slides in from its edge. Ease-out on enter, ease-in on exit. Under reduced motion only the fades stay.
 - `ConfirmDialog`: an alert dialog, so focus starts on Cancel. When `onConfirm` returns a promise the confirm button shows `loading` (and announces `loadingLabel`), Cancel is disabled and nothing closes the dialog until it settles. It closes when the promise resolves and stays open when it rejects; the app shows the error, for example in `children`.
@@ -140,3 +140,8 @@ Resolved 2026-10-10:
 - `footer` is a plain flex row aligned to the end. A status at the start comes from an `ActionBar`, or from a child with `margin-inline-end: auto`.
 - `ConfirmDialog` swallows the rejection of `onConfirm`: the app that rejected it knows why.
 - `Modal` does not take the slot props: it is never a layout child.
+
+Resolved 2026-10-11 (review 2):
+
+- Overlays opened from a modal render into its backdrop (F6): a tooltip in `<body>` was inert and did not describe its control. Tooltips also carry React Aria's top-layer mark, so the page behind a modal never hides them.
+- The backdrop, the drawer and `ConfirmDialog` carry the page's `dir` (F8): the `start` drawer is on the right when the direction is right to left.

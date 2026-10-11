@@ -23,6 +23,8 @@ import { useScopeAttributes } from '../provider/UmbraProvider';
 import { warn } from '../utils/dev';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './Modal.module.css';
+import { OverlayContainerContext } from '../internal/contexts';
+import { moveFocusFrom } from '../internal/focus';
 import { useReturnFocusOnClose, useOpenState } from './shared';
 
 export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'full';
@@ -160,9 +162,12 @@ function Overlay({ className, style, children }: BlockProps) {
   // The portal is outside the scope's element, so the backdrop repeats its density, context and tokens.
   const scope = useScopeAttributes();
   const narrow = useNarrow();
+  // Overlays opened from inside the modal render into the backdrop: above the modal, and not inert.
+  const [backdrop, setBackdrop] = useState<HTMLElement | null>(null);
   return (
     <ModalOverlay
       {...scope}
+      ref={setBackdrop}
       isOpen={modal.open}
       onOpenChange={modal.setOpen}
       isDismissable={modal.dismissOnOutsidePress}
@@ -175,7 +180,7 @@ function Overlay({ className, style, children }: BlockProps) {
       className={cx(styles.backdrop, className)}
       style={{ ...scope.style, ...style }}
     >
-      {children}
+      <OverlayContainerContext value={backdrop}>{children}</OverlayContainerContext>
     </ModalOverlay>
   );
 }
@@ -393,8 +398,14 @@ function Nav({ label = 'Sections', className, style, children }: ModalNavProps) 
     if (
       narrow &&
       (event.target as Element).closest('a, button:not([aria-expanded]), [role="tab"], [role="option"]')
-    )
+    ) {
+      // The chosen control is about to be hidden with the list: focus goes to the toggle above it.
+      moveFocusFrom(
+        event.currentTarget,
+        event.currentTarget.parentElement?.querySelector<HTMLElement>(':scope > button[aria-expanded]'),
+      );
       setOpen(false);
+    }
   };
   return (
     <div

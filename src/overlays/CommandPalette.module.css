@@ -5,7 +5,7 @@
 .overlay {
   position: fixed;
   inset: 0;
-  z-index: var(--umbra-command-palette-z-index, 100);
+  z-index: var(--umbra-command-palette-z-index, var(--umbra-layer-palette));
   display: flex;
   justify-content: center;
   align-items: flex-start;
@@ -159,7 +159,7 @@
 .item[data-active] {
   background: var(--umbra-command-palette-active-bg, var(--umbra-color-fixed-selected));
   color: var(--umbra-command-palette-active-fg, var(--umbra-color-fixed-on-selected));
-  box-shadow: inset var(--umbra-space-1) 0 0 currentColor;
+  box-shadow: inset calc(var(--umbra-dir, 1) * var(--umbra-space-1)) 0 0 currentColor;
 }
 
 .item[data-disabled] {

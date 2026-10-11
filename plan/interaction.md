@@ -47,6 +47,12 @@ Character: **crisp and minimal**. Short fades and small slides only; no sweeps, 
 3. **Shortcut registry.** Apps bind keys to actions through one registry on the provider. The library renders a `ShortcutsSheet` (help overlay) from the registry, shows key hints in menus and tooltips, and resolves conflicts: an app shortcut takes the keys of a library default, and of two app shortcuts on the same keys the last registered wins, each with a development warning (`plan/specs/UmbraProvider.md`, "Shortcut conflicts").
 4. **Reserved keys** (decided 2026-10-10). `Mod+K` opens the command palette, `?` the shortcuts sheet, `Alt+ArrowLeft` and `Alt+ArrowRight` go back and forward in the history. A reserved key does nothing, and is left to the browser, while no component that handles it is mounted. The history keys never fire while the user types in a field. An app rebinds a reserved shortcut by registering one with the same id.
 
+## Layers and direction (decided 2026-10-11)
+
+- **Layers.** Overlay kinds have a fixed order, as tokens (`plan/tokens.json`, "layer"): popover, menu and select list (`--umbra-layer-popover`), tooltip, modal, command palette. Within a layer the overlay opened later is on top. An overlay opened from inside a modal is rendered into that modal, so it is above it. React Aria's portals and the library's own use the same tokens.
+- **Direction.** One source on the provider (`plan/specs/UmbraProvider.md`, "Direction"). The root and every portal carry `dir`; arrow keys in a horizontal composite follow what is drawn; CSS is logical, and icons that point along the line are mirrored.
+- **Focus is never lost.** A component that removes or re-renders the element the user is on moves focus first: to its replacement, the control that opened it, or the nearest control that stays (`src/internal/focus.ts`). No interaction leaves focus on `<body>`; the interaction tests assert it after each step.
+
 ## Accessibility
 
 Target: WCAG 2.2 AA. Every story is checked automatically (axe) on every context tint, in CI. Skeletons are decorative and exempt from non-text contrast; the scroll thumb is not. This covers text and non-text contrast on every context tint, keyboard reach, screen-reader names and roles, and a non-colour fallback wherever colour carries data.

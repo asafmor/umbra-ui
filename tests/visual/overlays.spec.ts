@@ -1,16 +1,13 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
+import { expectFocusKept, pressKeys } from './helpers';
 
 // Popover, Tooltip and Menu: keyboard, focus, dismissal and everything else a still image cannot show.
 const open = async (page: Page, id: string, width = 1280, height = 720, globals = '') => {
   await page.setViewportSize({ width, height });
   await page.goto(`/iframe.html?id=${id}&viewMode=story${globals && `&globals=${globals}`}`);
   await page.locator('#storybook-root > *').first().waitFor();
-  await page.evaluate(async () => {
-    await Promise.all(
-      [...document.fonts].filter((f) => f.unicodeRange.startsWith('U+0-FF')).map((f) => f.load()),
-    );
-    await document.fonts.ready;
-  });
+  // No font face is loaded ahead of time: one that first loads when a menu opens must disturb nothing.
+  await page.evaluate(() => document.fonts.ready);
 };
 /** The element's box once its enter motion (a short slide) has finished. */
 const box = async (locator: Locator) => {
@@ -50,6 +47,43 @@ test('popover: Enter opens it and moves focus in; Escape closes it and returns f
   await expect(dialog).toBeVisible();
   await trigger.click();
   await expect(dialog).toHaveCount(0);
+});
+
+test('popover: in the tab order it sits after its trigger, in both directions', async ({ page }) => {
+  // The panel is at the end of the page. Shift+Tab from it used to drop the focus to <body> with the
+  // popover still open, and Tab from its last control left the page's order.
+  await open(page, 'overlays-popover--behaviour');
+  const trigger = page.getByRole('button', { name: 'Open', exact: true });
+  const dialog = page.getByRole('dialog', { name: 'With a menu inside' });
+
+  await trigger.focus();
+  await pressKeys(page, 'Enter');
+  await expect(dialog).toBeFocused();
+  await pressKeys(page, 'Shift+Tab');
+  await expect(trigger).toBeFocused();
+  await expect(dialog).toHaveCount(0);
+
+  // From the first control inside, too.
+  await pressKeys(page, 'Enter', 'Tab');
+  await expect(dialog.getByRole('button', { name: 'Choose' })).toBeFocused();
+  await pressKeys(page, 'Shift+Tab');
+  await expect(trigger).toBeFocused();
+  await expect(dialog).toHaveCount(0);
+
+  // Tab past the last control goes to what follows the trigger on the page.
+  await pressKeys(page, 'Enter', 'Tab', 'Tab');
+  await expect(page.getByRole('button', { name: 'Stays on blur' })).toBeFocused();
+  await expect(dialog).toHaveCount(0);
+
+  // `dismissOnBlur={false}`: the same order, and the panel stays.
+  await pressKeys(page, 'Enter');
+  const staying = page.getByRole('dialog', { name: 'dismissOnBlur off' });
+  await expect(staying).toBeFocused();
+  await pressKeys(page, 'Shift+Tab');
+  await expect(page.getByRole('button', { name: 'Stays on blur' })).toBeFocused();
+  await expect(staying).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expectFocusKept(page);
 });
 
 test('popover: a press outside closes it, and the page behind takes that press', async ({ page }) => {
@@ -260,6 +294,30 @@ test('tooltip: shows on keyboard focus at once and on hover, describes its contr
   await expect(tooltip).toHaveCount(0);
 });
 
+test('tooltip: it stays while the pointer is over it, and Escape hides it without moving the pointer', async ({
+  page,
+}) => {
+  // WCAG 1.4.13: hoverable and dismissible. It used to go the moment the pointer left the control.
+  await open(page, 'overlays-tooltip--triggers');
+  const tooltip = page.getByRole('tooltip');
+  await page.mouse.move(600, 600);
+  await page.getByRole('button', { name: 'Plain' }).hover();
+  await expect(tooltip).toHaveText('On a plain button');
+  const place = await box(tooltip);
+  // Onto the tooltip, in steps as a hand moves, and stay there for longer than the close delay.
+  await page.mouse.move(place.x + place.width / 2, place.y + place.height / 2, { steps: 5 });
+  await page.waitForTimeout(700);
+  await expect(tooltip).toHaveText('On a plain button');
+  await page.keyboard.press('Escape');
+  await expect(tooltip).toHaveCount(0);
+  // Away from both, it goes after the close delay.
+  await page.mouse.move(600, 600);
+  await page.getByRole('button', { name: 'Plain' }).hover();
+  await expect(tooltip).toBeVisible();
+  await page.mouse.move(600, 600);
+  await expect(tooltip).toHaveCount(0);
+});
+
 test('tooltip: a disabled control gets a focusable wrapper; a disabled or empty tooltip never shows', async ({
   page,
 }) => {
@@ -268,6 +326,13 @@ test('tooltip: a disabled control gets a focusable wrapper; a disabled or empty 
   const wrapper = page.locator('[data-part="wrapper"]').first();
   await expect(wrapper).toHaveAttribute('aria-disabled', 'true');
   await expect(wrapper).toHaveAccessibleName('Disabled');
+  // One disabled button for assistive technology, not the wrapper and the control inside it.
+  // The control is inert (out of the accessibility tree); the wrapper carries its name.
+  await expect(wrapper.locator(':scope > *')).toHaveJSProperty('inert', true);
+  await expect(page.locator('[data-part="wrapper"]').nth(1).locator(':scope > *')).toHaveJSProperty(
+    'inert',
+    true,
+  );
   await page.getByRole('link', { name: 'Link' }).focus();
   await page.keyboard.press('Tab');
   await expect(wrapper).toBeFocused();
@@ -740,11 +805,14 @@ test('card: the popover of a layout-collapsed card holds the one copy of its con
   await open(page, 'layout-card--collapsed-actions');
   const card = page.locator('[data-umbra="card"][data-collapsed="layout"]');
   const header = card.getByRole('button', { name: 'Exports' });
+  // The one copy: hidden in the card while it is collapsed, moved into the popover while that is open.
   const bodies = page.locator('[data-part="body"]', { hasText: 'File 1' });
-  await expect(bodies).toHaveCount(0);
+  await expect(bodies).toHaveCount(1);
+  await expect(bodies).toBeHidden();
 
   await header.click();
-  const dialog = page.getByRole('dialog', { name: 'Show content' });
+  // The popover is named by the card.
+  const dialog = page.getByRole('dialog', { name: 'Exports' });
   await expect(dialog.locator('[data-part="body"]')).toHaveCount(1);
   await expect(bodies).toHaveCount(1);
   // The actions come before the body, and the panel is as wide as the card's header.
@@ -764,6 +832,8 @@ test('card: the popover of a layout-collapsed card holds the one copy of its con
   await header.click();
   await expect(dialog).toHaveCount(0);
   await expect(header).toHaveAttribute('aria-expanded', 'false');
+  await expect(bodies).toHaveCount(1);
+  await expect(bodies).toBeHidden();
 });
 
 // Placement at the window edges

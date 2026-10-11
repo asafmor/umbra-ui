@@ -74,12 +74,14 @@ None.
 
 - Role `tooltip`; while open the control points at it with `aria-describedby`. It is a description, never the control's name.
 - Shows after `delay` on hover and at once on keyboard focus; once one tooltip has shown, the next shows without delay. Only one tooltip is open at a time.
-- Hides when the pointer leaves, focus leaves, the control is pressed, or `Escape` is pressed.
+- Hoverable and dismissible (WCAG 1.4.13): it stays while the pointer is over the control **or over the tooltip itself**, and for `closeDelay` (200ms) after the pointer has left the control, which is the time to move onto it. It hides when the pointer has left both, when focus leaves, when the control is pressed, and on `Escape` (without moving the pointer or the focus).
 - It never takes focus and never holds interactive content.
 - A disabled control takes no pointer or focus events, so `wrap` puts it in a wrapper that does: the wrapper is in the tab order and reads as a disabled button with the control's name, described by the tooltip.
 - Inside an overflow menu the control is a menu row with its label and key hint, and the tooltip is not rendered.
 - It keeps the density, context tint and tokens of the place it was opened from.
 - Motion: 180ms fade in with a 4px slide (the slide is removed under reduced motion). It leaves at once.
+
+- Inside a modal it renders into the modal's layer, so it is above it and still describes its control.
 
 ## Open questions
 
@@ -93,3 +95,8 @@ Resolved 2026-10-10:
 - `wrap` defaults to the child's `disabled` prop. `Button` and `IconButton` do not wrap themselves for their own `tooltip` prop: a disabled button shows none, as before.
 - No arrow and no blocks: a tooltip is one small piece, replaced through `parts`.
 - `IconButton`'s `tooltip` part now receives the text only; the key hint of `shortcut` is added by the tooltip after it.
+
+Resolved 2026-10-11 (review 2):
+
+- `closeDelay` (prop, 200ms). It was 0, so the tooltip went away before the pointer could reach it (F19); the earlier line "hides when the pointer leaves" contradicted WCAG 1.4.13.
+- `wrap`: the control inside the wrapper is `inert`, so assistive technology sees one disabled button, not two (F30).

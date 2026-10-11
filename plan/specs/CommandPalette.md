@@ -109,3 +109,9 @@ Resolved 2026-10-10:
 - `includeShortcuts` leaves out shortcuts with nothing to run (a reserved key whose component is not mounted) and the palette's own.
 - `Home` and `End` move through the options and not the caret, as the task asked; the caret still moves with the arrow keys.
 - `recent` is a prop only: the app decides what counts as recent and where it is stored (`onRun` tells it what ran).
+
+Resolved 2026-10-11 (review 2):
+
+- Over an open modal the palette is on top (`--umbra-layer-palette`, above `--umbra-layer-modal`; it was 100 against 1000) with focus in its input (F7). It carries React Aria's top-layer mark, so the modal below neither makes it inert nor pulls the focus back. `--umbra-command-palette-z-index` still overrides the layer.
+- With no results the input has `aria-expanded="false"` (F30).
+- The key caps of the footer (`Enter`, `Backspace`, `Esc`) are props with English defaults (F25).

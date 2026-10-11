@@ -28,7 +28,13 @@ import { warn } from '../utils/dev';
 import type { LinkRenderProps } from '../utils/link';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './Menu.module.css';
-import { toAriaPlacement, useFlipWhenCut, useOpenState, type OverlayPlacement } from './shared';
+import {
+  toAriaPlacement,
+  useFlipWhenCut,
+  useOpenState,
+  useOverlayLayer,
+  type OverlayPlacement,
+} from './shared';
 
 /** One row of a menu. `items` inside it makes a submenu. */
 export interface MenuItemData {
@@ -328,10 +334,12 @@ function Surface({
   children,
 }: Omit<PanelProps, 'entries' | 'shared' | 'aria-label'> & { children: ReactNode }) {
   const scope = useScopeAttributes();
+  const layer = useOverlayLayer('popover');
   const flipWhenCut = useFlipWhenCut(maxHeight);
   return (
     <AriaPopover
       {...scope}
+      {...layer}
       ref={flipWhenCut}
       {...(sub
         ? { offset: -4 }
