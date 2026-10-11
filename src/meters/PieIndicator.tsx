@@ -11,6 +11,7 @@ import {
 } from '../internal/ChangeHighlight';
 import { cx, renderPart, type Part } from '../utils/parts';
 import { defined } from '../utils/defined';
+import { valueOrNull } from '../utils/finite';
 import { resolveThreshold, type ThresholdList } from '../utils/thresholds';
 import { tooNarrow } from './fit';
 import styles from './PieIndicator.module.css';
@@ -87,7 +88,7 @@ export interface PieIndicatorRootProps extends BlockProps, RootAttributes {
   'aria-label'?: string | undefined;
 }
 
-const narrow = (root: HTMLElement) => tooNarrow(root, 'disc');
+const narrow = (root: HTMLElement) => tooNarrow(root, 'disc', root.dataset.layout === 'block');
 
 function Root({
   children,
@@ -116,8 +117,9 @@ function Root({
 
   const range = max > min ? max - min : 0;
   // No value is not zero: the disc is drawn empty with a dashed edge, and the text says so.
-  const missing = valueProp === undefined || valueProp === null || Number.isNaN(valueProp);
-  const value = missing ? min : valueProp;
+  const given = valueOrNull(valueProp, 'PieIndicator');
+  const missing = given === null;
+  const value = given ?? min;
   const percent = range ? ((value - min) / range) * 100 : 0;
   const formatted = formatValue ? formatValue(value, { min, max, percent }) : `${Math.round(percent)}%`;
 

@@ -11,6 +11,7 @@ import {
 } from '../internal/ChangeHighlight';
 import { cx, renderPart, type Part } from '../utils/parts';
 import { defined } from '../utils/defined';
+import { valueOrNull } from '../utils/finite';
 import { resolveThreshold, type ThresholdList } from '../utils/thresholds';
 import styles from './DivergingMeter.module.css';
 import { tooNarrow } from './fit';
@@ -121,18 +122,20 @@ function Root({
 
   const range = max > min;
   const origin = originProp ?? (min <= 0 && max >= 0 ? 0 : (min + max) / 2);
-  const missing = valueProp === undefined || valueProp === null || Number.isNaN(valueProp);
-  const value = missing ? origin : valueProp;
+  const given = valueOrNull(valueProp, 'DivergingMeter');
+  const missing = given === null;
+  const value = given ?? origin;
   const direction: DivergingMeterDirection =
     value > origin ? 'positive' : value < origin ? 'negative' : 'neutral';
 
   const band = missing ? undefined : resolveThreshold(value, thresholds, { lowerIsBetter });
   const side = (direction === 'negative') !== lowerIsBetter ? negativeTone : tone;
+  // Without the noise of binary fractions: 0.3 − 0.1 reads 0.2, not 0.19999999999999998.
   // The sign is the cue of the direction in the text; the minus is the real one, not a hyphen.
   const delta = value - origin;
   const formatted = formatValue
     ? formatValue(value, { min, max, origin })
-    : `${delta > 0 ? '+' : delta < 0 ? '−' : ''}${Math.abs(delta)}`;
+    : `${delta > 0 ? '+' : delta < 0 ? '−' : ''}${+Math.abs(delta).toPrecision(12)}`;
   const valueText = missing ? emptyLabel : band?.label ? `${formatted} · ${band.label}` : formatted;
   const spoken = describe(missing ? noValueLabel : formatted, band?.label);
 

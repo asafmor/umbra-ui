@@ -31,6 +31,7 @@ import {
   type MeterTone,
 } from './scale';
 import { defined } from '../utils/defined';
+import { valueOrNull } from '../utils/finite';
 import { passThrough, rootRender, type RootAttributes } from '../utils/passThrough';
 
 /** One step of a named scale. */
@@ -167,7 +168,7 @@ function Root({
   const max = levels ? Math.max(1, levels.length - 1) : maxProp;
   /** A value as a number on the scale; `undefined` when it is missing or names no level. */
   const position = (v: LevelMeterValue | null | undefined) => {
-    if (typeof v !== 'string') return v === undefined || v === null || Number.isNaN(v) ? undefined : v;
+    if (typeof v !== 'string') return valueOrNull(v, 'LevelMeter') ?? undefined;
     const index = levels?.findIndex((l) => l.id === v) ?? -1;
     return index < 0 ? undefined : index;
   };

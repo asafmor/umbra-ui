@@ -27,6 +27,7 @@ import {
   type MeterTone,
 } from './scale';
 import { defined } from '../utils/defined';
+import { valueOrNull } from '../utils/finite';
 import { tooNarrow } from './fit';
 import { passThrough, rootRender, type RootAttributes } from '../utils/passThrough';
 
@@ -134,7 +135,7 @@ function Root({
   size = 'default',
   layout = 'block',
   segments,
-  stack,
+  stack: stackProp,
   target,
   targetLabel = 'Target',
   formatValue,
@@ -151,10 +152,12 @@ function Root({
   const hideValue = useShrinkLevel(ref, 1, undefined, { overflowing: tooNarrow }) === 1;
 
   const range = max > min ? max - min : 0;
+  // Only a finite number is a value (plan/decisions/03-charts.md, "Invalid input").
+  const given = valueOrNull(valueProp, 'ProgressBar');
+  const stack = stackProp?.map((item) => ({ ...item, value: valueOrNull(item.value, 'ProgressBar') ?? 0 }));
   // No value is not zero: the bar is drawn empty and the text says that the value is missing.
-  const missing =
-    !stack && !indeterminate && (valueProp === undefined || valueProp === null || Number.isNaN(valueProp));
-  const value = valueProp ?? stack?.reduce((sum, item) => sum + item.value, 0) ?? min;
+  const missing = !stack && !indeterminate && given === null;
+  const value = given ?? stack?.reduce((sum, item) => sum + item.value, 0) ?? min;
   const percentOf = (amount: number) => (range ? (amount / range) * 100 : 0);
   const format = (v: number, percent = percentOf(v - min)) =>
     formatValue ? formatValue(v, { min, max, percent }) : `${Math.round(percent)}%`;

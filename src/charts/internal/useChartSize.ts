@@ -49,8 +49,9 @@ export function measurer(font: string, fontSize: number): Measure {
       probe.style.whiteSpace = 'pre';
       probe.textContent = text;
       width = probe.getComputedTextLength();
-      // ponytail: the kept widths are dropped whole past 5,000 labels; an LRU if a chart ever streams unique labels.
-      if (widths.size > 5000) widths.clear();
+      // ponytail: the kept widths are dropped whole past 50,000 labels (a scatter of 5,000 named points
+      // must not measure them again on every resize); an LRU if a chart ever streams unique labels.
+      if (widths.size > 50000) widths.clear();
       widths.set(key, width);
     }
     return width;

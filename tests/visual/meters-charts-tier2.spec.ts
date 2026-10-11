@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { expectFocusKept, openStory, pressKeys } from './helpers';
+import { expectFocusKept, openStory, pressKeys, settle } from './helpers';
 import { expectChangeHighlights } from './live';
 
 // Tier 2 meters and charts: PieIndicator, DivergingMeter, Sparkline, Heatmap and Scatter. What a still
@@ -1281,5 +1281,259 @@ test.describe('Scatter', () => {
     await marks(scatter).focus();
     await pressKeys(page, 'ArrowRight', 'ArrowRight');
     expect(await current(scatter)).toMatch(/Run 2/);
+  });
+});
+
+// Review 2 of Milestone 2 (plan/reviews/milestone-2.md): one test or more per finding, each failing
+// without its fix. The stories are `Charts/Edge cases`.
+test.describe('Review 2', () => {
+  const EDGE = 'charts-edge-cases--';
+  const options = (page: Page, id: string) => tile(page, id).getByRole('option');
+  const names = (page: Page, id: string) =>
+    options(page, id).evaluateAll((els) => els.map((el) => el.getAttribute('aria-label')));
+
+  test('MC-1, MC-4, MC-13: invalid input is never a crash or a blank chart; the bad value is no value', async ({
+    page,
+  }) => {
+    const errors: string[] = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    await openChart(page, `${EDGE}invalid-input`);
+    // Every chart is drawn: none is empty, and none has taken the page down.
+    await expect(page.locator('figure')).toHaveCount(7);
+    await expect(page.locator('figure[data-state]')).toHaveCount(0);
+    // NaN, Infinity and null are left out, and so is the second series of one id.
+    expect(await names(page, 'line')).toEqual(['Orders, Jan: 10', 'Orders, May: 30', 'Orders, Jul: 20']);
+    expect(await names(page, 'bar')).toEqual(['Orders, Jan: 10', 'Orders, May: 30', 'Orders, Jul: 20']);
+    expect(await names(page, 'donut')).toEqual(['Region 1: 30 (38%)', 'Region 4: 50 (63%)']);
+    expect(await names(page, 'radar')).toEqual(['Orders, Jan: 4', 'Orders, May: 3']);
+    expect(await names(page, 'scatter')).toEqual(['Group 1: 1, 1', 'Group 1: 5, 5']);
+    expect((await names(page, 'binned')).length).toBe(2);
+    // Two rows and two columns of one name are all drawn, each cell in its own place.
+    expect(await names(page, 'heatmap')).toEqual([
+      'A, y: 1',
+      'A, y (2): 2',
+      'A (2), x: 2',
+      'A (2), y (2): 3',
+      'B, y: 4',
+    ]);
+    const places = await options(page, 'heatmap').evaluateAll((els) =>
+      els.map((el) => {
+        const r = el.getBoundingClientRect();
+        return `${Math.round(r.x)},${Math.round(r.y)}`;
+      }),
+    );
+    expect(new Set(places).size).toBe(5);
+    // The lines and shapes hold no NaN.
+    expect(
+      await page
+        .locator('figure svg')
+        .evaluateAll((svgs) => svgs.filter((s) => /NaN|Infinity/.test(s.innerHTML)).length),
+    ).toBe(0);
+
+    const small = page.locator('[data-tile="small"]');
+    await expect(small.getByRole('img')).toHaveAttribute(
+      'aria-label',
+      '4 values, first 10, last 20, lowest 10, highest 30, rising',
+    );
+    const meters = small.locator('[role="meter"], [role="progressbar"]');
+    await expect(meters).toHaveCount(5);
+    for (const m of await meters.all()) {
+      await expect(m).toHaveAttribute('aria-valuetext', 'No value');
+      await expect(m).toHaveAttribute('data-empty', 'true');
+      await expect(part(m, 'value')).toHaveText('—');
+    }
+    // The keyboard still walks what is drawn.
+    await marks(tile(page, 'heatmap')).focus();
+    await pressKeys(page, 'ArrowRight', 'ArrowRight', 'ArrowDown');
+    expect(await current(tile(page, 'heatmap'))).toBe('A (2), y (2): 3');
+    expect(errors).toEqual([]);
+  });
+
+  const set = async (page: Page, state: string) => {
+    await page.evaluate((s) => document.querySelector<HTMLElement>(`[data-set="${s}"]`)!.click(), state);
+    await settle(page);
+  };
+  const focusIn = (chart: Locator) => chart.evaluate((el) => el.contains(document.activeElement));
+
+  for (const id of ['line', 'bar', 'donut', 'radar', 'heatmap', 'scatter']) {
+    test(`MC-6: ${id}: focus stays in the chart when the app changes its state`, async ({ page }) => {
+      await openChart(page, `${EDGE}state-change`);
+      const chart = tile(page, id);
+      await marks(chart).focus();
+      await pressKeys(page, 'ArrowRight');
+      expect(await current(chart)).not.toBeNull();
+      for (const state of ['loading', 'error', 'loading', 'data']) {
+        await set(page, state);
+        expect(await chart.getAttribute('data-state')).toBe(state === 'data' ? null : state);
+        await expectFocusKept(page);
+        expect(await focusIn(chart)).toBe(true);
+      }
+      // Back on the data, the arrow keys work again without another Tab.
+      await expect(marks(chart)).toBeFocused();
+      await pressKeys(page, 'ArrowRight');
+      expect(await current(chart)).not.toBeNull();
+    });
+  }
+
+  test('MC-6: an interactive Sparkline keeps the focus through loading', async ({ page }) => {
+    await openChart(page, `${EDGE}state-change`);
+    const spark = page.locator('[data-tile="sparkline"] [data-umbra="sparkline"]');
+    await spark.focus();
+    await pressKeys(page, 'ArrowLeft');
+    for (const state of ['loading', 'data']) {
+      await set(page, state);
+      expect(await spark.getAttribute('aria-busy')).toBe(state === 'loading' ? 'true' : null);
+      await expectFocusKept(page);
+      await expect(spark).toBeFocused();
+    }
+    await pressKeys(page, 'Home');
+    await expect(page.getByRole('tooltip')).toHaveText('3');
+  });
+
+  test('X-5: a chart keeps the aria-describedby it is given, beside its own summary, in every state', async ({
+    page,
+  }) => {
+    await openChart(page, `${EDGE}state-change`);
+    for (const state of ['data', 'loading', 'error']) {
+      await set(page, state);
+      for (const id of ['line', 'bar', 'donut', 'radar', 'heatmap', 'scatter']) {
+        const described = ((await tile(page, id).getAttribute('aria-describedby')) ?? '').split(' ');
+        expect(described, `${id} ${state}`).toContain('edge-note');
+        // In the data state the chart's own summary is there too.
+        if (state === 'data') expect(described.length, id).toBe(2);
+      }
+      await expect(page.locator('[data-tile="sparkline"] [data-umbra="sparkline"]')).toHaveAttribute(
+        'aria-describedby',
+        'edge-note',
+      );
+    }
+  });
+
+  test('MC-2: a PieIndicator with the disc above shows its value', async ({ page }) => {
+    await openStory(page, 'meters-pieindicator--variants');
+    const block = (name: string) =>
+      page.locator('[data-umbra="pie-indicator"][data-layout="block"]', { hasText: name });
+    for (const name of ['Coverage', 'Quality']) {
+      await expect(block(name)).toHaveCount(1);
+      await expect(part(block(name), 'value')).toBeVisible();
+      expect(await block(name).getAttribute('data-value-hidden')).toBeNull();
+    }
+    await expect(part(block('Coverage'), 'value')).toHaveText('75%');
+  });
+
+  test('MC-3: a Heatmap value below the first band is drawn, and is a keyboard stop', async ({ page }) => {
+    await openChart(page, `${EDGE}scale-edges`);
+    expect(await names(page, 'below')).toEqual([
+      'A, x: 2',
+      'A, y: 12 · Busy',
+      'A, z: 25 · Full',
+      'B, x: 5',
+      'B, y: 15 · Busy',
+      'B, z: 40 · Full',
+    ]);
+    const chart = tile(page, 'below');
+    await marks(chart).focus();
+    await pressKeys(page, 'ArrowRight');
+    expect(await current(chart)).toBe('A, x: 2');
+    // It is in no band: it carries none.
+    expect(await chart.getByRole('option', { name: 'A, x: 2' }).getAttribute('data-band')).toBeNull();
+  });
+
+  test('MC-5: the last point of a Sparkline line takes the colour of its band', async ({ page }) => {
+    await openStory(page, 'charts-sparkline--variants');
+    const fill = (sample: string) =>
+      page
+        .locator(`[data-sample="${sample}"] [data-part="lastPoint"]`)
+        .evaluate((el) => getComputedStyle(el).fill);
+    const plain = await fill('Last point');
+    const banded = await fill('Last point by threshold');
+    expect(banded).not.toBe(plain);
+  });
+
+  test('MC-7: a small point under a larger bubble of a later series can be hovered', async ({ page }) => {
+    await openChart(page, `${EDGE}scale-edges`);
+    const chart = tile(page, 'under');
+    const small = await box(
+      chart
+        .getByRole('option', { name: /Small point/ })
+        .locator('circle')
+        .first(),
+    );
+    const centre = { x: small.x + small.width / 2, y: small.y + small.height / 2 };
+    await page.mouse.move(centre.x, centre.y);
+    await expect(tooltip(chart)).toContainText('Small');
+    // The bubble around it is still reached, outside the small point's target.
+    await page.mouse.move(centre.x + 18, centre.y);
+    await expect(tooltip(chart)).toContainText('Large');
+  });
+
+  test('MC-12: Scatter points outside the domains are not drawn; without axes none is cut by the edge', async ({
+    page,
+  }) => {
+    await openChart(page, `${EDGE}scale-edges`);
+    expect(await names(page, 'outside')).toEqual(['Group 1: 2, 2', 'Group 1: 3, 3', 'Group 1: 4, 4']);
+    const edge = tile(page, 'edge');
+    await expect(edge.getByRole('option')).toHaveCount(7);
+    const svg = await box(edge.locator('svg').first());
+    for (const point of await edge.locator('[data-part="point"] > g').all()) {
+      const b = await box(point);
+      expect(b.x).toBeGreaterThanOrEqual(svg.x);
+      expect(b.y).toBeGreaterThanOrEqual(svg.y);
+      expect(b.x + b.width).toBeLessThanOrEqual(svg.x + svg.width);
+      expect(b.y + b.height).toBeLessThanOrEqual(svg.y + svg.height);
+    }
+  });
+
+  test('MC-14: a DivergingMeter shows a difference without the noise of binary fractions', async ({
+    page,
+  }) => {
+    await openChart(page, `${EDGE}scale-edges`);
+    const m = meter(page, 'Fraction');
+    await expect(part(m, 'value')).toHaveText('+0.2');
+    await expect(m).toHaveAttribute('aria-valuetext', '+0.2');
+  });
+
+  for (const [story, selector, from, to] of [
+    ['meters-pieindicator--shrink', '[data-width="240"]', 240, 150],
+    ['meters-divergingmeter--shrink', '[data-width="320"]:has([data-layout="block"])', 320, 160],
+    ['meters-divergingmeter--shrink', '[data-width="320"]:has([data-layout="inline"])', 320, 180],
+  ] as const) {
+    test(`MC-15: ${story} ${selector}: the value is never shown beside a cut label, at any width`, async ({
+      page,
+    }) => {
+      await openStory(page, story);
+      await page.evaluate(() => document.fonts.ready);
+      const holder = page.locator(selector).first();
+      const wrong: number[] = [];
+      let hidden = 0;
+      for (let px = from; px >= to; px -= 1) {
+        await holder.evaluate((el, w) => ((el as HTMLElement).style.width = `${w}px`), px);
+        await settle(page);
+        const state = await holder.evaluate((el) => {
+          const label = el.querySelector<HTMLElement>('[data-part="label"]')!;
+          const range = document.createRange();
+          range.selectNodeContents(label);
+          return {
+            value: !!el.querySelector('[data-part="value"]'),
+            cut: range.getBoundingClientRect().width > label.getBoundingClientRect().width + 0.01,
+          };
+        });
+        if (state.value && state.cut) wrong.push(px);
+        if (!state.value) hidden += 1;
+      }
+      expect(wrong).toEqual([]);
+      // The sweep crossed the step: the value did hide.
+      expect(hidden).toBeGreaterThan(0);
+    });
+  }
+
+  test('MC-9: a chart that fills, beside other content in a modal body, takes its content height', async ({
+    page,
+  }) => {
+    await openChart(page, `${EDGE}in-modal`);
+    const dialog = page.getByRole('dialog');
+    expect((await box(part(dialog.locator('figure'), 'plot'))).height).toBe(240);
+    const viewport = dialog.locator('[data-part="viewport"]');
+    expect(await viewport.evaluate((el) => el.scrollHeight - el.clientHeight)).toBe(0);
   });
 });

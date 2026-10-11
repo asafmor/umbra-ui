@@ -142,7 +142,7 @@ const spread: ScatterSeries[] = [
   { id: 'a', label: 'Group 1', data: [0, 1, 2, 3, 4, 5, 6].map((v) => ({ x: v, y: v, id: `p${v}` })) },
 ];
 
-/** The ends of a scale: a value below the first band, a point under a bubble, points outside a domain, and points on the edge of a plot without axes. */
+/** The ends of a scale: a value below the first band, a point under a bubble, points outside a domain, points on the edge of a plot without axes, and a difference of two fractions. */
 export const ScaleEdges: Story = {
   render: () => (
     <Tiles columns={4}>
@@ -169,6 +169,9 @@ export const ScaleEdges: Story = {
       </Tile>
       <Tile title="No axes: points on the edge" id="edge">
         <Scatter aria-label="Edge" series={spread} xDomain={[0, 6]} yDomain={[0, 6]} axes={false} />
+      </Tile>
+      <Tile title="A difference of fractions" id="fraction">
+        <DivergingMeter label="Fraction" value={0.3} origin={0.1} min={0} max={1} showValue />
       </Tile>
     </Tiles>
   ),
