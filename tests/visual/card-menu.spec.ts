@@ -212,3 +212,109 @@ test('a card collapsed by its stack asks for the popover, and a press while it l
   // No header overflowed, so the menu was never asked for.
   expect(menus).toEqual([]);
 });
+
+// Review 2, X-2: the menu's code does not arrive (the app is offline, or a new version was deployed
+// under an open page). The "more" button must not be a dead end.
+test('the menu cannot be loaded: the actions open as a plain list', async ({ page }) => {
+  const menus = requests(page, menuChunk);
+  await page.route(menuChunk, (route) => route.abort());
+  await openStory(page, story, narrow);
+  await expect(more(page)).toBeVisible();
+  await expect.poll(() => menus.length).toBe(1);
+  const list = page.getByRole('group', { name: 'More actions' });
+  const action = (name: string) => list.getByRole('button', { name });
+
+  // The pointer: the list opens under the button, and nothing clips or covers its actions.
+  await more(page).click();
+  await expect(list).toBeVisible();
+  await expect(more(page)).toHaveAttribute('aria-expanded', 'true');
+  await expect(menu(page)).toHaveCount(0);
+  for (const name of ['Filter', 'Export', 'Refresh']) {
+    const reached = await action(name).evaluate((el) => {
+      const box = el.getBoundingClientRect();
+      const top = document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2);
+      return box.x >= 0 && box.right <= innerWidth && box.bottom <= innerHeight && el.contains(top);
+    });
+    expect(reached, `${name} can be pressed`).toBe(true);
+  }
+  await action('Export').click();
+  await expect(page.getByText('Last action: Export')).toBeVisible();
+  await expect(list).toHaveCount(0);
+  await expect(more(page)).toHaveAttribute('aria-expanded', 'false');
+  await expect(more(page)).toBeFocused();
+
+  // The keyboard: the first action has the focus, Tab walks them, Escape closes and gives the focus back.
+  await pressKeys(page, 'Enter');
+  await expect(action('Filter')).toBeFocused();
+  await pressKeys(page, 'Tab');
+  await expect(action('Export')).toBeFocused();
+  await pressKeys(page, 'Escape');
+  await expect(list).toHaveCount(0);
+  await expect(more(page)).toBeFocused();
+  await pressKeys(page, 'ArrowUp');
+  await expect(action('Refresh')).toBeFocused();
+  await pressKeys(page, 'Enter');
+  await expect(page.getByText('Last action: Refresh')).toBeVisible();
+  await expect(more(page)).toBeFocused();
+  // A press elsewhere closes it.
+  await more(page).click();
+  await expect(list).toBeVisible();
+  await page.getByText('Last action: Refresh').click();
+  await expect(list).toHaveCount(0);
+
+  // Every press asked for the code again. Whether the browser then makes a request is its own
+  // business: Chromium remembers a module that failed for as long as the page lives, so there the list
+  // stays until a reload, and where a request is made and answered the menu takes over.
+  await more(page).focus();
+  await pressKeys(page, 'Enter');
+  await expect(list.or(menu(page))).toBeVisible();
+  await expectFocusKept(page);
+});
+
+// Review 2, X-4.
+for (const how of ['Escape', 'Tab', 'a press elsewhere'] as const) {
+  test(`a press kept while the menu loads is taken back by ${how}`, async ({ page }) => {
+    const chunk = await hold(page, menuChunk);
+    await openStory(page, story, narrow);
+    await chunk.requested;
+    await more(page).focus();
+    await pressKeys(page, 'Enter');
+    await expect(more(page)).toHaveAttribute('aria-expanded', 'true');
+    if (how === 'a press elsewhere') await page.getByText('Last action: none').click();
+    else await page.keyboard.press(how);
+    await expect(more(page)).toHaveAttribute('aria-expanded', 'false');
+    const focus = () => page.evaluate(() => document.activeElement?.getAttribute('aria-label') ?? null);
+    const before = await focus();
+    if (how === 'Escape') expect(before).toBe('More actions');
+    else expect(before).not.toBe('More actions');
+
+    chunk.release();
+    await page.waitForLoadState('networkidle');
+    await settle(page);
+    // The code is there, and no menu opens or takes the focus.
+    await expect(menu(page)).toHaveCount(0);
+    expect(await focus()).toBe(before);
+    // The next press opens it.
+    await more(page).click();
+    await expect(menu(page)).toBeVisible();
+  });
+}
+
+// Review 2, X-9.
+test('the row has room again when its menu closes: the focus goes to the first action that came back', async ({
+  page,
+}) => {
+  await openStory(page, story);
+  await card(page).evaluate((el) => el.parentElement!.setAttribute('data-test', 'box'));
+  await resizeTwice(page, '[data-test="box"]', 260, 180);
+  await more(page).focus();
+  await pressKeys(page, 'Enter');
+  await expect(row(page, 'Filter')).toBeFocused();
+  // Wider while the menu is open: the row waits for the menu.
+  await resizeTwice(page, '[data-test="box"]', 300, 420);
+  await settle(page);
+  await expect(menu(page)).toBeVisible();
+  await pressKeys(page, 'Escape');
+  await expect(more(page)).toHaveCount(0);
+  await expect(card(page).getByRole('button', { name: 'Filter' })).toBeFocused();
+});

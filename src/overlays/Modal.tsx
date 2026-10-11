@@ -187,12 +187,19 @@ function Overlay({ className, style, children }: BlockProps) {
   );
 }
 
+/**
+ * Internal: the `data-umbra` name of the panel. A component built on `Modal` is found by its own name
+ * (`confirm-dialog`, `shortcuts-sheet`), as an `IconButton` is not a `button`.
+ */
+export const ModalNameContext = createContext('modal');
+
 const focusable =
   'a[href], button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])';
 
 /** The panel and its dialog element. Traps focus, and gives it back when the modal closes. */
 function Content({ className, style, children, ...rest }: BlockProps & RootAttributes) {
   const modal = useModal();
+  const name = useContext(ModalNameContext);
   const narrow = useNarrow();
   const dialog = useRef<HTMLElement>(null);
   // Focus leaves the modal when it starts to close, not when its exit animation has ended.
@@ -255,7 +262,7 @@ function Content({ className, style, children, ...rest }: BlockProps & RootAttri
   return (
     <AriaModal
       {...rootRender('div', rest)}
-      data-umbra="modal"
+      data-umbra={name}
       data-variant={modal.variant}
       data-side={modal.variant === 'drawer' ? modal.side : undefined}
       data-size={modal.size}
@@ -274,7 +281,10 @@ function Content({ className, style, children, ...rest }: BlockProps & RootAttri
         })}
       >
         {/* Layout children inside the modal belong to it, not to the layout it was opened from. */}
-        <LayoutProvider value={null}>{children}</LayoutProvider>
+        {/* A modal opened from inside this one has its own name. */}
+        <ModalNameContext value="modal">
+          <LayoutProvider value={null}>{children}</LayoutProvider>
+        </ModalNameContext>
       </Dialog>
     </AriaModal>
   );
@@ -633,46 +643,48 @@ export function ConfirmDialog({
     }
   };
   return (
-    <Modal
-      {...passThrough(rest)}
-      variant="alertdialog"
-      open={isOpen}
-      // While the confirm action runs, nothing closes the dialog.
-      onOpenChange={(next) => loading || setOpen(next)}
-      trigger={trigger}
-      icon={icon}
-      size={size}
-      title={title}
-      description={description}
-      footer={
-        <>
-          {renderPart(
-            parts?.cancel,
-            { children: cancelLabel, disabled: loading, onPress: () => run(onCancel) },
-            (p) => (
-              <Button {...p} />
-            ),
-          )}
-          {renderPart(
-            parts?.confirm,
-            {
-              children: confirmLabel,
-              variant: tone === 'danger' ? 'danger' : 'primary',
-              loading,
-              loadingLabel,
-              onPress: () => run(onConfirm),
-            },
-            (p) => (
-              <Button {...p} />
-            ),
-          )}
-        </>
-      }
-      className={className}
-      style={style}
-      parts={children ? undefined : { body: null }}
-    >
-      {children}
-    </Modal>
+    <ModalNameContext value="confirm-dialog">
+      <Modal
+        {...passThrough(rest)}
+        variant="alertdialog"
+        open={isOpen}
+        // While the confirm action runs, nothing closes the dialog.
+        onOpenChange={(next) => loading || setOpen(next)}
+        trigger={trigger}
+        icon={icon}
+        size={size}
+        title={title}
+        description={description}
+        footer={
+          <>
+            {renderPart(
+              parts?.cancel,
+              { children: cancelLabel, disabled: loading, onPress: () => run(onCancel) },
+              (p) => (
+                <Button {...p} />
+              ),
+            )}
+            {renderPart(
+              parts?.confirm,
+              {
+                children: confirmLabel,
+                variant: tone === 'danger' ? 'danger' : 'primary',
+                loading,
+                loadingLabel,
+                onPress: () => run(onConfirm),
+              },
+              (p) => (
+                <Button {...p} />
+              ),
+            )}
+          </>
+        }
+        className={className}
+        style={style}
+        parts={children ? undefined : { body: null }}
+      >
+        {children}
+      </Modal>
+    </ModalNameContext>
   );
 }

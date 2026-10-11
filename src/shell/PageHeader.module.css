@@ -159,7 +159,8 @@ a.crumb:focus-visible {
 }
 
 .root[data-truncate] .titles {
-  flex: 0 1 auto;
+  flex: 0 9999 auto;
+  min-width: min(100%, var(--umbra-page-header-title-min-width, 4rem));
 }
 
 .overline {

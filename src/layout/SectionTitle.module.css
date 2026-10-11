@@ -21,9 +21,10 @@
   text-overflow: ellipsis;
 }
 
+/* It gives way before the controls beside it do, down to a minimum that still names the section. */
 .root[data-shrunk] > .title {
-  flex: 0 1 auto;
-  min-width: 0;
+  flex: 0 9999 auto;
+  min-width: min(100%, var(--umbra-section-title-min-width, 4rem));
 }
 
 .root[data-variant='link'] > .title,

@@ -13,9 +13,10 @@ import {
   type RefObject,
 } from 'react';
 import { createPortal, flushSync } from 'react-dom';
+import { focusNear } from '../internal/focus';
 import { ButtonBase } from '../basics/Button';
 import { Skeleton } from '../basics/Skeleton';
-import { ActionsOverflow } from '../internal/ActionsOverflow';
+import { ActionsOverflow, wrapsKept } from '../internal/ActionsOverflow';
 import { OverlayContainerContext } from '../internal/contexts';
 import { dataState, isContent, type DataStateProps } from '../internal/dataState';
 import { useNarrow } from '../internal/useNarrow';
@@ -232,6 +233,18 @@ function Root({
   }, [userCollapsed]);
 
   const collapsedBy = userCollapsed ? 'user' : layoutCollapsed ? 'layout' : null;
+  // The app removes the card while the focus is in it, or in its popover: the focus goes to the next
+  // control of the stack, not to nothing (plan/interaction.md, "Focus is never lost").
+  const popoverNow = useRef(popover);
+  useLayoutEffect(() => {
+    popoverNow.current = popover;
+  }, [popover]);
+  useLayoutEffect(() => {
+    const element = ref.current;
+    return () => {
+      if (element) focusNear(element, popoverNow.current?.closest('[data-umbra="popover"]'));
+    };
+  }, [ref]);
   useEffect(() => {
     if (!layoutCollapsed || PopoverContent) return;
     import('../overlays/Popover').then(
@@ -371,7 +384,7 @@ function Title({ href, renderLink = plainLink, onOpen, className, style, childre
 
 function Actions({ className, style, children }: BlockProps) {
   return (
-    <div data-part="actions" className={cx(styles.actions, className)} style={style}>
+    <div data-part="actions" className={cx(styles.actions, wrapsKept, className)} style={style}>
       {children}
     </div>
   );

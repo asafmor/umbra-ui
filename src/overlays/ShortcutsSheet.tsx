@@ -5,7 +5,7 @@ import { Icon } from '../provider/icons';
 import { formatKeys, keyCaps } from '../provider/shortcuts';
 import { useShortcut, useShortcutList } from '../provider/UmbraProvider';
 import { cx, renderPart, type Part } from '../utils/parts';
-import { Modal, type ModalHeaderProps, type ModalSize } from './Modal';
+import { Modal, ModalNameContext, type ModalHeaderProps, type ModalSize } from './Modal';
 import { useOpenState } from './shared';
 import styles from './ShortcutsSheet.module.css';
 import { passThrough, type RootAttributes } from '../utils/passThrough';
@@ -205,7 +205,8 @@ function Panel({
 
   const words = query.toLowerCase().split(/\s+/).filter(Boolean);
   const matches = (section: string, item: ShortcutsSheetItemData) => {
-    const text = [section, item.label, ...[item.keys].flat().map((keys) => formatKeys(keys))]
+    // The keys as they are drawn ("↑") and as they are written ("ArrowUp").
+    const text = [section, item.label, ...[item.keys].flat().flatMap((keys) => [formatKeys(keys), keys])]
       .join(' ')
       .toLowerCase();
     return words.every((word) => text.includes(word));
@@ -306,22 +307,24 @@ export function ShortcutsSheet({
   const [isOpen, setOpen] = useOpenState(open, defaultOpen, onOpenChange);
   useShortcut(shortcut ?? undefined, shortcut ? () => setOpen(!isOpen) : undefined);
   return (
-    <Modal.Root
-      open={isOpen}
-      onOpenChange={setOpen}
-      variant={variant}
-      side={side}
-      size={size}
-      height={height}
-      headingLevel={headingLevel}
-    >
-      {trigger && <Modal.Trigger>{trigger}</Modal.Trigger>}
-      <Modal.Overlay>
-        <Modal.Content {...passThrough(panel)} className={cx(styles.root, className)} style={style}>
-          <Panel {...panel} headingLevel={headingLevel} />
-        </Modal.Content>
-      </Modal.Overlay>
-    </Modal.Root>
+    <ModalNameContext value="shortcuts-sheet">
+      <Modal.Root
+        open={isOpen}
+        onOpenChange={setOpen}
+        variant={variant}
+        side={side}
+        size={size}
+        height={height}
+        headingLevel={headingLevel}
+      >
+        {trigger && <Modal.Trigger>{trigger}</Modal.Trigger>}
+        <Modal.Overlay>
+          <Modal.Content {...passThrough(panel)} className={cx(styles.root, className)} style={style}>
+            <Panel {...panel} headingLevel={headingLevel} />
+          </Modal.Content>
+        </Modal.Overlay>
+      </Modal.Root>
+    </ModalNameContext>
   );
 }
 

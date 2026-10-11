@@ -57,3 +57,22 @@ export function holdFocus(scope: HTMLElement | null, fallback?: () => HTMLElemen
 export function moveFocusFrom(leaving: Element | null, target: HTMLElement | null | undefined) {
   if (leaving && target && leaving.contains(document.activeElement)) target.focus({ preventScroll: true });
 }
+
+/**
+ * For an element that is about to leave the page with the focus inside it (or inside `also`, a panel
+ * of its own that is rendered elsewhere): the focus moves to the nearest control that stays. That is
+ * the next tab stop after the element in its parent, or else the last one before it; with none there,
+ * the same in the parent's parent, and so on. Call it while the element is still in the page.
+ */
+export function focusNear(leaving: Element, also?: Element | null) {
+  const active = document.activeElement;
+  const gone = (el: Element | null) => !!el && (leaving.contains(el) || !!also?.contains(el));
+  if (!gone(active)) return;
+  for (let scope = leaving.parentElement; scope; scope = scope.parentElement) {
+    const stops = focusableIn(scope).filter((el) => el.tabIndex >= 0 && !gone(el));
+    const next =
+      stops.find((el) => leaving.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) ??
+      stops.at(-1);
+    if (next) return next.focus({ preventScroll: true });
+  }
+}

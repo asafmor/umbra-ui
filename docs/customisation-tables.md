@@ -531,6 +531,7 @@ The container for one unit of content on a page. Fills the slot its parent gives
 | `--umbra-card-padding` | `--umbra-density-card-padding` (16px at the default density) |
 | `--umbra-card-radius` | `--umbra-radius-card` (8px) |
 | `--umbra-card-title-font` | `--umbra-font-card-title` |
+| `--umbra-card-title-min-width` | `4rem` |
 | `--umbra-focus-color` | `--umbra-color-fixed-focus-ring` (#ffb3f5) |
 
 | Prop | Type | Purpose |
@@ -1414,6 +1415,7 @@ A header row for one group of rows inside a list or table.
 | `--umbra-group-header-font` | `--umbra-font-label` |
 | `--umbra-group-header-height` | `calc(var(--umbra-density-table-row) + var(--umbra-space-2))` or `calc(var(--row-h) + var(--umbra-space-2))` |
 | `--umbra-group-header-padding-x` | `--umbra-density-card-padding` (16px at the default density) |
+| `--umbra-group-header-title-min-width` | `4rem` |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -2308,6 +2310,7 @@ The header of a page or of a detail pane: what it shows, facts about it, and its
 | `--umbra-page-header-padding` | `var(--card-pad) var(--card-pad) 0`; `0px`; `--umbra-density-card-padding` (16px at the default density) |
 | `--umbra-page-header-radius` | `--umbra-radius-card` (8px) |
 | `--umbra-page-header-title-font` | `--umbra-font-display` or `--umbra-font-title` |
+| `--umbra-page-header-title-min-width` | `4rem` |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -3069,6 +3072,7 @@ A heading for one section of content inside a card or page, with optional contro
 | `--umbra-section-rule-color` | `--umbra-color-base-border-strong` (#47395e) |
 | `--umbra-section-title-color` | `--umbra-color-base-text-primary` (#f5f3f8) |
 | `--umbra-section-title-font` | `700 16px/1.25 var(--umbra-font-family-heading)`; `--umbra-font-label`; `--umbra-font-body` |
+| `--umbra-section-title-min-width` | `4rem` |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -3161,6 +3165,7 @@ Chooses one option, or several with `multiple`, from a list that opens under a b
 | `--umbra-select-height` | `--umbra-density-control-height` (36px at the default density) |
 | `--umbra-select-icon-color` | `--umbra-color-base-text-secondary` (#b3adbf) |
 | `--umbra-select-invalid-border` | `--umbra-color-semantic-danger` (#f0455a) |
+| `--umbra-select-min-width` | `96px` |
 | `--umbra-select-option-selected-bg` | `color-mix(in oklab, var(--umbra-color-fixed-selected) 28%, transparent)` |
 | `--umbra-select-option-stripe-width` | `3px` |
 | `--umbra-select-padding-x` | `--umbra-space-4` (12px) |
@@ -3581,6 +3586,7 @@ Dims everything but one element and explains it in a callout beside it: a coach 
 | `--umbra-spotlight-ring-color` | `--umbra-color-base-text-primary` (#f5f3f8) |
 | `--umbra-spotlight-ring-width` | `calc(2 * var(--umbra-border-width))` |
 | `--umbra-spotlight-title-font` | `--umbra-font-card-title` |
+| `--umbra-spotlight-z-index` | `--umbra-layer-spotlight` (1250) |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -4032,6 +4038,7 @@ A box for typing one line of text, or several with `multiline`.
 | `--umbra-text-field-fg` | `--umbra-color-base-text-primary` (#f5f3f8) |
 | `--umbra-text-field-height` | `--umbra-density-control-height` (36px at the default density) |
 | `--umbra-text-field-invalid-border` | `--umbra-color-semantic-danger` (#f0455a) |
+| `--umbra-text-field-min-width` | `96px` |
 | `--umbra-text-field-padding-x` | `--umbra-space-4` (12px) |
 | `--umbra-text-field-placeholder` | `--umbra-color-base-text-muted` (#948da2) |
 | `--umbra-text-field-radius` | `--umbra-radius-control` (4px) |

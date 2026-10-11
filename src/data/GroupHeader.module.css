@@ -41,8 +41,8 @@
 }
 
 .root[data-truncate] > .title {
-  flex: 0 1 auto;
-  min-width: 0;
+  flex: 0 9999 auto;
+  min-width: min(100%, var(--umbra-group-header-title-min-width, 4rem));
 }
 
 .count {

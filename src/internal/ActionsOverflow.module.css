@@ -1,0 +1,110 @@
+/*
+ * The actions as a plain list, shown when the code of the "more" menu could not be loaded. It is in
+ * the browser's top layer, placed by the script; it looks like the menu it stands in for.
+ */
+.list {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  display: none;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--umbra-space-1);
+  max-width: calc(100vw - 2 * var(--umbra-space-2));
+  max-height: calc(100vh - 2 * var(--umbra-space-2));
+  padding: var(--umbra-space-2);
+  overflow: auto;
+  border: var(--umbra-border-width) solid var(--umbra-menu-border, var(--umbra-color-base-border-strong));
+  border-radius: var(--umbra-menu-radius, var(--umbra-radius-card));
+  background: var(--umbra-menu-bg, var(--umbra-color-base-surface2));
+  color: var(--umbra-color-base-text-primary);
+  box-shadow: var(--umbra-elevation-overlay);
+  /* It clips, so the rings of its buttons are drawn inside them. */
+  --focus-offset: calc(-1 * var(--umbra-state-focus-ring-width));
+}
+
+.list:popover-open {
+  display: flex;
+}
+
+/* A browser without the Popover API shows it where it is, above the page. */
+@supports not selector(:popover-open) {
+  .list {
+    display: flex;
+    z-index: var(--umbra-layer-popover);
+  }
+}
+
+/*
+ * The row at its last step, when what is left in it are controls that cannot be rows of the menu
+ * (plan/decisions/07-customisation.md, "Controls among actions that overflow"). Until then the row
+ * must overflow to be measured, so nothing in it shrinks; from here on nothing may be cut. The title
+ * has given way to its minimum (the host's rule). The fields then shrink to their minimum width, and
+ * when even that does not fit, the controls take more lines, in their order, the "more" button last.
+ * The host marks its last step on the row (`data-truncate`, `data-shrunk`) and gives its actions this
+ * class. Doubled, to win over the host's own rule for its actions whichever stylesheet comes first.
+ */
+:is(
+  :is([data-truncate], [data-shrunk]) > .wrap.wrap,
+  [data-umbra='page-header'][data-truncate] .wrap.wrap,
+  .wrap.wrap[data-shrunk]
+) {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  row-gap: var(--umbra-space-2);
+}
+
+:is(
+    :is([data-truncate], [data-shrunk]) > .wrap.wrap,
+    [data-umbra='page-header'][data-truncate] .wrap.wrap,
+    .wrap.wrap[data-shrunk]
+  )
+  > * {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* A field counts at its minimum when the lines are made, and takes what its line has left. */
+:is(
+    :is([data-truncate], [data-shrunk]) > .wrap.wrap,
+    [data-umbra='page-header'][data-truncate] .wrap.wrap,
+    .wrap.wrap[data-shrunk]
+  )
+  > [data-umbra='search-field'] {
+  flex: 1 1 var(--umbra-search-field-min-width, 120px);
+}
+
+:is(
+    :is([data-truncate], [data-shrunk]) > .wrap.wrap,
+    [data-umbra='page-header'][data-truncate] .wrap.wrap,
+    .wrap.wrap[data-shrunk]
+  )
+  > [data-umbra='select'] {
+  flex: 1 1 var(--umbra-select-min-width, 96px);
+}
+
+:is(
+    :is([data-truncate], [data-shrunk]) > .wrap.wrap,
+    [data-umbra='page-header'][data-truncate] .wrap.wrap,
+    .wrap.wrap[data-shrunk]
+  )
+  > [data-umbra='text-field'] {
+  flex: 1 1 var(--umbra-text-field-min-width, 96px);
+}
+
+/* A label beside a box stays on one line and truncates: wrapped here, it would be a letter per line. */
+:is(
+    :is([data-truncate], [data-shrunk]) > .wrap.wrap,
+    [data-umbra='page-header'][data-truncate] .wrap.wrap,
+    .wrap.wrap[data-shrunk]
+  )
+  > :is([data-umbra='checkbox'], [data-umbra='toggle'])
+  > * {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

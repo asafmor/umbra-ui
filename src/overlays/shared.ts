@@ -96,7 +96,9 @@ export function useReturnFocusOnClose(open: boolean, inside: RefObject<Element |
   });
   // Read while rendering the change to open, before the overlay mounts and takes the focus.
   if (state.open !== open) {
-    setState({ open, opener: open ? (document.activeElement as HTMLElement | null) : state.opener });
+    // On a server there is no document, and nothing to give the focus back to.
+    const active = typeof document === 'undefined' ? null : (document.activeElement as HTMLElement | null);
+    setState({ open, opener: open ? active : state.opener });
   }
   useEffect(() => {
     if (open) return;

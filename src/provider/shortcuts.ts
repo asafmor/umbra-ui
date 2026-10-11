@@ -191,10 +191,48 @@ export function listShortcuts(registry: ShortcutRegistry, reserved: Shortcut[] =
     }));
 }
 
+/** The `<input>` types that take no text: a bare key does nothing in them, so it may be a shortcut. */
+export const inputTypesWithoutText = [
+  'button',
+  'checkbox',
+  'color',
+  'file',
+  'hidden',
+  'image',
+  'radio',
+  'range',
+  'reset',
+  'submit',
+];
+const textRoles = ['textbox', 'searchbox', 'combobox', 'spinbutton'];
+
+/**
+ * Whether a control takes text, by what it is. A `<textarea>`, an editable element, an element with a
+ * text role, an `<input>` of any type but the ones above (a date or a number field takes digits, and
+ * an unknown type is a text field to the browser), and a native `<select>`, where a letter jumps to an
+ * option. A checkbox, a radio, a slider or a button does not.
+ */
+export function takesText(control: {
+  tagName: string;
+  type?: string | null | undefined;
+  role?: string | null | undefined;
+  editable?: boolean | undefined;
+}) {
+  if (control.editable || textRoles.includes(control.role ?? '')) return true;
+  const tag = control.tagName.toUpperCase();
+  if (tag === 'INPUT') return !inputTypesWithoutText.includes((control.type || 'text').toLowerCase());
+  return tag === 'TEXTAREA' || tag === 'SELECT';
+}
+
 /** True while the user is typing, when a bare key must not trigger a shortcut. */
 export function isTypingTarget(target: EventTarget | null) {
   return (
     target instanceof HTMLElement &&
-    (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName))
+    takesText({
+      tagName: target.tagName,
+      type: target.getAttribute('type'),
+      role: target.getAttribute('role'),
+      editable: target.isContentEditable,
+    })
   );
 }

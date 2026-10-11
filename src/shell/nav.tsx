@@ -356,7 +356,8 @@ export function NavList({
     const index = targets.indexOf(document.activeElement as HTMLElement);
     const [back, forward] = rowKeys(direction);
     const next = { [forward]: index + 1, [back]: index - 1, Home: 0, End: targets.length - 1 }[event.key];
-    if (index < 0 || next === undefined) return;
+    // With a modifier the key is not the nav's: Alt+ArrowLeft is the history shortcut.
+    if (index < 0 || next === undefined || event.altKey || event.ctrlKey || event.metaKey) return;
     event.preventDefault();
     const target = targets[(next + targets.length) % targets.length]!;
     for (const t of targets) t.tabIndex = t === target ? 0 : -1;

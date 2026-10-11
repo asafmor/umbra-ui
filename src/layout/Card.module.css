@@ -128,8 +128,21 @@
   min-width: 0;
 }
 
+/*
+ * At the last step the title gives way, down to a minimum that still says which card this is. What
+ * is left of the actions then (the "more" button, and controls that cannot be rows of its menu) stays
+ * beside it while it fits at that minimum, and takes a line of its own under the title when it does
+ * not (plan/decisions/07-customisation.md, "Controls among actions that overflow"). The title counts
+ * at its minimum when the lines are made, and takes what its line has left.
+ */
+.header[data-truncate] {
+  flex-wrap: wrap;
+  row-gap: var(--umbra-space-2);
+}
+
 .header[data-truncate] > .titles {
-  flex: 0 1 auto;
+  flex: 1 1 var(--umbra-card-title-min-width, 4rem);
+  min-width: min(100%, var(--umbra-card-title-min-width, 4rem));
 }
 
 .title {

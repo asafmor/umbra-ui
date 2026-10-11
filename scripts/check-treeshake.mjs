@@ -343,6 +343,59 @@ if (!sizesOnly) {
     fail(`server rendering threw: ${error.stack}`);
   }
 
+  // Every exported overlay, open: one that reads the document while it renders throws here, and an app
+  // whose route opens with a dialog showing would fail on the server (`CommandPalette` did).
+  const anchorRef = { current: null };
+  const openOverlays = {
+    Popover: h(lib.Popover, { open: true, anchorRef, 'aria-label': 'Popover' }, 'Text'),
+    'Popover with a trigger': h(
+      lib.Popover,
+      { defaultOpen: true, trigger: h(lib.Button, null, 'Open') },
+      'Text',
+    ),
+    Tooltip: h(lib.Tooltip, { content: 'Tip', open: true }, h(lib.Button, null, 'Save')),
+    Menu: h(lib.Menu, { open: true, anchorRef, 'aria-label': 'Menu', items: [{ id: 'a', label: 'Row' }] }),
+    'Menu with a trigger': h(lib.Menu, {
+      defaultOpen: true,
+      trigger: h(lib.Button, null, 'Open'),
+      items: [{ id: 'a', label: 'Row' }],
+    }),
+    Modal: h(lib.Modal, { open: true, title: 'Modal' }, 'Text'),
+    ConfirmDialog: h(lib.ConfirmDialog, { open: true, title: 'Confirm?' }),
+    CommandPalette: h(lib.CommandPalette, { open: true, commands: [{ id: 'a', label: 'Open' }] }),
+    'CommandPalette, defaultOpen': h(lib.CommandPalette, { defaultOpen: true, commands: [] }),
+    ShortcutsSheet: h(lib.ShortcutsSheet, { open: true }),
+    Spotlight: h(lib.Spotlight, { open: true, target: '#target', title: 'Look' }, 'Text'),
+    ActionBar: h(lib.ActionBar, {
+      variant: 'floating',
+      selectionCount: 2,
+      actions: h(lib.Button, null, 'Archive'),
+    }),
+  };
+  // One list for this check and for the package: an overlay added to the library is added here.
+  const overlayNames = [
+    'Popover',
+    'Tooltip',
+    'Menu',
+    'Modal',
+    'ConfirmDialog',
+    'CommandPalette',
+    'ShortcutsSheet',
+    'Spotlight',
+    'ActionBar',
+  ];
+  for (const name of overlayNames) if (!lib[name]) fail(`server rendering: the package has no ${name}`);
+  let rendered = 0;
+  for (const [name, element] of Object.entries(openOverlays)) {
+    try {
+      renderToString(h(lib.UmbraProvider, null, element));
+      rendered++;
+    } catch (error) {
+      fail(`server rendering: an open ${name} threw: ${error.stack}`);
+    }
+  }
+  console.log(`server rendering: ${rendered} open overlays, no window`);
+
   // --- 6. A consumer's type check --------------------------------------------------------------------
 
   writeFileSync(

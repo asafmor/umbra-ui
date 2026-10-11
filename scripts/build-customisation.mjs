@@ -194,7 +194,11 @@ const walk = (dir) =>
     entry.isDirectory() ? walk(resolve(dir, entry.name)) : [resolve(dir, entry.name)],
   );
 for (const file of walk(resolve(root, 'src')).sort()) {
-  if (!/\.(module\.css|tsx?)$/.test(file) || /\.(stories|test)\.tsx?$|[/\\]stories[/\\]/.test(file)) continue;
+  if (
+    !/(\.module\.css|styles[/\\]index\.css|\.tsx?)$/.test(file) ||
+    /\.(stories|test)\.tsx?$|[/\\]stories[/\\]/.test(file)
+  )
+    continue;
   for (const [name, value] of reads(readFileSync(file, 'utf8'))) {
     if (!everyRead.has(name)) everyRead.set(name, new Set());
     everyRead.get(name).add(value);

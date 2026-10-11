@@ -39,7 +39,7 @@ States: `collapsed`, `loading`, `empty`, `error`, `focus-within`.
 
 ### 1. Tokens
 
-`--umbra-card-bg`, `--umbra-card-border`, `--umbra-card-radius`, `--umbra-card-padding`, `--umbra-card-header-bg`, `--umbra-card-min-height`. Padding and minimum height follow the density level.
+`--umbra-card-bg`, `--umbra-card-border`, `--umbra-card-radius`, `--umbra-card-padding`, `--umbra-card-header-bg`, `--umbra-card-min-height`, `--umbra-card-title-min-width` (4rem: what the title keeps at the last shrink step). Padding and minimum height follow the density level.
 
 Defaults for what is inside, as private properties, never as public tokens: the fade of a `ScrollArea` blends into the card's background (`--scroll-fade-color`), and a badge in a band header gets a ring in the header's text colour (`--badge-ring`). The app's own value of the global token, set on any ancestor, wins over these defaults (2026-10-11, `plan/decisions/07-customisation.md`, "Tokens"). The card also declares `--umbra-slot-min-height`, the minimum height the `Stack` around it reads: it is reset on every layout child, so it is never inherited.
 
@@ -80,7 +80,7 @@ Defaults for what is inside, as private properties, never as public tokens: the 
 
 | Step | Trigger | Result |
 |---|---|---|
-| 1 | Header narrower than its content | `subtitle` hides, then `actions` move into an overflow menu (its code is loaded then); `title` truncates last |
+| 1 | Header narrower than its content | `subtitle` hides, then `actions` move into an overflow menu (its code is loaded then); `title` truncates last, down to `--umbra-card-title-min-width`. Controls that cannot be rows of the menu stay: beside the title while they fit at that minimum, else on a line of their own under it, where the fields shrink to their minimum width and the controls then wrap (decision 07, "Controls among actions that overflow") |
 | 2 | Body taller than the slot | Body scrolls inside the card |
 | 2a | `size="content"` in a `Stack` | The card is as tall as its header plus its content (a card without a header: its content plus the padding). When the stack cannot give that much, the card gets what is left after the minimums of the others and its body scrolls inside. It is never collapsed by the layout. |
 | 3 | The cards of a `Stack` cannot all have their `minHeight` | While they all fit, each open card is held at its `minHeight` or more. When they do not, the parent `Stack` collapses the card to its header; clicking the header opens the body in a `Popover` anchored to it. A layout-collapsed card shows a small "expand" hint icon in its header, so it looks different from a user-collapsed card (which shows the caret and expands in place). |
@@ -148,3 +148,8 @@ Resolved 2026-10-11 (review 2):
 - **A content-sized card gives way before a collapsed card loses any of its header** (integration pass, 2026-10-11): `plan/layout.md`, rule 3.
 - **Controls that cannot be menu rows stay in the header** (integration pass, 2026-10-11) when its actions overflow, as the same elements (`plan/decisions/07-customisation.md`). The actions are always rendered through `ActionsOverflow`.
 - **`id`, `data-*` and `aria-*` reach the root** (integration pass, 2026-10-11), as on every component.
+- **A collapsed card's popover inside a modal or another popover has its own state** (review 2, X-1, 2026-10-11). `Popover.Content` took the open state of whatever dialog trigger was around it, so in a `Modal` each collapsed card showed an empty dialog and a press on its header closed the modal. A content is under a root only when a `Popover.Root` says so. One Escape closes one layer: the popover of the card first, with the focus back on its header, then the modal.
+- **The "more" menu cannot be loaded** (review 2, X-2, decided 2026-10-11). The actions must stay reachable, so the fallback needs no code that is not already there: a press opens them as a **plain list** under the button (a `group` named like the button, `data-part="moreList"`, in the browser's top layer through the Popover API, so no card clips it). The actions in it are the buttons they are; Tab walks them, the arrow keys open on the first or last, an action closes the list after it ran, and Escape, a press elsewhere or focus leaving close it with the focus back on the button. Every press asks for the menu again, and the menu takes over once it is there and the list is closed. Rejected: an error text on the button with a retry (the actions stay out of reach while the app is offline, and Chromium answers a second request for a module that failed from its memory until the page is reloaded, so a retry alone may never succeed there).
+- **A press kept while the menu loads can be taken back** (review 2, X-4): by Escape, by focus that leaves the button and by a press elsewhere. The menu then does not open, or take the focus, when it arrives.
+- **When the row has room again as its menu closes, the focus goes to the first action that came back** (review 2, X-9), not to the first control of the row.
+- **The app removes a collapsed card while the focus is in its popover** (review 2, X-8): the focus goes to the next tab stop of the stack (or the last one before the card; `focusNear`, `src/internal/focus.ts`), never to `<body>`. The same when the focus is in the card itself.

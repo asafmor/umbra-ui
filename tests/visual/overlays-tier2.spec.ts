@@ -201,7 +201,9 @@ test.describe('ShortcutsSheet', () => {
   test('a drawer is attached to the end edge and is as tall as the window', async ({ page }) => {
     for (const direction of ['ltr', 'rtl']) {
       await openStory(page, 'overlays-shortcutssheet--drawer', { direction });
-      const panel = page.locator('[data-umbra="modal"]');
+      // OP-9: the sheet is found by its own name, as a `ConfirmDialog` is.
+      const panel = page.locator('[data-umbra="shortcuts-sheet"]');
+      await expect(page.locator('[data-umbra="modal"]')).toHaveCount(0);
       await expect(panel).toHaveAttribute('data-variant', 'drawer');
       await expect(sheet(page)).toBeVisible();
       await expect
