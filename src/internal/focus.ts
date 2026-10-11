@@ -51,6 +51,21 @@ export function holdFocus(scope: HTMLElement | null, fallback?: () => HTMLElemen
 }
 
 /**
+ * For a control that disables itself when pressed ("Next" at the last month): a disabled control cannot
+ * hold the focus, and the browser drops it to `<body>`. Call it after every render with the control
+ * that was pressed. Once that control is disabled and the focus is still on it or on nothing, the
+ * focus goes to `target`. It returns true while there is still something to wait for: the control is
+ * enabled and the user has not moved on.
+ */
+export function leaveDisabled(control: Element | null, target: () => HTMLElement | null | undefined) {
+  if (!(control instanceof HTMLElement) || control === document.body || !control.isConnected) return false;
+  if (document.activeElement !== control && !focusLost()) return false;
+  if (!control.matches(':disabled, [aria-disabled="true"]')) return true;
+  target()?.focus({ preventScroll: true });
+  return false;
+}
+
+/**
  * Moves focus to `target` when the element that has it is `leaving` or inside it. For a control that
  * removes itself when pressed ("Clear selection" in a bar that then goes away).
  */

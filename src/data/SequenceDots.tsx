@@ -1,4 +1,13 @@
-import { createContext, useContext, useRef, type CSSProperties, type ReactNode, type Ref } from 'react';
+import {
+  createContext,
+  Fragment,
+  useContext,
+  useId,
+  useRef,
+  type CSSProperties,
+  type ReactNode,
+  type Ref,
+} from 'react';
 import { Button as AriaButton, Toolbar } from 'react-aria-components';
 import { Skeleton } from '../basics/Skeleton';
 import { useHoverTip } from '../internal/TruncatedText';
@@ -37,7 +46,10 @@ export interface SequenceDotsItem {
   mark?: SequenceDotsMark | undefined;
   /** `bars` only: the height of the bar, on `range`. `null` or nothing draws a stub. */
   value?: number | null | undefined;
-  /** Shown on hover, and on keyboard focus of a mark that can be pressed. */
+  /**
+   * Shown on hover, and on keyboard focus of a mark that can be pressed, whose description it is. A text
+   * is also part of the summary assistive technology reads.
+   */
   tooltip?: ReactNode | undefined;
   disabled?: boolean | undefined;
 }
@@ -152,6 +164,9 @@ function Mark({
   if (!sequence) throw new Error('SequenceDots.Mark must be rendered inside <SequenceDots.Root>.');
   const ref = useRef<HTMLElement>(null);
   const tip = useHoverTip(ref, tooltip);
+  const tipId = useId();
+  // The tip is only in the page while it shows, so the button is described by a copy that stays.
+  const described = !!sequence.onAction && typeof tooltip === 'string' && tooltip !== '' && tooltip !== label;
   const [min, max] = sequence.range;
   const hasValue = value !== null && value !== undefined && !Number.isNaN(value);
   const fraction = hasValue && max > min ? Math.min(1, Math.max(0, (value - min) / (max - min))) : 0;
@@ -183,10 +198,16 @@ function Mark({
           {...defined(attributes)}
           ref={ref as Ref<HTMLButtonElement>}
           aria-label={label}
+          {...defined({ 'aria-describedby': described ? tipId : undefined })}
           isDisabled={!!disabled}
           onPress={() => sequence.onAction?.(id)}
         >
           {drawing}
+          {described && (
+            <span id={tipId} hidden>
+              {tooltip}
+            </span>
+          )}
         </AriaButton>
       ) : (
         <span {...attributes} data-disabled={disabled || undefined} ref={ref as Ref<HTMLSpanElement>}>
@@ -205,7 +226,10 @@ export interface SequenceDotsProps extends Omit<SequenceDotsRootProps, 'children
   max?: number | undefined;
   /** `bars` only: the values of an empty and of a full bar. Default: 0 to the largest value. */
   range?: readonly [number, number] | undefined;
-  /** The text assistive technology reads, from the items (all of them up to `max`, whatever fits). */
+  /**
+   * The text assistive technology reads, from the items (all of them up to `max`, whatever fits).
+   * Default: each label, with the item's tooltip in brackets when that is another text.
+   */
   formatSummary?: ((items: readonly SequenceDotsItem[]) => string) | undefined;
   /** Shows a placeholder of the sequence's size. */
   loading?: boolean | undefined;
@@ -225,12 +249,29 @@ export interface SequenceDotsProps extends Omit<SequenceDotsRootProps, 'children
     | undefined;
 }
 
+const defaultSummary = (list: readonly SequenceDotsItem[]) =>
+  list
+    .map(({ label, tooltip }) =>
+      typeof tooltip === 'string' && tooltip && tooltip !== label ? `${label} (${tooltip})` : label,
+    )
+    .join(', ');
+
+/**
+ * How many of the oldest marks must go for the rest to fit, from the widths as they are drawn: the
+ * marks are of one width, so one measurement tells. (One mark per render stops at 50: React's limit.)
+ */
+function marksToDrop(row: HTMLElement) {
+  const gap = parseFloat(getComputedStyle(row).columnGap) || 0;
+  const pitch = (row.scrollWidth + gap) / row.childElementCount;
+  return Math.ceil((row.scrollWidth - row.clientWidth) / pitch);
+}
+
 /** A short ordered row of small marks, one per recent outcome: dots with a shape per tone, or thin bars by value. */
 export function SequenceDots({
   items,
   max,
   range,
-  formatSummary = (list) => list.map((item) => item.label).join(', '),
+  formatSummary = defaultSummary,
   'aria-label': label,
   loading = false,
   loadingLabel = 'Loading',
@@ -243,8 +284,11 @@ export function SequenceDots({
   const all = items ?? [];
   // The newest are last, so a limit drops from the start.
   const listed = max !== undefined && max >= 0 ? all.slice(Math.max(0, all.length - max)) : all;
-  // One more of the oldest goes for each level, while the row is wider than its place. The newest stays.
-  const level = useShrinkLevel(ref, loading ? 0 : Math.max(0, listed.length - 1), listed.length);
+  // The level is the number of the oldest marks left out, while the row is wider than its place. The
+  // newest stays. It is counted from the widths in one step, so any number of marks settles at once.
+  const level = useShrinkLevel(ref, loading ? 0 : Math.max(0, listed.length - 1), listed.length, {
+    advance: marksToDrop,
+  });
 
   if (loading) {
     const count = listed.length || max || 5;
@@ -279,7 +323,14 @@ export function SequenceDots({
   const largest = Math.max(0, ...listed.map((item) => item.value ?? 0));
   return (
     <Root {...root} ref={ref} range={range ?? [0, largest || 1]} aria-label={label ?? formatSummary(listed)}>
-      {listed.slice(level).map((item) => renderPart(parts?.mark, item, (p) => <Mark key={p.id} {...p} />))}
+      {listed.slice(level).map((item) => (
+        // Keyed here, so a `mark` part given as a function or a node needs no key of its own.
+        <Fragment key={item.id}>
+          {renderPart(parts?.mark, item, (p) => (
+            <Mark {...p} />
+          ))}
+        </Fragment>
+      ))}
     </Root>
   );
 }

@@ -6,7 +6,7 @@ import { toneProps, type Tone } from '../data/tone';
 import { useHoverTip } from '../internal/TruncatedText';
 import type { LinkRenderProps } from '../utils/link';
 import { cx, renderPart, type Part } from '../utils/parts';
-import type { IsoDate } from './dates';
+import { validDate, type IsoDate } from './dates';
 import styles from './ScheduleSlot.module.css';
 import { passThrough, type RootAttributes } from '../utils/passThrough';
 
@@ -107,7 +107,8 @@ function Root({
     'data-interactive': onPress || href !== undefined ? '' : undefined,
     'data-selected': selected || undefined,
     'data-disabled': disabled || undefined,
-    'aria-label': ariaLabel,
+    // A name replaces the content, and with it the word that says the slot is selected: it is added.
+    'aria-label': ariaLabel && selected && selectedLabel ? `${ariaLabel}, ${selectedLabel}` : ariaLabel,
     className: cx(shared.tone, styles.slot, className),
   };
   const content = (
@@ -235,21 +236,33 @@ export interface ScheduleItem {
   disabled?: boolean | undefined;
 }
 
+/** The items on the days from `first` to `last`. One whose date is not a date is left out, with a warning. */
+export const itemsBetween = (items: readonly ScheduleItem[], first: IsoDate, last: IsoDate) =>
+  items.filter(
+    (item) => validDate(item.date, 'ScheduleItem date') && item.date >= first && item.date <= last,
+  );
+
 /**
  * The items of each day, placed in its slots: `undefined` is a free slot. `rest` holds, per day, the
- * items that found no slot: the day's header says how many, and names them.
+ * items that found no slot: the day's header says how many, and lists them.
+ *
+ * An item takes the slot it names when that is one of the day's slots and free; any other item (no
+ * `slot`, one past the last line, not a whole number, already taken) takes the first free slot. So an
+ * item is in `rest` only when its day is full.
  */
 export function placeItems(items: readonly ScheduleItem[], days: readonly IsoDate[], slotsPerDay: number) {
   const byDay = new Map<IsoDate, (ScheduleItem | undefined)[]>(
     days.map((day) => [day, Array.from<ScheduleItem | undefined>({ length: slotsPerDay })]),
   );
   const rest = new Map<IsoDate, ScheduleItem[]>();
+  const named = (item: ScheduleItem) =>
+    item.slot !== undefined && Number.isInteger(item.slot) && item.slot >= 0 && item.slot < slotsPerDay;
   // Items that name their slot first, so the others fill what is left.
-  for (const item of [...items].sort((a, b) => Number(b.slot !== undefined) - Number(a.slot !== undefined))) {
+  for (const item of [...items].sort((a, b) => Number(named(b)) - Number(named(a)))) {
     const slots = byDay.get(item.date);
     if (!slots) continue;
-    const at = item.slot !== undefined && !slots[item.slot] ? item.slot : slots.indexOf(undefined);
-    if (at >= 0 && at < slotsPerDay) slots[at] = item;
+    const at = named(item) && !slots[item.slot!] ? item.slot! : slots.indexOf(undefined);
+    if (at >= 0) slots[at] = item;
     else rest.set(item.date, [...(rest.get(item.date) ?? []), item]);
   }
   return Object.assign(byDay, { rest });
