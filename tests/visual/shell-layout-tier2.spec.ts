@@ -1188,11 +1188,15 @@ interface CaretFrames {
   /** Each time the height changed, once the board had answered: the gap to the card under it, and every card's column. */
   follow: { gap: number | null; columns: string }[];
 }
-/** Presses the caret of a card and records it on every frame until it has rested. */
+/**
+ * Presses the caret of a card and records it on every frame until it has rested. The animation is
+ * slowed down, so that a busy machine still draws enough frames of it to judge.
+ */
 const pressCaret = (card: Locator) =>
   card.evaluate(
     (el) =>
       new Promise<CaretFrames>((done) => {
+        (el as HTMLElement).style.setProperty('--umbra-motion-duration-base', '900ms');
         const item = el.closest<HTMLElement>('[data-part="item"]');
         const others = item ? ([...item.parentElement!.children] as HTMLElement[]) : [];
         const heights = [el.getBoundingClientRect().height];
