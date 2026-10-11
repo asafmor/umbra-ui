@@ -96,7 +96,7 @@ export const OnFilledSurfaces: Story = {
   render: () => (
     <Columns style={{ height: '100%' }}>
       <Card title="Buttons">
-        <div style={{ display: 'flex', gap: 24, paddingTop: 8, alignItems: 'center' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 24, paddingTop: 8, alignItems: 'center' }}>
           {(['accent', 'primary', 'neutral'] as const).map((variant) => (
             <Badge key={variant} count={3}>
               <Button variant={variant}>Anchored on {variant}</Button>

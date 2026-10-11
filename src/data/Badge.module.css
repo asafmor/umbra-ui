@@ -41,6 +41,17 @@
   padding: 0;
 }
 
+/*
+ * A dot has no text, so its fill is its only cue and needs 3:1 against the surface. The fixed violet
+ * has 2.6:1 on a card, so the accent dot is drawn lighter.
+ */
+.root[data-tone='accent'] > .indicator[data-dot] {
+  background: var(
+    --umbra-badge-bg,
+    color-mix(in oklab, var(--tone), var(--umbra-color-base-text-primary) var(--umbra-badge-dot-lighten, 25%))
+  );
+}
+
 /* On the corner of its anchor, overhanging it a little. Clicks go through to the anchor. */
 .root[data-anchored] > .indicator {
   position: absolute;

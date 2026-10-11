@@ -357,3 +357,48 @@ test('a badge on a filled surface has a ring that keeps 3:1 against the fill', a
   // On a neutral surface there is no ring.
   expect(await anchored('neutral')).toMatch(/^rgba\(0, 0, 0, 0\)/);
 });
+
+test('the accent dot of a badge has 3:1 against the card on every tint (A3)', async ({ page }) => {
+  for (const tint of ['violet', 'teal', 'green', 'slate']) {
+    await page.goto(`/iframe.html?id=data-badge--variants&viewMode=story&globals=context:${tint}`);
+    const dot = page.locator('[data-umbra="badge"][data-tone="accent"] [data-part="indicator"][data-dot]');
+    await dot.first().waitFor();
+    const ratio = await dot.first().evaluate((el) => {
+      // Any CSS colour to sRGB, through a canvas.
+      const rgb = (css: string) => {
+        const canvas = document.createElement('canvas');
+        canvas.width = canvas.height = 1;
+        const context = canvas.getContext('2d')!;
+        context.fillStyle = css;
+        context.fillRect(0, 0, 1, 1);
+        return [...context.getImageData(0, 0, 1, 1).data].slice(0, 3);
+      };
+      const luminance = (css: string) => {
+        const [r, g, b] = rgb(css).map((v) => {
+          const c = v / 255;
+          return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+        });
+        return 0.2126 * r! + 0.7152 * g! + 0.0722 * b!;
+      };
+      const [light, dark] = [
+        luminance(getComputedStyle(el).backgroundColor),
+        luminance(getComputedStyle(el.closest('[data-umbra="card"]')!).backgroundColor),
+      ].sort((a, b) => b - a);
+      return (light! + 0.05) / (dark! + 0.05);
+    });
+    expect(ratio, tint).toBeGreaterThanOrEqual(3);
+  }
+});
+
+test('the badges on filled buttons stay inside their card at the smallest window (A11)', async ({ page }) => {
+  await page.setViewportSize({ width: 1024, height: 600 });
+  await page.goto('/iframe.html?id=data-badge--on-filled-surfaces&viewMode=story');
+  const first = page.locator('[data-umbra="card"]').first();
+  await first.waitFor();
+  const over = await first.evaluate((el) => {
+    const box = el.getBoundingClientRect();
+    return [...el.querySelectorAll('button')].filter((b) => b.getBoundingClientRect().right > box.right)
+      .length;
+  });
+  expect(over).toBe(0);
+});
