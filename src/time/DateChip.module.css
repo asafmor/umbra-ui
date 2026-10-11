@@ -2,6 +2,7 @@
   --bg: var(--umbra-date-chip-bg, color-mix(in oklab, var(--umbra-color-base-text-primary) 10%, transparent));
   --fg: var(--umbra-date-chip-fg, var(--umbra-color-base-text-primary));
   --height: var(--umbra-date-chip-height, calc(var(--umbra-density-label-size) + 10px));
+  --font: var(--umbra-font-label);
 
   position: relative;
   display: inline-flex;
@@ -15,7 +16,7 @@
   border-radius: var(--umbra-date-chip-radius, var(--umbra-radius-pill));
   background: var(--bg);
   color: var(--fg);
-  font: var(--umbra-date-chip-font, var(--umbra-font-label));
+  font: var(--umbra-date-chip-font, var(--font));
   font-weight: 700;
   white-space: nowrap;
   vertical-align: middle;
@@ -23,19 +24,29 @@
 
 .chip[data-size='small'] {
   --height: var(--umbra-date-chip-height, calc(var(--umbra-density-label-size) + 4px));
+  /* The label font a pixel smaller. As the default of the token, so the token resizes this size too. */
+  --font: 500 calc(var(--umbra-density-label-size) - 1px) / 1.231 var(--umbra-font-family-body);
 
   padding: 0 var(--umbra-date-chip-padding-x, var(--umbra-space-2));
-  font-size: calc(var(--umbra-density-label-size) - 1px);
 }
 
+/*
+ * One line, filled from the end with the number first: where the two do not fit (a longer name in
+ * another locale, a larger font from a token), the weekday wraps to a second line, which is cut off.
+ * So the weekday gives way and the number is never drawn cut, whatever the steps below assume.
+ */
 .text {
   display: inline-flex;
+  flex-flow: row-reverse wrap;
+  justify-content: center;
   gap: 0.35em;
   min-width: 0;
+  max-height: 1lh;
   overflow: hidden;
 }
 
 .weekday {
+  order: 1;
   font-weight: 500;
 }
 
@@ -78,10 +89,15 @@
 }
 
 /*
- * `weekday="auto"`: the long name, and a shorter one as the day around the chip narrows. The day is the
- * container (`umbra-schedule`, set by WeekStrip and Planner); without one the long name stays. The
- * widths are literal because a container query cannot read a custom property.
+ * Showing less as the day around the chip narrows. The day is the container (`umbra-schedule`, set by
+ * WeekStrip and Planner): what is measured is the room inside it, the day less the gap between days.
+ * Without such a container nothing changes. The widths are literal because a container query cannot
+ * read a custom property; each is the room the widest text of its step needs at the spacious density
+ * (en-US, the default font), so nothing is cut at any density. The number never gives way: a number
+ * cut short would read as another day.
  */
+
+/* `weekday="auto"`: the long name, then the short and the narrow one. */
 .auto:not([data-weekday='long']) {
   display: none;
 }
@@ -97,17 +113,27 @@
 }
 
 /* Beside a number the short name gives way sooner than alone ("Mon" fits where "Mon 12" does not). */
-@container umbra-schedule (max-width: 56px) {
-  .text:has(> .day) .auto[data-weekday='short'] {
+@container umbra-schedule (max-width: 68px) {
+  .chip:not([data-size='small']) .text:has(> .day) .auto[data-weekday='short'] {
     display: none;
   }
 
-  .text:has(> .day) .auto[data-weekday='narrow'] {
+  .chip:not([data-size='small']) .text:has(> .day) .auto[data-weekday='narrow'] {
     display: inline;
   }
 }
 
-@container umbra-schedule (max-width: 44px) {
+@container umbra-schedule (max-width: 56px) {
+  .chip[data-size='small'] .text:has(> .day) .auto[data-weekday='short'] {
+    display: none;
+  }
+
+  .chip[data-size='small'] .text:has(> .day) .auto[data-weekday='narrow'] {
+    display: inline;
+  }
+}
+
+@container umbra-schedule (max-width: 48px) {
   .auto[data-weekday='short'] {
     display: none;
   }
@@ -133,11 +159,17 @@
 }
 
 /*
- * The narrowest step: a chip that shows a weekday and a number has room for one, and keeps the weekday
- * (a cut number would read as another day). The whole date is still said.
+ * The narrowest step: a chip that shows a weekday and a number has room for one, and keeps the number.
+ * The whole date is still said.
  */
-@container umbra-schedule (max-width: 48px) {
-  .text:has(> .weekday) > .day {
+@container umbra-schedule (max-width: 52px) {
+  .chip:not([data-size='small']) .text:has(> .day) > .weekday {
+    display: none;
+  }
+}
+
+@container umbra-schedule (max-width: 44px) {
+  .chip[data-size='small'] .text:has(> .day) > .weekday {
     display: none;
   }
 }
