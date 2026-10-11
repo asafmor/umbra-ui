@@ -1,0 +1,70 @@
+/* Fills its slot; the widgets scroll inside. */
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--umbra-widget-board-toolbar-gap, var(--umbra-space-3));
+  height: 100%;
+}
+
+/* `height="content"`, and what `fill` falls back to by itself in a parent without a height. */
+.root[data-height='content'] {
+  flex: none;
+  height: auto;
+}
+
+.toolbar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--umbra-space-3);
+}
+
+/* Starts from the height of the widgets, which only counts where the board has no height to fill. */
+.root > [data-umbra='scroll-area'] {
+  flex: 1 1 auto;
+}
+
+/*
+ * The room for the scroll thumb is always kept. The number of columns is then a function of the
+ * board's width alone: a thumb that comes or goes cannot change it, so no resize can flip it.
+ */
+.root > [data-umbra='scroll-area'][data-axis] > [data-part='viewport'] {
+  overflow-y: scroll;
+}
+
+/*
+ * Rows of one pixel: each item spans its measured height plus the gap (set from the script), and the
+ * dense placement puts it in the first free place from the top. Hence no row gap, and the last gap is
+ * taken back below.
+ */
+.clip {
+  display: flow-root;
+  overflow-y: clip;
+}
+
+.grid {
+  --gap: var(--umbra-widget-board-gap, var(--umbra-density-gap));
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(min(100%, var(--umbra-widget-board-min-column-width, var(--min-column-width, 280px))), 1fr)
+  );
+  grid-auto-rows: 1px;
+  grid-auto-flow: dense;
+  column-gap: var(--gap);
+  align-items: start;
+  margin-block-end: calc(-1 * var(--gap));
+}
+
+.grid[data-columns] {
+  grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
+}
+
+.item {
+  min-width: 0;
+}
+
+.skeleton {
+  display: flex;
+}

@@ -116,7 +116,7 @@ Resolved 2026-10-10:
 - `tabs` is a node; the `Tabs` component is built separately.
 - No `sticky` prop: `Page` keeps the header above the content, and inside a card it goes in the toolbar part or above the body.
 - No loading state of its own: pass skeletons as `title` and `media` while a page loads.
-- The up / down stepper beside the mark (5, 30) belongs to `EntitySwitcher`; put it in `media` or `actions`.
+- The up / down stepper beside the mark (5, 30) belongs to `EntitySwitcher`. Placement (decided 2026-10-11, Milestone 2): the switcher is the header's `title`, with `stepperPosition="start"` and items without icons, and the mark stays in `media`: `<PageHeader media={<EntityIcon … />} title={<EntitySwitcher … stepperPosition="start" />} />`. The switcher inherits the title's font and colour, so the heading reads as before and its text is the entity's name. No change to the header was needed: when the header narrows, its last step lets the title shrink, and the switcher inside then takes its own steps (name cut, steppers hidden).
 
 Resolved 2026-10-11 (review 2):
 

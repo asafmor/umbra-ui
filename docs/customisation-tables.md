@@ -3643,6 +3643,7 @@ The second bar: the pages of the current section, and room for shortcuts at the 
 
 | Prop | Type | Purpose |
 |---|---|---|
+| `start` | `ReactNode` | A slot before the label, for an `EntitySwitcher`. It stays when the label hides. |
 | `label` | `ReactNode` | The section name. |
 | `items` | `NavItem[]` | The pages of the section. Same shape as `PrimaryNav`. |
 | `end` | `ReactNode` | Free slot at the end, normally a `ShortcutBar`. Its content is never clipped. |
@@ -3656,9 +3657,9 @@ The second bar: the pages of the current section, and room for shortcuts at the 
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
 
-**Parts**: `indicator`, `more`, `label`, `item`, `end`.
+**Parts**: `indicator`, `more`, `start`, `label`, `item`, `end`.
 
-**Blocks**: `SubNav.Root`, `SubNav.Label`, `SubNav.Item`, `SubNav.Menu`, `SubNav.End`.
+**Blocks**: `SubNav.Root`, `SubNav.Start`, `SubNav.Label`, `SubNav.Item`, `SubNav.Menu`, `SubNav.End`.
 
 ## SummaryTile
 
@@ -3982,7 +3983,7 @@ The brand-coloured bar at the top: where the user is, the main sections, and the
 | `logo` | `ReactNode` | App or entity mark. |
 | `nav` | `ReactNode` | A `PrimaryNav`. |
 | `actions` | `ReactNode` | `IconButton`s. They collapse into one menu when space is short. |
-| `context` | `ReactNode` | A two-line status block. Hides first when space is short. |
+| `context` | `ReactNode` | A `ContextBlock`. The first thing to give way when space is short. |
 | `primaryAction` | `ReactNode` | The one primary action of the app: a `PrimaryAction`. Any other node is shown as it is. |
 | `history` | `ReactNode` | `true` shows `HistoryButtons` that use the browser history; a node replaces them. |
 | `commandPalette` | `ReactNode` | A `CommandPalette`. Shows the search trigger, which opens it (also by the `Mod+K` shortcut). |

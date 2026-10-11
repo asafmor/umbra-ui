@@ -10,7 +10,7 @@ import { CommandPalette } from '../overlays/CommandPalette';
 import { pages, Rows, sections, Value } from '../stories/placeholders';
 import { AppShell } from './AppShell';
 import { PrimaryNav } from './PrimaryNav';
-import { commands, pinned, SamplePrimaryAction } from './samples';
+import { commands, pinned, SampleContext, SamplePrimaryAction } from './samples';
 import { ShortcutBar } from './ShortcutBar';
 import { SubNav } from './SubNav';
 import { TopBar } from './TopBar';
@@ -37,13 +37,7 @@ function Bars({ brand, nav = true }: { brand?: string | undefined; nav?: boolean
             <IconButton icon={<Settings />} label="Settings" />
           </>
         }
-        context={
-          <>
-            <b>Sat 10 Oct 2026</b>
-            <br />
-            Quarter close in 6 days
-          </>
-        }
+        context={<SampleContext />}
         primaryAction={<SamplePrimaryAction />}
       />
       <SubNav

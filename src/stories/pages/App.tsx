@@ -29,6 +29,7 @@ import {
   type Command,
   type NavItem,
 } from '../../index';
+import { SampleContext } from '../../shell/samples';
 import { messages } from './data';
 import { OrdersScreen } from './OrdersScreen';
 import { OverviewScreen } from './OverviewScreen';
@@ -193,13 +194,7 @@ export function App({ initial }: { initial: Place }) {
               <IconButton icon={<Settings />} label="Settings" />
             </>
           }
-          context={
-            <>
-              <b>Sat 10 Oct 2026</b>
-              <br />
-              Quarter close in 6 days
-            </>
-          }
+          context={<SampleContext />}
           primaryAction={
             unread > 0 && place !== 'overview/inbox' ? (
               <PrimaryAction
