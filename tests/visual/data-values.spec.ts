@@ -169,22 +169,56 @@ test.describe('KeyValue', () => {
     expect(await fits(page.locator('dl[aria-label="Narrow grid"]'))).toBe(true);
   });
 
-  test('loading is busy, empty shows its text, and the retry action of an error is reachable', async ({
+  test('loading, empty and error are the shared data states, and Retry keeps the focus (A2)', async ({
     page,
   }) => {
     await open(page, 'data-keyvalue--states');
     const loading = page.locator('[data-umbra="key-value-list"][aria-label="Loading"]');
     await expect(loading).toHaveAttribute('aria-busy', 'true');
-    await expect(loading.locator('[data-umbra="key-value"]')).toHaveCount(4);
+    await expect(loading.locator('[data-umbra="key-value"][data-part="skeleton"]')).toHaveCount(4);
     await expect(page.locator('[aria-label="Loading two"] [data-umbra="key-value"]')).toHaveCount(2);
-    await expect(page.locator('[aria-label="Empty"]')).toHaveText('No data');
+    await expect(page.locator('[aria-label="Empty"] [data-part="empty"]')).toHaveText('No data');
     await expect(page.locator('[aria-label="Empty contract"]')).toHaveText('No contract yet.');
+
+    // `true` is the default text, with no button; pieces and `retryLabel` are taken as given.
+    await open(page, 'data-keyvalue--errors');
+    const byDefault = page.locator('[aria-label="Failed by default"]');
+    await expect(byDefault.getByRole('alert')).toHaveText('Something went wrong');
+    await expect(byDefault.getByRole('button')).toHaveCount(0);
+    const pieces = page.locator('[aria-label="Failed in pieces"]');
+    await expect(pieces.locator('[data-part="error"] [data-part="title"]')).toHaveText('No connection');
+    await expect(pieces.getByRole('button', { name: 'Reload' })).toBeVisible();
 
     const failed = page.locator('[aria-label="Failed"]');
     await expect(failed.getByRole('alert')).toContainText('could not be loaded');
     await expect(failed.locator('dt')).toHaveCount(0);
     await page.keyboard.press('Tab');
-    await expect(failed.getByRole('button', { name: 'Try again' })).toBeFocused();
+    const retry = failed.getByRole('button', { name: 'Try again' });
+    await expect(retry).toBeFocused();
+    // The button goes away with the error: the focus moves to the list, not to the page.
+    await page.keyboard.press('Enter');
+    await expect(retry).toHaveCount(0);
+    await expect(failed).toBeFocused();
+    await expect(failed.locator('dt')).toHaveCount(5);
+    await expect(failed).toBeFocused();
+  });
+
+  test('a row without a value shows the empty label; a key row is tinted and bold (A1, A6)', async ({
+    page,
+  }) => {
+    await open(page, 'data-keyvalue--errors');
+    const values = page.locator('[aria-label="Missing values"] dd');
+    await expect(values).toHaveText(['17 Aug 2026', '—', 'Never']);
+
+    await open(page, 'data-keyvalue--customised');
+    const rows = page.locator('[aria-label="Key rows"] [data-umbra="key-value"]');
+    await expect(rows.nth(0)).toHaveAttribute('data-highlighted', 'true');
+    await expect(rows.nth(0)).toHaveAttribute('data-part', 'item');
+    await expect(rows.nth(0).locator('dt')).toHaveCSS('font-weight', '700');
+    await expect(rows.nth(1).locator('dt')).not.toHaveCSS('font-weight', '700');
+    const fills = await rows.evaluateAll((els) => els.map((el) => getComputedStyle(el).backgroundColor));
+    expect(fills[0]).not.toBe(fills[1]);
+    expect(fills[0]).toBe(fills[2]);
   });
 });
 
@@ -231,6 +265,24 @@ test.describe('StatValue', () => {
     await expect(loading.first().locator('[data-part="value"]')).toHaveCount(0);
     await expect(loading.first().locator('[data-part="label"]')).toHaveText('Orders');
     await expect(page.getByRole('group', { name: 'Open orders' })).toHaveText('12');
+    await expect(loading.first().locator('[data-part="skeleton"]')).toHaveCount(1);
+  });
+
+  test('without a value the stat shows the empty label, and no unit or trend (A1)', async ({ page }) => {
+    await open(page, 'data-statvalue--stats');
+    const stats = section(page, 'No value').locator('[data-umbra="stat-value"]');
+    await expect(stats.nth(0).locator('[data-part="value"]')).toHaveText('—');
+    await expect(stats.nth(0).locator('[data-part="unit"], [data-part="trend"]')).toHaveCount(0);
+    await expect(stats.nth(1).locator('[data-part="value"]')).toHaveText('Never');
+
+    await open(page, 'data-summarytile--tiles');
+    const tiles = section(page, 'No value').locator('[data-umbra="summary-tile"]');
+    await expect(tiles.nth(0).locator('[data-part="value"]')).toHaveText('—');
+    await expect(tiles.nth(0).locator('[data-part="trend"]')).toHaveCount(0);
+    await expect(tiles.nth(1).locator('[data-part="value"]')).toHaveText('Not assigned');
+    await expect(
+      page.locator('[data-umbra="summary-tile"][data-loading] [data-part="skeleton"]'),
+    ).toHaveCount(1);
   });
 });
 
@@ -239,27 +291,27 @@ test.describe('SummaryTile', () => {
     page,
   }) => {
     await open(page, 'data-summarytile--tiles');
-    const advice = page.getByRole('button', { name: /Advice/ });
-    const duties = page.getByRole('button', { name: /Duties/ });
-    await expect(advice).toHaveAttribute('aria-pressed', 'true');
-    await expect(duties).toHaveAttribute('aria-pressed', 'false');
+    const inbox = page.getByRole('button', { name: /Inbox/ });
+    const access = page.getByRole('button', { name: /Access/ });
+    await expect(inbox).toHaveAttribute('aria-pressed', 'true');
+    await expect(access).toHaveAttribute('aria-pressed', 'false');
 
     await page.getByRole('link', { name: /No icon/ }).focus();
     await expect(page.getByRole('link', { name: /No icon/ })).toHaveAttribute('aria-current', 'true');
     await page.keyboard.press('Tab');
-    await expect(advice).toBeFocused();
+    await expect(inbox).toBeFocused();
     await page.keyboard.press('Tab');
-    await expect(duties).toBeFocused();
+    await expect(access).toBeFocused();
     // The focus ring is drawn inside the tile, in the focus colour.
-    await expect(duties).toHaveCSS('outline-style', 'solid');
-    await expect(duties).toHaveCSS('outline-offset', '-2px');
+    await expect(access).toHaveCSS('outline-style', 'solid');
+    await expect(access).toHaveCSS('outline-offset', '-2px');
 
     await page.keyboard.press('Enter');
     await expect(page.getByText('Pressed 1 times')).toBeVisible();
-    await expect(duties).toHaveAttribute('aria-pressed', 'true');
-    await expect(advice).toHaveAttribute('aria-pressed', 'false');
+    await expect(access).toHaveAttribute('aria-pressed', 'true');
+    await expect(inbox).toHaveAttribute('aria-pressed', 'false');
     await expect(
-      page.locator('[data-umbra="summary-tile"][data-selected]', { hasText: 'Duties' }),
+      page.locator('[data-umbra="summary-tile"][data-selected]', { hasText: 'Access' }),
     ).toBeVisible();
     await page.keyboard.press('Space');
     await expect(page.getByText('Pressed 2 times')).toBeVisible();
@@ -274,7 +326,7 @@ test.describe('SummaryTile', () => {
   test('hover lightens a tile and darkens a selected one', async ({ page }) => {
     await open(page, 'data-summarytile--tiles');
     const background = (tile: Locator) => tile.evaluate((el) => getComputedStyle(el).backgroundColor);
-    for (const name of [/Advice Insights/, /No icon/]) {
+    for (const name of [/Inbox 8 unread/, /No icon/]) {
       const tile = page.getByRole('link', { name });
       const rest = await background(tile);
       await tile.hover();
@@ -345,6 +397,10 @@ test.describe('highlightChanges', () => {
   });
   test('KeyValue: a changed value flashes once with a sign for its direction', async ({ page }) => {
     await expectChangeHighlights(page, 'data-keyvalue--live-updates');
+  });
+  test('KeyValueList: `highlightChanges` on the list is the default of its rows (A5)', async ({ page }) => {
+    // One flash per copy: the row that switches it off does not flash.
+    await expectChangeHighlights(page, 'data-keyvalue--live-list', false);
   });
   test('SummaryTile: a changed value flashes once with a sign for its direction', async ({ page }) => {
     await expectChangeHighlights(page, 'data-summarytile--live-updates');

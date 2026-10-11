@@ -98,6 +98,11 @@ States: image, initials, silhouette (chosen in that order); image failed.
 
 None.
 
+Resolved 2026-10-11 (review fix pass):
+
+- **Right to left.** The status slot is placed with logical insets (`inset-inline-end`, `inset-block-end`), a quarter of its size outside the corner of a square avatar. It was moved with `translate`, which does not mirror: in a right-to-left locale the status of a square avatar sat 6.7px inside its mirrored place (measured at `lg`: 10.1px from the left edge, where the mirror image is 3.4px). Now the two directions are exact mirror images. The same holds for the group overlap and the anchored `Badge`, which already used logical properties.
+- No loading, empty or error state: an avatar is decorative, and falls back to initials, then to the silhouette (plan/interaction.md).
+
 Resolved 2026-10-10:
 
 - Initials are the first letters of the first and last words of `name`, upper-cased.

@@ -14,7 +14,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const scores = [8, 31, 52, 74, 96];
+const values = [8, 31, 52, 74, 96];
 const grades = ['E', 'D', 'C', 'B', 'A'];
 
 /** The five ramp steps, both directions, thresholds, shapes, sizes, the level marker, no value, loading. */
@@ -23,12 +23,12 @@ export const Variants: Story = {
     <Columns style={{ height: '100%' }}>
       <Card title="Ramp">
         <Row label="0 to 100">
-          {scores.map((v) => (
+          {values.map((v) => (
             <ValuePill key={v} value={v} />
           ))}
         </Row>
         <Row label="Lower is better">
-          {scores.map((v) => (
+          {values.map((v) => (
             <ValuePill key={v} value={v} ramp="lower-is-better" />
           ))}
         </Row>
@@ -42,7 +42,7 @@ export const Variants: Story = {
           <ValuePill value={7} thresholds={[7]} formatValue={(n) => n.toFixed(1)} />
         </Row>
         <Row label="Level marker">
-          {scores.map((v) => (
+          {values.map((v) => (
             <ValuePill key={v} value={v} showLevel />
           ))}
         </Row>
@@ -54,7 +54,7 @@ export const Variants: Story = {
           ))}
         </Row>
         <Row label="Circle">
-          {scores.map((v, i) => (
+          {values.map((v, i) => (
             <ValuePill key={v} value={v} shape="circle" formatValue={() => grades[i]} />
           ))}
         </Row>
@@ -83,7 +83,7 @@ export const BehaviourAndParts: Story = {
     <Columns style={{ height: '100%' }}>
       <Card title="Little room">
         <Narrow width={72}>
-          <ValuePill value={96} formatValue={(v) => `${v} of 100 points`} showLevel />
+          <ValuePill value={96} formatValue={(v) => `${v} of 100`} showLevel />
         </Narrow>
       </Card>
       <Card title="Parts and blocks">

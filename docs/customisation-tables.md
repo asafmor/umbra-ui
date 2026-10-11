@@ -141,7 +141,7 @@ A row of overlapping avatars. Those that do not fit are counted in a "+N" at the
 
 A count or a dot, alone or on the corner of another element.
 
-**Tokens**: `--umbra-badge-bg`, `--umbra-badge-dot-size`, `--umbra-badge-fg`, `--umbra-badge-font`, `--umbra-badge-offset`, `--umbra-badge-padding-x`, `--umbra-badge-radius`, `--umbra-badge-ring`, `--umbra-badge-ring-width`, `--umbra-badge-size`, `--umbra-button-accent-fg`, `--umbra-button-primary-fg`.
+**Tokens**: `--umbra-badge-bg`, `--umbra-badge-dot-lighten`, `--umbra-badge-dot-size`, `--umbra-badge-fg`, `--umbra-badge-font`, `--umbra-badge-offset`, `--umbra-badge-padding-x`, `--umbra-badge-radius`, `--umbra-badge-ring`, `--umbra-badge-ring-width`, `--umbra-badge-size`, `--umbra-button-accent-fg`, `--umbra-button-primary-fg`.
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -599,7 +599,7 @@ A ring that shows one value against a total, or how a total splits into segments
 
 Says that a region has nothing to show, or failed to load, and what to do about it.
 
-**Tokens**: `--umbra-empty-state-color`, `--umbra-empty-state-error-color`, `--umbra-empty-state-gap`, `--umbra-empty-state-icon-color`, `--umbra-empty-state-icon-size`, `--umbra-empty-state-max-width`, `--umbra-empty-state-padding`, `--umbra-empty-state-title-color`, `--umbra-empty-state-title-font`.
+**Tokens**: `--umbra-empty-state-color`, `--umbra-empty-state-error-color`, `--umbra-empty-state-focus-offset`, `--umbra-empty-state-gap`, `--umbra-empty-state-icon-color`, `--umbra-empty-state-icon-size`, `--umbra-empty-state-inline-icon-size`, `--umbra-empty-state-max-width`, `--umbra-empty-state-padding`, `--umbra-empty-state-title-color`, `--umbra-empty-state-title-font`.
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -766,13 +766,14 @@ A button that shows only an icon. Inside an overflow menu it becomes a menu item
 
 One label with its value. Use it inside a `KeyValueList`, or on its own.
 
-**Tokens**: `--umbra-key-value-divider`, `--umbra-key-value-gap`, `--umbra-key-value-hint-fg`, `--umbra-key-value-label-fg`, `--umbra-key-value-label-width`, `--umbra-key-value-min-column`, `--umbra-key-value-padding-x`, `--umbra-key-value-row-height`, `--umbra-key-value-stripe`, `--umbra-key-value-value-fg`, `--umbra-key-value-value-font`.
+**Tokens**: `--umbra-key-value-divider`, `--umbra-key-value-gap`, `--umbra-key-value-highlight-bg`, `--umbra-key-value-highlight-fg`, `--umbra-key-value-hint-fg`, `--umbra-key-value-label-fg`, `--umbra-key-value-label-width`, `--umbra-key-value-min-column`, `--umbra-key-value-padding-x`, `--umbra-key-value-row-height`, `--umbra-key-value-stripe`, `--umbra-key-value-value-fg`, `--umbra-key-value-value-font`.
 
 | Prop | Type | Purpose |
 |---|---|---|
 | `label` | `ReactNode` | What the value is. |
-| `value` | `ReactNode` | The value. `children` is used when it is not set. |
+| `value` | `ReactNode` | The value. `children` is used when it is not set. With neither, the row shows `emptyLabel`. |
 | `children` | `ReactNode` |  |
+| `emptyLabel` | `ReactNode` | Shown when there is no value. |
 | `icon` | `ReactNode` | Shown before the label. |
 | `hint` | `ReactNode` | A secondary line: under the label when inline, under the value when stacked. |
 | `parts` | `see Parts` | Replace or hide named pieces. |
@@ -781,6 +782,7 @@ One label with its value. Use it inside a `KeyValueList`, or on its own.
 | `orientation` | `Orientation` | `inline`: label and value side by side. `stacked`: the label above the value. |
 | `align` | `Align` | Where the value sits. Default: `end` when inline, `start` when stacked. |
 | `wrap` | `boolean` | Lets a long value wrap onto more lines. Without it the value is cut with an ellipsis. |
+| `highlighted` | `boolean` | Marks a key row: a tinted fill, and the label in bold as the cue that is not colour. |
 | `highlightChanges` | `boolean` | A changed value flashes softly once: green when a number rose, red when it fell, neutral otherwise. A sign shows the direction without colour. No flash under reduced motion; the sign stays. The value is never counted up or down. |
 | `changeValue` | `unknown` | What is compared, when the content is not the value itself (a formatted text). Default: the content, when it is text or a number. |
 | `increasedLabel` | `string` | What a screen reader hears with the sign of a value that rose or fell. |
@@ -794,16 +796,13 @@ One label with its value. Use it inside a `KeyValueList`, or on its own.
 
 A group of labels with their values, in rows, columns or a grid.
 
-**Tokens**: `--umbra-key-value-divider`, `--umbra-key-value-gap`, `--umbra-key-value-hint-fg`, `--umbra-key-value-label-fg`, `--umbra-key-value-label-width`, `--umbra-key-value-min-column`, `--umbra-key-value-padding-x`, `--umbra-key-value-row-height`, `--umbra-key-value-stripe`, `--umbra-key-value-value-fg`, `--umbra-key-value-value-font`.
+**Tokens**: `--umbra-key-value-divider`, `--umbra-key-value-gap`, `--umbra-key-value-highlight-bg`, `--umbra-key-value-highlight-fg`, `--umbra-key-value-hint-fg`, `--umbra-key-value-label-fg`, `--umbra-key-value-label-width`, `--umbra-key-value-min-column`, `--umbra-key-value-padding-x`, `--umbra-key-value-row-height`, `--umbra-key-value-stripe`, `--umbra-key-value-value-fg`, `--umbra-key-value-value-font`.
 
 | Prop | Type | Purpose |
 |---|---|---|
 | `items` | `KeyValueItem[]` | The rows as data. Use this or `children`. |
 | `children` | `ReactNode` | The rows as `KeyValue` elements. |
-| `loading` | `boolean` | Shows skeleton rows in the final layout. |
 | `skeletonRows` | `number` | Number of skeleton rows. |
-| `empty` | `ReactNode` | Shown when there are no items. |
-| `error` | `ReactNode` | Shown in place of the items when set. Put a retry action inside it. |
 | `parts` | `see Parts` | Replace or hide named pieces. `item` receives the props of each row built from `items`. |
 | `aria-label` | `string` | Names the list for assistive technology. |
 | `className` | `string` |  |
@@ -811,11 +810,19 @@ A group of labels with their values, in rows, columns or a grid.
 | `orientation` | `Orientation` | Orientation of every item. Default: `inline` in rows, `stacked` in columns and in the grid. |
 | `align` | `Align` | Where every value sits. |
 | `wrap` | `boolean` | Lets long values wrap instead of being cut. |
+| `highlightChanges` | `boolean` | A changed value flashes softly once: green when a number rose, red when it fell, neutral otherwise. A sign shows the direction without colour. No flash under reduced motion; the sign stays. The value is never counted up or down. |
+| `increasedLabel` | `string` | What a screen reader hears with the sign of a value that rose or fell. |
+| `decreasedLabel` | `string` |  |
 | `layout` | `"columns" \| "rows" \| "grid"` | `rows`: one row per item, sharing one label column. `columns`: side by side. `grid`: in `columns` columns. |
 | `columns` | `number` | Most columns of the `grid` layout. Fewer are used when the list is narrow. |
 | `striped` | `boolean` | Shades every other row (`rows` layout). |
 | `dividers` | `boolean` | Draws a line between items (`rows` and `columns` layouts). |
 | `labelWidth` | `string \| number` | Width of the shared label column in the `rows` layout: pixels or any CSS length. Default: as wide as the longest label, at most 60%. |
+| `loading` | `boolean` | Shows skeletons in the final layout and marks the component busy. |
+| `empty` | `ReactNode \| import("../internal/dataState").DataStateContent` | Shown when there is no data: text, a node, or `{ title, description, icon, action }`. Defaults to a short English text. |
+| `error` | `ReactNode \| import("../internal/dataState").DataStateContent` | Shown in place of the data when set: text, a node, `{ title, description, icon, action }`, or `true` for a default text. |
+| `onRetry` | `(() => void)` | Adds a retry button to the error state. |
+| `retryLabel` | `string` | Label of the retry button. |
 
 **Parts**: `item`, `skeleton`, `empty`, `error`.
 
@@ -945,7 +952,7 @@ One or more series over categories, numbers or time, with a numeric or an ordina
 
 A text link: inside a sentence, or on its own line as the way to a fuller view.
 
-**Tokens**: `--umbra-link-color`, `--umbra-link-font`, `--umbra-link-neutral-color`, `--umbra-link-underline-offset`.
+**Tokens**: `--umbra-link-color`, `--umbra-link-font`, `--umbra-link-hover-lighten`, `--umbra-link-neutral-color`, `--umbra-link-radius`, `--umbra-link-underline-offset`.
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -1695,7 +1702,7 @@ Shares its height among its children.
 
 A status as a dot or an icon with a label, or as a coloured label.
 
-**Tokens**: `--umbra-status-indicator-color`, `--umbra-status-indicator-gap`, `--umbra-status-indicator-size`.
+**Tokens**: `--umbra-status-indicator-color`, `--umbra-status-indicator-gap`, `--umbra-status-indicator-pulse-duration`, `--umbra-status-indicator-size`.
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -1722,7 +1729,8 @@ A large value with its label, and optional unit, trend, caption and meter.
 
 | Prop | Type | Purpose |
 |---|---|---|
-| `value` | `ReactNode` | The value. It never hides. |
+| `value` | `ReactNode` | The value. It never hides. `null`, `undefined` or an empty text shows `emptyLabel`, without unit or trend. |
+| `emptyLabel` | `ReactNode` | Shown when there is no value. |
 | `label` | `ReactNode` | What the value is. |
 | `icon` | `ReactNode` | Shown before the label. |
 | `unit` | `ReactNode` | Shown after the value, smaller. |
@@ -1781,7 +1789,8 @@ A compact tile that sums up one thing: an icon, a title and one value. The whole
 |---|---|---|
 | `icon` | `ReactNode` | Shown in a block at the start of the tile. |
 | `title` | `ReactNode` | What the tile is about. |
-| `value` | `ReactNode` | The one value the tile shows. |
+| `value` | `ReactNode` | The one value the tile shows. `null`, `undefined` or an empty text shows `emptyLabel`, without the trend. |
+| `emptyLabel` | `ReactNode` | Shown when there is no value. |
 | `caption` | `ReactNode` | A secondary line under the value. |
 | `trend` | `ReactNode` | A node after the value that shows its direction, for example a `TrendArrow`. |
 | `loading` | `boolean` | Shows skeletons in place of the value and caption. |
@@ -1848,11 +1857,12 @@ Switches between views of the same content area. The panel fills the rest of the
 
 A small label chip: a category, a status code or a value with an icon.
 
-**Tokens**: `--umbra-tag-bg`, `--umbra-tag-border`, `--umbra-tag-fg`, `--umbra-tag-font`, `--umbra-tag-gap`, `--umbra-tag-padding`, `--umbra-tag-radius`, `--umbra-tag-stripe-width`.
+**Tokens**: `--umbra-tag-bg`, `--umbra-tag-border`, `--umbra-tag-fg`, `--umbra-tag-focus-color`, `--umbra-tag-font`, `--umbra-tag-gap`, `--umbra-tag-padding`, `--umbra-tag-radius`, `--umbra-tag-stripe-width`.
 
 | Prop | Type | Purpose |
 |---|---|---|
-| `children` | `ReactNode` | The label. |
+| `children` | `ReactNode` | The label. Without one (`null`, `undefined` or an empty text) the tag shows `emptyLabel`. |
+| `emptyLabel` | `ReactNode` | Shown when there is no label. |
 | `icon` | `ReactNode` | A leading icon, avatar or flag. |
 | `onRemove` | `(() => void)` | Shows a remove button. |
 | `removeLabel` | `string` | Accessible name of the remove button; a text label is added to it ("Remove Region 2"). |
@@ -1865,7 +1875,7 @@ A small label chip: a category, a status code or a value with an icon.
 | `size` | `"default" \| "small"` | `small` is for use inside table cells. |
 | `color` | `string` | A custom colour (any CSS colour). Replaces `tone`. |
 | `stripe` | `(string & {}) \| Tone` | A second colour on the trailing edge: a tone name or any CSS colour. |
-| `stripeLabel` | `string` | What the stripe means, for screen readers and as a tooltip. |
+| `stripeLabel` | `string` | What the stripe means: read by screen readers, and shown in a tooltip on hover and on keyboard focus. |
 
 **Parts**: `icon`, `label`, `remove`, `skeleton`.
 

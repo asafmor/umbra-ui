@@ -38,7 +38,7 @@ States: hover (lightens), pressed (darkens), focus, disabled.
 
 ### 1. Tokens
 
-`--umbra-link-color`, `--umbra-link-neutral-color`, `--umbra-link-font` (standalone), `--umbra-link-underline-offset`.
+`--umbra-link-color`, `--umbra-link-neutral-color`, `--umbra-link-font` (standalone), `--umbra-link-underline-offset`, `--umbra-link-radius` (the corners of the focus ring; default the control radius), `--umbra-link-hover-lighten` (default 30%).
 
 ### 2. Props
 
@@ -82,6 +82,12 @@ States: hover (lightens), pressed (darkens), focus, disabled.
 ## Open questions
 
 None.
+
+Resolved 2026-10-11 (review fix pass):
+
+- The radius is the control radius (`--umbra-link-radius`), no longer a literal 2px; it only shapes the focus ring. Press darkens by the shared `--umbra-state-press-darken`. Hover lightens text, which needs a larger step than a surface, so it has its own token (`--umbra-link-hover-lighten`).
+- Every block passes `className` and `style` to its element, and every part carries `data-part` with its name as written here (plan/decisions/07-customisation.md). `Link.Label` and `Link.Icon` dropped `className` and `style` before.
+- No loading, empty or error state (plan/interaction.md).
 
 Resolved 2026-10-10:
 

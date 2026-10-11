@@ -60,7 +60,7 @@ How the level is found:
 | `size` | see above | `default` | |
 | `showLevel` | boolean | `false` | Adds the level marker |
 | `levelLabel` | function of (level, steps) | "Level 4 of 5" | What a screen reader hears for the marker |
-| `emptyLabel` | node | "–" | Shown when there is no value |
+| `emptyLabel` | node | "—" | Shown when there is no value |
 | `loading` | boolean | `false` | Shows a placeholder of the pill's size |
 | `highlightChanges` | boolean | off | The value flashes softly once when it changes: green when a number rose, red when it fell, neutral otherwise, with a ▲ or ▼ sign as the cue that is not colour. No flash under reduced motion; the sign stays for four seconds. Never counted up or down. |
 | `increasedLabel` / `decreasedLabel` | string | "increased" / "decreased" | What a screen reader hears with the sign |
@@ -89,6 +89,11 @@ How the level is found:
 ## Open questions
 
 None.
+
+Resolved 2026-10-11 (review fix pass):
+
+- The default `emptyLabel` is the em dash ("—"), the same as on every single-value component (plan/interaction.md); it was an en dash. No error state.
+- Every block passes `className` and `style` to its element, and every part carries `data-part` with its name as written here (plan/decisions/07-customisation.md). The placeholder shown while `loading` carries `data-part="skeleton"`.
 
 Resolved 2026-10-10:
 

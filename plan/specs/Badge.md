@@ -30,7 +30,7 @@ The root also holds the anchor (`children`), when there is one.
 | Variant | Values | Notes |
 |---|---|---|
 | kind | count, `dot` | A count above `max` shows as "99+" |
-| `tone` | `accent`, `neutral`, `info`, `success`, `warning`, `danger` | `accent` (default) is the fixed violet. `color` replaces it. |
+| `tone` | `accent`, `neutral`, `info`, `success`, `warning`, `danger` | `accent` (default) is the fixed violet; as a dot it is drawn lighter, see Resolved. `color` replaces it. |
 | placement | standalone, anchored | Anchored when it has `children`: the indicator overhangs the top trailing corner |
 
 States: hidden (count 0 without `showZero`).
@@ -39,7 +39,7 @@ States: hidden (count 0 without `showZero`).
 
 ### 1. Tokens
 
-`--umbra-badge-bg`, `--umbra-badge-fg`, `--umbra-badge-size`, `--umbra-badge-dot-size`, `--umbra-badge-padding-x`, `--umbra-badge-radius`, `--umbra-badge-font`, `--umbra-badge-ring`, `--umbra-badge-ring-width`, `--umbra-badge-offset` (how far an anchored badge overhangs).
+`--umbra-badge-bg`, `--umbra-badge-fg`, `--umbra-badge-size`, `--umbra-badge-dot-size`, `--umbra-badge-dot-lighten` (how far the accent dot is lightened, default 25%), `--umbra-badge-padding-x`, `--umbra-badge-radius`, `--umbra-badge-font`, `--umbra-badge-ring`, `--umbra-badge-ring-width`, `--umbra-badge-offset` (how far an anchored badge overhangs).
 
 ### 2. Props
 
@@ -78,6 +78,13 @@ A badge has a fixed size and does not shrink. Anchored, it takes no space of its
 ## Open questions
 
 None.
+
+Resolved 2026-10-11 (review fix pass):
+
+- **The accent dot is lighter than the accent count.** A dot has no text, so its fill is its only cue and needs 3:1 against the surface under it (plan/interaction.md, Accessibility). The fixed violet measured 2.59 / 2.56 / 2.56 / 2.58 : 1 against a card on violet / teal / green / slate. The dot of the `accent` tone is now the violet mixed with 25% of the primary text colour (`--umbra-badge-dot-lighten`): **4.62 / 4.58 / 4.56 / 4.61 : 1**. A count keeps the fixed violet: its white text (above 4.5:1 on the fill) carries it. The default tone stays `accent`. A custom `color` is the app's to check.
+- Tested on all four tints (`data-indicators.spec.ts`). The other five tones were 5.2 to 10.4 : 1 and are unchanged.
+- The badge font stays `700 11px` behind `--umbra-badge-font`: no global font role is this small, and one use does not earn a new token.
+- No loading, empty or error state: a badge is decorative (plan/interaction.md, "Which states a component has"). No count is no badge.
 
 Resolved 2026-10-11:
 

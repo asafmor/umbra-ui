@@ -1,7 +1,18 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Building2 } from 'lucide-react';
+import { Button } from '../basics/Button';
 import { brokenImage, DotStandIn, portrait, row, Section, Sheet } from '../stories/dataValues';
 import { Avatar, AvatarGroup } from './Avatar';
+import { Badge } from './Badge';
+import { EntityIcon } from './EntityIcon';
+import { KeyValueList } from './KeyValue';
+import { Link } from './Link';
+import { StatusIndicator } from './StatusIndicator';
+import { StatValue } from './StatValue';
+import { SummaryTile } from './SummaryTile';
+import { Tag } from './Tag';
+import { TrendArrow } from './TrendArrow';
+import { ValuePill } from './ValuePill';
 
 const meta = { title: 'Data/Avatar', component: Avatar, parameters: { frame: 'padded' } } satisfies Meta<
   typeof Avatar
@@ -62,6 +73,68 @@ export const Avatars: Story = {
           <Avatar size="lg" name="Person F" ring />
           <Avatar size="lg" src={portrait} alt="Person A" ring="var(--umbra-color-semantic-success)" />
           <Avatar size="lg" shape="square" name="Person G" ring status={<DotStandIn label="Online" />} />
+        </div>
+      </Section>
+    </Sheet>
+  ),
+};
+
+/**
+ * The value components in a right-to-left locale: the avatar's status, a badge and a tag's stripe move
+ * to the other side; the order of icon and text flips; arrows that show a trend keep their direction.
+ */
+export const RightToLeft: Story = {
+  globals: { direction: 'rtl' },
+  render: () => (
+    <Sheet>
+      <Section label="Avatar: status at the trailing corner">
+        <div style={{ ...row, gap: 20 }}>
+          <Avatar size="lg" name="Person E" status={<DotStandIn label="Online" />} />
+          <Avatar size="lg" shape="square" name="Person G" status={<DotStandIn label="Online" />} />
+        </div>
+      </Section>
+      <Section label="Badge, Tag, StatusIndicator, TrendArrow, Link">
+        <div style={{ ...row, gap: 20 }}>
+          <Badge count={3}>
+            <Button>Inbox</Button>
+          </Badge>
+          <Tag
+            tone="success"
+            variant="solid"
+            icon={<Building2 />}
+            stripe="warning"
+            stripeLabel="under review"
+            onRemove={() => {}}
+          >
+            Region 2
+          </Tag>
+          <StatusIndicator status="success">Online</StatusIndicator>
+          <TrendArrow direction="up" value="2.4%" />
+          <Link href="#all" variant="standalone" chevron>
+            See all
+          </Link>
+        </div>
+      </Section>
+      <Section label="KeyValueList, StatValue" width={260}>
+        <KeyValueList
+          aria-label="Details"
+          items={[
+            { label: 'Started', value: '17 Aug 2026', highlighted: true },
+            { label: 'Monthly fee', value: '€1,900' },
+          ]}
+        />
+        <StatValue
+          label="Orders"
+          value="521"
+          unit="/ year"
+          trend={<TrendArrow direction="down" value="4" />}
+        />
+      </Section>
+      <Section label="SummaryTile, ValuePill, EntityIcon" width={260}>
+        <SummaryTile icon={<Building2 />} title="Checks" value="9 passed" caption="Last 30 days" />
+        <div style={{ ...row, marginTop: 12 }}>
+          <ValuePill value={74} showLevel />
+          <EntityIcon name="Client A" label />
         </div>
       </Section>
     </Sheet>

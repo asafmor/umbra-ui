@@ -70,7 +70,7 @@ export const Variants: Story = {
         <Row label="Blocks">
           <TrendArrow.Root direction="up" tone="good">
             <TrendArrow.Value>By hand</TrendArrow.Value>
-            <TrendArrow.Icon>
+            <TrendArrow.Icon className="by-hand" style={{ opacity: 1 }}>
               <ChevronsUp />
             </TrendArrow.Icon>
           </TrendArrow.Root>

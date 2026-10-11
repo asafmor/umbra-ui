@@ -3,7 +3,7 @@
 
   padding: 0;
   border: 0;
-  border-radius: 2px;
+  border-radius: var(--umbra-link-radius, var(--umbra-radius-control));
   background: none;
   color: var(--ink);
   font: inherit;
@@ -27,11 +27,11 @@
 
 /* Hover lightens one step, press darkens one step (plan/interaction.md). */
 .link:hover:not(:disabled, [aria-disabled='true']) {
-  color: color-mix(in oklab, var(--ink), #fff 30%);
+  color: color-mix(in oklab, var(--ink), #fff var(--umbra-link-hover-lighten, 30%));
 }
 
 .link:active:not(:disabled, [aria-disabled='true']) {
-  color: color-mix(in oklab, var(--ink), #000 18%);
+  color: color-mix(in oklab, var(--ink), #000 var(--umbra-state-press-darken));
 }
 
 .link:is(:disabled, [aria-disabled='true']) {
