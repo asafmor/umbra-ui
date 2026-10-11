@@ -4,6 +4,8 @@
 //    `style` object. A value declared on a component beats the one an app set on an ancestor. A
 //    container that needs another default sets a private property (`--icon-size`), and the reader
 //    falls back through it: `var(--umbra-icon-size, var(--icon-size, 1.25em))`.
+// 2. Every token of plan/tokens.json is read somewhere in the library: a token nothing reads is a
+//    promise the library does not keep.
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -65,9 +67,55 @@ for (const { file, text } of files) {
 for (const key of allowedDeclarations)
   if (!usedAllowances.has(key)) problems.push(`The allowlist names "${key}", which is no longer declared.`);
 
+// --- 2. Every token is read ---
+
+// The generated stylesheet holds every token of plan/tokens.json (`npm run tokens` writes it).
+const names = new Set(
+  [...readFileSync(join(src, 'styles/tokens.css'), 'utf8').matchAll(/^\s*--umbra-([a-z0-9-]+):/gm)].map(
+    ([, name]) => name,
+  ),
+);
+// Not tokens.generated.ts, which names every token. tokens.css stays: a token can be read by another
+// token (`--umbra-context` by the colours derived from it).
+const library = files.filter(({ file }) => !isStory(file) && file !== 'src/styles/tokens.generated.ts');
+const all = library.map(({ text }) => text).join('\n');
+// Read as a variable, in a stylesheet or in code: `var(--umbra-x)`, `var(--umbra-x, …)`,
+// `getPropertyValue('--umbra-x')`.
+const read = new Set(
+  [...all.matchAll(/(?:var\(\s*|getPropertyValue\(\s*['"`])--umbra-([a-z0-9-]+)\s*[,)'"`]/g)].map(
+    ([, name]) => name,
+  ),
+);
+// Read through a template in code: `var(--umbra-space-${gap})` reads the whole scale.
+const scales = [...all.matchAll(/--umbra-([a-z0-9-]+-)\$\{/g)].map(([, prefix]) => prefix);
+// Read through a constant of src/styles/tokens.generated.ts, where CSS cannot read a variable (a
+// media query): the token, and the generated export that carries its value.
+const throughCode = new Map([
+  ['size-min-window-width', 'minWindow'],
+  ['size-min-window-height', 'minWindow'],
+]);
+// Tokens that exist only for apps to read, each with the reason. The library must not read them.
+const forApps = new Map([
+  // (none)
+]);
+const isRead = (name) =>
+  read.has(name) ||
+  scales.some((prefix) => name.startsWith(prefix)) ||
+  (throughCode.has(name) && new RegExp(`\\b${throughCode.get(name)}\\b`).test(all));
+for (const name of names) {
+  if (forApps.has(name) === isRead(name))
+    problems.push(
+      forApps.has(name)
+        ? `--umbra-${name} is listed as "for apps only", and the library reads it. Remove it from the list.`
+        : `--umbra-${name} (plan/tokens.json) is never read under src/. Use it, or remove the token.`,
+    );
+}
+for (const name of [...throughCode.keys(), ...forApps.keys()])
+  if (!names.has(name)) problems.push(`check-tokens names --umbra-${name}, which is not a token.`);
+
 if (problems.length) {
   console.error(problems.join('\n'));
   console.error(`\n${problems.length} token problem(s). The rules: plan/decisions/07-customisation.md.`);
   process.exit(1);
 }
-console.log('Tokens: no component declares a public token.');
+console.log(`Tokens: no component declares a public token; all ${names.size} tokens are read.`);
