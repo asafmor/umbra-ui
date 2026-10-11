@@ -154,8 +154,10 @@ export interface SummaryTileProps extends Omit<SummaryTileRootProps, 'children'>
   icon?: ReactNode;
   /** What the tile is about. */
   title?: ReactNode;
-  /** The one value the tile shows. */
+  /** The one value the tile shows. `null`, `undefined` or an empty text shows `emptyLabel`, without the trend. */
   value?: ReactNode;
+  /** Shown when there is no value. */
+  emptyLabel?: ReactNode;
   /** A secondary line under the value. */
   caption?: ReactNode;
   /** A node after the value that shows its direction, for example a `TrendArrow`. */
@@ -176,9 +178,19 @@ export interface SummaryTileProps extends Omit<SummaryTileRootProps, 'children'>
 const has = (node: ReactNode) => node != null && node !== false;
 
 /** A compact tile that sums up one thing: an icon, a title and one value. The whole tile can be a link or a button. */
-export function SummaryTile({ icon, title, value, caption, trend, parts, ...rest }: SummaryTileProps) {
+export function SummaryTile({
+  icon,
+  title,
+  value,
+  emptyLabel = '—',
+  caption,
+  trend,
+  parts,
+  ...rest
+}: SummaryTileProps) {
   const [change, root] = splitChange(rest);
   const { loading } = root;
+  const missing = value == null || value === '';
   return (
     <Root {...root}>
       {has(icon) && renderPart(parts?.icon, { children: icon }, (p) => <Icon>{p.children}</Icon>)}
@@ -188,13 +200,18 @@ export function SummaryTile({ icon, title, value, caption, trend, parts, ...rest
         ))}
         <Figure>
           {loading ? (
-            renderPart(parts?.skeleton, {}, () => <Skeleton width="6em" />)
+            renderPart(parts?.skeleton, {}, () => (
+              <span data-part="skeleton" style={{ display: 'contents' }}>
+                <Skeleton width="6em" />
+              </span>
+            ))
           ) : (
             <>
-              {renderPart(parts?.value, { children: value }, (p) => (
+              {renderPart(parts?.value, { children: missing ? emptyLabel : value }, (p) => (
                 <Value {...change}>{p.children}</Value>
               ))}
-              {has(trend) &&
+              {!missing &&
+                has(trend) &&
                 renderPart(parts?.trend, { children: trend }, (p) => <Trend>{p.children}</Trend>)}
             </>
           )}

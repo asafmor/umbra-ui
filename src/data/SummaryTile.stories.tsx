@@ -92,6 +92,17 @@ export const Tiles: Story = {
           <SummaryTile href="#b" icon={<Target />} title="Disabled link" value="Not available" disabled />
         </div>
       </Section>
+      <Section label="No value: emptyLabel, and no trend">
+        <div style={grid}>
+          <SummaryTile
+            icon={<Target />}
+            title="Targets"
+            value={null}
+            trend={<TrendStandIn>3</TrendStandIn>}
+          />
+          <SummaryTile icon={<Users />} title="Reviewer" value={undefined} emptyLabel="Not assigned" />
+        </div>
+      </Section>
     </div>
   ),
 };

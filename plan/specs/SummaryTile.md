@@ -50,7 +50,8 @@ States: hover, pressed, focus, `selected`, `disabled`, `loading`.
 |---|---|---|---|
 | `icon` | node | — | |
 | `title` | node | — | |
-| `value` | node | — | |
+| `value` | node | — | `null`, `undefined` or an empty text shows `emptyLabel`, without `trend` |
+| `emptyLabel` | node | "—" | Shown when there is no value |
 | `caption` | node | — | |
 | `trend` | node | — | |
 | `href` | string | — | Makes the tile a link |
@@ -102,6 +103,13 @@ Container queries on the tile's own width.
 ## Open questions
 
 None.
+
+Resolved 2026-10-11 (review fix pass):
+
+- **No value.** A tile is a single-value component (plan/interaction.md): `loading`, and without a value it shows `emptyLabel` ("—") and no trend. No error state.
+- Hover and press use the shared mix steps: `--umbra-state-hover-lighten`, `--umbra-state-press-darken`, and on the selected (light text) surface `--umbra-state-hover-darken` and `--umbra-state-press-darken-strong`. The values are the ones the tile had.
+- The sample texts of the stories were rewritten: several were word for word from a source screenshot.
+- Every block passes `className` and `style` to its element, and every part carries `data-part` with its name as written here (plan/decisions/07-customisation.md). The placeholder of the value carries `data-part="skeleton"`.
 
 Resolved 2026-10-10:
 

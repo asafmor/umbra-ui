@@ -121,7 +121,7 @@ test('a value pill takes its ramp step from the value, in both directions', asyn
   expect(await levels('Lower is better')).toEqual(['5', '4', '3', '2', '1']);
   expect(await levels('Thresholds')).toEqual(['1', '2', '3', '4', '5']);
   expect(await levels('One threshold')).toEqual(['1', '5']);
-  await expect(page.locator('[data-umbra="value-pill"][data-level="none"]').first()).toHaveText('–');
+  await expect(page.locator('[data-umbra="value-pill"][data-level="none"]').first()).toHaveText('—');
 });
 
 test('the level marker of a value pill fills one bar per step and has a text equivalent', async ({

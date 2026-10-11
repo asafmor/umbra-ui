@@ -52,7 +52,8 @@ States: `loading`.
 
 | Prop | Type | Default | Purpose |
 |---|---|---|---|
-| `value` | node | — | |
+| `value` | node | — | `null`, `undefined` or an empty text shows `emptyLabel`, without `unit` or `trend` |
+| `emptyLabel` | node | "—" | Shown when there is no value |
 | `label` | node | — | |
 | `icon` | node | — | Before the label |
 | `unit` | node | — | |
@@ -102,6 +103,12 @@ The slot is the nearest size container: the `Card` or `Slot` the stat sits in. T
 
 None.
 
+Resolved 2026-10-11 (review fix pass):
+
+- **No value.** A stat is a single-value component (plan/interaction.md): `loading`, and when `value` is `null`, `undefined` or an empty text it shows `emptyLabel` ("—") and leaves out the unit and the trend, which would read as a value of nothing. The label, caption and meter stay. No error state: the failure belongs to the card around it.
+- Every block passes `className` and `style` to its element, and every part carries `data-part` with its name as written here (plan/decisions/07-customisation.md). The placeholder of the value is wrapped in a `data-part="skeleton"` element that takes no box of its own (`display: contents`).
+- Removed the stale line that said `highlightChanges` was still to come; it was added on 2026-10-11 (above).
+
 Resolved 2026-10-10:
 
 - 2026-10-11: `highlightChanges` (plan/interaction.md, "Live updates"), the same as on `DataTable` and from the same code: `src/internal/useChangeHighlight.ts` and `ChangeHighlight.tsx`. `StatValue.Value` takes the same props, and `changeValue` when its content is a formatted text: only numbers have a direction. Tokens: `--umbra-change-up`, `--umbra-change-down`, `--umbra-change-neutral`.
@@ -112,4 +119,3 @@ Resolved 2026-10-10:
 - `icon` was added to the task's list: the source shows one before most labels.
 - The default tone is the primary text colour; the pink of the source's budget values is `tone="accent"`.
 - `trend` and `meter` are nodes, so the stat does not depend on `TrendArrow` or `ProgressBar`.
-- No `highlightChanges` yet (the opt-in flash in `interaction.md`); it comes with the live-update work.

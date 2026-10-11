@@ -175,10 +175,18 @@ test.describe('KeyValue', () => {
     await open(page, 'data-keyvalue--states');
     const loading = page.locator('[data-umbra="key-value-list"][aria-label="Loading"]');
     await expect(loading).toHaveAttribute('aria-busy', 'true');
-    await expect(loading.locator('[data-umbra="key-value"]')).toHaveCount(4);
+    await expect(loading.locator('[data-umbra="key-value"][data-part="skeleton"]')).toHaveCount(4);
     await expect(page.locator('[aria-label="Loading two"] [data-umbra="key-value"]')).toHaveCount(2);
-    await expect(page.locator('[aria-label="Empty"]')).toHaveText('No data');
+    await expect(page.locator('[aria-label="Empty"] [data-part="empty"]')).toHaveText('No data');
     await expect(page.locator('[aria-label="Empty contract"]')).toHaveText('No contract yet.');
+
+    // `true` is the default text, with no button; pieces and `retryLabel` are taken as given.
+    const byDefault = page.locator('[aria-label="Failed by default"]');
+    await expect(byDefault.getByRole('alert')).toHaveText('Something went wrong');
+    await expect(byDefault.getByRole('button')).toHaveCount(0);
+    const pieces = page.locator('[aria-label="Failed in pieces"]');
+    await expect(pieces.locator('[data-part="error"] [data-part="title"]')).toHaveText('No connection');
+    await expect(pieces.getByRole('button', { name: 'Reload' })).toBeVisible();
 
     const failed = page.locator('[aria-label="Failed"]');
     await expect(failed.getByRole('alert')).toContainText('could not be loaded');
@@ -231,6 +239,24 @@ test.describe('StatValue', () => {
     await expect(loading.first().locator('[data-part="value"]')).toHaveCount(0);
     await expect(loading.first().locator('[data-part="label"]')).toHaveText('Orders');
     await expect(page.getByRole('group', { name: 'Open orders' })).toHaveText('12');
+    await expect(loading.first().locator('[data-part="skeleton"]')).toHaveCount(1);
+  });
+
+  test('without a value the stat shows the empty label, and no unit or trend (A1)', async ({ page }) => {
+    await open(page, 'data-statvalue--stats');
+    const stats = section(page, 'No value').locator('[data-umbra="stat-value"]');
+    await expect(stats.nth(0).locator('[data-part="value"]')).toHaveText('—');
+    await expect(stats.nth(0).locator('[data-part="unit"], [data-part="trend"]')).toHaveCount(0);
+    await expect(stats.nth(1).locator('[data-part="value"]')).toHaveText('Never');
+
+    await open(page, 'data-summarytile--tiles');
+    const tiles = section(page, 'No value').locator('[data-umbra="summary-tile"]');
+    await expect(tiles.nth(0).locator('[data-part="value"]')).toHaveText('—');
+    await expect(tiles.nth(0).locator('[data-part="trend"]')).toHaveCount(0);
+    await expect(tiles.nth(1).locator('[data-part="value"]')).toHaveText('Not assigned');
+    await expect(
+      page.locator('[data-umbra="summary-tile"][data-loading] [data-part="skeleton"]'),
+    ).toHaveCount(1);
   });
 });
 
