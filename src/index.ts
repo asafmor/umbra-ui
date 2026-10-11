@@ -371,6 +371,7 @@ export type {
   MediaCardImageProps,
   MediaCardTitleProps,
   MediaCardDescriptionProps,
+  MediaCardActionsProps,
   MediaCardPairProps,
   MediaCardSide,
 } from './data/MediaCard';

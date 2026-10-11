@@ -7,13 +7,14 @@ import {
   addDays,
   startOfWeek,
   todayIso,
+  validDate,
   weekDays,
   type IsoDate,
   type WeekdayFormat,
   type WeekStart,
 } from './dates';
 import { useDateGrid } from './grid';
-import { placeItems, type ScheduleItem } from './ScheduleSlot';
+import { itemsBetween, placeItems, type ScheduleItem } from './ScheduleSlot';
 import styles from './WeekStrip.module.css';
 import { passThrough, type RootAttributes } from '../utils/passThrough';
 
@@ -43,12 +44,15 @@ function Root({
   children,
   ...rest
 }: WeekStripRootProps) {
-  const [ref, handlers] = useDateGrid<HTMLDivElement>({ initial: initialDate });
-  // The same element holds the empty or error state, so the focus has somewhere to go when it leaves.
+  const [ref, handlers, , stand] = useDateGrid<HTMLDivElement>({ initial: initialDate });
+  // The root also holds the empty or error state: when the grid gives way to it under the focus, the
+  // focus goes to its first control, or to the root itself (grid.ts).
   if (state) {
     return (
       <div
         {...passThrough(rest)}
+        ref={stand}
+        tabIndex={-1}
         data-umbra="week-strip"
         className={cx(styles.state, className)}
         style={style}
@@ -81,12 +85,15 @@ export function useSelectedDate(props: {
   defaultSelectedDate?: IsoDate | null | undefined;
   onSelectedDateChange?: ((date: IsoDate) => void) | undefined;
 }) {
-  const [own, setOwn] = useState(props.defaultSelectedDate ?? null);
+  // A chosen day that is not a date is no day chosen (dates.ts, `validDate`).
+  const given =
+    props.selectedDate == null ? props.selectedDate : (validDate(props.selectedDate, 'selectedDate') ?? null);
+  const [own, setOwn] = useState(() => validDate(props.defaultSelectedDate, 'defaultSelectedDate') ?? null);
   const enabled =
     props.selectedDate !== undefined ||
     props.defaultSelectedDate !== undefined ||
     !!props.onSelectedDateChange;
-  const selected = !enabled ? undefined : props.selectedDate !== undefined ? props.selectedDate : own;
+  const selected = !enabled ? undefined : given !== undefined ? given : own;
   const select = (date: IsoDate) => {
     setOwn(date);
     props.onSelectedDateChange?.(date);
@@ -141,7 +148,7 @@ export function WeekStrip({
   items = [],
   startDate,
   date,
-  today = todayIso(),
+  today: todayGiven,
   weekStartsOn,
   slotsPerDay,
   dayHeader = 'both',
@@ -165,11 +172,19 @@ export function WeekStrip({
 }: WeekStripProps) {
   const { locale } = useLocale();
   const baseId = useId();
-  const start = startDate ?? startOfWeek(date ?? today, locale, weekStartsOn);
+  // What is not a date is as if it was not given, with a warning (dates.ts, `validDate`).
+  const today = validDate(todayGiven, 'WeekStrip today') ?? todayIso();
+  const start =
+    validDate(startDate, 'WeekStrip startDate') ??
+    startOfWeek(validDate(date, 'WeekStrip date') ?? today, locale, weekStartsOn);
   const days = useMemo(() => weekDays(start), [start]);
-  const shown = items.filter((item) => item.date >= start && item.date <= addDays(start, 6));
+  const shown = itemsBetween(items, start, addDays(start, 6));
   const most = Math.max(1, ...days.map((day) => shown.filter((item) => item.date === day).length));
-  const lines = slotsPerDay ?? (loading ? 2 : most);
+  // Without `slotsPerDay`, loading holds the layout it can know: the lines of the items given, else
+  // those the strip last showed (a reload, the next week), else two.
+  const [held, setHeld] = useState(2);
+  if (!loading && held !== most) setHeld(most);
+  const lines = slotsPerDay ?? (loading && shown.length === 0 ? held : most);
   const [selected, select] = useSelectedDate({ selectedDate, defaultSelectedDate, onSelectedDateChange });
   const dayPress =
     select || onDayAction

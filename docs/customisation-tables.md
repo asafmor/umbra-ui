@@ -54,7 +54,7 @@ translate a component. A name followed by brackets can also be a function of wha
 | [`Link`](#link) | `externalLabel` |
 | [`List`](#list) | `loadingMoreLabel`, `retryLabel` |
 | [`ListItem`](#listitem) | `unreadLabel`, `accentLabel`, `increasedLabel`, `decreasedLabel` |
-| [`MediaCard`](#mediacard) | `moreLabel` |
+| [`MediaCard`](#mediacard) | `moreLabel`, `loadingLabel` |
 | [`Menu`](#menu) | `emptyLabel` |
 | [`MeterList`](#meterlist) | `retryLabel` |
 | [`Modal`](#modal) | `navLabel`, `closeLabel` |
@@ -1052,7 +1052,7 @@ A pill with the number of a day: the header of a day in a `WeekStrip` or a `Plan
 |---|---|
 | `--umbra-date-chip-bg` | `color-mix(in oklab, var(--umbra-color-base-text-primary) 10%, transparent)` |
 | `--umbra-date-chip-fg` | `--umbra-color-base-text-primary` (#f5f3f8) |
-| `--umbra-date-chip-font` | `--umbra-font-label` |
+| `--umbra-date-chip-font` | `var(--font)` |
 | `--umbra-date-chip-height` | `calc(var(--umbra-density-label-size) + 10px)` or `calc(var(--umbra-density-label-size) + 4px)` |
 | `--umbra-date-chip-outside-bg` | `transparent` |
 | `--umbra-date-chip-outside-fg` | `--umbra-color-base-text-muted` (#948da2) |
@@ -2106,6 +2106,7 @@ A card for one article or item: a picture, a title, a few quiet details, and its
 | `--umbra-media-card-bg` | `--umbra-context-card-tint` |
 | `--umbra-media-card-border` | `--umbra-color-base-border-subtle` (#2e2440) |
 | `--umbra-media-card-color` | `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-media-card-focus-band` | `--umbra-color-base-surface1` (#0b0612) |
 | `--umbra-media-card-focus-offset` | `calc(-1 * var(--umbra-state-focus-ring-width))` |
 | `--umbra-media-card-gap` | `--umbra-space-3` (8px) or `--umbra-space-2` (4px) |
 | `--umbra-media-card-image-min-height` | `3rem` |
@@ -2151,6 +2152,7 @@ A card for one article or item: a picture, a title, a few quiet details, and its
 | `priority` | `number` | Which child gives way first when space runs out. Higher stays longer; ties give way from the end. Default 0. |
 | `minWidth` | `number` | The width the child needs. When the children of a `Columns` cannot all have theirs, the `Columns` shows one child at a time, with tabs, as it does below the minimum window. |
 | `minHeight` | `number` | Below this height a parent `Stack` may collapse the child to its header. |
+| `loadingLabel` | `string` | Names the card while it is loading, when there is no `aria-label`. |
 | `imagePlacement` | `"above" \| "behind"` | `hero` only: the image above the text, or behind it under a scrim. |
 | `href` | `string` | Makes the whole card a link. |
 | `renderLink` | `((props: LinkRenderProps) => ReactNode)` | Plugs in the app's router link for `href`. Defaults to a plain `<a>`. |
@@ -2950,7 +2952,7 @@ A coloured chip for one entry of a schedule: an icon and a label, coloured by it
 | `--umbra-schedule-slot-bg` | `var(--fill)` |
 | `--umbra-schedule-slot-border` | `var(--line)` |
 | `--umbra-schedule-slot-fg` | `var(--ink)` |
-| `--umbra-schedule-slot-font` | `--umbra-font-label` |
+| `--umbra-schedule-slot-font` | `var(--font)` |
 | `--umbra-schedule-slot-gap` | `--umbra-space-2` (4px) |
 | `--umbra-schedule-slot-height` | `calc(var(--umbra-density-table-row) + 2px)` or `max(16px, calc(var(--umbra-density-table-row) - 6px))` |
 | `--umbra-schedule-slot-padding-x` | `--umbra-space-3` (8px) or `--umbra-space-2` (4px) |
@@ -3269,6 +3271,7 @@ A short ordered row of small marks, one per recent outcome: dots with a shape pe
 
 | Token | Default |
 |---|---|
+| `--umbra-sequence-dots-accent-color` | `color-mix(in oklab, var(--umbra-color-fixed-selected), #fff 35%)` |
 | `--umbra-sequence-dots-bar-height` | `1rem`; `0.75rem`; `1.5rem` |
 | `--umbra-sequence-dots-bar-width` | `0.3125rem`; `0.25rem`; `0.4375rem` |
 | `--umbra-sequence-dots-empty-color` | `--umbra-color-base-text-muted` (#948da2) |
@@ -3282,7 +3285,7 @@ A short ordered row of small marks, one per recent outcome: dots with a shape pe
 | `items` | `readonly SequenceDotsItem[] \| null` | The sequence, oldest first. `null` or nothing means there is no value. |
 | `max` | `number` | The most marks shown: the newest ones. Fewer are shown when they do not fit. |
 | `range` | `readonly [number, number]` | `bars` only: the values of an empty and of a full bar. Default: 0 to the largest value. |
-| `formatSummary` | `((items: readonly SequenceDotsItem[]) => string)` | The text assistive technology reads, from the items (all of them up to `max`, whatever fits). |
+| `formatSummary` | `((items: readonly SequenceDotsItem[]) => string)` | The text assistive technology reads, from the items (all of them up to `max`, whatever fits). Default: each label, with the item's tooltip in brackets when that is another text. |
 | `loading` | `boolean` | Shows a placeholder of the sequence's size. |
 | `loadingLabel` | `string` | What assistive technology reads while loading, when there is no `aria-label`. |
 | `emptyLabel` | `ReactNode` | Shown when there is no value. |

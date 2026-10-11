@@ -192,13 +192,72 @@ export const Shrinking: Story = {
     <>
       <div style={{ display: 'flex', gap: 12, height: '100%', minHeight: 0 }}>
         {[620, 440].map((width) => (
-          <div key={width} data-width={width} style={{ display: 'flex', flex: 'none', width, minHeight: 0 }}>
+          // The widths named, and less in a window too narrow for both: nothing is cut.
+          <div
+            key={width}
+            data-width={width}
+            style={{ display: 'flex', flex: '0 1 auto', width, minWidth: 0, minHeight: 0 }}
+          >
             <Schedule />
           </div>
         ))}
       </div>
     </>
   ),
+};
+
+const views = ['data', 'empty', 'error'] as const;
+const crowded: ScheduleItem[] = [
+  ...october,
+  { id: 'extra-1', date: TODAY, ...kinds.review },
+  { id: 'extra-2', date: TODAY, ...kinds.upkeep },
+  { id: 'extra-3', date: TODAY, ...kinds.workshop, disabled: true },
+];
+
+/**
+ * A planner whose state changes while it is in use (the buttons in the footer stand for the app), with
+ * a day that has more items than slots (its "+N" opens them), the line of an empty week hidden, and a
+ * month and limits that are not months, which fall back with a warning in development.
+ */
+export const Changes: Story = {
+  render: function Render() {
+    const [view, setView] = useState<(typeof views)[number]>('data');
+    const [log, setLog] = useState('Nothing pressed');
+    return page(
+      <Card
+        title="Changing"
+        parts={{
+          footer: (
+            <Card.Footer>
+              {views.map((name) => (
+                <Button key={name} size="small" onPress={() => setView(name)}>
+                  {`Show ${name}`}
+                </Button>
+              ))}
+              <Log>{log}</Log>
+            </Card.Footer>
+          ),
+        }}
+      >
+        <Planner
+          aria-label="Changing"
+          today={TODAY}
+          month="soon"
+          minMonth="never"
+          maxMonth="2026-13"
+          items={view === 'empty' ? [] : crowded}
+          empty={view === 'empty' ? 'Nothing planned' : undefined}
+          error={view === 'error' || undefined}
+          onRetry={() => setView('data')}
+          onAction={(id) => setLog(`Item ${id}`)}
+          onDayAction={(date) => setLog(`Day ${date}`)}
+          renderWeek={(week) => <Button size="small">{`Copy ${week.index + 1}`}</Button>}
+          weekAsideWidth={96}
+          parts={{ weekEmpty: null }}
+        />
+      </Card>,
+    );
+  },
 };
 
 /** Each kind of part: a toolbar of the app, no weekday names, and chips and slots drawn by functions. */

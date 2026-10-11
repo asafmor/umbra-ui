@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 import { I18nProvider } from 'react-aria-components';
+import { Button } from '../basics/Button';
 import { Card } from '../layout/Card';
 import { Columns } from '../layout/Columns';
 import { Stack } from '../layout/Stack';
@@ -8,7 +9,7 @@ import { Log } from '../stories/placeholders';
 import { DateChip } from './DateChip';
 import { weekDays } from './dates';
 import { kinds, sampleItems, thisWeek, TODAY } from './samples';
-import { ScheduleSlot } from './ScheduleSlot';
+import { ScheduleSlot, type ScheduleItem } from './ScheduleSlot';
 import { WeekStrip } from './WeekStrip';
 
 const meta = {
@@ -105,9 +106,10 @@ const widths = [760, 520, 380, 250] as const;
 /** As the strip narrows: the weekday names shorten (long, short, narrow) and the labels give way to the icons. */
 export const Shrinking: Story = {
   render: () => (
-    <div style={{ display: 'grid', gap: 12 }}>
+    // Side by side where they fit, so the five also fit the smallest window at the spacious density.
+    <div style={{ display: 'flex', flexWrap: 'wrap', alignContent: 'flex-start', gap: 12 }}>
       {[1040, ...widths].map((width) => (
-        <div key={width} data-width={width} style={{ width, maxWidth: '100%' }}>
+        <div key={width} data-width={width} style={{ flex: 'none', width, maxWidth: '100%' }}>
           <WeekStrip
             aria-label={`Week at ${width} pixels`}
             today={TODAY}
@@ -204,6 +206,82 @@ export const Locales: Story = {
       </Card>
     </Columns>
   ),
+};
+
+const views = ['data', 'loading', 'empty', 'error'] as const;
+
+/** Input that is not as asked for: slots past the last line, more items than slots, text that is not a date. */
+const odd: ScheduleItem[] = [
+  { id: 'first', date: '2026-10-14', slot: 0, ...kinds.planning },
+  { id: 'past', date: '2026-10-14', slot: 2, ...kinds.delivery },
+  { id: 'half', date: '2026-10-13', slot: 1.5, ...kinds.upkeep },
+  { id: 'never', date: 'soon', ...kinds.review },
+  { id: 'one', date: '2026-10-12', ...kinds.planning },
+  { id: 'two', date: '2026-10-12', ...kinds.delivery },
+  { id: 'three', date: '2026-10-12', ...kinds.review },
+  { id: 'four', date: '2026-10-12', ...kinds.upkeep, disabled: true },
+  {
+    id: 'named',
+    date: '2026-10-15',
+    ...kinds.workshop,
+    label: <em>Workshop</em>,
+    textValue: 'Workshop',
+    selected: true,
+  },
+];
+
+/**
+ * A strip whose state changes while it is in use (the buttons stand for the app), and one given input
+ * that is not as asked for: a slot index past the last line, more items than slots (the "+2" opens
+ * them), and dates that are not dates, which are left out with a warning in development.
+ */
+export const Changes: Story = {
+  render: function Render() {
+    const [view, setView] = useState<(typeof views)[number]>('data');
+    const [log, setLog] = useState('Nothing pressed');
+    return (
+      <Columns style={fill}>
+        <Card title="Changing">
+          <div data-width="420" style={{ width: 420, maxWidth: '100%' }}>
+            <WeekStrip
+              aria-label="Changing week"
+              today={TODAY}
+              items={view === 'empty' ? [] : thisWeek}
+              slotsPerDay={2}
+              loading={view === 'loading'}
+              empty={view === 'empty' ? 'Nothing planned this week' : undefined}
+              error={view === 'error' ? 'The week could not be loaded' : undefined}
+              onRetry={() => setView('data')}
+              onAction={(id) => setLog(`Item ${id}`)}
+              onDayAction={(date) => setLog(`Day ${date}`)}
+            />
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+            {views.map((name) => (
+              <Button key={name} size="small" onPress={() => setView(name)}>
+                {`Show ${name}`}
+              </Button>
+            ))}
+          </div>
+          <Log>{log}</Log>
+        </Card>
+        <Card title="Input that is not as asked for">
+          <WeekStrip
+            aria-label="Odd input"
+            today={TODAY}
+            date="2026-14-10"
+            selectedDate="tomorrow"
+            items={odd}
+            slotsPerDay={2}
+            slotSize="default"
+            onAction={(id) => setLog(`Item ${id}`)}
+            onDayAction={(date) => setLog(`Day ${date}`)}
+          />
+          <DateChip date="2026-02-30" />
+        </Card>
+      </Columns>
+    );
+  },
 };
 
 /** Right to left: the first day is on the right, and the arrow keys follow what is drawn. */

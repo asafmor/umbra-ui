@@ -16,6 +16,7 @@ import {
 import { GridList, GridListHeader, GridListItem, GridListSection } from 'react-aria-components';
 import { Skeleton } from '../basics/Skeleton';
 import { Checkbox, CheckboxSlotContext } from '../inputs/Checkbox';
+import { RowsOnlyContext } from '../internal/contexts';
 import { dataState, type DataStateProps } from '../internal/dataState';
 import { heightProps } from '../internal/height';
 import { ScrollArea } from '../layout/ScrollArea';
@@ -257,7 +258,7 @@ function Root({
         }}
         {...defined({ onAction, className: styles.grid })}
       >
-        {children}
+        <RowsOnlyContext value>{children}</RowsOnlyContext>
       </GridList>
       {loadingMore &&
         renderPart(parts?.loadingMore, { label: loadingMoreLabel }, (p) => (
@@ -353,26 +354,28 @@ function Item({ id, textValue, href, onPress, disabled, children, ...item }: Lis
             <Checkbox size="small" disabled={isDisabled} />
           </CheckboxSlotContext>
         );
-        if (typeof children === 'function') return children({ ...state, selectionControl });
+        const content = typeof children === 'function' ? children({ ...state, selectionControl }) : children;
         return (
-          children ?? (
-            <ListItem
-              variant={list.itemVariant}
-              size={list.itemSize}
-              {...item}
-              {...state}
-              leading={
-                selectionControl ? (
-                  <>
-                    {selectionControl}
-                    {item.leading}
-                  </>
-                ) : (
-                  item.leading
-                )
-              }
-            />
-          )
+          <RowsOnlyContext value={false}>
+            {content ?? (
+              <ListItem
+                variant={list.itemVariant}
+                size={list.itemSize}
+                {...item}
+                {...state}
+                leading={
+                  selectionControl ? (
+                    <>
+                      {selectionControl}
+                      {item.leading}
+                    </>
+                  ) : (
+                    item.leading
+                  )
+                }
+              />
+            )}
+          </RowsOnlyContext>
         );
       }}
     </GridListItem>
@@ -408,26 +411,28 @@ function Group({ children, header, ...props }: ListGroupProps) {
         {...defined({ className: styles.groupRow })}
         data-sticky={(props.sticky ?? list.stickyHeaders) || undefined}
       >
-        {header ?? (
-          <GroupHeader
-            {...props}
-            sticky={false}
-            collapsed={collapsed}
-            onCollapsedChange={(next) => {
-              // When the focused row is hidden by the collapse, React Aria moves the focus to another
-              // row. The focus stays on the control that was pressed.
-              const pressed = document.activeElement as HTMLElement | null;
-              const grid = pressed?.closest(HEADER)?.closest('[role="grid"]');
-              if (pressed && grid) {
-                const back = () => pressed.isConnected && pressed.focus({ preventScroll: true });
-                grid.addEventListener('focusin', back, { once: true });
-                setTimeout(() => grid.removeEventListener('focusin', back), 100);
-              }
-              setUncontrolled(next);
-              props.onCollapsedChange?.(next);
-            }}
-          />
-        )}
+        <RowsOnlyContext value={false}>
+          {header ?? (
+            <GroupHeader
+              {...props}
+              sticky={false}
+              collapsed={collapsed}
+              onCollapsedChange={(next) => {
+                // When the focused row is hidden by the collapse, React Aria moves the focus to another
+                // row. The focus stays on the control that was pressed.
+                const pressed = document.activeElement as HTMLElement | null;
+                const grid = pressed?.closest(HEADER)?.closest('[role="grid"]');
+                if (pressed && grid) {
+                  const back = () => pressed.isConnected && pressed.focus({ preventScroll: true });
+                  grid.addEventListener('focusin', back, { once: true });
+                  setTimeout(() => grid.removeEventListener('focusin', back), 100);
+                }
+                setUncontrolled(next);
+                props.onCollapsedChange?.(next);
+              }}
+            />
+          )}
+        </RowsOnlyContext>
       </GridListHeader>
       {!collapsed && children}
     </GridListSection>
