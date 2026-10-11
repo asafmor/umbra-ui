@@ -221,6 +221,7 @@ function Root({
     />
   );
   const state = dataState(data, {
+    part: true,
     isEmpty: Children.toArray(children).length === 0,
     defaultEmpty: { title: 'No items' },
   });

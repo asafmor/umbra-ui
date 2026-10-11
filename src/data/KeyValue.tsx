@@ -320,7 +320,7 @@ export function KeyValueList({
   const state = error ? 'error' : loading ? 'loading' : count === 0 ? 'empty' : undefined;
   const message = dataState(
     { loading, empty, error, onRetry, retryLabel },
-    { isEmpty: count === 0, defaultEmpty: { title: 'No data' } },
+    { part: true, isEmpty: count === 0, defaultEmpty: { title: 'No data' } },
   );
   return (
     <ListRoot {...root} state={state}>

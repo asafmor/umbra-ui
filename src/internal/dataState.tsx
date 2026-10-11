@@ -106,9 +106,11 @@ export function dataState(
     /** The component's own default empty text. */
     defaultEmpty?: DataStateContent;
     variant?: 'block' | 'inline';
+    /** Marks the state with `data-part` (`empty` or `error`). Off for a component that wraps the state in its own part. */
+    part?: boolean;
   },
 ): ReactNode | null {
-  const { isEmpty, defaultEmpty = { title: 'Nothing to show' }, variant } = options;
+  const { isEmpty, defaultEmpty = { title: 'Nothing to show' }, variant, part } = options;
   if (error) {
     const retry = onRetry && (
       <Button size={variant === 'inline' ? 'small' : 'default'} onPress={onRetry}>
@@ -118,10 +120,10 @@ export function dataState(
     return state(
       error,
       { title: 'Something went wrong' },
-      { variant, tone: 'error', role: 'alert', 'data-part': 'error' },
+      { variant, tone: 'error', role: 'alert', 'data-part': part ? 'error' : undefined },
       retry,
     );
   }
   if (loading || !isEmpty) return null;
-  return state(empty, defaultEmpty, { variant, 'data-part': 'empty' });
+  return state(empty, defaultEmpty, { variant, 'data-part': part ? 'empty' : undefined });
 }

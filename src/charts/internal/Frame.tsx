@@ -247,7 +247,7 @@ export function Frame<M extends FrameModel>({
   const allHidden = !isEmpty && series.length > 0 && series.every((s) => hidden.includes(s.id));
   const stateNode = dataState(
     { loading, empty: allHidden ? allHiddenLabel : empty, error, onRetry, retryLabel },
-    { isEmpty: isEmpty || allHidden, defaultEmpty: { title: 'No data' } },
+    { part: true, isEmpty: isEmpty || allHidden, defaultEmpty: { title: 'No data' } },
   );
   const state = error ? 'error' : loading ? 'loading' : stateNode ? 'empty' : null;
   const level = levelFor(slot.width, slot.height, widths, heights);

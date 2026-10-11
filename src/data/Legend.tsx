@@ -317,7 +317,7 @@ export function Legend({
   const Slot = root.interactive ? 'span' : 'li';
   const stateNode = dataState(
     { loading: root.loading, empty, error, onRetry, retryLabel },
-    { isEmpty: items.length === 0, defaultEmpty: { title: 'No items' }, variant: 'inline' },
+    { part: true, isEmpty: items.length === 0, defaultEmpty: { title: 'No items' }, variant: 'inline' },
   );
   if (stateNode) {
     return (

@@ -1778,7 +1778,11 @@ export function DataTable<Row>({
     </tr>
   );
 
-  const stateContent = dataState(states, { isEmpty: data.length === 0, defaultEmpty: { title: 'No rows' } });
+  const stateContent = dataState(states, {
+    part: true,
+    isEmpty: data.length === 0,
+    defaultEmpty: { title: 'No rows' },
+  });
   const state =
     stateContent &&
     renderPart(states.error ? parts?.error : parts?.empty, { children: stateContent }, (p) => p.children);
