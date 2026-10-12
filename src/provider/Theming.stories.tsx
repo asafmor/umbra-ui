@@ -192,18 +192,8 @@ export const SurfaceOpacity: Story = {
 };
 
 const tabs = [
-  {
-    id: 'orders',
-    label: 'Orders',
-    content: (
-      <List aria-label="Orders" selectionMode="single" defaultSelectedIds={['b']}>
-        <List.Item id="a" title="Order 1041" description="Region 1" meta="Mon" />
-        <List.Item id="b" title="Order 1042" description="Region 2" meta="Tue" />
-        <List.Item id="c" title="Order 1043" description="Region 3" meta="Wed" />
-      </List>
-    ),
-  },
-  { id: 'people', label: 'People', content: <p>People</p> },
+  { id: 'orders', label: 'Orders' },
+  { id: 'people', label: 'People' },
 ];
 const menu = [
   { id: 'home', label: 'Overview', current: true },
@@ -231,7 +221,14 @@ export const Playground: Story = {
         <div style={{ ...body, flexDirection: 'row' }}>
           <Columns style={{ flex: 1 }}>
             <Card title="Selection" padding="none">
-              <Tabs aria-label="Views" items={tabs} />
+              <div style={{ padding: 'var(--umbra-space-4)' }}>
+                <Tabs aria-label="Views" variant="pill" items={tabs} />
+              </div>
+              <List aria-label="Orders" selectionMode="single" defaultSelectedIds={['b']}>
+                <List.Item id="a" title="Order 1041" description="Region 1" meta="Mon" />
+                <List.Item id="b" title="Order 1042" description="Region 2" meta="Tue" />
+                <List.Item id="c" title="Order 1043" description="Region 3" meta="Wed" />
+              </List>
             </Card>
             <Card title="Controls">
               <div style={{ display: 'grid', gap: 'var(--umbra-space-4)', justifyItems: 'start' }}>
@@ -261,6 +258,21 @@ export const Playground: Story = {
             </Card>
           </Columns>
         </div>
+      </div>
+    </UmbraScope>
+  ),
+};
+
+/** A token set by hand wins over what is derived: here the interaction colour, under a green brand. */
+export const TokenWins: Story = {
+  render: () => (
+    <UmbraScope
+      brand="#0a7a55"
+      tokens={{ 'color-interaction': 'rgb(1, 2, 3)', 'color-on-interaction': '#ffffff' }}
+    >
+      <div style={{ ...row, color: 'var(--umbra-color-base-text-primary)' }}>
+        <Button variant="primary">Derived from the brand</Button>
+        <Button variant="accent">Set by hand</Button>
       </div>
     </UmbraScope>
   ),

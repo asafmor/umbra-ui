@@ -106,7 +106,7 @@ const preview: Preview = {
     (Story, { globals, parameters }) => (
       <UmbraProvider
         density={globals.density}
-        context={globals.context === 'brand' ? undefined : globals.context}
+        context={globals.context === 'brand' || globals.context === 'violet' ? undefined : globals.context}
         brand={chosen(globals.brandColor)}
         interaction={chosen(globals.interactionColor)}
         action={chosen(globals.actionColor)}
