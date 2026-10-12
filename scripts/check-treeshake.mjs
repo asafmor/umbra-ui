@@ -78,6 +78,46 @@ const cases = [
   },
   { name: 'DataTable', from: 'index', use: 'DataTable', gzip: 130, without: ['d3', 'charts'] },
   { name: 'BarChart', from: 'charts', use: 'BarChart', gzip: 95, without: ['DataTable', 'the table engine'] },
+  // Tier 2, one import each. Measured 2026-10-12 under Vite, a quarter added: DateChip 6.2, StarRating
+  // 23.3, MeterList 29.3, Sparkline 26.2, Spotlight 41.3, Planner 109.2. A Planner is as heavy as a
+  // DataTable because its toolbar draws a month `Select` at first paint, with React Aria's list box
+  // and popover behind it: there is nothing to load later without the control popping in.
+  { name: 'DateChip', from: 'index', use: 'DateChip', gzip: 8, without: all },
+  {
+    name: 'StarRating',
+    from: 'index',
+    use: 'StarRating',
+    gzip: 29,
+    without: ['DataTable', 'the table engine', 'd3', 'charts'],
+  },
+  {
+    name: 'MeterList',
+    from: 'index',
+    use: 'MeterList',
+    gzip: 37,
+    without: ['DataTable', 'the table engine', 'd3', 'charts'],
+  },
+  {
+    name: 'Sparkline',
+    from: 'charts',
+    use: 'Sparkline',
+    gzip: 33,
+    without: ['DataTable', 'the table engine'],
+  },
+  {
+    name: 'Spotlight',
+    from: 'index',
+    use: 'Spotlight',
+    gzip: 52,
+    without: ['DataTable', 'the table engine', 'd3', 'charts'],
+  },
+  {
+    name: 'Planner',
+    from: 'index',
+    use: 'Planner',
+    gzip: 137,
+    without: ['DataTable', 'the table engine', 'd3', 'charts'],
+  },
 ];
 const external = ['react', 'react-dom', 'react-dom/client', 'react/jsx-runtime'];
 const production = { 'process.env.NODE_ENV': '"production"' };
@@ -403,6 +443,47 @@ export const App = ({ wide }: { wide: boolean }) => (
   </UmbraProvider>
 );
 `;
+  // The same for every component and block the two entries export, tier 2 included, generated from
+  // the exports so a new component is covered the day it is exported: each optional prop, set to
+  // `undefined`, must be assignable to the props. (The members further in, of items, parts and
+  // options, are walked from the source by scripts/check-optional-props.mjs.) The last line is the
+  // proof that the test can fail: a prop without `| undefined` must be the one error.
+  const isComponent = (value) => typeof value === 'function' || Boolean(value?.$$typeof);
+  const componentsOf = (module) =>
+    Object.keys(module)
+      .filter((name) => /^[A-Z]/.test(name) && isComponent(module[name]))
+      .flatMap((name) => [
+        name,
+        ...Object.keys(module[name])
+          .filter((member) => /^[A-Z]/.test(member) && isComponent(module[name][member]))
+          .map((member) => `${name}.${member}`),
+      ]);
+  const everyComponent = [
+    ['umbra-ui', 'L', componentsOf(lib)],
+    ['umbra-ui/charts', 'C', componentsOf(charts)],
+  ];
+  const explicitAll = `import type { ComponentProps } from 'react';
+${everyComponent.map(([from, as]) => `import * as ${as} from '${from}';`).join('\n')}
+type OptionalKeys<P> = { [K in keyof P]-?: {} extends Pick<P, K> ? K : never }[keyof P];
+type AllUndefined<P> = P extends unknown ? { [K in OptionalKeys<P>]: undefined } : never;
+type OptionalProps<P> = P extends unknown ? Pick<P, OptionalKeys<P>> : never;
+const no = null as never;
+${everyComponent
+  .flatMap(([, as, names]) =>
+    names.map(
+      (name) =>
+        `export const ${name.replace('.', '_')}_${as}: unknown = ((p: AllUndefined<ComponentProps<typeof ${as}.${name}>>): OptionalProps<ComponentProps<typeof ${as}.${name}>> => p)(no);`,
+    ),
+  )
+  .join('\n')}
+const Control = (_: { a: string; b?: string }) => null;
+// @ts-expect-error A prop that does not take an explicit undefined.
+export const control: unknown = ((p: AllUndefined<ComponentProps<typeof Control>>): OptionalProps<ComponentProps<typeof Control>> => p)(no);
+`;
+  const componentCount = everyComponent.reduce((sum, [, , names]) => sum + names.length, 0);
+  if (componentCount < 100)
+    fail(`types: only ${componentCount} components and blocks were found in the exports`);
+  writeFileSync(join(consumer, 'explicit-all.tsx'), explicitAll);
   writeFileSync(join(consumer, 'good.tsx'), good);
   writeFileSync(join(consumer, 'explicit.tsx'), explicit);
   // The same file with one wrong prop. It must not compile: types that resolve to `any` would let it.
@@ -436,7 +517,16 @@ export const App = ({ wide }: { wide: boolean }) => (
       const run = spawnSync(process.execPath, [tsc, '-p', config], { cwd: consumer, encoding: 'utf8' });
       return { ok: run.status === 0, errors: (run.stdout + run.stderr).trim().split('\n').filter(Boolean) };
     };
-    const [right, wrong, undefineds] = [check('good'), check('bad'), check('explicit')];
+    const [right, wrong, undefineds, every] = [
+      check('good'),
+      check('bad'),
+      check('explicit'),
+      check('explicit-all'),
+    ];
+    if (!every.ok)
+      fail(
+        `types (${moduleResolution}): of the ${componentCount} exported components and blocks, these have an optional prop that does not take undefined:\n  ${every.errors.join('\n  ')}`,
+      );
     if (!undefineds.ok)
       fail(
         `types (${moduleResolution}): ${undefineds.errors.filter((e) => /error TS/.test(e)).length} errors where an optional member is given an explicit undefined:\n  ${undefineds.errors.join('\n  ')}`,
@@ -449,7 +539,7 @@ export const App = ({ wide }: { wide: boolean }) => (
         `types (${moduleResolution}): a wrong prop must be the one error, got:\n  ${wrong.errors.join('\n  ') || 'none'}`,
       );
     console.log(
-      `types (${moduleResolution}): a correct file compiles, a wrong prop is an error, optional props take undefined`,
+      `types (${moduleResolution}): a correct file compiles, a wrong prop is an error, optional props take undefined (${componentCount} components and blocks)`,
     );
   }
 }

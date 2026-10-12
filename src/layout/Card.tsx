@@ -355,7 +355,7 @@ function Title({ href, renderLink = plainLink, onOpen, className, style, childre
         className={styles.headerButton}
         aria-haspopup="dialog"
         aria-expanded={card.popoverOpen}
-        onClick={card.togglePopover}
+        onClick={() => card.togglePopover()}
       >
         {children}
       </button>
@@ -364,7 +364,7 @@ function Title({ href, renderLink = plainLink, onOpen, className, style, childre
     content = renderLink({ href, className: styles.titleLink, children });
   } else if (onOpen) {
     content = (
-      <button type="button" className={styles.titleLink} onClick={onOpen}>
+      <button type="button" className={styles.titleLink} onClick={() => onOpen()}>
         {children}
       </button>
     );
@@ -427,7 +427,7 @@ function Toggle() {
       iconOnly
       label={collapsed ? card.expandLabel : card.collapseLabel}
       expanded={!collapsed}
-      onPress={card.toggle}
+      onPress={() => card.toggle()}
       className={styles.caret}
     >
       <Icon name="chevronDown" />

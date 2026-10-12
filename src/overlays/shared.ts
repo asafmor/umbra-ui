@@ -9,7 +9,7 @@ export type OverlayPlacement = OverlaySide | `${OverlaySide} ${OverlayAlign}`;
 
 /** Our placement in React Aria's words: beside the anchor, `start` and `end` alignment are top and bottom. */
 export function toAriaPlacement(placement: OverlayPlacement) {
-  const [side, align = 'center'] = placement.split(' ') as [OverlaySide, OverlayAlign?];
+  const [side, align = 'center'] = placement.split(' ') as [OverlaySide, (OverlayAlign | undefined)?];
   if (align === 'center') return side;
   const vertical = side === 'top' || side === 'bottom';
   return `${side} ${vertical ? align : align === 'start' ? 'top' : 'bottom'}` as

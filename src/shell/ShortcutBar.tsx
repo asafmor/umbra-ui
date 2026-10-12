@@ -241,7 +241,7 @@ export function ShortcutBar({
             data-icon-only=""
             aria-label={editLabel}
             {...defined({ className: styles.chip })}
-            onPress={onEdit}
+            onPress={() => onEdit()}
           >
             <IconSlot>{renderPart(parts?.editIcon, {}, () => icons.edit)}</IconSlot>
           </AriaButton>

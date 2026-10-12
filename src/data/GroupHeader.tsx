@@ -116,7 +116,7 @@ function Toggle({ collapsed, label, onPress, className, style }: GroupHeaderTogg
       iconOnly
       label={label}
       expanded={!collapsed}
-      onPress={onPress}
+      onPress={() => onPress()}
       elementRef={ref}
       className={cx(styles.toggle, className)}
       style={style}

@@ -177,7 +177,7 @@ function cover({ href, renderLink = (props) => <a {...props} />, onPress }: Link
   if (!onPress) return children;
   // A button is one box, which no line clamp of the heading around it reaches: its text is clamped inside.
   return (
-    <button type="button" className={styles.link} onClick={onPress}>
+    <button type="button" className={styles.link} onClick={() => onPress()}>
       <span className={styles.clamp}>{children}</span>
     </button>
   );
@@ -264,7 +264,7 @@ function Pair({ side, opposite, center, className, style, href, renderLink, onPr
       {href ? (
         (renderLink ?? ((props) => <a {...props} />))({ href, ...link })
       ) : onPress ? (
-        <button type="button" {...link} onClick={onPress} />
+        <button type="button" {...link} onClick={() => onPress()} />
       ) : null}
       <div id={rowId} data-part="pair" className={cx(styles.pair, className)} style={style}>
         <ListItem.Root variant="pair" size="compact">

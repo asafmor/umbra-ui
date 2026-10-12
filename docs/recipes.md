@@ -4,28 +4,29 @@ Whole screens, from a first page to a planner and a board of widgets. Each sampl
 paste it into the app from [Getting started](getting-started.md), whose `main.tsx` loads the stylesheet
 and the fonts and renders `<App />`.
 
-| #   | Recipe                                                                          | Shows                                                             |
-| --- | ------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| 1   | [A first page](#1-a-first-page)                                                 | Provider, shell, one card that scrolls inside                     |
-| 2   | [Three columns and a stack](#2-three-columns-and-a-stack-that-collapses)        | `size`, `priority`, `minHeight`, stack collapse                   |
-| 3   | [Tab mode](#3-tab-mode-below-the-minimum-window)                                | `label`, `tabsLabel`, `narrow="keep"`                             |
-| 4   | [A card with tabs and data states](#4-a-card-with-tabs-loading-empty-and-error) | Toolbar tabs, `loading`, `empty`, `error`, `onRetry`              |
-| 5   | [List and detail](#5-list-and-detail)                                           | `List` selection driving a pane with a `PageHeader`               |
-| 6   | [A table with bulk actions](#6-a-table-with-sorting-selection-and-bulk-actions) | Sorting, selection, `ActionBar`, column priorities                |
-| 7   | [Server-side data](#7-server-side-data)                                         | `manualSorting`, `loadingMore`, `onReachEnd`                      |
-| 8   | [A settings modal](#8-a-settings-modal)                                         | `Modal` with `VerticalNav` and `FormField`s                       |
-| 9   | [A command palette](#9-a-command-palette-and-shortcuts)                         | Commands, pages, shortcuts and key hints                          |
-| 10  | [Charts with a shared legend](#10-charts-with-a-shared-legend)                  | One `Legend` switching series in two charts                       |
-| 11  | [The shell with a router](#11-the-shell-with-a-router)                          | `renderLink`, history buttons, the primary action                 |
-| 12  | [Live updates](#12-live-updates)                                                | `highlightChanges`                                                |
-| 13  | [One section in its own theme](#13-one-section-in-its-own-theme)                | `UmbraScope`                                                      |
-| 14  | [A planner page](#14-a-planner-page)                                            | `Planner`, `WeekStrip`, ISO dates, the locale                     |
-| 15  | [A table with sparklines](#15-a-table-with-sparklines-and-rating-cells)         | `sparklineColumn`, `PieIndicator`, `DivergingMeter`, `StarRating` |
-| 16  | [A board of widgets](#16-a-board-of-widgets)                                    | `WidgetBoard`, `HorizontalScroller`, `MediaCard`                  |
-| 17  | [A tour and the shortcuts](#17-a-tour-and-the-sheet-of-shortcuts)               | `Spotlight`, `ShortcutsSheet`                                     |
-| 18  | [A settings form](#18-a-settings-form-with-a-slider-a-stepper-and-a-scale)      | `Slider`, `Stepper`, `ColorScaleEditor`                           |
-| 19  | [Charts over a backdrop](#19-charts-over-a-backdrop)                            | `Scatter` and `Heatmap` with a `backdrop`                         |
-| 20  | [Remember a user's columns](#20-remember-a-users-columns)                       | `columnMenu`, `columnState`, saving it in the app's own storage   |
+| #   | Recipe                                                                          | Shows                                                                                |
+| --- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| 1   | [A first page](#1-a-first-page)                                                 | Provider, shell, one card that scrolls inside                                        |
+| 2   | [Three columns and a stack](#2-three-columns-and-a-stack-that-collapses)        | `size`, `priority`, `minHeight`, stack collapse                                      |
+| 3   | [Tab mode](#3-tab-mode-below-the-minimum-window)                                | `label`, `tabsLabel`, `narrow="keep"`                                                |
+| 4   | [A card with tabs and data states](#4-a-card-with-tabs-loading-empty-and-error) | Toolbar tabs, `loading`, `empty`, `error`, `onRetry`                                 |
+| 5   | [List and detail](#5-list-and-detail)                                           | `List` selection driving a pane with a `PageHeader`                                  |
+| 6   | [A table with bulk actions](#6-a-table-with-sorting-selection-and-bulk-actions) | Sorting, selection, `ActionBar`, column priorities                                   |
+| 7   | [Server-side data](#7-server-side-data)                                         | `manualSorting`, `loadingMore`, `onReachEnd`                                         |
+| 8   | [A settings modal](#8-a-settings-modal)                                         | `Modal` with `VerticalNav` and `FormField`s                                          |
+| 9   | [A command palette](#9-a-command-palette-and-shortcuts)                         | Commands, pages, shortcuts and key hints                                             |
+| 10  | [Charts with a shared legend](#10-charts-with-a-shared-legend)                  | One `Legend` switching series in two charts                                          |
+| 11  | [The shell with a router](#11-the-shell-with-a-router)                          | `renderLink`, history buttons, the primary action                                    |
+| 12  | [Live updates](#12-live-updates)                                                | `highlightChanges`                                                                   |
+| 13  | [One section in its own theme](#13-one-section-in-its-own-theme)                | `UmbraScope`                                                                         |
+| 14  | [A planner page](#14-a-planner-page)                                            | `Planner`, `WeekStrip`, ISO dates, the locale                                        |
+| 15  | [A table with sparklines](#15-a-table-with-sparklines-and-rating-cells)         | `sparklineColumn`, `PieIndicator`, `DivergingMeter`, `StarRating`                    |
+| 16  | [A board of widgets](#16-a-board-of-widgets)                                    | `WidgetBoard`, `HorizontalScroller`, `MediaCard`                                     |
+| 17  | [A tour and the shortcuts](#17-a-tour-and-the-sheet-of-shortcuts)               | `Spotlight`, `ShortcutsSheet`                                                        |
+| 18  | [A settings form](#18-a-settings-form-with-a-slider-a-stepper-and-a-scale)      | `Slider`, `Stepper`, `ColorScaleEditor`                                              |
+| 19  | [Charts over a backdrop](#19-charts-over-a-backdrop)                            | `Scatter` and `Heatmap` with a `backdrop`                                            |
+| 20  | [Remember a user's columns](#20-remember-a-users-columns)                       | `columnMenu`, `columnState`, saving it in the app's own storage                      |
+| 21  | [Two sides compared](#21-two-sides-compared-with-small-pieces)                  | `Comparison`, `SequenceDots`, `MeterList`, `DateChip`, `ScheduleSlot`, `SplitButton` |
 
 ## 1. A first page
 
@@ -1366,7 +1367,9 @@ export function App() {
 
 - `renderWeek` is the side column: whatever stands beside each week. It receives the week's `start`,
   `end`, `days` and `items`. As the planner narrows, the column becomes a button that opens the same
-  content.
+  content. What `renderWeek` returns is mounted again when the column collapses or comes back, so keep
+  its state in your app (a draft, an open section), not in a `useState` inside it: that would be lost
+  when the window is resized across that width.
 - There is no drag and no built-in copy and paste: they are buttons of yours in `renderWeek`, or in
   the toolbar (`parts={{ toolbar: (p) => <Planner.Toolbar {...p} actions={…} /> }}`).
 - A day draws `slotsPerDay` items. A further item of that day is counted beside the date ("+2"), with
@@ -1514,7 +1517,9 @@ export function App() {
 - `PieIndicator` drops its text when the cell is too narrow for it, and keeps the disc. Its root is a
   `div`, so it cannot stand inside a `<p>`.
 - A `StarRating` with `readOnly` is a picture with a text name, not a control: it draws any fraction.
-  Without `readOnly` it is a radio group, and `step={0.5}` lets the user choose halves.
+  Without `readOnly` it is a radio group, and `step={0.5}` lets the user choose halves: with the arrow
+  keys, or by dragging along the stars. A press chooses the whole star, so the target of a press is
+  never smaller than a star; a half cannot be chosen by a single press.
 - A `Sparkline` is as wide as its container. Where the container is only as wide as its content (the
   `trend` slot of a `SummaryTile`, the `trailing` slot of a list row) it has a width of its own,
   `--umbra-sparkline-width` (4rem).
@@ -1728,8 +1733,9 @@ The tour:
 - Without `steps` it is one coach mark: `target`, `title` and the text as children.
 - It is drawn on `layer-spotlight`, above a modal and below the command palette, so a step can point
   into an open modal.
-- The ring follows its target when the window is resized, something scrolls or a transition ends. A
-  target that moves in another way is followed at the next of those.
+- The ring follows its target: where the target is, is read on every frame while the spotlight is
+  open, so a target that moves for any reason (a resize, a scroll, a transition, new content above it)
+  takes the ring and the callout with it.
 
 The sheet:
 
@@ -1846,8 +1852,12 @@ export function App() {
 - With `thresholds`, the fill of a slider takes the band of its value and its text the band's label.
 - A `Stepper` walks through numbers (`min`, `max`, `step`) or through `options`. Options wrap around by
   default and numbers do not (`wrap`).
-- A press on the label of a `FormField` focuses a native control only. It does not focus the value of a
-  `Stepper`, a `Slider` or a `ColorScaleEditor`; the label still names them.
+- A press on the label of a `FormField` gives its control the focus, native or not: the value of a
+  `Stepper`, the thumb of a `Slider`, the first stop of a `ColorScaleEditor`.
+- In a `<form>`, every input with a `name` behaves as a native control does: its value is sent under
+  the name, a reset button (`<Button type="reset">`) puts the starting value back, and `required`
+  holds the form back while the control is empty. The first empty control then takes the focus, and each shows the browser's own message as the error of its `FormField` until
+  it has a value. An `invalid` and an `error` of yours always win over that message.
 - A stop's free colour is picked in the browser's own colour field.
 
 ## 19. Charts over a backdrop
@@ -2055,6 +2065,145 @@ export function App() {
   built-in strings in [Customisation](customisation.md).
 - To put the list somewhere else (a toolbar, a drawer), render `DataTable.ColumnMenu` yourself with
   `columnMenu={false}`.
+
+## 21. Two sides compared, with small pieces
+
+The small components that stand inside a card or a bar: a `Comparison` of two sides, `SequenceDots`
+for the last few outcomes of each, a `MeterList` that lines its meters up, `DateChip` and
+`ScheduleSlot` for a short agenda, a `SplitButton` in the header, and a `ContextBlock` on a surface
+of its own in the bar.
+
+```tsx
+import { useState } from 'react';
+import {
+  AppShell,
+  Card,
+  Columns,
+  Comparison,
+  ContextBlock,
+  DateChip,
+  LevelMeter,
+  MeterList,
+  Page,
+  ProgressBar,
+  ScheduleSlot,
+  SequenceDots,
+  SplitButton,
+  Stack,
+  TopBar,
+  UmbraProvider,
+  type ComparisonRow,
+  type SequenceDotsItem,
+} from 'umbra-ui';
+
+const rows: ComparisonRow[] = [
+  { id: 'orders', label: 'Orders', values: [128, 96] },
+  { id: 'returns', label: 'Returns', values: [7, 12], lowerIsBetter: true },
+  { id: 'on-time', label: 'Delivered on time', values: [92, 88], formatValue: (v) => `${v}%`, max: 100 },
+  { id: 'rating', label: 'Average rating', values: [4.2, null], max: 5 },
+];
+
+// Oldest first. The tone gives each mark its colour and its shape; the label is what is read out.
+const weeks = (tones: ('success' | 'warning' | 'danger')[]): SequenceDotsItem[] =>
+  tones.map((tone, i) => ({
+    id: `week-${i + 1}`,
+    tone,
+    label: `Week ${i + 1}: ${tone === 'success' ? 'target met' : tone === 'warning' ? 'close' : 'missed'}`,
+  }));
+
+const agenda = [
+  { date: '2026-10-14', label: 'Stock count', tone: 'info' },
+  { date: '2026-10-15', label: 'Review', tone: 'accent' },
+  { date: '2026-10-16', label: 'Close the quarter', tone: 'warning' },
+] as const;
+
+export function App() {
+  const [last, setLast] = useState('nothing yet');
+  return (
+    <UmbraProvider brand="#2a2f8f" context="violet">
+      <AppShell
+        topBar={
+          <TopBar
+            logo="U"
+            context={<ContextBlock variant="filled" primary="Quarter 4" secondary="Closes in 6 days" />}
+          />
+        }
+      >
+        <Page>
+          <Columns>
+            <Card
+              title="Region A and Region B"
+              size={2}
+              actions={
+                <SplitButton
+                  size="small"
+                  onPress={() => setLast('exported')}
+                  onAction={setLast}
+                  items={[
+                    { id: 'export-csv', label: 'Export as CSV' },
+                    { id: 'export-pdf', label: 'Export as PDF' },
+                  ]}
+                >
+                  Export
+                </SplitButton>
+              }
+            >
+              <Comparison
+                aria-label="Region A and Region B"
+                sides={[{ name: 'Region A' }, { name: 'Region B' }]}
+                rows={rows}
+                summary={{ values: [3, 1], caption: 'Metrics led' }}
+              />
+              <p>Last action: {last}</p>
+            </Card>
+            <Stack>
+              <Card title="Region A">
+                <SequenceDots
+                  aria-label="Last five weeks"
+                  items={weeks(['success', 'success', 'danger', 'warning', 'success'])}
+                />
+                <MeterList aria-label="Region A, levels">
+                  <LevelMeter label="Stock" value={14} max={20} showValue />
+                  <LevelMeter label="Staff on shift" value={9} max={20} showValue />
+                  <ProgressBar label="Quarter target" value={72} showValue />
+                </MeterList>
+              </Card>
+              <Card title="This week">
+                {agenda.map((entry) => (
+                  <p
+                    key={entry.date}
+                    style={{ display: 'flex', gap: 8, alignItems: 'center', margin: '0 0 8px' }}
+                  >
+                    <DateChip date={entry.date} weekday="short" today={entry.date === '2026-10-14'} />
+                    <ScheduleSlot tone={entry.tone}>{entry.label}</ScheduleSlot>
+                  </p>
+                ))}
+              </Card>
+            </Stack>
+          </Columns>
+        </Page>
+      </AppShell>
+    </UmbraProvider>
+  );
+}
+```
+
+- `Comparison` takes two `sides` and `rows` of `[first, second]` values. The longer bar of a row is
+  the leader, marked with more than its colour; `lowerIsBetter` turns a row round, and `null` is "no
+  value". `summary` is the line above the rows.
+- `SequenceDots` draws one mark per item, oldest first, and reads as one sentence to a screen reader
+  (`formatSummary`). With a `value` per item and `variant="bars"` the marks become small bars.
+  `max` keeps the last few.
+- `MeterList` puts the labels of its meters in one column, their bars in the next and their values
+  in the last, whatever mix of `ProgressBar`, `LevelMeter`, `PieIndicator` and `DivergingMeter` it
+  holds. Without it each meter starts its bar after its own label.
+- `DateChip` takes an ISO date (`2026-10-14`) and writes the day in the locale of the provider;
+  `today`, `selected` and `outside` are its states. `ScheduleSlot` is one entry: a `tone`, a `series`
+  (1 to 8) or a `color`, an optional `icon`, and `onPress` or `href` when it leads somewhere.
+- `SplitButton` is a `Button` with a menu beside it: `onPress` is the main action, `onAction`
+  receives the `id` of a menu item. It takes the variants and sizes of `Button`.
+- `ContextBlock variant="filled"` gives the block a surface a step away from the bar it stands in;
+  `plain`, the default, has none.
 
 ## Next
 

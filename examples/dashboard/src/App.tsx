@@ -62,15 +62,27 @@ const orderStatus: Record<Order['status'], Status> = {
   Sent: 'success',
   Returned: 'danger',
 };
-// The week of the date in the bar. Each kind has its own icon, so none rests on its colour.
-const WEEK = '2026-10-12';
+// Today: the bar shows a clock that runs, so the date beside it and the week below are today's too.
+const now = new Date();
+const iso = (offset: number, from = now) => {
+  const day = new Date(from.getFullYear(), from.getMonth(), from.getDate() + offset);
+  const two = (n: number) => String(n).padStart(2, '0');
+  return `${day.getFullYear()}-${two(day.getMonth() + 1)}-${two(day.getDate())}`;
+};
+const TODAY = iso(0);
+const todayText = now
+  .toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
+  .replace(',', '');
+// The week of that date, from its Monday. Each kind has its own icon, so none rests on its colour.
+const mondayOffset = -((now.getDay() + 6) % 7);
+const WEEK = iso(mondayOffset);
 const weekKinds: Pick<ScheduleItem, 'label' | 'tone' | 'icon'>[] = [
   { label: 'Delivery', tone: 'success', icon: <Truck /> },
   { label: 'Stock count', tone: 'info', icon: <ClipboardCheck /> },
 ];
 const weekItems: ScheduleItem[] = [0, 0, 1, 2, 3, 3, 4].map((day, i) => ({
   id: `w${i}`,
-  date: `2026-10-${12 + day}`,
+  date: iso(mondayOffset + day),
   ...weekKinds[i % 2]!,
 }));
 
@@ -162,7 +174,7 @@ export function App() {
             actions={
               <ShortcutsSheet trigger={<IconButton icon={<CircleHelp />} label="Keyboard shortcuts" />} />
             }
-            context={<ContextBlock primary="Mon 12 Oct 2026" secondary="Quarter close in 6 days" live />}
+            context={<ContextBlock primary={todayText} secondary="Quarter close in 6 days" live />}
             primaryAction={
               <PrimaryAction
                 label="Refresh"
@@ -339,7 +351,7 @@ export function App() {
                   <WeekStrip
                     aria-label="Deliveries and stock counts this week"
                     startDate={WEEK}
-                    today={WEEK}
+                    today={TODAY}
                     items={weekItems}
                     slotSize="small"
                   />

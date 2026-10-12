@@ -31,7 +31,7 @@ const parse = (date: IsoDate): CalendarDate => {
   try {
     return parseDate(date);
   } catch {
-    throw new Error(`[umbra-ui] "${date}" is not a date: expected the form 2026-10-11.`);
+    throw new Error(`umbra-ui: "${date}" is not a date: expected the form 2026-10-11.`);
   }
 };
 

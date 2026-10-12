@@ -403,7 +403,7 @@ function Toggle({
         label={label}
         tooltip={label}
         expanded={!nav.rail}
-        onPress={nav.toggleRail}
+        onPress={() => nav.toggleRail()}
       >
         <Icon name={nav.rail ? 'panelOpen' : 'panelClose'} />
       </ButtonBase>
