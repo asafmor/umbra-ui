@@ -931,6 +931,8 @@ test.describe('Review 2 on the pages', () => {
         .locator('xpath=ancestor::*[@data-part="viewport"][1]');
       await view.hover();
       await page.mouse.wheel(0, -2000);
+      // The wheel is delivered after this call returns.
+      await expect.poll(() => view.evaluate((el) => el.scrollTop)).toBe(0);
       await page.setViewportSize({ width, height });
       await settle(page);
       expect(await view.evaluate((el) => el.scrollTop)).toBe(0);

@@ -1,6 +1,5 @@
 // Axes, grid, annotations and the backdrop for the charts with two axes.
-import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
-import { createPortal } from 'react-dom';
+import { useLayoutEffect, useRef, type ReactNode } from 'react';
 import styles from '../Chart.module.css';
 import { useFrame, type FrameModel } from './Frame';
 import { labelsThatFit, textWidth, thin, truncate, type Measure } from './scales';
@@ -173,19 +172,24 @@ export function Axes() {
 
 /**
  * Reference lines and bands. They lie under the marks; their labels do not: a label under a bar or a
- * line could not be read. The labels are drawn last in the chart's picture, above every mark, with an
- * outline in the surface colour, as the labels on marks have. They are moved there from here, so a
- * chart built from its blocks gets the same without a block of its own for them.
+ * line could not be read. The labels are drawn last in the group the chart draws in, above every mark,
+ * with an outline in the surface colour, as the labels on marks have. Their element is moved to the
+ * end of that group, so a chart built from its blocks gets the same without a block of its own for
+ * them. Moved, not rendered through a portal: React listens for focus on a portal's container, and a
+ * browser lets the keyboard focus an SVG element that is listened to.
  */
 export function Annotations() {
   const { model, level, measure } = useFrame<CartesianModel>();
   const { box } = model;
-  const group = useRef<SVGGElement>(null);
-  const [picture, setPicture] = useState<SVGSVGElement | null>(null);
-  useLayoutEffect(() => setPicture(group.current?.ownerSVGElement ?? null), []);
+  const labels = useRef<SVGGElement>(null);
+  // After every render: a mark drawn later must not cover them.
+  useLayoutEffect(() => {
+    const el = labels.current;
+    if (el?.parentNode && el.parentNode.lastChild !== el) el.parentNode.appendChild(el);
+  });
   return (
     <>
-      <g ref={group} data-part="annotations">
+      <g data-part="annotations">
         {model.annotations.map((a, i) => {
           const span = a.vertical
             ? { x: a.from, y: box.top, width: a.to - a.from, height: box.bottom - box.top }
@@ -213,40 +217,37 @@ export function Annotations() {
           );
         })}
       </g>
-      {picture &&
-        level < 2 &&
-        createPortal(
-          <g data-part="annotationLabels">
-            {model.annotations.map((a, i) => {
-              if (!a.label) return null;
-              const shared = {
-                'data-kind': a.kind,
-                className: styles.annotationLabel,
-                style: { color: a.color },
-              };
-              return a.vertical ? (
-                // Above the plot, centred on the line or band and kept inside the plot's width.
-                <text
-                  key={i}
-                  {...shared}
-                  x={Math.min(
-                    Math.max((a.from + a.to) / 2, box.left + measure(a.label) / 2),
-                    Math.max(box.right - measure(a.label) / 2, box.left),
-                  )}
-                  y={box.top - 5}
-                  textAnchor="middle"
-                >
-                  {truncate(a.label, box.right - box.left, measure)}
-                </text>
-              ) : (
-                <text key={i} {...shared} x={box.right - 4} y={a.from - 5} textAnchor="end">
-                  {truncate(a.label, box.right - box.left - 8, measure)}
-                </text>
-              );
-            })}
-          </g>,
-          picture,
-        )}
+      {level < 2 && (
+        <g ref={labels} data-part="annotationLabels">
+          {model.annotations.map((a, i) => {
+            if (!a.label) return null;
+            const shared = {
+              'data-kind': a.kind,
+              className: styles.annotationLabel,
+              style: { color: a.color },
+            };
+            return a.vertical ? (
+              // Above the plot, centred on the line or band and kept inside the plot's width.
+              <text
+                key={i}
+                {...shared}
+                x={Math.min(
+                  Math.max((a.from + a.to) / 2, box.left + measure(a.label) / 2),
+                  Math.max(box.right - measure(a.label) / 2, box.left),
+                )}
+                y={box.top - 5}
+                textAnchor="middle"
+              >
+                {truncate(a.label, box.right - box.left, measure)}
+              </text>
+            ) : (
+              <text key={i} {...shared} x={box.right - 4} y={a.from - 5} textAnchor="end">
+                {truncate(a.label, box.right - box.left - 8, measure)}
+              </text>
+            );
+          })}
+        </g>
+      )}
     </>
   );
 }
