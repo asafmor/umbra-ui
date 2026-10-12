@@ -26,6 +26,53 @@ const tabStops = (grid: Locator) => grid.locator('[data-cell][tabindex="0"]');
 /** True when the label of a slot is drawn: not hidden for the icon alone. */
 const labelShown = (slot: Locator) =>
   slot.locator('[data-part="label"]').evaluate((el) => (el as HTMLElement).clientWidth > 1);
+/** Presses a "Show …" button of a Changes story as the app would change a prop: the focus stays where it is. */
+const show = (page: Page, view: string) =>
+  page.evaluate((name) => {
+    const buttons = [...document.querySelectorAll<HTMLElement>('button')];
+    buttons.find((button) => button.textContent === `Show ${name}`)!.click();
+  }, view);
+/**
+ * Narrows a strip a pixel at a time and reads the header of every day at each width: what its chip
+ * draws, the room inside the day, and whether anything of the date is cut. Then widens it again.
+ */
+const sweep = (strip: Locator, from: number, to: number) =>
+  strip.evaluate(
+    (el, [from, to]) => {
+      const root = el as HTMLElement;
+      root.style.maxWidth = 'none';
+      const read = (width: number) => {
+        root.style.width = `${width}px`;
+        const cells = [...root.querySelectorAll<HTMLElement>('[data-cell][data-line="0"]')];
+        let cut = false;
+        for (const cell of cells) {
+          const chip = cell.querySelector<HTMLElement>('[data-umbra="date-chip"]')!;
+          const text = chip.querySelector<HTMLElement>('[aria-hidden="true"]')!;
+          const [c, t, k] = [cell, text, chip].map((node) => node.getBoundingClientRect());
+          const day = text.querySelector<HTMLElement>('[data-part="day"]');
+          const d = day?.getBoundingClientRect();
+          // The number is drawn, whole, inside the chip, and the chip inside its day.
+          if (!d || d.width === 0 || d.left < t!.left - 0.5 || d.right > t!.right + 0.5) cut = true;
+          if (d && (d.top < t!.top - 0.5 || d.bottom > t!.bottom + 0.5)) cut = true;
+          if (text.scrollWidth > text.clientWidth) cut = true;
+          if (k!.left < c!.left - 0.5 || k!.right > c!.right + 0.5) cut = true;
+        }
+        const style = getComputedStyle(cells[3]!);
+        const room =
+          cells[3]!.getBoundingClientRect().width -
+          parseFloat(style.paddingLeft) -
+          parseFloat(style.paddingRight);
+        const drawn = cells[3]!.querySelector<HTMLElement>('[aria-hidden="true"]')!.innerText;
+        return { width, room, drawn: drawn.replace(/\s+/g, ' ').trim(), cut };
+      };
+      const down = [];
+      for (let width = from; width >= to; width--) down.push(read(width));
+      const up = [];
+      for (let width = to; width <= from; width++) up.push(read(width));
+      return { down, up: up.reverse() };
+    },
+    [from, to] as const,
+  );
 
 test.describe('Time: DateChip', () => {
   test('says the whole date, with today and selected in words, whatever it draws', async ({ page }) => {
@@ -271,22 +318,21 @@ test.describe('Time: WeekStrip', () => {
   }) => {
     await openStory(page, 'time-weekstrip--shrinking');
     const steps = [
-      { width: 1040, weekday: 'Wednesday', labels: true, number: true },
-      { width: 760, weekday: 'Wed', labels: true, number: true },
-      { width: 520, weekday: 'Wed', labels: true, number: true },
-      { width: 380, weekday: 'W', labels: false, number: true },
-      // The last step: no room for a weekday and a number, so the weekday alone.
-      { width: 250, weekday: 'W', labels: false, number: false },
+      { width: 1040, weekday: 'Wednesday', labels: true },
+      { width: 760, weekday: 'Wed', labels: true },
+      { width: 520, weekday: 'Wed', labels: true },
+      // The last step: no room for a weekday and a number, so the number alone.
+      { width: 380, weekday: null, labels: false },
+      { width: 250, weekday: null, labels: false },
     ];
     for (const step of steps) {
       const strip = page.locator(`[data-width="${step.width}"] [data-umbra="week-strip"]`);
       const shown = strip.locator('[data-date="2026-10-14"] [data-weekday]').filter({ visible: true });
-      await expect(shown, `weekday at ${step.width}`).toHaveText(step.weekday);
+      if (step.weekday) await expect(shown, `weekday at ${step.width}`).toHaveText(step.weekday);
+      else await expect(shown, `weekday at ${step.width}`).toHaveCount(0);
       const chip = cell(strip, '2026-10-14').locator('[data-umbra="date-chip"]');
-      await expect(chip.locator('[data-part="day"]'), `number at ${step.width}`).toBeVisible({
-        visible: step.number,
-      });
-      // The text of a chip is never cut: a number cut short would read as another day.
+      // The number stays at every step, and is never cut: a number cut short would read as another day.
+      await expect(chip.locator('span[data-part="day"]'), `number at ${step.width}`).toBeVisible();
       expect(
         await chip.locator('[aria-hidden="true"]').evaluate((el) => el.scrollWidth <= el.clientWidth),
       ).toBe(true);
@@ -379,6 +425,227 @@ test.describe('Time: WeekStrip', () => {
     await cell(hand, '2026-10-14').focus();
     await move(page, ['ArrowDown', 'ArrowRight'], '2026-10-15:1');
     await expect(tabStops(hand)).toHaveCount(1);
+  });
+
+  for (const density of ['compact', 'default', 'spacious']) {
+    for (const [size, story, name, steps] of [
+      ['default', 'time-weekstrip--shrinking', 'Week at 1040 pixels', [128, 68, 52]],
+      ['small', 'time-weekstrip--default', 'This week, both', [128, 56, 44]],
+    ] as const) {
+      test(`a date is never drawn cut, pixel by pixel: ${size} chips at the ${density} density`, async ({
+        page,
+      }) => {
+        await openStory(page, story, { density });
+        await page.evaluate(() => document.fonts.ready);
+        // From days wide enough for the long name down to days of 29px, narrower than a planner allows (40px).
+        const { down, up } = await sweep(page.getByRole('grid', { name, exact: true }), 1000, 203);
+        expect(down.filter((at) => at.cut).map((at) => at.width)).toEqual([]);
+        // The steps are a function of the width: the same on the way up as on the way down.
+        expect(up).toEqual(down);
+        // Each step is at its stated room inside a day, to the pixel; the weekday gives way, never the number.
+        const [long, short, none] = steps;
+        for (const at of down) {
+          const expected =
+            at.room > long ? 'Wednesday 14' : at.room > short ? 'Wed 14' : at.room > none ? 'W 14' : '14';
+          expect(at.drawn, `at ${at.width}px, ${at.room}px inside a day`).toBe(expected);
+        }
+        expect(new Set(down.map((at) => at.drawn)).size).toBe(4);
+      });
+    }
+  }
+
+  test('the Shrinking stories fit the smallest window at the spacious density', async ({ page }) => {
+    for (const story of ['time-weekstrip--shrinking', 'time-planner--shrinking']) {
+      await openStory(page, story, { width: 1024, height: 600, density: 'spacious' });
+      const outside = await page
+        .locator('[data-width]')
+        .evaluateAll(
+          (holders) =>
+            holders
+              .map((holder) => holder.getBoundingClientRect())
+              .filter((box) => box.right > window.innerWidth || box.bottom > window.innerHeight).length,
+        );
+      expect(outside, story).toBe(0);
+    }
+  });
+
+  test('a cell that can be pressed is never under 24 pixels, and a strip that is only read stays low', async ({
+    page,
+  }) => {
+    for (const density of ['compact', 'default', 'spacious']) {
+      await openStory(page, 'time-weekstrip--changes', { density });
+      const strip = page.getByRole('grid', { name: 'Changing week' });
+      const heights = await strip
+        .locator('[data-cell][data-action]')
+        .evaluateAll((cells) => cells.map((el) => el.getBoundingClientRect().height));
+      expect(heights).toHaveLength(21);
+      expect(Math.min(...heights), density).toBeGreaterThanOrEqual(24);
+      // The mark of hidden items is a button of its own.
+      // The mark of hidden items is a button of its own: 24 pixels each way, all of it its own to press.
+      const pressed = await page.locator('[data-part="hiddenItems"]').evaluate((mark) => {
+        const { x, y, width, height } = mark.getBoundingClientRect();
+        const corners = [3, width - 3].flatMap((dx) =>
+          [1, height - 1].map((dy) => document.elementFromPoint(x + dx, y + dy) === mark),
+        );
+        return { width, height, corners };
+      });
+      expect(pressed.width, density).toBeGreaterThanOrEqual(24);
+      expect(pressed.height, density).toBeGreaterThanOrEqual(24);
+      expect(pressed.corners, density).toEqual([true, true, true, true]);
+    }
+    // What is drawn keeps its size: the small slot is 16px at the compact density, in a 24px cell.
+    await openStory(page, 'time-weekstrip--changes', { density: 'compact' });
+    const slot = page.locator('[aria-label="Changing week"] [data-part="slot"]').first();
+    expect((await box(slot)).height).toBe(16);
+    // A strip without callbacks has nothing to press, and is not made taller.
+    await openStory(page, 'time-weekstrip--default', { density: 'compact' });
+    const read = page.getByRole('grid', { name: 'This week, both' });
+    expect((await box(cell(read, '2026-10-13', 1))).height).toBe(20);
+  });
+
+  test('focus in the grid is kept when the strip changes to its error or empty state, and back', async ({
+    page,
+  }) => {
+    await openStory(page, 'time-weekstrip--changes');
+    const strip = page.locator('[data-width="420"] [data-umbra="week-strip"]');
+    await cell(strip, '2026-10-14').focus();
+    await move(page, ['ArrowRight', 'ArrowDown'], '2026-10-15:1');
+    await show(page, 'error');
+    await expect(page.getByRole('alert')).toBeVisible();
+    await expectFocusKept(page);
+    await expect(page.getByRole('button', { name: 'Try again' })).toBeFocused();
+    // Retry brings the grid back, and the focus returns to the cell the user was on.
+    await pressKeys(page, 'Enter');
+    await expect.poll(() => at(page)).toBe('2026-10-15:1');
+    // The empty state has no control: the strip itself takes the focus.
+    await show(page, 'empty');
+    await expect(page.getByText('Nothing planned this week')).toBeVisible();
+    await expectFocusKept(page);
+    await expect(strip).toBeFocused();
+    await show(page, 'data');
+    await expect.poll(() => at(page)).toBe('2026-10-15:1');
+    await move(page, ['ArrowLeft'], '2026-10-14:1');
+  });
+
+  test('loading holds the layout: no cell moves when the data arrives', async ({ page }) => {
+    await openStory(page, 'time-weekstrip--changes');
+    const strip = page.locator('[data-width="420"] [data-umbra="week-strip"]');
+    const boxes = () =>
+      strip.locator('[data-cell]').evaluateAll((cells) =>
+        cells.map((el) => {
+          const { x, y, width, height } = el.getBoundingClientRect();
+          return [x, y, width, height];
+        }),
+      );
+    const loaded = await boxes();
+    expect(loaded).toHaveLength(21);
+    await show(page, 'loading');
+    await expect(strip).toHaveAttribute('aria-busy', 'true');
+    expect(await boxes()).toEqual(loaded);
+    await show(page, 'data');
+    await expect(strip).not.toHaveAttribute('aria-busy');
+    expect(await boxes()).toEqual(loaded);
+  });
+
+  test('an item whose slot is past the last line, or not a whole number, takes a free slot', async ({
+    page,
+  }) => {
+    await openStory(page, 'time-weekstrip--changes');
+    const strip = page.getByRole('grid', { name: 'Odd input' });
+    // Slots 0 and 2 of a day with two lines: both are drawn, and nothing is "hidden" beside a free slot.
+    await expect(cell(strip, '2026-10-14', 1)).toHaveText('Planning');
+    await expect(cell(strip, '2026-10-14', 2)).toHaveText('Delivery');
+    await expect(cell(strip, '2026-10-14').locator('[data-part="hiddenItems"]')).toHaveCount(0);
+    // Slot 1.5 is no slot: the item is not lost.
+    await expect(cell(strip, '2026-10-13', 1)).toHaveText('Upkeep');
+    // Only a day that is full has a mark.
+    await expect(strip.locator('[data-part="hiddenItems"]')).toHaveText(['+2']);
+  });
+
+  test('text that is not a date is left out or falls back, and nothing fails', async ({ page }) => {
+    await openStory(page, 'time-weekstrip--changes');
+    const strip = page.getByRole('grid', { name: 'Odd input' });
+    // `date` is not a date: the week of today. `selectedDate` is not one: no day is selected.
+    await expect(strip.getByRole('columnheader').first()).toHaveText(/Sunday, October 11, 2026/);
+    await expect(strip.locator('[aria-selected="true"]')).toHaveCount(0);
+    await expect(strip.locator('[aria-selected="false"]')).toHaveCount(7);
+    // The item without a date is not drawn; the chip without one draws nothing.
+    await expect(strip.locator('[data-part="slot"]')).toHaveCount(6);
+    await expect(page.locator('time[datetime="2026-02-30"]')).toHaveCount(0);
+    // A month and limits that are not months: the month of today, and no limit.
+    await openStory(page, 'time-planner--changes');
+    const grid = page.getByRole('grid');
+    await expect(grid).toHaveAccessibleName('Changing, October 2026');
+    const next = page.getByRole('button', { name: 'Next month' });
+    await next.click();
+    await next.click();
+    await next.click();
+    await expect(grid).toHaveAccessibleName('Changing, January 2027');
+    await expect(next).toBeEnabled();
+  });
+
+  test('parts carry their names, and a selected slot named by the app says that it is selected', async ({
+    page,
+  }) => {
+    await openStory(page, 'time-weekstrip--changes');
+    const strip = page.getByRole('grid', { name: 'Odd input' });
+    await expect(strip.locator('[data-umbra="date-chip"][data-part="day"]')).toHaveCount(7);
+    await expect(strip.locator('[data-umbra="schedule-slot"][data-part="slot"]')).toHaveCount(6);
+    await expect(strip.locator('[data-umbra="schedule-slot"][data-part="placeholder"]')).toHaveCount(8);
+    const named = cell(strip, '2026-10-15', 1).locator('[data-part="slot"]');
+    await expect(named).toHaveAttribute('aria-label', 'Workshop, Selected');
+    await expect(cell(strip, '2026-10-15', 1)).toHaveAccessibleName('Workshop, Selected');
+  });
+
+  test('the font tokens resize the small chip and the small slot', async ({ page }) => {
+    await openStory(page, 'time-weekstrip--default');
+    await page.evaluate(() => {
+      document.body.style.setProperty('--umbra-date-chip-font', '700 19px/1 serif');
+      document.body.style.setProperty('--umbra-schedule-slot-font', '400 18px/1 serif');
+    });
+    const strip = page.getByRole('grid', { name: 'This week, both' });
+    await expect(strip.locator('[data-umbra="date-chip"][data-size="small"]').first()).toHaveCSS(
+      'font-size',
+      '19px',
+    );
+    await expect(strip.locator('[data-umbra="schedule-slot"][data-size="small"]').first()).toHaveCSS(
+      'font-size',
+      '18px',
+    );
+  });
+
+  test('the "+N" of a full day opens its hidden items, by pointer and from the grid by keyboard', async ({
+    page,
+  }) => {
+    await openStory(page, 'time-weekstrip--changes');
+    const strip = page.getByRole('grid', { name: 'Odd input' });
+    const log = page.getByText(/^(Nothing pressed|Item|Day)/);
+    const mark = strip.getByRole('button', { name: /^2 more: Quarterly review, Upkeep$/ });
+    const list = page.getByRole('dialog', { name: /^2 more/ });
+    // The press is the mark's: the day around it is not pressed.
+    await mark.click();
+    await expect(list.getByRole('button', { name: 'Upkeep' })).toBeDisabled();
+    await expect(log).toHaveText('Nothing pressed');
+    await list.getByRole('button', { name: 'Quarterly review' }).click();
+    await expect(log).toHaveText('Item three');
+    await expect(list).toHaveCount(0);
+    await expect(mark).toBeFocused();
+    await pressKeys(page, 'Escape');
+    expect(await at(page)).toBe('2026-10-12:0');
+    // Enter on the day is still the day; F2 moves to the mark, which opens with Enter.
+    await pressKeys(page, 'Enter');
+    await expect(log).toHaveText('Day 2026-10-12');
+    await pressKeys(page, 'F2');
+    await expect(mark).toBeFocused();
+    await pressKeys(page, 'Enter');
+    await expect(list).toBeVisible();
+    await expectFocusKept(page);
+    await list.getByRole('button', { name: 'Quarterly review' }).focus();
+    await pressKeys(page, 'Enter');
+    await expect(log).toHaveText('Item three');
+    await expect(mark).toBeFocused();
+    // From the mark the arrows still move through the grid.
+    await move(page, ['ArrowRight'], '2026-10-13:0');
   });
 });
 
@@ -668,10 +935,10 @@ test.describe('Time: Planner', () => {
     }
     // A day too narrow for "Sep 27" shows the number, and still says the whole date.
     await expect(
-      cell(small, '2026-09-27').locator('[data-part="day"] > span').filter({ visible: true }),
+      cell(small, '2026-09-27').locator('span[data-part="day"] > span').filter({ visible: true }),
     ).toHaveText('27');
     await expect(cell(small, '2026-09-27')).toHaveText(/Sunday, September 27, 2026/);
-    // The weekday names: short here, and narrow once a day is 44 pixels or less.
+    // The weekday names: short here, and narrow once the room inside a day is 48 pixels or less.
     const wednesday = small
       .getByRole('columnheader')
       .nth(4)
@@ -804,5 +1071,135 @@ test.describe('Time: Planner', () => {
       await box(page.getByRole('button').nth(2)),
     ];
     expect(previous.x).toBeGreaterThan(next.x);
+  });
+
+  test('Next and Previous keep the focus when they disable themselves at the last and the first month', async ({
+    page,
+  }) => {
+    await openStory(page, 'time-planner--plain');
+    const next = page.getByRole('button', { name: 'Next month' });
+    const previous = page.getByRole('button', { name: 'Previous month' });
+    await next.focus();
+    await pressKeys(page, 'Enter');
+    await expect(grid(page)).toHaveAccessibleName('Plain schedule, November 2026');
+    await expect(next).toBeDisabled();
+    await expect(previous).toBeFocused();
+    await pressKeys(page, 'Enter');
+    await expect(previous).toBeFocused();
+    await pressKeys(page, 'Enter');
+    await expect(grid(page)).toHaveAccessibleName('Plain schedule, September 2026');
+    await expect(previous).toBeDisabled();
+    await expect(next).toBeFocused();
+    // By pointer too.
+    await next.click();
+    await next.click();
+    await expect(next).toBeDisabled();
+    await expectFocusKept(page);
+    await expect(previous).toBeFocused();
+  });
+
+  test('focus in the grid is kept when the planner changes to its error or empty state, and back', async ({
+    page,
+  }) => {
+    await openStory(page, 'time-planner--changes');
+    await cell(page, '2026-10-14').focus();
+    await move(page, ['ArrowDown'], '2026-10-14:1');
+    await show(page, 'error');
+    await expect(page.getByRole('alert')).toBeVisible();
+    await expectFocusKept(page);
+    await expect(page.getByRole('button', { name: 'Try again' })).toBeFocused();
+    await pressKeys(page, 'Enter');
+    await expect.poll(() => at(page)).toBe('2026-10-14:1');
+    await show(page, 'empty');
+    await expect(page.getByText('Nothing planned')).toBeVisible();
+    await expectFocusKept(page);
+    await expect(page.locator('[data-umbra="planner"] [data-part="state"]')).toBeFocused();
+    await show(page, 'data');
+    await expect.poll(() => at(page)).toBe('2026-10-14:1');
+  });
+
+  test('PageDown and PageUp from a day of the month before: the same day of the month shown, or its own month', async ({
+    page,
+  }) => {
+    await openStory(page, 'time-planner--default');
+    // 28 September is shown in October. A page forward is 28 October: no month to change.
+    await cell(page, '2026-09-28').focus();
+    await move(page, ['PageDown'], '2026-10-28:0');
+    await expect(grid(page)).toHaveAccessibleName('Schedule, October 2026');
+    // A page back from it shows its own month, September, and not August.
+    await cell(page, '2026-09-28').focus();
+    await move(page, ['PageUp'], '2026-09-28:0');
+    await expect(grid(page)).toHaveAccessibleName('Schedule, September 2026');
+    await expect(cell(page, '2026-09-28')).not.toHaveAttribute('data-outside');
+    await move(page, ['PageUp'], '2026-08-28:0');
+    // And from a day of the month after: 1 October is shown in September.
+    await move(page, ['PageDown'], '2026-09-28:0');
+    await cell(page, '2026-10-01').focus();
+    await move(page, ['PageUp'], '2026-09-01:0');
+    await expect(grid(page)).toHaveAccessibleName('Schedule, September 2026');
+    await cell(page, '2026-10-01').focus();
+    await move(page, ['PageDown'], '2026-10-01:0');
+    await expect(grid(page)).toHaveAccessibleName('Schedule, October 2026');
+    await expect(tabStops(grid(page))).toHaveCount(1);
+  });
+
+  test('with the side column every cell says its column, and the side cell spans the rows of its week', async ({
+    page,
+  }) => {
+    await openStory(page, 'time-planner--default');
+    await expect(grid(page)).toHaveAttribute('aria-colcount', '8');
+    const headers = grid(page).getByRole('columnheader');
+    expect(await headers.evaluateAll((all) => all.map((el) => el.getAttribute('aria-colindex')))).toEqual([
+      '1',
+      '2',
+      '3',
+      '4',
+      '5',
+      '6',
+      '7',
+      '8',
+    ]);
+    // A slot of a Monday is under "Monday", though its row has no side cell before it.
+    const monday = await headers.filter({ hasText: /Monday$/ }).getAttribute('aria-colindex');
+    expect(monday).toBe('3');
+    for (const line of [0, 1, 3]) {
+      await expect(cell(page, '2026-10-12', line)).toHaveAttribute('aria-colindex', monday!);
+    }
+    await expect(cell(page, '2026-10-17', 2)).toHaveAttribute('aria-colindex', '8');
+    const aside = (week: string) => page.locator(`[data-part="weekAside"][data-week="${week}"]`);
+    await expect(aside('2026-10-11')).toHaveAttribute('aria-colindex', '1');
+    await expect(aside('2026-10-11')).toHaveAttribute('aria-rowspan', '4');
+    // The week without items: its headers and one line, which starts under the first day.
+    await expect(aside('2026-10-18')).toHaveAttribute('aria-rowspan', '2');
+    await expect(page.locator('[data-part="weekEmpty"]')).toHaveAttribute('aria-colindex', '2');
+    // Without a side column the cells are in order, and say nothing.
+    await openStory(page, 'time-planner--plain');
+    await expect(grid(page)).not.toHaveAttribute('aria-colcount');
+    await expect(cell(page, '2026-10-12', 1)).not.toHaveAttribute('aria-colindex');
+  });
+
+  test('a hidden line of an empty week leaves no row; the "+N" opens from the grid', async ({ page }) => {
+    await openStory(page, 'time-planner--changes');
+    const week = page.locator('[data-part="week"]:has([data-week="2026-10-18"])');
+    await expect(week.getByRole('row')).toHaveCount(1);
+    await expect(week.locator('[data-part="weekEmpty"]')).toHaveCount(0);
+    await expect(week.getByRole('rowheader')).toHaveAttribute('aria-rowspan', '1');
+    const headers = await box(cell(page, '2026-10-18'));
+    expect((await box(week)).height).toBeLessThan(headers.height + 16);
+    // The day of today has more items than slots.
+    const mark = cell(page, '2026-10-14').getByRole('button', { name: /more: / });
+    await expect(mark).toHaveText(/^\+\d$/);
+    await cell(page, '2026-10-14').focus();
+    await pressKeys(page, 'F2');
+    await expect(mark).toBeFocused();
+    await pressKeys(page, 'Enter');
+    const list = page.getByRole('dialog', { name: /more: / });
+    await expect(list.getByRole('button', { name: 'Team workshop' })).toBeDisabled();
+    await list.getByRole('button').first().focus();
+    await pressKeys(page, 'Enter');
+    await expect(page.getByText(/^Item extra-/)).toBeVisible();
+    await expect(mark).toBeFocused();
+    await pressKeys(page, 'Escape');
+    expect(await at(page)).toBe('2026-10-14:0');
   });
 });

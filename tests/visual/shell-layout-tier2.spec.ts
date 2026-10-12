@@ -146,9 +146,13 @@ test.describe('ContextBlock', () => {
     await expect(page.getByText('Presses: 3')).toBeVisible();
 
     await expect(blocks.nth(3).locator('a[data-router-link]')).toHaveAttribute('href', '#router');
-    // Plain text is no tab stop.
+    // Plain text is no tab stop (it can hold the focus, for the bar that hides a line of it: SL-15).
     await openStory(page, 'shell-contextblock--anatomy');
-    expect(await page.locator('[data-umbra="context-block"] :is(a, button, [tabindex])').count()).toBe(0);
+    expect(
+      await page
+        .locator('[data-umbra="context-block"] :is(a, button, [tabindex]:not([tabindex="-1"]))')
+        .count(),
+    ).toBe(0);
   });
 
   test('time is written in the chip as a <time>; a live clock moves on each minute and announces nothing', async ({
@@ -1173,5 +1177,612 @@ test.describe('HorizontalScroller', () => {
     expect((await box(control(1))).x).toBeLessThan((await box(control(0))).x);
     await pressKeys(page, 'ArrowRight');
     await expect(control(0)).toBeFocused();
+  });
+});
+
+// The fix pass of review 2 and of the owner's feedback (plan/reviews/milestone-2.md).
+
+interface CaretFrames {
+  /** The card's height in every frame, the one before the press first. */
+  heights: number[];
+  /** Each time the height changed, once the board had answered: the gap to the card under it, and every card's column. */
+  follow: { gap: number | null; columns: string }[];
+}
+/**
+ * Presses the caret of a card and records it on every frame until it has rested. The animation is
+ * slowed down, so that a busy machine still draws enough frames of it to judge.
+ */
+const pressCaret = (card: Locator) =>
+  card.evaluate(
+    (el) =>
+      new Promise<CaretFrames>((done) => {
+        (el as HTMLElement).style.setProperty('--umbra-motion-duration-base', '900ms');
+        const item = el.closest<HTMLElement>('[data-part="item"]');
+        const others = item ? ([...item.parentElement!.children] as HTMLElement[]) : [];
+        const heights = [el.getBoundingClientRect().height];
+        const follow: CaretFrames['follow'] = [];
+        // Created after the board's own observer, so it is called after it: what the frame draws.
+        const observer = new ResizeObserver(() => {
+          const box = el.getBoundingClientRect();
+          const under = others
+            .map((other) => other.getBoundingClientRect())
+            .filter((r) => Math.abs(r.x - box.x) < 1 && r.y > box.y + 1)
+            .sort((a, b) => a.y - b.y)[0];
+          follow.push({
+            gap: under ? under.y - box.bottom : null,
+            columns: others.map((other) => Math.round(other.getBoundingClientRect().x)).join(),
+          });
+        });
+        let still = 0;
+        const frame = () => {
+          const { height } = el.getBoundingClientRect();
+          still = heights.at(-1) === height && !el.hasAttribute('data-resizing') ? still + 1 : 0;
+          heights.push(height);
+          if (still < 8) return requestAnimationFrame(frame);
+          observer.disconnect();
+          done({ heights, follow });
+        };
+        el.querySelector<HTMLElement>('[data-part="toggle"] button')!.click();
+        observer.observe(el);
+        requestAnimationFrame(frame);
+      }),
+  );
+/** Every frame is between the start and the end, and never goes back. */
+function expectSmooth({ heights }: CaretFrames, direction: 'down' | 'up') {
+  const [from, to] = [heights[0]!, heights.at(-1)!];
+  const seen = heights.map(Math.round).join(' ');
+  expect(direction === 'down' ? from - to : to - from).toBeGreaterThan(40);
+  for (const [i, h] of heights.entries()) {
+    expect(h, `frame ${i} of ${seen}`).toBeGreaterThanOrEqual(Math.min(from, to) - 0.5);
+    expect(h, `frame ${i} of ${seen}`).toBeLessThanOrEqual(Math.max(from, to) + 0.5);
+    if (i > 0) {
+      const step = direction === 'down' ? heights[i - 1]! - h : h - heights[i - 1]!;
+      expect(step, `frame ${i} of ${seen}`).toBeGreaterThanOrEqual(-0.5);
+    }
+  }
+}
+
+test.describe('Card collapse, frame by frame (O-1, SL-4)', () => {
+  const cases = [
+    ['a widget of a board', 'layout-widgetboard--default', 'Widget 1'],
+    ['a content-sized card in a stack', 'layout-card--content-sized', 'Hugs its content'],
+    ['a card that fills its slot', 'layout-card--states', 'Collapsible'],
+  ] as const;
+  for (const [name, story, title] of cases) {
+    test(`${name}: the height only moves towards its end, with no frame outside the range`, async ({
+      page,
+    }) => {
+      await openStory(page, story);
+      await page.evaluate(() => document.fonts.ready);
+      const card = page.getByRole('region', { name: title, exact: true });
+      const closing = await pressCaret(card);
+      expectSmooth(closing, 'down');
+      await expect(card).toHaveAttribute('data-collapsed', 'user');
+      // Several frames in between: it moved, it did not jump.
+      expect(new Set(closing.heights.map(Math.round)).size).toBeGreaterThan(3);
+      const opening = await pressCaret(card);
+      expectSmooth(opening, 'up');
+      expect(Math.abs(opening.heights.at(-1)! - closing.heights[0]!)).toBeLessThan(1);
+
+      // Under reduced motion both are instant: two heights, no state in between.
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      for (const frames of [await pressCaret(card), await pressCaret(card)]) {
+        expect(new Set(frames.heights.slice(1).map(Math.round)).size).toBe(1);
+      }
+    });
+  }
+
+  test('on a board the cards under the pressed one follow it in every frame and keep their columns until it rests', async ({
+    page,
+  }) => {
+    await openStory(page, 'layout-widgetboard--default');
+    await page.evaluate(() => document.fonts.ready);
+    const gap = await page
+      .locator('[data-umbra="widget-board"] [data-part="grid"]')
+      .first()
+      .evaluate((el) => parseFloat(getComputedStyle(el).columnGap));
+    const card = page.getByRole('region', { name: 'Widget 1', exact: true });
+    for (const { follow } of [await pressCaret(card), await pressCaret(card)]) {
+      // The last change is the one that ends the animation.
+      const moving = follow.slice(1, -1);
+      expect(moving.length).toBeGreaterThan(3);
+      for (const f of moving) {
+        expect(f.gap).toBeGreaterThanOrEqual(gap - 0.5);
+        expect(f.gap).toBeLessThanOrEqual(gap + 1.5);
+      }
+      // No card changes column while the height moves: at most one new packing, when it has ended.
+      expect(new Set(moving.map((f) => f.columns)).size).toBe(1);
+    }
+  });
+});
+
+const send = (page: Page, name: string) => page.evaluate((n) => window.dispatchEvent(new Event(n)), name);
+/** The element that has the focus is inside the open picker. */
+const focusInPicker = (page: Page) =>
+  page.evaluate(() => !!document.activeElement?.closest('[data-umbra="popover"]'));
+
+test.describe('EntitySwitcher, review 2', () => {
+  const story = 'shell-entityswitcher--changing-list';
+  const switcher = (page: Page, name: string) =>
+    page.locator('[data-umbra="entity-switcher"]', {
+      has: page.locator(`[data-part="steppers"][aria-label="${name}"]`),
+    });
+  // The one that is open: the other may still be on its way out.
+  const picker = (page: Page) => page.locator('[data-umbra="popover"]:not([data-exiting])');
+  const row = (page: Page, name: string) => picker(page).locator('[data-part="row"]', { hasText: name });
+
+  test('SL-8: with a disabled current entity the steppers go to its neighbours', async ({ page }) => {
+    await openStory(page, story);
+    const root = switcher(page, 'With search');
+    const previous = root.locator('[data-part="previous"]');
+    const next = root.locator('[data-part="next"]');
+    await expect(previous).toHaveAccessibleName('Previous: Region A');
+    await expect(next).toHaveAccessibleName('Next: Region C');
+    await expect(next).not.toHaveAttribute('aria-disabled');
+    await next.focus();
+    await pressKeys(page, 'Enter');
+    await expect(root.locator('[data-part="name"]')).toHaveText('Region C');
+    await expect(previous).toHaveAccessibleName('Previous: Region A');
+  });
+
+  test('SL-2, SL-9: the list loads again or gets shorter while the picker is open, and the focus stays in it', async ({
+    page,
+  }) => {
+    await openStory(page, story);
+    // Without a search field: the rows are all there is to focus.
+    await switcher(page, 'Without search').locator('[data-part="trigger"]').click();
+    await expect(row(page, 'Region A')).toBeFocused();
+    await pressKeys(page, 'ArrowDown');
+    await expect(row(page, 'Region C')).toBeFocused();
+    await send(page, 'story:loading');
+    await expect(picker(page).locator('[data-part="skeleton"]').first()).toBeVisible();
+    await expectFocusKept(page);
+    expect(await focusInPicker(page)).toBe(true);
+    // The rows arrive: the focus is on the current one again, and the arrow keys work.
+    await send(page, 'story:loading');
+    await expect(row(page, 'Region A')).toBeFocused();
+    await pressKeys(page, 'ArrowDown');
+    await expect(row(page, 'Region C')).toBeFocused();
+    // The row that has the focus goes.
+    await send(page, 'story:shorten');
+    await expect(row(page, 'Region C')).toHaveCount(0);
+    await expect(row(page, 'Region A')).toBeFocused();
+    await send(page, 'story:shorten');
+
+    // With a search field: from a row, the focus goes to the field while the list loads.
+    await switcher(page, 'With search').locator('[data-part="trigger"]').click();
+    await expect(page.locator('[data-umbra="popover"]')).toHaveCount(1);
+    await expect(picker(page).getByRole('searchbox')).toBeFocused();
+    await pressKeys(page, 'ArrowDown', 'ArrowDown');
+    await expect(row(page, 'Region C')).toBeFocused();
+    await send(page, 'story:loading');
+    await expect(picker(page).locator('[data-part="skeleton"]').first()).toBeVisible();
+    await expectFocusKept(page);
+    expect(await focusInPicker(page)).toBe(true);
+    await send(page, 'story:loading');
+    await expect(row(page, 'Region C')).toBeVisible();
+    await expectFocusKept(page);
+    expect(await focusInPicker(page)).toBe(true);
+  });
+
+  test('SL-10: Escape empties the search field first, as in every search field, and then closes the picker', async ({
+    page,
+  }) => {
+    await openStory(page, story);
+    const trigger = switcher(page, 'With search').locator('[data-part="trigger"]');
+    await trigger.click();
+    await expect(page.locator('[data-umbra="popover"]')).toHaveCount(1);
+    const field = picker(page).getByRole('searchbox');
+    await page.keyboard.type('reg');
+    await expect(row(page, 'Everywhere')).toHaveCount(0);
+    await pressKeys(page, 'Escape');
+    await expect(field).toHaveValue('');
+    await expect(field).toBeFocused();
+    await expect(row(page, 'Everywhere')).toBeVisible();
+    await pressKeys(page, 'Escape');
+    await expect(picker(page)).toHaveCount(0);
+    await expect(trigger).toBeFocused();
+  });
+
+  test('SL-12: an entity without a group, after the groups, is set apart by a line', async ({ page }) => {
+    await openStory(page, story);
+    await switcher(page, 'Without search').locator('[data-part="trigger"]').click();
+    const lists = picker(page).locator('[data-part="list"] > *');
+    await expect(lists).toHaveCount(3);
+    const line = (n: number) =>
+      lists.nth(n).evaluate((el) => parseFloat(getComputedStyle(el).borderTopWidth));
+    expect(await line(2)).toBeGreaterThan(0);
+    expect(await line(1)).toBe(0);
+    await expect(lists.nth(2)).toHaveText('Everywhere');
+  });
+});
+
+test.describe('SL-11: a token set on an ancestor of the trigger reaches the overlay in its portal', () => {
+  const cases = [
+    {
+      name: 'the picker of an EntitySwitcher',
+      story: 'shell-entityswitcher--default',
+      trigger: '[data-umbra="entity-switcher"] [data-part="trigger"]',
+      overlay: '[data-umbra="popover"]',
+      token: '--umbra-entity-switcher-picker-width',
+      value: '420px',
+      shows: 'width',
+    },
+    {
+      name: 'a Popover',
+      story: 'overlays-popover--behaviour',
+      trigger: '[data-umbra="button"]',
+      overlay: '[data-umbra="popover"]',
+      token: '--umbra-popover-bg',
+      value: 'rgb(1, 2, 3)',
+      shows: 'backgroundColor',
+    },
+    {
+      name: 'a Menu',
+      story: 'overlays-menu--closed',
+      trigger: 'button[aria-haspopup]',
+      overlay: '[data-umbra="menu"]',
+      token: '--umbra-menu-bg',
+      value: 'rgb(1, 2, 3)',
+      shows: 'backgroundColor',
+    },
+    {
+      name: 'the list of a Select',
+      story: 'inputs-select--states',
+      trigger: '[data-umbra="select"] button',
+      overlay: '[data-umbra-overlay]',
+      token: '--umbra-menu-bg',
+      value: 'rgb(1, 2, 3)',
+      shows: 'backgroundColor',
+    },
+  ] as const;
+  for (const c of cases) {
+    test(c.name, async ({ page }) => {
+      await openStory(page, c.story);
+      const trigger = page.locator(c.trigger).first();
+      await trigger.evaluate(
+        (el, [token, value]) => el.parentElement!.parentElement!.style.setProperty(token, value),
+        [c.token, c.value] as const,
+      );
+      await trigger.click();
+      const overlay = page.locator(c.overlay).first();
+      await expect(overlay).toBeVisible();
+      expect(await overlay.evaluate((el, shows) => getComputedStyle(el)[shows as 'width'], c.shows)).toBe(
+        c.value,
+      );
+      // Only what the app set comes along: a token it did not set is not written on the overlay.
+      expect(await overlay.evaluate((el) => el.style.getPropertyValue('--umbra-space-3'))).toBe('');
+    });
+  }
+});
+
+test.describe('HorizontalScroller, review 2', () => {
+  test('SL-5, SL-19: a Select keeps its arrow keys, and a Toggle does not stop them', async ({ page }) => {
+    await openStory(page, 'layout-horizontalscroller--controls');
+    const scroller = page.locator('[data-umbra="horizontal-scroller"]');
+    const select = scroller.locator('[data-umbra="select"] button');
+    const toggle = scroller.getByRole('switch');
+    await scroller.getByRole('button', { name: 'First' }).focus();
+    await pressKeys(page, 'ArrowRight');
+    await expect(select).toBeFocused();
+    // The key is the select's now: the focus stays on it.
+    await pressKeys(page, 'ArrowRight');
+    await expect(select).toBeFocused();
+    await pressKeys(page, 'ArrowLeft');
+    await expect(select).toBeFocused();
+    await pressKeys(page, 'Tab');
+    await expect(toggle).toBeFocused();
+    // A toggle has no use for the arrow keys: they move on.
+    await pressKeys(page, 'ArrowRight');
+    await expect(scroller.getByRole('button', { name: 'Last' })).toBeFocused();
+    await pressKeys(page, 'ArrowLeft');
+    await expect(toggle).toBeFocused();
+    await pressKeys(page, 'Home');
+    await expect(scroller.getByRole('button', { name: 'First' })).toBeFocused();
+  });
+
+  test('SL-7: a button of the app’s own that goes at the end of the row hands the focus on', async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await openStory(page, 'layout-horizontalscroller--parts-and-blocks');
+    const scroller = page.locator('[data-umbra="horizontal-scroller"]', {
+      has: page.getByRole('list', { name: 'Own buttons' }),
+    });
+    const more = scroller.getByRole('button', { name: 'More' });
+    await more.focus();
+    for (let i = 0; i < 20 && (await more.count()); i++) await pressKeys(page, 'Enter');
+    await expect(more).toHaveCount(0);
+    await expectFocusKept(page);
+    expect(
+      await scroller.evaluate((el) => el.contains(document.activeElement)),
+      'the focus is still in the row',
+    ).toBe(true);
+  });
+
+  test('SL-6: --umbra-horizontal-scroller-button-size sizes the buttons', async ({ page }) => {
+    await openStory(page, 'layout-horizontalscroller--default', { width: 700 });
+    const scroller = page.locator('[data-umbra="horizontal-scroller"]');
+    await scroller.evaluate((el) => el.style.setProperty('--umbra-horizontal-scroller-button-size', '51px'));
+    const size = await box(scroller.locator('[data-part="next"] button'));
+    expect([size.width, size.height]).toEqual([51, 51]);
+  });
+});
+
+test.describe('ContextBlock, review 2', () => {
+  test('SL-3: a chip that arrives after the bar has measured gives the bar a fresh load with it gives', async ({
+    page,
+  }) => {
+    await openStory(page, 'shell-contextblock--late-content');
+    await expect(page.locator('[data-umbra="context-block"]').first()).toBeVisible();
+    // After the fonts: when they arrive every row starts again, which would hide what is tested here.
+    await page.evaluate(() => document.fonts.ready);
+    await settle(page);
+    const read = () =>
+      page.evaluate(() =>
+        [...document.querySelectorAll<HTMLElement>('[data-umbra="top-bar"]')].map((bar) => {
+          const block = bar.querySelector<HTMLElement>('[data-umbra="context-block"]');
+          const nav = bar.querySelector<HTMLElement>('[data-part="nav"]')!;
+          const cut = [nav, ...nav.querySelectorAll<HTMLElement>('[data-overflow-watch]')].some(
+            (el) => el.scrollWidth > el.clientWidth + 1,
+          );
+          const parts = [...(block?.querySelectorAll('[data-part]') ?? [])].map((el) =>
+            el.getAttribute('data-part'),
+          );
+          return `${bar.dataset.shrink}/${block?.dataset.shrink ?? '-'}/${parts.join()}${cut ? '/nav cut' : ''}`;
+        }),
+      );
+    const fresh = await read();
+    expect(fresh[0]).toBe(fresh[1]);
+    await send(page, 'story:chip');
+    await settle(page);
+    expect((await read())[0]).not.toContain('chip');
+    // It arrives, with nothing else changing: the bar is what a fresh load with the chip gives.
+    await send(page, 'story:chip');
+    await settle(page);
+    const late = await read();
+    expect(late[0]).not.toContain('nav cut');
+    expect(late[0]).toBe(fresh[1]);
+  });
+
+  test('SL-14: the font tokens are taken whole, weight included', async ({ page }) => {
+    await openStory(page, 'shell-contextblock--anatomy');
+    const block = page.locator('[data-umbra="context-block"]').first();
+    await block.evaluate((el) => {
+      el.style.setProperty('--umbra-context-block-primary-font', '400 20px/1 serif');
+      el.style.setProperty('--umbra-context-block-secondary-font', '300 11px/1 serif');
+      el.style.setProperty('--umbra-context-block-chip-font', '500 12px/1 serif');
+    });
+    const font = (part: string) =>
+      block.locator(`[data-part="${part}"]`).evaluate((el) => {
+        const css = getComputedStyle(el);
+        return `${css.fontWeight} ${css.fontSize}`;
+      });
+    expect(await font('primary')).toBe('400 20px');
+    expect(await font('secondary')).toBe('300 11px');
+    expect(await font('chip')).toBe('500 12px');
+    // Without the tokens: a bold line, a regular one, a bold chip.
+    const plain = page.locator('[data-umbra="context-block"]').nth(2);
+    const weight = (part: string) =>
+      plain.locator(`[data-part="${part}"]`).evaluate((el) => getComputedStyle(el).fontWeight);
+    expect([await weight('primary'), await weight('secondary'), await weight('chip')]).toEqual([
+      '700',
+      '400',
+      '700',
+    ]);
+  });
+
+  test('SL-15: in a bar that hides its lines, a block that is plain text is a tab stop and shows them', async ({
+    page,
+  }) => {
+    await openStory(page, 'shell-entityswitcher--in-top-bar', { width: 1100 });
+    const block = page.locator('[data-umbra="context-block"]').first();
+    // Whole, it is text and no tab stop.
+    await expect(block).toHaveAttribute('data-shrink', '0');
+    expect(await block.locator('[tabindex="0"]').count()).toBe(0);
+    for (let width = 1090; width > 500 && (await block.getAttribute('data-shrink')) === '0'; width -= 10) {
+      await page.setViewportSize({ width, height: 720 });
+      await settle(page);
+    }
+    await expect(block).not.toHaveAttribute('data-shrink', '0');
+    await page.locator('[data-umbra="top-bar"] button').first().focus();
+    for (let i = 0; i < 20; i++) {
+      await pressKeys(page, 'Tab');
+      if (await block.evaluate((el) => el.contains(document.activeElement))) break;
+    }
+    expect(await block.evaluate((el) => el.contains(document.activeElement))).toBe(true);
+    await expect(tooltip(page)).toContainText('Quarter close in 6 days');
+  });
+
+  test('SL-20: the story of the shrink steps does not scroll sideways at the minimum window', async ({
+    page,
+  }) => {
+    await openStory(page, 'shell-contextblock--shrink', { width: 1024, height: 600 });
+    await settle(page);
+    const wide = await page.evaluate(() =>
+      [document.scrollingElement!, ...document.querySelectorAll('.story-frame')].map(
+        (el) => el.scrollWidth - el.clientWidth,
+      ),
+    );
+    expect(Math.max(...wide)).toBeLessThanOrEqual(0);
+  });
+});
+
+test.describe('WidgetBoard, review 2', () => {
+  const cards = (page: Page) =>
+    page
+      .locator('[data-umbra="widget-board"] [data-part="grid"]')
+      .first()
+      .evaluate((el) =>
+        [...el.children].map((item) => {
+          const r = item.firstElementChild!.getBoundingClientRect();
+          return { x: r.x, y: r.y + el.parentElement!.scrollTop, w: r.width, h: r.height };
+        }),
+      );
+
+  test('SL-1, SL-18: 400 widgets: none overlaps another, every one can be scrolled to, and a caret costs one pass a frame', async ({
+    page,
+  }) => {
+    test.slow();
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await page.goto('/iframe.html?id=layout-widgetboard--many&viewMode=story&args=count:400');
+    const grid = page.locator('[data-umbra="widget-board"] [data-part="grid"]');
+    await expect(grid.locator('> [data-part="item"]')).toHaveCount(400);
+    const view = grid.locator('xpath=ancestor::*[@data-part="viewport"][1]');
+    const all = await grid.evaluate((el) => {
+      const top = el.getBoundingClientRect().top;
+      return [...el.children].map((item) => {
+        const r = item.firstElementChild!.getBoundingClientRect();
+        return { x: Math.round(r.x), y: r.y - top, w: r.width, h: r.height };
+      });
+    });
+    expect(all.every((c) => c.h > 20 && c.w > 100)).toBe(true);
+    // Taller than a grid of one-pixel rows can be in every browser.
+    const end = Math.max(...all.map((c) => c.y + c.h));
+    expect(end).toBeGreaterThan(12_000);
+    // Column by column, each card starts under the one before it.
+    for (const x of new Set(all.map((c) => c.x))) {
+      const column = all.filter((c) => c.x === x).sort((a, b) => a.y - b.y);
+      for (let i = 1; i < column.length; i++) {
+        expect(column[i]!.y).toBeGreaterThanOrEqual(column[i - 1]!.y + column[i - 1]!.h);
+      }
+    }
+    // The board scrolls as far as its last card, and no further than a pixel past it.
+    const scroll = await view.evaluate((el) => ({ height: el.scrollHeight, client: el.clientHeight }));
+    expect(scroll.height).toBeGreaterThanOrEqual(Math.floor(end));
+    expect(scroll.height).toBeLessThanOrEqual(Math.ceil(end) + 1);
+    await view.evaluate((el) => (el.scrollTop = el.scrollHeight));
+    await expect(page.getByRole('region', { name: 'Widget 400', exact: true })).toBeInViewport({ ratio: 1 });
+
+    // A caret: the cards are written once, and only those whose place changes.
+    await view.evaluate((el) => (el.scrollTop = 0));
+    const writes = await grid.evaluate(
+      (el) =>
+        new Promise<number>((done) => {
+          let count = 0;
+          const observer = new MutationObserver((records) => (count += records.length));
+          for (const item of el.children)
+            observer.observe(item, { attributes: true, attributeFilter: ['style'] });
+          el.querySelector<HTMLElement>('[data-part="toggle"] button')!.click();
+          requestAnimationFrame(() =>
+            requestAnimationFrame(() => {
+              observer.disconnect();
+              done(count);
+            }),
+          );
+        }),
+    );
+    // At most a column and a top for each (before, three writes for every card in every pass).
+    expect(writes).toBeGreaterThan(0);
+    expect(writes).toBeLessThanOrEqual(800);
+  });
+
+  test('SL-16: with spans no widget sits above one that came before it in the same column', async ({
+    page,
+  }) => {
+    for (const width of [1280, 1000, 700]) {
+      await openStory(page, 'layout-widgetboard--spans', { width });
+      const all = await cards(page);
+      expect(all).toHaveLength(10);
+      for (const [i, a] of all.entries()) {
+        for (const [j, b] of all.entries()) {
+          if (j <= i) continue;
+          const sameColumn = a.x < b.x + b.w - 1 && b.x < a.x + a.w - 1;
+          if (sameColumn)
+            expect(b.y, `widget ${j + 1} is under widget ${i + 1} at ${width}`).toBeGreaterThanOrEqual(
+              a.y + a.h,
+            );
+        }
+      }
+    }
+  });
+
+  test('SL-17: “Collapse all” and “Expand all” keep the ids of widgets that are not on the board', async ({
+    page,
+  }) => {
+    await openStory(page, 'layout-widgetboard--many');
+    const button = page.locator('[data-part="collapseAll"]').getByRole('button');
+    await expect(page.getByText('Collapsed: 1 (removed-widget)')).toBeVisible();
+    await button.click();
+    await expect(page.getByText('Collapsed: 37 (removed-widget')).toBeVisible();
+    await expect(button).toHaveText('Expand all');
+    await button.click();
+    await expect(page.getByText('Collapsed: 1 (removed-widget)')).toBeVisible();
+  });
+});
+
+test.describe('ContextBlock, filled (O-9)', () => {
+  test('on every brand the surface is a step away from the bar, the text keeps 4.5:1 on it and the chip 3:1', async ({
+    page,
+  }) => {
+    await openStory(page, 'shell-contextblock--filled');
+    const bars = await page.evaluate(() => {
+      // `rgb(r, g, b)`, or `color(srgb r g b)` from a `color-mix()`.
+      const parse = (colour: string) => {
+        const numbers = colour
+          .match(/[\d.]+/g)!
+          .slice(0, 3)
+          .map(Number);
+        return colour.startsWith('color(') ? numbers.map((n) => n * 255) : numbers;
+      };
+      const luminance = (rgb: number[]) => {
+        const [r, g, b] = rgb.map((v) => {
+          const s = v / 255;
+          return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+        });
+        return 0.2126 * r! + 0.7152 * g! + 0.0722 * b!;
+      };
+      const ratio = (a: string, b: string) => {
+        const [hi, lo] = [luminance(parse(a)), luminance(parse(b))].sort((x, y) => y - x);
+        return (hi! + 0.05) / (lo! + 0.05);
+      };
+      return [...document.querySelectorAll<HTMLElement>('[data-umbra="top-bar"]')].map((bar) => {
+        const block = bar.querySelector<HTMLElement>('[data-umbra="context-block"]')!;
+        const surface = getComputedStyle(block.firstElementChild!);
+        const chip = getComputedStyle(block.querySelector('[data-part="chip"]')!);
+        const barColour = getComputedStyle(bar).backgroundColor;
+        return {
+          variant: block.dataset.variant,
+          step: ratio(surface.backgroundColor, barColour),
+          text: ratio(surface.color, surface.backgroundColor),
+          onBar: ratio(surface.color, barColour),
+          chip: ratio(chip.borderTopColor, surface.backgroundColor),
+          radius: parseFloat(surface.borderRadius),
+          padding: parseFloat(surface.paddingLeft),
+        };
+      });
+    });
+    expect(bars).toHaveLength(5);
+    for (const bar of bars) {
+      expect(bar.variant).toBe('filled');
+      // Seen against the bar, and never at the cost of the text.
+      expect(bar.step).toBeGreaterThan(1.1);
+      expect(bar.text).toBeGreaterThanOrEqual(4.5);
+      expect(bar.chip).toBeGreaterThanOrEqual(3);
+      expect(bar.radius).toBeGreaterThan(0);
+      expect(bar.padding).toBeGreaterThan(0);
+    }
+    // Towards the text where there is room (lighter on the dark bars), away from it on the mid-tone ones.
+    expect(bars.filter((bar) => bar.text < bar.onBar).length).toBeGreaterThanOrEqual(3);
+    expect(bars.filter((bar) => bar.text > bar.onBar).length).toBeGreaterThanOrEqual(1);
+
+    // The tokens set the surface, its padding and its radius.
+    const block = page.locator('[data-umbra="context-block"]').first();
+    await block.evaluate((el) => {
+      el.style.setProperty('--umbra-context-block-bg', 'rgb(1, 2, 3)');
+      el.style.setProperty('--umbra-context-block-padding-x', '21px');
+      el.style.setProperty('--umbra-context-block-radius', '9px');
+    });
+    const control = block.locator('> *');
+    await expect(control).toHaveCSS('background-color', 'rgb(1, 2, 3)');
+    await expect(control).toHaveCSS('padding-left', '21px');
+    await expect(control).toHaveCSS('border-radius', '9px');
+
+    // `plain`, the default, has no surface.
+    await openStory(page, 'shell-contextblock--on-brands');
+    const plain = page.locator('[data-umbra="context-block"]').first();
+    await expect(plain).toHaveAttribute('data-variant', 'plain');
+    await expect(plain.locator('> *')).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
   });
 });

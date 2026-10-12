@@ -503,6 +503,8 @@ export type {
   DivergingMeterScale,
   DivergingMeterDirection,
 } from './meters/DivergingMeter';
+export { MeterList } from './meters/MeterList';
+export type { MeterListProps, MeterListRootProps } from './meters/MeterList';
 export { ContextBlock } from './shell/ContextBlock';
 export type { ContextBlockProps, ContextBlockRootProps, ContextBlockChipProps } from './shell/ContextBlock';
 export { EntitySwitcher } from './shell/EntitySwitcher';

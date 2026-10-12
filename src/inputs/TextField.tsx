@@ -8,8 +8,9 @@ import { ButtonBase } from '../basics/Button';
 import { Icon, IconSlot, RawIcon } from '../provider/icons';
 import { cx, renderPart, type Part } from '../utils/parts';
 import type { BlockProps } from './fieldParts';
+import { useActionKind } from '../internal/contexts';
 import styles from './TextField.module.css';
-import { useFieldControl } from './useField';
+import { ReportValidation, useFieldControl } from './useField';
 import { defined } from '../utils/defined';
 import { rootRender } from '../utils/passThrough';
 
@@ -100,7 +101,9 @@ function Root({
       type={type}
       isDisabled={control.disabled}
       {...defined({ isReadOnly: readOnly })}
-      isInvalid={control.invalid}
+      // Only when it is set: a `false` would tell React Aria that the app decides, and silence the
+      // control's own validation (required, on submit).
+      {...defined({ isInvalid: control.invalid || undefined })}
       isRequired={control.required}
       {...defined({
         name,
@@ -116,6 +119,7 @@ function Root({
         if (!(event.target as Element).closest('button, a, input, textarea')) inputRef.current?.focus();
       }}
     >
+      <ReportValidation />
       <TextFieldContext
         value={{
           multiline,
@@ -216,6 +220,7 @@ export interface TextFieldProps extends Omit<TextFieldRootProps, 'children'> {
 
 /** A box for typing one line of text, or several with `multiline`. */
 export function TextField({ prefix, suffix, clearable = false, clearLabel, parts, ...root }: TextFieldProps) {
+  useActionKind('stays');
   return (
     <Root {...root}>
       {prefix != null &&

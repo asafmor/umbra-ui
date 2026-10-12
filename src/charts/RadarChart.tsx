@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { useLocale } from 'react-aria-components';
+import { uniqueIds, valueOrNull } from '../utils/finite';
 import { Skeleton } from '../basics/Skeleton';
 import styles from './Chart.module.css';
 import { dash, LineGlyph, PointShape, pointShape, seriesColour, type PointShapeKind } from './internal/cues';
@@ -65,8 +66,13 @@ export interface RadarChartRootProps extends ChartCommonProps {
 
 const pointSize = 3.5;
 
-function Root({ axes, series, max, startAngle = 0, children, ...common }: RadarChartRootProps) {
+function Root({ axes, series: seriesProp, max, startAngle = 0, children, ...common }: RadarChartRootProps) {
   const { locale } = useLocale();
+  // Invalid input (plan/decisions/03-charts.md): one series per id, and only finite numbers are values.
+  const series = uniqueIds(seriesProp, 'RadarChart').map((s) => ({
+    ...s,
+    values: s.values.map((v) => valueOrNull(v, 'RadarChart')),
+  }));
   const format = common.formatValue ?? numberFormat(locale, { maximumFractionDigits: 2 });
   const text = (v: number | null | undefined) => (v == null ? '' : format(v));
   const all = series.map((s, i) => ({

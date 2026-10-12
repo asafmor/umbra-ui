@@ -199,3 +199,45 @@ export const RightToLeft: Story = {
   ),
   globals: { direction: 'rtl' },
 };
+
+const longBands: Threshold[] = [
+  { from: 0, tone: 'success', label: 'Low' },
+  { from: 70, tone: 'danger', label: 'Very high' },
+];
+
+function Lockable() {
+  const [locked, setLocked] = useState(false);
+  return (
+    <>
+      <Slider aria-label="Lockable" defaultValue={30} readOnly={locked} />
+      <div>
+        <Button onPress={() => setLocked(!locked)}>{locked ? 'Unlock' : 'Lock'}</Button>
+      </div>
+    </>
+  );
+}
+
+/**
+ * The output keeps the width of its longest text, so a band with a longer label does not resize the
+ * track during a drag, and is cut where the slot is too narrow for it. A slider that is locked and
+ * unlocked keeps its value. A value given twice among the marks is drawn twice.
+ */
+export const EdgeCases: Story = {
+  render: () => (
+    <div style={{ display: 'flex', gap: 24, alignItems: 'start' }}>
+      {[260, 200, 130].map((width) => (
+        <Width key={width} width={width}>
+          <Slider
+            aria-label={`Bands at ${width}`}
+            thresholds={longBands}
+            defaultValue={width === 260 ? 60 : 100}
+          />
+        </Width>
+      ))}
+      <div style={{ ...column, width: 240 }}>
+        <Lockable />
+        <Slider aria-label="Repeated marks" marks={[0, 50, 50, 100]} defaultValue={50} />
+      </div>
+    </div>
+  ),
+};

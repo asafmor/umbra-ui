@@ -1,4 +1,12 @@
-import { useContext, useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import {
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type CSSProperties,
+  type ReactNode,
+} from 'react';
 import { useLocale } from 'react-aria-components';
 import { ContextShrinkContext } from '../internal/contexts';
 import { useHoverTip } from '../internal/TruncatedText';
@@ -14,6 +22,11 @@ interface BlockProps {
 }
 
 export interface ContextBlockRootProps extends BlockProps, RootAttributes {
+  /**
+   * `filled` sets the block on a surface of its own, a little lighter or darker than the bar it is on,
+   * whatever the brand colour.
+   */
+  variant?: 'plain' | 'filled' | undefined;
   /** Makes the block a button. */
   onPress?: (() => void) | undefined;
   /** Makes the block a link. */
@@ -30,6 +43,7 @@ export interface ContextBlockRootProps extends BlockProps, RootAttributes {
 const cut = (el: Element) => el.scrollWidth > el.clientWidth;
 
 function Root({
+  variant = 'plain',
   onPress,
   href,
   renderLink = (props) => <a {...props} />,
@@ -51,6 +65,7 @@ function Root({
   );
   const shared = {
     'data-umbra': 'context-block',
+    'data-variant': variant,
     'data-shrink': level,
     'data-interactive': ((onPress || href !== undefined) && !disabled) || undefined,
     'data-disabled': disabled || undefined,
@@ -75,7 +90,15 @@ function Root({
             {children}
           </button>
         ) : (
-          <span role={ariaLabel ? 'group' : undefined} {...control} data-plain="">
+          // Plain text is no tab stop, until the bar has hidden a line of it: the tooltip that shows
+          // the whole text must then be within reach of the keyboard. Never removed from what can hold
+          // the focus, so a bar that grows again does not drop it.
+          <span
+            role={ariaLabel || level > 0 ? 'group' : undefined}
+            {...control}
+            data-plain=""
+            tabIndex={level > 0 ? 0 : -1}
+          >
             {children}
           </span>
         )}
@@ -131,6 +154,18 @@ function Chip({ dateTime, className, style, children }: ContextBlockChipProps) {
 }
 
 const MINUTE = 60_000;
+
+const never = () => () => {};
+/**
+ * False on a server and while the browser takes over the page a server rendered; true from then on,
+ * and from the first render of a page rendered in the browser.
+ */
+const useInBrowser = () =>
+  useSyncExternalStore(
+    never,
+    () => true,
+    () => false,
+  );
 
 /**
  * The moment the chip shows, in milliseconds. Not `live`: `time` as given. `live`: a clock that starts
@@ -195,13 +230,22 @@ export function ContextBlock({
   const { locale } = useLocale();
   const moment = useClock(time, live);
   const valid = moment !== undefined && !Number.isNaN(moment);
+  // Without a `timeFormat.timeZone` the time is written in the viewer's zone, which a server does not
+  // know. So on a server, and while the browser takes its page over, the chip holds the time written in
+  // UTC, not shown: the same text on both sides, and the chip already has its size. The viewer's time
+  // is written as soon as the page is the browser's. With a time zone nothing waits.
+  const inBrowser = useInBrowser();
+  const waits = timeFormat.timeZone === undefined && !inBrowser;
+  const written = valid
+    ? new Intl.DateTimeFormat(locale, waits ? { ...timeFormat, timeZone: 'UTC' } : timeFormat).format(moment)
+    : null;
   const chipProps: ContextBlockChipProps | null =
     chip != null
       ? { children: chip }
-      : valid
+      : written !== null
         ? {
-            dateTime: new Date(moment).toISOString(),
-            children: new Intl.DateTimeFormat(locale, timeFormat).format(moment),
+            dateTime: new Date(moment!).toISOString(),
+            children: waits ? <span style={{ visibility: 'hidden' }}>{written}</span> : written,
           }
         : null;
   return (

@@ -73,14 +73,18 @@ All text comes from the provider's `locale` through `Intl`: digits, names and th
 
 ## Behaviour as space shrinks
 
-Inside a day of a `WeekStrip` or `Planner` (the size container `umbra-schedule`), by the width of that day:
+Inside a day of a `WeekStrip` or `Planner` (the size container `umbra-schedule`), by the room inside that day: its width less the gap between days (`--umbra-week-strip-gap` or `--umbra-planner-day-gap`, 4px by default). So a day of 72px has 68px of room.
 
-| Step | Trigger | Result |
+| Step | Trigger (room inside the day) | Result |
 |---|---|---|
-| 1 | day 128px or narrower | `weekday="auto"`: the long name becomes the short one |
-| 2 | day 64px or narrower | the month beside the number goes ("Sep 28" becomes "28") |
-| 3 | day 56px or narrower (44px for a chip without a number) | `weekday="auto"`: the short name becomes the narrow one |
-| 4 | day 48px or narrower | a chip with a weekday and a number shows the weekday alone: a number cut short would read as another day |
+| 1 | 128px or less | `weekday="auto"`: the long name becomes the short one |
+| 2 | 68px or less (56px for `size="small"`) | `weekday="auto"` beside a number: the short name becomes the narrow one ("Wed 14" to "W 14") |
+| 3 | 64px or less | the month beside the number goes ("Sep 28" becomes "28") |
+| 4 | 52px or less (44px for `size="small"`) | a chip with a weekday and a number shows the number alone |
+| 5 | 48px or less | `weekday="auto"` without a number: the short name becomes the narrow one |
+| 6 | 36px or less | the chip gives up its side padding: a round pill around the number, whole down to a room of 24px |
+
+**The number is never drawn cut**: a number cut short would read as another day ("14" as "1"). The weekday gives way first, at every step. Each width is the room the widest text of its step needs at the spacious density, the largest font (en-US, the default font), so nothing is cut at any density; a browser test narrows a strip pixel by pixel at the three densities and both sizes. Where the texts still do not fit side by side (a longer weekday name in another locale, a larger font from the token), the weekday is what is shortened, with an ellipsis, and the number keeps its width.
 
 All in CSS: the chip holds each text and shows one. The widths are literal because a container query cannot read a custom property. Outside such a container nothing changes: `auto` is the long name. The chip never grows past its container (`max-width: 100%`), and what is said to assistive technology is the whole date at every step.
 
@@ -102,3 +106,10 @@ Resolved 2026-10-11 (under the owner's delegation):
 - **Today is primary, selected is violet**: the source uses purple for today, which is this library's colour for "selected". Today gets the primary colour, as in the reference screen, and a bar as its second cue.
 - **The weekday is part of the chip** (`weekday`, with `day={false}` for the name alone), so one component heads a day in every form the screenshots show: number, number with month, weekday name.
 - **Texts are always Gregorian**, whatever calendar the locale prefers, because the dates are; digits and names stay the locale's.
+
+Resolved in the fix pass of review 1 (2026-10-11):
+
+- **The number stays, the weekday goes** (T-3): the last step used to keep the weekday and hide the number, and between the steps "Wed 14" was drawn as "Wed 1" in days of 60 to 78px. The steps are now sized for the largest font, and the narrowest keeps the number.
+- **The steps are stated as what is measured** (T-15): the spec gave them as the width of a day; a container query measures the room inside the day, 4px less. The spec was wrong, and the numbers above are the ones in the stylesheet.
+- **`--umbra-date-chip-font` resizes the small chip too** (T-10): the smaller font of `size="small"` is the default of the token.
+- **A `date` that is not a date draws nothing**, with a warning in development (`plan/specs/Planner.md`, "Dates"): never a wrong date.

@@ -22,6 +22,10 @@ export function boundsOf(stops: readonly Threshold[], index: number, scale: Scal
   return [low, Math.max(low, high)];
 }
 
+/** The bottom of a scale that is not given one: the lowest `from` of the list, in whatever order it is. */
+export const bottomOf = (stops: readonly Threshold[]) =>
+  stops.length ? Math.min(...stops.map((stop) => stop.from)) : 0;
+
 /** Any list as a valid value: sorted, the first stop at the bottom, each a step above the one before. */
 export function normalizeStops(stops: readonly Threshold[], scale: Scale): Threshold[] {
   const sorted = [...stops].sort((a, b) => a.from - b.from);

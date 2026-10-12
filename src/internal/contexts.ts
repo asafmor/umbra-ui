@@ -1,4 +1,4 @@
-import { createContext, isValidElement, useContext, type ReactNode } from 'react';
+import { createContext, isValidElement, useContext, useLayoutEffect, type ReactNode } from 'react';
 
 /**
  * A control that cannot be a row of a menu (a `Stepper`, a `Slider`, a field) says so with a static
@@ -8,6 +8,29 @@ import { createContext, isValidElement, useContext, type ReactNode } from 'react
  */
 export const staysInRow = (child: ReactNode) =>
   isValidElement(child) && !!(child.type as { staysInRow?: boolean | undefined }).staysInRow;
+
+/**
+ * What can be a row of a menu says so with a static `overflowsToMenu = true`: `Button`, `IconButton`,
+ * `Menu`, `SplitButton`. Among actions that no longer fit, these move into the "more" menu.
+ */
+export const overflowsToMenu = (child: ReactNode) =>
+  isValidElement(child) && !!(child.type as { overflowsToMenu?: boolean | undefined }).overflowsToMenu;
+
+/** What an action holds: something that can be a row of a menu, or a control that stays in the row. */
+export type ActionKind = 'row' | 'stays';
+
+/**
+ * Set by `ActionsOverflow` around each action that is a component of the app, while it is drawn in the
+ * row: the row cannot see into such a component, so what is inside tells it. A button says `row`, a
+ * control that cannot be a row of a menu says `stays`.
+ */
+export const ActionProbeContext = createContext<((kind: ActionKind) => void) | null>(null);
+
+/** Tells the row of actions around this component what it is. Outside such a row it does nothing. */
+export function useActionKind(kind: ActionKind) {
+  const probe = useContext(ActionProbeContext);
+  useLayoutEffect(() => probe?.(kind), [probe, kind]);
+}
 
 /** What a `Button` or `IconButton` hands to the overflow menu, to be drawn as one of its rows. */
 export interface OverflowRowProps {

@@ -1,0 +1,125 @@
+/*
+ * Three columns shared by every row (subgrid): the labels, the bars, the values. A row is a meter's own
+ * root, so the list places the parts of the meters by their `data-part`, whichever meter they belong to.
+ */
+.list {
+  --bar-min: var(--umbra-meter-list-bar-min-width, calc(2 * var(--umbra-space-8)));
+  /* As wide as the longest label, and narrower when the bars would otherwise go below their minimum. */
+  --labels: var(--label-column, fit-content(100%));
+
+  display: grid;
+  grid-template-columns:
+    var(--labels)
+    minmax(var(--bar-min), 1fr)
+    auto;
+  column-gap: var(--umbra-meter-list-column-gap, var(--umbra-space-3));
+  row-gap: var(--umbra-meter-list-gap, var(--umbra-space-3));
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  font: var(--umbra-font-label);
+}
+
+/* No meter shows a value, or the list is too narrow for them: no third column, and no gap before it. */
+.list:not(:has(> * > [data-part='value'])),
+.list[data-shrink] {
+  grid-template-columns:
+    var(--labels)
+    minmax(var(--bar-min), 1fr);
+}
+
+.list > .row,
+.list > [data-umbra] {
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-column: 1 / -1;
+  align-items: center;
+  column-gap: inherit;
+  width: auto;
+  max-width: none;
+  min-width: 0;
+}
+
+/* Twice the attribute: these win over a meter's own rules for its parts, whatever the order of the files. */
+.list > * > [data-part][data-part] {
+  grid-row: 1;
+  grid-column: 2;
+  margin: 0;
+}
+
+/* A part that only holds a skeleton has no box: the skeleton is the item. */
+.list > * > [data-part='skeleton'] > * {
+  grid-row: 1;
+  grid-column: 2;
+}
+
+.list > * > [data-part='label'][data-part] {
+  grid-column: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--umbra-meter-list-label-fg, var(--umbra-color-base-text-secondary));
+}
+
+.list > * > [data-part='value'][data-part] {
+  grid-column: 3;
+  justify-self: end;
+}
+
+/* The disc of a `PieIndicator` starts where the bars start. */
+.list > * > [data-part='disc'] {
+  justify-self: start;
+}
+
+/* The captions at the ends of a `LevelMeter` have no column: the list leaves them out. */
+.list > * > :is([data-part='minLabel'], [data-part='maxLabel'])[data-part] {
+  display: none;
+}
+
+/* Step 1: the values hide. They are still read, and shown on hover. */
+.list[data-shrink] > * > [data-part='value'][data-part] {
+  display: none;
+}
+
+/* Step 2: each label on a line of its own, above its bar. */
+.list[data-shrink='2'] {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.list[data-shrink='2'] > * {
+  row-gap: var(--umbra-space-1);
+}
+
+.list[data-shrink='2'] > * > [data-part][data-part] {
+  grid-row: 2;
+  grid-column: 1;
+}
+
+.list[data-shrink='2'] > * > [data-part='skeleton'] > * {
+  grid-row: 2;
+  grid-column: 1;
+}
+
+.list[data-shrink='2'] > * > [data-part='label'][data-part] {
+  grid-row: 1;
+}
+
+/* The empty or error state spans the columns the rows would. */
+.state {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+.skeletonCell {
+  display: block;
+  min-width: 0;
+}
+
+.list .skeletonBar[data-umbra] {
+  width: auto;
+  height: var(--umbra-meter-list-skeleton-height, 6px);
+  min-height: 0;
+  border-radius: var(--umbra-radius-pill);
+}

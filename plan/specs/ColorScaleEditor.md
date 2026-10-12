@@ -62,12 +62,12 @@ Screenshot 26: a "Preview" row of eight small numbered swatches from the lowest 
 
 ## Behaviour as space shrinks
 
-The editor fills its slot. The preview wraps. When the slot is shorter than the rows, the rows scroll inside the editor.
+The editor fills its slot. The preview wraps. When the slot is shorter than the rows, the rows scroll inside the editor, in a `ScrollArea`.
 
 | Step | Trigger | Result |
 |---|---|---|
 | 1 | Under 440px wide (container query) | The label fields hide: a label is extra, a boundary and a colour are the value |
-| 2 | Under 300px wide | The `track` and the row numbers hide; every stop keeps its boundary field, colour and remove button |
+| 2 | Under 300px wide | The `track` and the row numbers hide; every stop keeps its boundary field, colour and remove button. The colour choice is never narrower than 64px, which shows its swatch beside its caret; the boundary field gives way to 48px first |
 
 ## Interaction and accessibility
 
@@ -92,7 +92,10 @@ Resolved 2026-10-11 (under the owner's delegation):
 - **"None" is a colour choice**, because the shared type allows a band with only a label.
 - **A free colour that is not `#rrggbb`** (a named colour, `rgb()`) is drawn as it is, but the browser's colour field can only show hex: it starts from a mid grey until the user picks.
 - **No custom colour picker**, by the brief: the browser's field.
-- **Rows scroll with the browser's thin scrollbar**, not `ScrollArea`: the rows hold popups and focus rings that `ScrollArea`'s fades would cover. Recorded as a difference in look.
+- **Rows scroll in a `ScrollArea`** (review 1 of Milestone 2, 2026-10-11; before, the browser's thin scrollbar). The reason given then does not hold: the popups of the rows are drawn outside the area, and the rows keep 3px of room for their focus rings.
 - **No `required`**: `minStops` says how many stops there must be.
 - **Row keys are positions**: a stop has no identity besides its place, so a draft typed in one row does not follow a stop that moves past it (it cannot: boundaries do not cross).
-- **Its value drives the tier 2 components too** (tested in the integration pass, 2026-10-11): `Slider`, `PieIndicator`, `Sparkline` and `Heatmap` take the same list. The rows keep the browser's scrollbar, for the reason above.
+- **Its value drives the tier 2 components too** (tested in the integration pass, 2026-10-11): `Slider`, `PieIndicator`, `Sparkline` and `Heatmap` take the same list.
+- **Review 1 of Milestone 2** (2026-10-11). I-5: without `min` the bottom of the scale is the lowest `from` of the list, in whatever order it is given (it was the first one, so an unsorted list was pushed above it). I-17: see step 2. I-12: its tokens are in the generated tables (the generator took `--umbra-color-scale-editor-*` for global colour tokens). In a form (`tests/visual/forms.spec.ts`): a native reset brings `defaultValue` back; the preview alone (`readOnly`) sends nothing.
+- **`toneLabels` accepts an explicit `undefined`** for a name (review 3, F2): it means the default name.
+- **No `loading`**: see `plan/specs/Slider.md`.

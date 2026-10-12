@@ -20,7 +20,8 @@ const edges = ([from, to]: [number, number], count: number) =>
 /**
  * Sums points into a grid of `bins` columns by rows. Rows run from the top down, so the first row holds
  * the highest `y`, as a chart draws it. A cell no point fell in is `null`: there is nothing there, which
- * is not the same as a low value. Points outside the domains are left out; one on the upper edge belongs
+ * is not the same as a low value. Points outside the domains, and points whose position or value is
+ * not a finite number, are left out; one on the upper edge belongs
  * to the last cell.
  */
 export function binPoints(
@@ -32,9 +33,11 @@ export function binPoints(
   } = {},
 ) {
   const { bins = 8 } = options;
-  const [nx, ny] = (typeof bins === 'number' ? [bins, bins] : bins).map((n) => Math.max(1, Math.floor(n)));
-  const xDomain = options.xDomain ?? extent(points.map((p) => p.x));
-  const yDomain = options.yDomain ?? extent(points.map((p) => p.y));
+  const [nx, ny] = (typeof bins === 'number' ? [bins, bins] : bins).map((n) =>
+    Number.isFinite(n) ? Math.max(1, Math.floor(n)) : 8,
+  );
+  const xDomain = options.xDomain ?? extent(points.map((p) => p.x).filter(Number.isFinite));
+  const yDomain = options.yDomain ?? extent(points.map((p) => p.y).filter(Number.isFinite));
   const values: (number | null)[][] = Array.from({ length: ny! }, () => Array<number | null>(nx!).fill(null));
   const cell = (v: number, [from, to]: [number, number], count: number) => {
     if (!(v >= from && v <= to)) return -1;
@@ -42,7 +45,8 @@ export function binPoints(
   };
   for (const p of points) {
     const [c, r] = [cell(p.x, xDomain, nx!), cell(p.y, yDomain, ny!)];
-    if (c < 0 || r < 0) continue;
+    // A point that is not at a position, or adds something that is not a number, adds nothing.
+    if (c < 0 || r < 0 || !Number.isFinite(p.value ?? 1)) continue;
     const row = values[ny! - 1 - r]!;
     row[c] = (row[c] ?? 0) + (p.value ?? 1);
   }

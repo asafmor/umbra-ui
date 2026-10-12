@@ -118,3 +118,7 @@ Resolved 2026-10-11 (review 2):
 
 - The bar declares no public token of another component (F21): what it needs inside itself is a private default (`--primary-action-min-height`, `--icon-size`), which the component reads after its public token, so `--umbra-primary-action-min-height` or `--umbra-icon-size` set by the app on any ancestor wins. The badge ring and the focus colour followed on 2026-10-11 (`--badge-ring`, `--focus-color`).
 - When nothing is left to move, "More" itself gives way: its label ends in an ellipsis and its caret stays, so it is not cut at the edge down to a bar 470px wide (it was cut from 470px; F31). Narrower than that the logo and the actions alone are wider than the bar: not supported, as phones are not a design target (`plan/layout.md`).
+
+Changed 2026-10-11 (fix pass of review 2, SL-3):
+
+- **Content that grows after the bar has measured.** The bar watches its slots (all but the nav, which takes the room that is left), so when what a slot holds arrives or grows without the bar rendering again (the chip of a `live` `ContextBlock` without a `time`), the bar starts again from everything shown. What it shows is then what a fresh load with that content gives. Content that gets smaller keeps the steps taken until the bar next grows or renders: nothing is cut, the bar only shows less than it could (a restart on every change of a slot would loop with a slot whose content shrinks by its own steps).

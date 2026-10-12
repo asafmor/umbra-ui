@@ -67,6 +67,7 @@ export const names: string[] = [
   'LevelMeter',
   'PieIndicator',
   'DivergingMeter',
+  'MeterList',
   'Checkbox',
   'CheckboxGroup',
   'Radio',

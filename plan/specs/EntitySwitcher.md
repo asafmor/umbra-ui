@@ -86,7 +86,7 @@ The step is `data-shrink` on the root. A `SubNav` takes the switcher to step 2 a
 ## Interaction and accessibility
 
 - The trigger is a button with `aria-haspopup="dialog"` and `aria-expanded`. `Enter`, `Space` or a press opens the picker.
-- The picker is a dialog named by `aria-label`. Focus goes to the search field, or to the current row when there is none. `Escape` closes it and focus returns to the trigger.
+- The picker is a dialog named by `aria-label`. Focus goes to the search field, or to the current row when there is none. `Escape` closes it and focus returns to the trigger; with text in the search field the first `Escape` empties the field, as in every `SearchField`, and the next one closes.
 - In the picker: `ArrowDown` from the search field goes to the first row; `ArrowDown`, `ArrowUp`, `Home` and `End` move through the rows, `ArrowUp` on the first returns to the field. The rows are one tab stop. `Enter` chooses.
 - The rows are links (`href`) or buttons, in lists; a group is a list named by its heading. The current row has `aria-current="true"` and a check, so it is not marked by colour alone.
 - The steppers are a group of two controls named `previousLabel` and `nextLabel`, each with the target's name ("Previous: Region 1"). They are always buttons, also for items with `href`: the app moves on in `onChange`. At an end without `wrap` a stepper is `aria-disabled` and stays focusable, so the focus is not lost when the last step is taken with the keyboard.
@@ -111,3 +111,11 @@ Resolved 2026-10-11 (under the owner's delegation):
 - **Stacked chevrons need 48px**: they are stacked where there is room and side by side in the 32px `SubNav`, instead of two 16px targets.
 - **One order for the picker and the steppers** (stated integration pass, 2026-10-11): the items group by group, the groups in the order they first appear in `items`. "Previous" and "next" are the rows above and below the current one in the picker, which is not the order of `items` when the entities of a group are not listed together.
 - **Among actions that overflow it stays in the row** (integration pass, 2026-10-11): it cannot be a row of a menu (`staysInRow`).
+
+Changed 2026-10-11 (fix pass of review 2):
+
+- **The steppers go to the neighbours of the current entity, disabled or not** (SL-8). With a disabled current entity they used to lose their place: "next" went to the first entity and "previous" was off.
+- **Focus stays in the open picker when the list changes** (SL-2, SL-9). The app may set `loading` or change `items` while it is open. The focus goes to the row that replaced the one it was on, else the current row, else the search field, else the picker itself (while it holds skeletons only). When rows arrive in a picker that had nothing to focus, the current row takes the focus, so the arrow keys work.
+- **`Escape` with text in the search field** (SL-10): the spec said it closes; the field empties first, which is the rule of every search field of the library (in a popover, emptying is all the first press does). The spec now says so; nothing changed in the code.
+- **Entities without a group, listed after a group, are set apart by a line** (SL-12): they read as part of the last group.
+- **`--umbra-entity-switcher-picker-width` set on an ancestor reaches the picker** (SL-11), as every token does for every popover now (`plan/decisions/07-customisation.md`, "Tokens and portals").

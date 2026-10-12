@@ -93,6 +93,13 @@ The bar fills the width that is left and never goes below `--umbra-diverging-met
 
 None.
 
+Resolved 2026-10-11 (fix pass of review 2, plan/reviews/milestone-2.md):
+
+- **Invalid input** follows the one rule of plan/decisions/03-charts.md ("Invalid input"): a value that is not a finite number is no value.
+- **The default value text has no noise of binary fractions** (MC-14): `value={0.3} origin={0.1}` reads "+0.2" (it read "+0.19999999999999998"); the difference is rounded to 12 significant digits.
+- **The value never shows beside a cut label** (MC-15), as on `PieIndicator`.
+- **In a `MeterList`** the meter takes the list's columns and leaves hiding the value to the list. A cut label shows its text in a tooltip (plan/specs/MeterList.md).
+
 Resolved 2026-10-11:
 
 - **Positive is towards the inline end**, in both directions: the meter is a row of text-like content, not a plot, so it mirrors like `ProgressBar` does. (The charts do not mirror; a chart has axes with numbers.)

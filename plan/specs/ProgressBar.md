@@ -114,6 +114,11 @@ A value drawn inside a thick bar hides when the bar is shorter than 72px. Everyt
 
 None.
 
+Resolved 2026-10-11 (fix pass of review 2, plan/reviews/milestone-2.md):
+
+- **Invalid input**: a value that is not a finite number (`NaN`, `Infinity`) is no value, as `null` is, with a warning in development (plan/decisions/03-charts.md, "Invalid input"). `Infinity` used to fill the scale. **In a `MeterList`** the meter takes the list's columns (label, bar, value) on one line. **A cut label** shows its text in a tooltip, over which the tooltip of the value gives way (plan/specs/MeterList.md). The value of a stacked part that is not finite counts as zero.
+- **The value never shows beside a cut label**: the label's own text is the measure, not a sum of rounded widths (`src/meters/fit.ts`).
+
 Resolved 2026-10-10:
 
 - 2026-10-11 (review B7): the unfilled track gets a 1px outline in `border-control`. The track's fill (`surface3`) measured 1.2:1 against the card, so an empty bar could not be seen; the fill colour stays, and the outline carries the contrast (numbers above).
