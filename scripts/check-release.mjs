@@ -37,7 +37,16 @@ if (final) {
   if (pkg.version === '0.0.0') fail('the version is still 0.0.0. Run "npm run version" first.');
   const changelog = existsSync(root + 'CHANGELOG.md') ? readFileSync(root + 'CHANGELOG.md', 'utf8') : '';
   if (!changelog.includes(`## ${pkg.version}\n`)) fail(`CHANGELOG.md has no section for ${pkg.version}.`);
+  // Before the first release the README links the pending entries, as there is no changelog yet.
+  if (readFileSync(root + 'README.md', 'utf8').includes('](.changeset)'))
+    fail('README.md still links the .changeset folder. Link CHANGELOG.md (docs/releasing.md).');
 } else if (pending.length) {
+  // The other way round: a link to a changelog that does not exist yet is a dead link on GitHub.
+  if (
+    !existsSync(root + 'CHANGELOG.md') &&
+    readFileSync(root + 'README.md', 'utf8').includes('](CHANGELOG.md)')
+  )
+    fail('README.md links CHANGELOG.md, which does not exist before the first release. Link .changeset.');
   const tmp = mkdtempSync(join(tmpdir(), 'umbra-release-'));
   try {
     cpSync(root + 'package.json', join(tmp, 'package.json'));
