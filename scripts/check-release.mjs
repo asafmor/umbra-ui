@@ -102,13 +102,13 @@ if (stray.length) fail(`files outside dist/ would be published: ${stray.join(', 
  * size, not an app's bundle (`npm run check:package` limits that), and it is here so the package
  * cannot grow unnoticed.
  *
- * Measured 2026-10-12, with Milestone 2 built (89 components, 587 files): 1021 kB packed, 3.9 MB
- * unpacked, of which the source maps with their embedded source are 59% packed and 57% unpacked.
- * The limit is that plus a quarter (1276), rounded. When a change takes the package over it, find
+ * Measured 2026-10-12, with Milestone 2 built and the column controls of the table (90 components,
+ * 592 files): 1054 kB packed, 4.0 MB unpacked, of which the source maps with their embedded source
+ * are 59% packed and 57% unpacked. The limit is that plus a quarter (1318), rounded. When a change takes the package over it, find
  * what grew; raise the limit only to the new measured size plus a quarter, with the date here.
  * (2026-10-11, the 43 components of Milestone 1: 669 kB packed.)
  */
-const PACKED_LIMIT_KB = 1275;
+const PACKED_LIMIT_KB = 1320;
 
 const kb = (bytes) => (bytes / 1024).toFixed(0);
 const isMap = (file) => file.path.endsWith('.map');
