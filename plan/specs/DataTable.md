@@ -220,6 +220,9 @@ Resolved 2026-10-11 (end-user column management, owner's finding O-2; changes th
 - **The last shown column cannot be hidden**: its box is disabled.
 - **Headers that span columns** (`columnGroups`) split when the user moves a column out from under them: neighbours in the same group merge, as before.
 - **The detail row of `expandableHidden`** shows the columns hidden for lack of room, not the ones the user hid.
+- **The search field of the column menu is a native `<input type="search">`**, styled by the table. `SearchField`, with its suggestions, added 19 KB (gzip) to an app that imports `DataTable` and put it over its ceiling of 130 KB (measured 2026-10-11: 131.8 and 136.2 KB with it, 112.7 and 116.3 KB without, by the two bundlers). Nothing is loaded on demand.
+- **A width does not change a column's priority.** A column the user made wide can itself be the one that hides when the table is too narrow for it; ticking it in the column menu keeps it. Making every resized column unhideable would have turned a small drag into a lasting rule.
+- **The live region joins its messages**: while more rows load it says that, then the last move or resize.
 - **Not done**: named saved views; a column's place changed by dragging its header in the table itself (the list and the menu do it); touch drag of a header.
 
 Resolved 2026-10-11 (review fixes):
