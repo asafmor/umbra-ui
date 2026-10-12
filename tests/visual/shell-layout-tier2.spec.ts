@@ -768,6 +768,11 @@ test.describe('WidgetBoard', () => {
     // A resize moves the cards at once: no transition or animation runs on any of them.
     await page.setViewportSize({ width: 1000, height: 720 });
     expect(await grid(page).evaluate((el) => el.getAnimations({ subtree: true }).length)).toBe(0);
+    // The board repacks in its resize observer, which the browser calls before it paints: read what is
+    // painted (after that frame), not the moment between the new width and the observer.
+    await page.evaluate(
+      () => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))),
+    );
     const resized = await layout(page);
     await settle(page);
     expect(await layout(page)).toEqual(resized);
