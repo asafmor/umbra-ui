@@ -7,6 +7,8 @@
 //    dist/ and the standard files is.
 // 3. Prints how much of the package is source maps, and fails when the packed package is over its limit.
 //
+// `--changelog` also prints the changelog the rehearsal wrote (`npm run release:check -- --changelog`).
+//
 // `--final` is what `npm run release` runs just before publishing: the version must already be
 // bumped (no pending changesets), and CHANGELOG.md must have its section.
 import { Buffer } from 'node:buffer';
@@ -65,6 +67,9 @@ if (final) {
     console.log(
       `release check: ${pending.length} changeset(s) would release ${pkg.name} ${pkg.version} -> ${next}`,
     );
+    // `--changelog` prints the rehearsed CHANGELOG.md, to read it as a user will before the release.
+    if (process.argv.includes('--changelog'))
+      console.log('\n' + readFileSync(join(tmp, 'CHANGELOG.md'), 'utf8'));
   } finally {
     rmSync(tmp, { recursive: true, force: true });
   }
@@ -97,13 +102,13 @@ if (stray.length) fail(`files outside dist/ would be published: ${stray.join(', 
  * size, not an app's bundle (`npm run check:package` limits that), and it is here so the package
  * cannot grow unnoticed.
  *
- * Measured 2026-10-11, with the 43 components of Milestone 1: 669 kB packed, 2.5 MB unpacked, of which
- * the source maps with their embedded source are 58% packed and 56% unpacked.
- * Milestone 2 brings the count to 66. At the same size per component that is 669 * 66 / 43 = 1027 kB;
- * a quarter of headroom on top gives 1284, rounded to 1300.
- * Review it when Milestone 2 is built: lower it to the measured size plus a quarter.
+ * Measured 2026-10-12, with Milestone 2 built (89 components, 587 files): 1021 kB packed, 3.9 MB
+ * unpacked, of which the source maps with their embedded source are 59% packed and 57% unpacked.
+ * The limit is that plus a quarter (1276), rounded. When a change takes the package over it, find
+ * what grew; raise the limit only to the new measured size plus a quarter, with the date here.
+ * (2026-10-11, the 43 components of Milestone 1: 669 kB packed.)
  */
-const PACKED_LIMIT_KB = 1300;
+const PACKED_LIMIT_KB = 1275;
 
 const kb = (bytes) => (bytes / 1024).toFixed(0);
 const isMap = (file) => file.path.endsWith('.map');

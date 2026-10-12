@@ -78,6 +78,46 @@ const cases = [
   },
   { name: 'DataTable', from: 'index', use: 'DataTable', gzip: 130, without: ['d3', 'charts'] },
   { name: 'BarChart', from: 'charts', use: 'BarChart', gzip: 95, without: ['DataTable', 'the table engine'] },
+  // Tier 2, one import each. Measured 2026-10-12 under Vite, a quarter added: DateChip 6.2, StarRating
+  // 23.3, MeterList 29.3, Sparkline 26.2, Spotlight 41.3, Planner 109.2. A Planner is as heavy as a
+  // DataTable because its toolbar draws a month `Select` at first paint, with React Aria's list box
+  // and popover behind it: there is nothing to load later without the control popping in.
+  { name: 'DateChip', from: 'index', use: 'DateChip', gzip: 8, without: all },
+  {
+    name: 'StarRating',
+    from: 'index',
+    use: 'StarRating',
+    gzip: 29,
+    without: ['DataTable', 'the table engine', 'd3', 'charts'],
+  },
+  {
+    name: 'MeterList',
+    from: 'index',
+    use: 'MeterList',
+    gzip: 37,
+    without: ['DataTable', 'the table engine', 'd3', 'charts'],
+  },
+  {
+    name: 'Sparkline',
+    from: 'charts',
+    use: 'Sparkline',
+    gzip: 33,
+    without: ['DataTable', 'the table engine'],
+  },
+  {
+    name: 'Spotlight',
+    from: 'index',
+    use: 'Spotlight',
+    gzip: 52,
+    without: ['DataTable', 'the table engine', 'd3', 'charts'],
+  },
+  {
+    name: 'Planner',
+    from: 'index',
+    use: 'Planner',
+    gzip: 137,
+    without: ['DataTable', 'the table engine', 'd3', 'charts'],
+  },
 ];
 const external = ['react', 'react-dom', 'react-dom/client', 'react/jsx-runtime'];
 const production = { 'process.env.NODE_ENV': '"production"' };
