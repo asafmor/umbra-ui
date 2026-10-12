@@ -69,7 +69,7 @@ function Image({ src, alt, onError, className, style }: AvatarImageProps) {
       src={src}
       alt={alt}
       draggable={false}
-      onError={onError}
+      onError={() => onError?.()}
       className={cx(styles.media, className)}
       style={style}
     />

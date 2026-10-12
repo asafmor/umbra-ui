@@ -76,7 +76,7 @@ function Root({
       ) : onPress ? (
         <AriaButton
           {...defined(surface)}
-          onPress={onPress}
+          onPress={() => onPress()}
           isDisabled={disabled}
           {...defined({ 'aria-pressed': selected })}
         >

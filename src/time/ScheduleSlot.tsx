@@ -127,7 +127,7 @@ function Root({
         children: content,
       })
     ) : onPress || href !== undefined ? (
-      <button {...common} type="button" disabled={disabled} onClick={onPress}>
+      <button {...common} type="button" disabled={disabled} onClick={() => onPress?.()}>
         {content}
       </button>
     ) : (

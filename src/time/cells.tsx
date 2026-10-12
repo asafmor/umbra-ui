@@ -102,7 +102,7 @@ export function Cell({
       aria-describedby={describedBy}
       aria-colindex={sideColumn ? column + 2 : undefined}
       tabIndex={-1}
-      onClick={disabled ? undefined : onPress}
+      onClick={disabled ? undefined : () => onPress?.()}
       className={cx(styles.cell, className)}
       style={style}
     >

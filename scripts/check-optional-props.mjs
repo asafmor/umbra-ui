@@ -13,6 +13,8 @@
 //    types, callbacks and tuples. An optional property fails when `undefined` is not assignable to
 //    it, however it was made optional: `Partial<…>`, a mapped type, an intersection, a generic, a
 //    class, a re-export. The planted file at the end proves on every run that each of these is seen.
+// 3. The other type rule of decision 07, with the same program: a callback prop is called with the
+//    arguments its type declares, and no event object leaks into `onPress: () => void`.
 import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -202,6 +204,51 @@ for (const name of new Set(names)) {
 }
 for (const problem of reported)
   if (!problem.includes('`planted:')) problems.push(`public type: ${problem} does not accept undefined`);
+
+// --- 3. A callback of the app is called with what its type says ---
+
+// `onPress: () => void` is called with nothing (plan/decisions/07-customisation.md): handing the
+// prop itself to a native `onClick`, or to React Aria's `onPress`, would call it with the event,
+// and an app that passes `onPress={setOpen}` or a function with an optional parameter would get an
+// event object where it expects its own value. The same for any callback: a function that came in
+// as a prop is never handed to a handler that passes more arguments than the prop declares. Write
+// `onClick={() => onPress()}`.
+const fromProps = (symbol) =>
+  symbol?.declarations?.some((d) => {
+    let node = d;
+    while (ts.isBindingElement(node) || ts.isObjectBindingPattern(node)) node = node.parent;
+    return ts.isParameter(node) || ts.isPropertySignature(d) || ts.isPropertyDeclaration(d);
+  }) ?? false;
+const signatureOf = (type) => type && checker.getNonNullableType(type).getCallSignatures()[0];
+const handed = (expression, visitHanded) => {
+  if (ts.isParenthesizedExpression(expression)) return handed(expression.expression, visitHanded);
+  if (ts.isBinaryExpression(expression)) return handed(expression.right, visitHanded);
+  if (ts.isConditionalExpression(expression))
+    return [expression.whenTrue, expression.whenFalse].forEach((e) => handed(e, visitHanded));
+  if (ts.isIdentifier(expression) || ts.isPropertyAccessExpression(expression)) visitHanded(expression);
+};
+for (const sourceFile of program.getSourceFiles()) {
+  if (!sourceFile.fileName.startsWith(src) || isPlanted(sourceFile.fileName)) continue;
+  const visit = (node) => {
+    const named =
+      (ts.isJsxAttribute(node) || ts.isPropertyAssignment(node)) && /^on[A-Z]/.test(node.name.getText());
+    const value = named && (ts.isJsxAttribute(node) ? node.initializer?.expression : node.initializer);
+    if (value)
+      handed(value, (expression) => {
+        if (!fromProps(checker.getSymbolAtLocation(expression))) return;
+        const given = signatureOf(checker.getTypeAtLocation(expression));
+        const wanted = signatureOf(checker.getContextualType(expression));
+        if (!given || !wanted || given.parameters.length >= wanted.parameters.length) return;
+        if (given.declaration?.parameters.some((parameter) => parameter.dotDotDotToken)) return;
+        const { line, character } = sourceFile.getLineAndCharacterOfPosition(node.getStart());
+        problems.push(
+          `${relative(root, sourceFile.fileName)}:${line + 1}:${character + 1}  \`${node.name.getText()}\` is handed the prop \`${expression.getText()}\`, which declares ${given.parameters.length} parameter(s) and would be called with ${wanted.parameters.length}. Wrap it: \`(…) => ${expression.getText()}(…)\`.`,
+        );
+      });
+    ts.forEachChild(node, visit);
+  };
+  visit(sourceFile);
+}
 
 if (fix) console.log(`check-optional-props: added \`| undefined\` to ${fixed} members`);
 if (problems.length) {

@@ -864,7 +864,7 @@ function RowRadio({
         className={srOnly}
         // A click on the chosen radio clears it, so the click is heard, not the change.
         onChange={() => {}}
-        onClick={onToggle}
+        onClick={() => onToggle()}
       />
       <span aria-hidden="true" className={styles.radioMark} />
     </label>

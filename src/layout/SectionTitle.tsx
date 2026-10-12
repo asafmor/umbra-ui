@@ -58,7 +58,7 @@ export function SectionTitle({
   const text = href ? (
     renderLink({ href, className: styles.link, children })
   ) : onOpen ? (
-    <button type="button" className={styles.link} onClick={onOpen}>
+    <button type="button" className={styles.link} onClick={() => onOpen()}>
       {children}
     </button>
   ) : (

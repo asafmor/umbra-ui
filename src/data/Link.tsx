@@ -50,7 +50,7 @@ function Root({
   };
   if (href === undefined) {
     return (
-      <button type="button" {...common} disabled={disabled} onClick={onPress}>
+      <button type="button" {...common} disabled={disabled} onClick={() => onPress?.()}>
         {children}
       </button>
     );

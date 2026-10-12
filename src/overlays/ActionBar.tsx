@@ -232,7 +232,7 @@ function Clear({ label = 'Clear selection', onClear, className, style }: ActionB
         iconOnly
         label={label}
         tooltip={label}
-        onPress={onClear}
+        onPress={() => onClear?.()}
       >
         <Icon name="close" />
       </ButtonBase>

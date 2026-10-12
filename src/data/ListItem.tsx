@@ -153,7 +153,7 @@ function Title({ href, onPress, disabled, className, style, children }: ListItem
         {children}
       </a>
     ) : onPress ? (
-      <button type="button" className={styles.link} disabled={disabled} onClick={onPress}>
+      <button type="button" className={styles.link} disabled={disabled} onClick={() => onPress()}>
         {children}
       </button>
     ) : (

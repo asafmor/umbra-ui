@@ -480,7 +480,7 @@ function Clear({ label = 'Clear', className, style }: SearchFieldClearProps) {
         size="small"
         iconOnly
         label={label}
-        onPress={field.clear}
+        onPress={() => field.clear()}
       >
         <Icon name="close" />
       </ButtonBase>

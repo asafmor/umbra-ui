@@ -354,7 +354,13 @@ function Header({
         </>
       )}
       {closeButton && (
-        <ButtonBase umbra="icon-button" variant="ghost" iconOnly label={closeLabel} onPress={popover.close}>
+        <ButtonBase
+          umbra="icon-button"
+          variant="ghost"
+          iconOnly
+          label={closeLabel}
+          onPress={() => popover.close()}
+        >
           <Icon name="close" />
         </ButtonBase>
       )}
