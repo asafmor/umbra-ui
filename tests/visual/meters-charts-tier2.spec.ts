@@ -1152,8 +1152,8 @@ test.describe('Scatter', () => {
     await expect(dated.getByRole('option', { name: 'Web: Jan 2, Visits 20' })).toHaveCount(1);
 
     const noted = tile(page, 'annotations');
-    await expect(noted.locator('[data-part="annotations"] [data-kind="line"]')).toContainText('Budget');
-    await expect(noted.locator('[data-part="annotations"] [data-kind="band"]')).toContainText('Target');
+    await expect(noted.locator('[data-part="annotationLabels"] [data-kind="line"]')).toContainText('Budget');
+    await expect(noted.locator('[data-part="annotationLabels"] [data-kind="band"]')).toContainText('Target');
 
     const formatted = tile(page, 'one');
     await expect(formatted.getByRole('option').first()).toHaveAttribute('aria-label', 'Group A: 5 h, 10 k');

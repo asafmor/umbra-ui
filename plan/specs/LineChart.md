@@ -147,3 +147,4 @@ Resolved 2026-10-10:
 - Grid lines are dots in the axis colour: each dot keeps 3:1, and the grid still reads lighter than the axes.
 - Labels of vertical annotations sit above the plot, where they cannot cover the marks.
 - Hit areas are a 10px circle around each value; where two overlap, the series drawn last wins.
+- **The labels of annotations are drawn above the marks, with an outline** (review 2, OP-5, 2026-10-11; all charts with two axes share the code, `src/charts/internal/cartesian.tsx`). They were in the annotations' own layer, under the bars and lines. The lines and bands stay under the marks; the labels are in `data-part="annotationLabels"`, the last thing in the picture, outlined in `--umbra-chart-label-halo` as the labels on marks are.

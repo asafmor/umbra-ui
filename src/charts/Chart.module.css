@@ -196,8 +196,15 @@
   stroke-width: var(--umbra-chart-band-edge-width, var(--umbra-border-width));
 }
 
-.svg .annotation text {
+/* Drawn above the marks, so outlined like the labels on marks: readable over a bar or a line. */
+.svg .annotationLabel {
+  color: var(--umbra-chart-annotation, var(--umbra-color-base-text-secondary));
   fill: currentColor;
+  stroke: var(--umbra-chart-label-halo, var(--umbra-color-base-surface1));
+  stroke-width: 3px;
+  stroke-linejoin: round;
+  paint-order: stroke;
+  pointer-events: none;
 }
 
 .series {

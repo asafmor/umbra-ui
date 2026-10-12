@@ -1,5 +1,6 @@
 // Axes, grid, annotations and the backdrop for the charts with two axes.
-import type { ReactNode } from 'react';
+import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import styles from '../Chart.module.css';
 import { useFrame, type FrameModel } from './Frame';
 import { labelsThatFit, textWidth, thin, truncate, type Measure } from './scales';
@@ -170,58 +171,83 @@ export function Axes() {
   );
 }
 
-/** Reference lines and bands. */
+/**
+ * Reference lines and bands. They lie under the marks; their labels do not: a label under a bar or a
+ * line could not be read. The labels are drawn last in the chart's picture, above every mark, with an
+ * outline in the surface colour, as the labels on marks have. They are moved there from here, so a
+ * chart built from its blocks gets the same without a block of its own for them.
+ */
 export function Annotations() {
   const { model, level, measure } = useFrame<CartesianModel>();
   const { box } = model;
+  const group = useRef<SVGGElement>(null);
+  const [picture, setPicture] = useState<SVGSVGElement | null>(null);
+  useLayoutEffect(() => setPicture(group.current?.ownerSVGElement ?? null), []);
   return (
-    <g data-part="annotations">
-      {model.annotations.map((a, i) => {
-        const label = level < 2 && a.label;
-        const span = a.vertical
-          ? { x: a.from, y: box.top, width: a.to - a.from, height: box.bottom - box.top }
-          : { x: box.left, y: a.from, width: box.right - box.left, height: a.to - a.from };
-        return (
-          <g key={i} className={styles.annotation} style={{ color: a.color }} data-kind={a.kind}>
-            {a.kind === 'band' ? (
-              <>
-                <rect {...span} />
-                {/* The two edges of the band: the cue that does not depend on its tint. */}
-                {[a.from, a.to].map((at) =>
-                  a.vertical ? (
-                    <line key={at} x1={at} x2={at} y1={box.top} y2={box.bottom} />
-                  ) : (
-                    <line key={at} x1={box.left} x2={box.right} y1={at} y2={at} />
-                  ),
-                )}
-              </>
-            ) : a.vertical ? (
-              <line x1={a.from} x2={a.from} y1={box.top} y2={box.bottom} />
-            ) : (
-              <line x1={box.left} x2={box.right} y1={a.from} y2={a.from} />
-            )}
-            {label &&
-              (a.vertical ? (
+    <>
+      <g ref={group} data-part="annotations">
+        {model.annotations.map((a, i) => {
+          const span = a.vertical
+            ? { x: a.from, y: box.top, width: a.to - a.from, height: box.bottom - box.top }
+            : { x: box.left, y: a.from, width: box.right - box.left, height: a.to - a.from };
+          return (
+            <g key={i} className={styles.annotation} style={{ color: a.color }} data-kind={a.kind}>
+              {a.kind === 'band' ? (
+                <>
+                  <rect {...span} />
+                  {/* The two edges of the band: the cue that does not depend on its tint. */}
+                  {[a.from, a.to].map((at) =>
+                    a.vertical ? (
+                      <line key={at} x1={at} x2={at} y1={box.top} y2={box.bottom} />
+                    ) : (
+                      <line key={at} x1={box.left} x2={box.right} y1={at} y2={at} />
+                    ),
+                  )}
+                </>
+              ) : a.vertical ? (
+                <line x1={a.from} x2={a.from} y1={box.top} y2={box.bottom} />
+              ) : (
+                <line x1={box.left} x2={box.right} y1={a.from} y2={a.from} />
+              )}
+            </g>
+          );
+        })}
+      </g>
+      {picture &&
+        level < 2 &&
+        createPortal(
+          <g data-part="annotationLabels">
+            {model.annotations.map((a, i) => {
+              if (!a.label) return null;
+              const shared = {
+                'data-kind': a.kind,
+                className: styles.annotationLabel,
+                style: { color: a.color },
+              };
+              return a.vertical ? (
                 // Above the plot, centred on the line or band and kept inside the plot's width.
                 <text
+                  key={i}
+                  {...shared}
                   x={Math.min(
-                    Math.max((a.from + a.to) / 2, box.left + measure(label) / 2),
-                    Math.max(box.right - measure(label) / 2, box.left),
+                    Math.max((a.from + a.to) / 2, box.left + measure(a.label) / 2),
+                    Math.max(box.right - measure(a.label) / 2, box.left),
                   )}
                   y={box.top - 5}
                   textAnchor="middle"
                 >
-                  {truncate(label, box.right - box.left, measure)}
+                  {truncate(a.label, box.right - box.left, measure)}
                 </text>
               ) : (
-                <text x={box.right - 4} y={a.from - 5} textAnchor="end">
-                  {truncate(label, box.right - box.left - 8, measure)}
+                <text key={i} {...shared} x={box.right - 4} y={a.from - 5} textAnchor="end">
+                  {truncate(a.label, box.right - box.left - 8, measure)}
                 </text>
-              ))}
-          </g>
-        );
-      })}
-    </g>
+              );
+            })}
+          </g>,
+          picture,
+        )}
+    </>
   );
 }
 
