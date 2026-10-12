@@ -83,17 +83,31 @@
 
 .button[data-variant='ghost'][data-pressed],
 .button[data-variant='ghost'][aria-haspopup][aria-expanded='true'],
-.button[data-variant='ghost'][aria-pressed='true'] {
+.button[data-variant='ghost'][aria-pressed='true']:not([data-icon-only]) {
   background: color-mix(in oklab, currentColor var(--umbra-state-hover-lighten), transparent);
 }
 
-/* A toggled-on button is outlined, so the state does not depend on colour alone. */
+/*
+ * A toggled-on button (plan/interaction.md, "Selected"). Two cues, so the state does not depend on
+ * colour alone: the accent colour, and its icon drawn filled. A button that has a box, or text, is
+ * outlined as well. A ghost button that is only an icon (a star, a bookmark) has no box and gets none:
+ * the filled icon is its second cue.
+ */
 .button[aria-pressed='true'] {
   border-color: currentColor;
 }
 
+.button[data-variant='ghost'][data-icon-only][aria-pressed='true'] {
+  border-color: var(--umbra-button-ghost-border, transparent);
+}
+
 .button:is([data-variant='ghost'], [data-variant='neutral'])[aria-pressed='true'] {
-  color: var(--umbra-color-fixed-accent-text);
+  color: var(--umbra-button-pressed-color, var(--umbra-color-fixed-accent-text));
+}
+
+/* Icons are strokes; filled, a closed shape (a star, a heart, a flag) reads as "on". */
+.button[aria-pressed='true'] [data-filled] svg {
+  fill: currentColor;
 }
 
 .button[data-focus-visible] {

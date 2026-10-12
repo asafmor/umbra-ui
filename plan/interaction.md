@@ -8,7 +8,7 @@ The screenshots are static, so everything here is the library's own rule, approv
 |---|---|
 | Hover | Surface lightens one step. A surface that carries light or coloured text (primary, accent and danger buttons) darkens one step instead, so the text keeps 4.5:1. Table and list rows highlight across their full width. |
 | Pressed | Surface darkens one step. No movement. |
-| Selected | Violet fill (fixed colour), always with a second cue that is not colour: a bar, an edge stripe, an outline, a weight change or a check. |
+| Selected | Violet fill (fixed colour), always with a second cue that is not colour: a bar, an edge stripe, an outline, a weight change or a check. A **toggle button that is on** (`pressed`) takes the accent colour and draws its icon filled; one that has a box or a text is outlined as well, and a `ghost` icon button gets no box: the filled icon is its second cue (2026-10-11, `plan/specs/IconButton.md`). |
 | Focus | 2px light-pink ring, shown for keyboard focus (`:focus-visible`). Never violet, so focus and selected cannot be confused. On a brand bar where pink has less than 3:1, the ring takes the bar's text colour. Inside a container that clips, the ring is drawn inwards. |
 | Disabled | 40% opacity; no hover or press response. |
 

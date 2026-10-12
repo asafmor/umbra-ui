@@ -178,6 +178,9 @@ export interface ButtonProps extends RootAttributes {
   collapseTo?: 'icon' | undefined;
   type?: 'button' | 'submit' | 'reset' | undefined;
   onPress?: (() => void) | undefined;
+  /** Makes it a toggle. While `true` it takes the accent colour, an outline, and its icons are drawn filled. */
+  pressed?: boolean | undefined;
+  onPressedChange?: ((pressed: boolean) => void) | undefined;
   /** Replace or hide named pieces. */
   parts?:
     | {
@@ -201,6 +204,8 @@ export function Button({
   collapseTo,
   loadingLabel = 'Loading',
   onPress,
+  pressed,
+  onPressedChange,
   parts,
   ...rest
 }: ButtonProps) {
@@ -209,12 +214,24 @@ export function Button({
   const canCollapse = collapseTo === 'icon' && !!(iconStart || iconEnd) && !inMenu;
   const forced = useContext(ForceCollapseContext);
   const collapsed = useShrinkLevel(ref, canCollapse ? 1 : 0) === 1 || (canCollapse && forced);
-  useShortcut(shortcut, rest.disabled || rest.loading ? undefined : onPress);
+  const press =
+    pressed === undefined
+      ? onPress
+      : () => {
+          onPress?.();
+          onPressedChange?.(!pressed);
+        };
+  useShortcut(shortcut, rest.disabled || rest.loading ? undefined : press);
   const icon = (part: 'iconStart' | 'iconEnd', node: ReactNode) =>
     renderPart(
       parts?.[part],
       { children: node },
-      (p) => p.children && <IconSlot part={part}>{p.children}</IconSlot>,
+      (p) =>
+        p.children && (
+          <IconSlot part={part} filled={pressed}>
+            {p.children}
+          </IconSlot>
+        ),
     );
   return (
     <ButtonBase
@@ -227,7 +244,8 @@ export function Button({
       text={typeof children === 'string' ? children : undefined}
       tooltip={collapsed ? children : null}
       shortcut={shortcut}
-      onPress={onPress}
+      pressed={pressed}
+      onPress={press}
     >
       {rest.loading
         ? renderPart(parts?.spinner, {}, () => <Spinner label={loadingLabel} />)
