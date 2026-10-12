@@ -267,17 +267,23 @@ test('the menu cannot be loaded: the actions open as a plain list', async ({ pag
   await page.getByText('Last action: Refresh').click();
   await expect(list).toHaveCount(0);
 
-  // Online again: the press that asks gets the code, and once the list is closed the menu opens.
+  // Online again: every press asks for the code, and once it has arrived and the list is closed, the
+  // menu opens. Which press that is depends on when the browser makes the request again.
   offline = false;
-  await more(page).focus();
-  await pressKeys(page, 'Enter');
-  await expect(list.or(menu(page))).toBeVisible();
-  await page.waitForLoadState('networkidle');
-  await pressKeys(page, 'Escape');
-  await expect(more(page)).toBeFocused();
-  await pressKeys(page, 'Enter');
+  await expect(async () => {
+    await more(page).focus();
+    await page.keyboard.press('Enter');
+    await expect(list.or(menu(page))).toBeVisible();
+    await page.waitForLoadState('networkidle');
+    if (await list.isVisible()) {
+      await page.keyboard.press('Escape');
+      await expect(list).toHaveCount(0);
+      throw new Error('still the list');
+    }
+  }).toPass({ timeout: 20_000 });
   await expect(row(page, 'Filter')).toBeFocused();
   await expect(list).toHaveCount(0);
+  await expectFocusKept(page);
 });
 
 // Review 2, X-4.
