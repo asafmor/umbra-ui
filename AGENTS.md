@@ -121,14 +121,14 @@ The owner approved the plan and delegated the open questions (`plan/reviews/mile
 | `plan/specs/` | One spec per component. `Card.md` is the template; the 14 tier 0 specs are approved, and tier 1 specs are written under the owner's delegation. |
 | `plan/layout.md` | The layout model: primitives, sizing rules, and what happens as space shrinks. |
 | `plan/interaction.md` | States, motion, loading, live updates, keyboard and accessibility rules. |
-| `plan/decisions/` | One short record per tech decision: styling, behaviour base, charts, table engine, packaging, docs and testing, customisation. |
+| `plan/decisions/` | One short record per tech decision: styling, behaviour base, charts, table engine, packaging, docs and testing, customisation. `08-theming.md`: the colour inputs and what each drives. |
 | `plan/roadmap.md` | Pre-code tasks, milestones, build order, and the per-component definition of done. |
 | `plan/reference/` | `index.html`: the static reference screen, the visual ground truth for the look (open it in a browser; `?density=compact&context=teal` switches settings). `shot-*.png`: renders at three sizes. |
 | `plan/reviews/` | Review reports: what independent reviews found, what was fixed, and what is open. `milestone-0.md`, `milestone-1.md` and `milestone-2.md` (the integration pass, three reviews, the owner's feedback from Storybook). |
 | `plan/prompts/` | `component-brief.md`: the rules for building a batch of components (read it before adding one). Ready-made prompts for starting a fresh agent session: `milestone-0.md` (used), `verify-milestone-0.md` (independent review of Milestone 0), `milestone-1.md` (plan and build Milestone 1, used), `milestone-2.md` (plan and build Milestone 2). |
 | `src/` | Library source, one folder per group. `index.ts` is the `umbra-ui` entry. Each component is a `.tsx` with its `.module.css` and `.stories.tsx`; `samples.*` and `story*.tsx` files are story helpers. |
 | `src/styles/` | `index.css` (base CSS) and the generated `tokens.css` and `tokens.generated.ts`. |
-| `src/provider/` | `UmbraProvider` and `UmbraScope`, the icon map (`icons.tsx`), the shortcut registry (`shortcuts.ts`), `contrast.ts`. |
+| `src/provider/` | `UmbraProvider` and `UmbraScope`, the icon map (`icons.tsx`), the shortcut registry (`shortcuts.ts`), `contrast.ts`. `palette.ts` derives the interaction, action and context colours from the brand (`plan/decisions/08-theming.md`). |
 | `src/layout/` | Page, Columns, Stack, Slot, Card, SectionTitle, ScrollArea, Accordion. `useSlot.tsx` and `collapse.ts` hold the layout rules. Tier 2: WidgetBoard, HorizontalScroller. |
 | `src/shell/` | AppShell, TopBar, PrimaryNav, SubNav, VerticalNav, PageHeader, PrimaryAction, HistoryButtons, ShortcutBar. `nav.tsx` is shared by the navs. Tier 2: ContextBlock, EntitySwitcher. |
 | `src/basics/` | Button, IconButton, Skeleton. |
@@ -147,7 +147,7 @@ The owner approved the plan and delegated the open questions (`plan/reviews/mile
 | `docs/` | Guides in Markdown (`getting-started.md`, `layout.md`, `theming.md`, `customisation.md`, `recipes.md`), the generated `customisation-tables.md`, and `releasing.md` (the release steps, for the owner). Every `tsx` sample must compile (`npm run docs:check`). `browser-checks.md` is the manual Firefox and Safari checklist run before a release. |
 | `docs/storybook/` | The guides as Storybook pages: one `.mdx` per guide, `Guide.tsx` (rewrites links between the Markdown files to Storybook pages, and keeps wide tables inside the page), and the Welcome page (`Welcome.mdx`, `welcome.md`). |
 | `examples/` | Three complete Vite apps that import the built package, each a plain folder with its own `package.json` (not a workspace) that works as a template when copied out: `basic`, `dashboard` (many cards, charts, switchers, command palette) and `advanced` (hash router, list + detail, table with bulk actions and a modal form, settings, a component built from blocks and parts). |
-| `tests/visual/` | Playwright tests against the built Storybook, with the baseline images in `__screenshots__/` (policy: `plan/decisions/06-docs-and-testing.md`, "Baseline images"). The comparison is strict on purpose; a changed baseline is a change to look at. Every file: |
+| `tests/visual/` | Playwright tests against the built Storybook, with the baseline images in `__screenshots__/` (policy: `plan/decisions/06-docs-and-testing.md`, "Baseline images"). The comparison is strict on purpose; a changed baseline is a change to look at. Every file: Added by the fix pass of Milestone 2: `theming.spec.ts` (derived colours and their contrast, surface opacity, the edge stripe), `table-columns.spec.ts` (column show, hide, reorder, pin, resize), `review2-crosscutting.spec.ts` (popovers in a modal, the overflow fallback, pressed toggles, the action bar over a table). |
 | | **For every story**: `stories.spec.ts` (the captures, the no-page-scroll check, no baseline without a test), `a11y.spec.ts` (axe, WCAG 2.2 AA, on every tint). |
 | | **Helpers**: `helpers.ts` (`openStory`, `expectFocusKept`, `pressKeys`, `settle`, `runAxe`), `live.ts` (the shared test of `highlightChanges`), `pixels.ts` (reads colours from a capture). |
 | | **Tier 0 and 1, by group**: `interactions.spec.ts` (popovers, tab mode keys, overflow menus), `structure.spec.ts` (PageHeader, ActionBar, VerticalNav, Accordion), `shell-extras.spec.ts` (PrimaryAction, HistoryButtons, ShortcutBar, CommandPalette, shortcuts), `data-values.spec.ts`, `data-indicators.spec.ts`, `data-lists.spec.ts`, `data-banner.spec.ts`, `inputs-form.spec.ts`, `inputs-select.spec.ts`, `inputs-tabs.spec.ts`, `overlays.spec.ts` (Popover, Tooltip, Menu), `modal.spec.ts`, `table.spec.ts`, `meters.spec.ts`, `charts.spec.ts`, `pages.spec.ts` (the five full-page stories). |
@@ -164,7 +164,7 @@ The full list with dates is in `plan/components.md` under "Decisions". The ones 
 
 - **The page never scrolls.** The app fills the window; only regions inside cards may scroll.
 - **Components fill their slot** and show less detail as space shrinks, instead of overflowing.
-- **Colour layers**: the app sets brand and context tint; violet (selected) and magenta (primary action) are fixed.
+- **Colour inputs**: the app sets `brand`, and optionally `context`, `interaction` and `action`; what it does not set is derived from the brand with contrast guaranteed (`plan/decisions/08-theming.md`). Semantic colours, the value ramp and the series palette never follow the brand. The edge stripe marks selected rows of data only.
 - **Density**: three levels, set once on the provider.
 - **Every component is customisable through the same four layers**: tokens, props, parts, blocks (`plan/decisions/07-customisation.md`). Icon props accept any node.
 - **Colour that carries data needs a non-colour fallback** (icon, text or pattern).

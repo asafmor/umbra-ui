@@ -174,7 +174,9 @@ export function App() {
             actions={
               <ShortcutsSheet trigger={<IconButton icon={<CircleHelp />} label="Keyboard shortcuts" />} />
             }
-            context={<ContextBlock primary={todayText} secondary="Quarter close in 6 days" live />}
+            context={
+              <ContextBlock variant="filled" primary={todayText} secondary="Quarter close in 6 days" live />
+            }
             primaryAction={
               <PrimaryAction
                 label="Refresh"

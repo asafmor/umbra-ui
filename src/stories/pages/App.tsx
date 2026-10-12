@@ -201,7 +201,7 @@ export function App({ initial }: { initial: Place }) {
               <IconButton icon={<Settings />} label="Settings" />
             </>
           }
-          context={<SampleContext />}
+          context={<SampleContext variant="filled" />}
           primaryAction={
             unread > 0 && place !== 'overview/inbox' ? (
               <PrimaryAction

@@ -1,0 +1,5 @@
+---
+'umbra-ui': minor
+---
+
+**Theming: one brand colour re-skins the app.** `UmbraProvider` and `UmbraScope` take `brand`, and optionally `context`, `interaction` (selected and checked things, the accent tone, links) and `action` (the primary action). What is not set is derived from the brand, and a context also gives its hue to surfaces, borders and dim text. Any colour keeps its contrast: text on a fill 4.5:1, a fill against the card 3:1; semantic colours, the value ramp and the series palette never follow the brand. Each derived colour is a token (`--umbra-color-interaction`, `--umbra-color-action`, `--umbra-color-focus-ring` and their companions) that a value set by hand overrides. `surfaceOpacity` (`--umbra-surface-opacity`) makes card surfaces translucent over the app background, with `--umbra-surface-backdrop` for a blur and `--umbra-shell-image` for a background image. The edge stripe marks selected rows of data (`ListItem`, `DataTable`); a chosen option has a check, the current page of a nav is bold, and a highlighted row is a lighter surface.

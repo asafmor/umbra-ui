@@ -484,6 +484,7 @@ Triggers an action. Text, with an optional icon.
 | `--umbra-button-neutral-border` | `--umbra-color-base-border-control` (#7a6e91) |
 | `--umbra-button-neutral-fg` | `--umbra-color-base-text-primary` (#f5f3f8) |
 | `--umbra-button-padding-x` | `--umbra-space-4` (12px) |
+| `--umbra-button-pressed-color` | `--umbra-color-interaction-text` (#f77bf0) |
 | `--umbra-button-primary-bg` | `--umbra-color-action` (#db1065) |
 | `--umbra-button-primary-border` | `transparent` |
 | `--umbra-button-primary-fg` | `--umbra-color-on-action` (#ffffff) |
@@ -507,6 +508,8 @@ Triggers an action. Text, with an optional icon.
 | `collapseTo` | `"icon"` | With an icon set, hides the label when the button does not fit; the label becomes its tooltip and name. |
 | `type` | `"button" \| "submit" \| "reset"` |  |
 | `onPress` | `(() => void)` |  |
+| `pressed` | `boolean` | Makes it a toggle. While `true` it takes the accent colour, an outline, and its icons are drawn filled. |
+| `onPressedChange` | `((pressed: boolean) => void)` |  |
 | `parts` | `see Parts` | Replace or hide named pieces. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
@@ -1481,6 +1484,7 @@ A header row for one group of rows inside a list or table.
 | `--umbra-group-header-font` | `--umbra-font-label` |
 | `--umbra-group-header-height` | `calc(var(--umbra-density-table-row) + var(--umbra-space-2))` or `calc(var(--row-h) + var(--umbra-space-2))` |
 | `--umbra-group-header-padding-x` | `--umbra-density-card-padding` (16px at the default density) |
+| `--umbra-group-header-title-min-width` | `4rem` |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -1711,8 +1715,9 @@ A button that shows only an icon. Inside an overflow menu it becomes a menu item
 | `label` (required) | `string` | Required. The accessible name and the tooltip text. |
 | `variant` | `ButtonVariant` |  |
 | `shape` | `"square" \| "circle"` |  |
-| `pressed` | `boolean` | Makes it a toggle (for example a star). |
+| `pressed` | `boolean` | Makes it a toggle (for example a star). While `true` the icon takes the accent colour and is drawn filled; a `ghost` toggle has no outline. |
 | `onPressedChange` | `((pressed: boolean) => void)` |  |
+| `pressedIcon` | `ReactNode` | The icon while `pressed`, in place of `icon` drawn filled: for an icon that is not one closed shape, or a set that has its own filled glyphs. |
 | `badge` | `number \| true` | A count, or `true` for a dot, at the corner. |
 | `tooltip` | `ReactNode` | Shows `label` on hover and focus. A node replaces the text. |
 | `shortcut` | `string` | Id of a shortcut in the provider's list: binds the key and shows the hint in the tooltip. |
@@ -2411,6 +2416,7 @@ The header of a page or of a detail pane: what it shows, facts about it, and its
 | `--umbra-page-header-padding` | `var(--card-pad) var(--card-pad) 0`; `0px`; `--umbra-density-card-padding` (16px at the default density) |
 | `--umbra-page-header-radius` | `--umbra-radius-card` (8px) |
 | `--umbra-page-header-title-font` | `--umbra-font-display` or `--umbra-font-title` |
+| `--umbra-page-header-title-min-width` | `4rem` |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -3173,6 +3179,7 @@ A heading for one section of content inside a card or page, with optional contro
 | `--umbra-section-rule-color` | `--umbra-color-base-border-strong` (#47395e) |
 | `--umbra-section-title-color` | `--umbra-color-base-text-primary` (#f5f3f8) |
 | `--umbra-section-title-font` | `700 16px/1.25 var(--umbra-font-family-heading)`; `--umbra-font-label`; `--umbra-font-body` |
+| `--umbra-section-title-min-width` | `4rem` |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -3265,6 +3272,7 @@ Chooses one option, or several with `multiple`, from a list that opens under a b
 | `--umbra-select-height` | `--umbra-density-control-height` (36px at the default density) |
 | `--umbra-select-icon-color` | `--umbra-color-base-text-secondary` (#b3adbf) |
 | `--umbra-select-invalid-border` | `--umbra-color-semantic-danger` (#f0455a) |
+| `--umbra-select-min-width` | `96px` |
 | `--umbra-select-option-selected-bg` | `color-mix(in oklab, var(--umbra-color-interaction-tint) 28%, transparent)` |
 | `--umbra-select-padding-x` | `--umbra-space-4` (12px) |
 | `--umbra-select-placeholder` | `--umbra-color-base-text-muted` (#948da2) |
@@ -3685,6 +3693,7 @@ Dims everything but one element and explains it in a callout beside it: a coach 
 | `--umbra-spotlight-ring-color` | `--umbra-color-base-text-primary` (#f5f3f8) |
 | `--umbra-spotlight-ring-width` | `calc(2 * var(--umbra-border-width))` |
 | `--umbra-spotlight-title-font` | `--umbra-font-card-title` |
+| `--umbra-spotlight-z-index` | `--umbra-layer-spotlight` (1250) |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -4143,6 +4152,7 @@ A box for typing one line of text, or several with `multiline`.
 | `--umbra-text-field-fg` | `--umbra-color-base-text-primary` (#f5f3f8) |
 | `--umbra-text-field-height` | `--umbra-density-control-height` (36px at the default density) |
 | `--umbra-text-field-invalid-border` | `--umbra-color-semantic-danger` (#f0455a) |
+| `--umbra-text-field-min-width` | `96px` |
 | `--umbra-text-field-padding-x` | `--umbra-space-4` (12px) |
 | `--umbra-text-field-placeholder` | `--umbra-color-base-text-muted` (#948da2) |
 | `--umbra-text-field-radius` | `--umbra-radius-control` (4px) |
