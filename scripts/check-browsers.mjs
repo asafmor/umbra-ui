@@ -10,6 +10,12 @@
 // minimum fails, unless its row has a note that says what happens without it. A note on a feature
 // that is not used, or that is not newer, fails too, so the table stays what the docs can quote.
 //
+// The tables are a denylist: they find only what somebody thought of. So, for CSS, there is also the
+// other way round (`known`, below the tables): every at-rule, pseudo-class, pseudo-element, function,
+// property, unit and query feature the stylesheets use must be on a list of names that were looked
+// up. A name that is not on it fails, whatever it is, until a person looks its versions up and adds
+// it. JavaScript has the denylist only (see the note above its table).
+//
 // Versions: MDN browser-compat-data 8.1.5 (2026-10-08), by the key in each row
 // (https://github.com/mdn/browser-compat-data; the same data as the tables on MDN and caniuse.com).
 // Edge follows Chrome. `no` is "not shipped". To add a feature: look its key up there, add a row.
@@ -137,6 +143,13 @@ const css = [
     'Safari before 17.4 reads the `rx` attribute only: the bars of a BarChart keep the 2px corners of the attribute, and `--umbra-chart-bar-radius` changes nothing there (BarChart.tsx).',
   ],
   [
+    'paint-order on HTML text',
+    'css.properties.paint-order',
+    [123, 60, 11],
+    prop('paint-order'),
+    'Used on SVG text only (the labels drawn on chart marks), where Chrome has had it since 35. Chrome before 123 ignores it on HTML text, where the library does not use it.',
+  ],
+  [
     'mask and mask-image without a prefix',
     'css.properties.mask',
     [120, 53, 15.4],
@@ -176,6 +189,93 @@ const css = [
   ['nesting', 'css.selectors.nesting', [120, 117, 17.2], /[{;]\s*&|^\s*&/m],
   ['@property', 'css.at-rules.property', [85, 128, 16.4], /@property\b/],
   ['@scope', 'css.at-rules.scope', [118, 146, 26.4], /@scope\b/],
+  ['@function', 'css.at-rules.function', [139, no, no], /@function\b/],
+  ['@view-transition', 'css.at-rules.view-transition', [126, no, 18.2], /@view-transition\b/],
+  ['@position-try', 'css.at-rules.position-try', [125, 147, 26], /@position-try\b/],
+  ['corner-shape', 'css.properties.corner-shape', [139, no, no], prop('corner(?:-[a-z-]+)?-shape')],
+  [
+    'sibling-index() and sibling-count()',
+    'css.types.sibling-index',
+    [138, 154, 26.2],
+    /\bsibling-(?:index|count)\(/,
+  ],
+  ['if()', 'css.types.if', [137, no, no], /[:\s,(]if\(/],
+  [
+    'scroll-state() container queries',
+    'css.at-rules.container.scroll-state_queries',
+    [133, no, no],
+    /\bscroll-state\(|container-type\s*:[^;}]*scroll-state/,
+  ],
+  ['::details-content', 'css.selectors.details-content', [131, 143, 18.4], /::details-content/],
+  [':open', 'css.selectors.open', [133, 136, 26.5], /:open\b/],
+  [
+    'reading-flow and reading-order',
+    'css.properties.reading-flow',
+    [137, no, no],
+    prop('reading-(?:flow|order)'),
+  ],
+  [
+    'text-wrap: pretty',
+    'css.properties.text-wrap.pretty',
+    [117, no, 26],
+    /text-wrap(?:-style)?\s*:\s*pretty\b/,
+  ],
+  [
+    'text-wrap: balance',
+    'css.properties.text-wrap.balance',
+    [114, 121, 17.5],
+    /text-wrap(?:-style)?\s*:\s*balance\b/,
+  ],
+  ['overlay', 'css.properties.overlay', [117, no, no], prop('overlay')],
+  ['interactivity', 'css.properties.interactivity', [135, no, no], prop('interactivity')],
+  ['text-autospace', 'css.properties.text-autospace', [140, 145, 18.4], prop('text-autospace')],
+  ['margin-trim', 'css.properties.margin-trim', [155, no, 16.4], prop('margin-trim')],
+  [
+    'box-decoration-break',
+    'css.properties.box-decoration-break',
+    [130, 32, no],
+    prop('box-decoration-break'),
+  ],
+  [
+    'white-space-collapse',
+    'css.properties.white-space-collapse',
+    [114, 124, 17.4],
+    prop('white-space-collapse'),
+  ],
+  // `attr(name)` in `content` is as old as CSS 2; a fallback or a type after the name is not.
+  ['attr() with a fallback', 'css.types.attr.fallback', [133, 119, 18.4], /\battr\(\s*[\w-]+\s*,/],
+  ['attr() with a type', 'css.types.attr.type_function', [133, 155, no], /\battr\(\s*[\w-]+\s+[\w%]/],
+  ['progress()', 'css.types.progress', [138, 155, 26], /[:\s,(]progress\(/],
+  ['random()', 'css.types.random', [156, no, 26.2], /[:\s,(]random\(/],
+  ['contrast-color()', 'css.types.color.contrast-color', [147, 146, 26], /\bcontrast-color\(/],
+  ['abs() and sign()', 'css.types.abs', [138, 118, 15.4], /[:\s,(](?:abs|sign)\(/],
+  [
+    'pow(), sqrt(), hypot(), log() and exp()',
+    'css.types.exp',
+    [120, 118, 15.4],
+    /[:\s,(](?:pow|sqrt|hypot|log|exp)\(/,
+  ],
+  ['linear() easing', 'css.types.easing-function.linear-function', [113, 112, 17.2], /[:\s,]linear\(/],
+  ['cap and rcap units', 'css.types.length.cap', [118, 97, 17.2], /\dr?cap\b/],
+  ['rex and rch units', 'css.types.length.rex', [111, 147, 17.2], /\dr(?:ex|ch)\b/],
+  [
+    'prefers-reduced-transparency',
+    'css.at-rules.media.prefers-reduced-transparency',
+    [118, no, no],
+    /prefers-reduced-transparency/,
+  ],
+  [
+    'scroll markers and buttons',
+    'css.selectors.scroll-marker',
+    [135, no, no],
+    /::scroll-(?:marker|button)|scroll-marker-group\s*:/,
+  ],
+  [
+    'customisable select',
+    'css.selectors.picker',
+    [135, no, 27],
+    /::picker\(|::picker-icon|::checkmark|appearance\s*:\s*base-select/,
+  ],
   ['@starting-style', 'css.at-rules.starting-style', [117, 129, 17.5], /@starting-style\b/],
   ['text-wrap', 'css.properties.text-wrap', [114, 121, 17.4], prop('text-wrap(?:-mode|-style)?')],
   ['light-dark()', 'css.types.color.light-dark', [123, 120, 17.5], /\blight-dark\(/],
@@ -198,6 +298,12 @@ const css = [
     'css.properties.interpolate-size',
     [129, no, no],
     /\binterpolate-size\s*:|\bcalc-size\(/,
+  ],
+  [
+    'scroll-driven animation ranges',
+    'css.properties.animation-range',
+    [115, no, 26],
+    /\banimation-range(?:-start|-end)?\s*:|\btimeline-scope\s*:/,
   ],
   ['scrollbar-gutter', 'css.properties.scrollbar-gutter', [94, 97, 18.2], prop('scrollbar-gutter')],
   ['range syntax in @media', 'css.at-rules.media.range_syntax', [104, 102, 16.4], /@media[^{]*[<>]/],
@@ -230,6 +336,10 @@ const css = [
   ['zoom', 'css.properties.zoom', [1, 126, 3.1], prop('zoom')],
 ];
 
+// ponytail: a denylist only. Listing every member name the modules use, as `known` does for CSS,
+// would put some two thousand names of React, React Aria and the library's own objects on a list
+// nobody reads. The names below are what shipped in a browser after the minimums and that a
+// component could plausibly reach for; the manual run in Firefox and Safari is the other guard.
 const js = [
   // --- Used.
   [
@@ -297,7 +407,100 @@ const js = [
     [122, 127, 17],
     /\.(?:union|intersection|difference|symmetricDifference|isSubsetOf|isSupersetOf|isDisjointFrom)\(/,
   ],
-  ['Iterator helpers', 'javascript.builtins.Iterator.from', [122, 131, 18.4], /\bIterator\.from\(/],
+  [
+    // `map`, `filter`, `take` and the rest, called on an iterator. An iterator cannot be told from an
+    // array by a pattern in general: what is found is a call on what `values()`, `keys()`,
+    // `entries()` or `matchAll()` returns (not `Object.keys()` and its like, which return arrays),
+    // `Iterator.from`, `Iterator.prototype` and `toArray()` (not React's `Children.toArray`).
+    'Iterator helpers',
+    'javascript.builtins.Iterator.map',
+    [122, 131, 18.4],
+    /\bIterator\.(?:from|prototype|concat|zip)\b|(?<!Object)\.(?:values|keys|entries|matchAll)\([^()]*\)\s*\.(?:map|filter|take|drop|flatMap|reduce|toArray|forEach|some|every|find)\(|(?<!Children)\.toArray\(/,
+  ],
+  ['Node.moveBefore', 'api.Element.moveBefore', [133, 144, no], /\.moveBefore\(/],
+  [
+    'popover="hint"',
+    'html.global_attributes.popover.hint',
+    [151, 153, no],
+    /popover\s*[=:]\s*\{?\s*["'`]hint/,
+  ],
+  ['dialog.requestClose', 'api.HTMLDialogElement.requestClose', [134, 139, 18.4], /\.requestClose\(/],
+  ['dialog closedby', 'api.HTMLDialogElement.closedBy', [134, 141, no], /\bclosedby\b|\bclosedBy\b/],
+  [
+    'command and commandfor',
+    'html.elements.button.commandfor',
+    [135, 144, 26.2],
+    /\bcommandfor\b|\bcommandFor(?:Element)?\b|\bCommandEvent\b/,
+  ],
+  [
+    'Map and WeakMap getOrInsert',
+    'javascript.builtins.Map.getOrInsert',
+    [145, 144, 26.2],
+    /\.getOrInsert(?:Computed)?\(/,
+  ],
+  ['Math.sumPrecise', 'javascript.builtins.Math.sumPrecise', [147, 137, 26.2], /Math\.sumPrecise\(/],
+  ['Error.isError', 'javascript.builtins.Error.isError', [134, 138, no], /Error\.isError\(/],
+  [
+    'Uint8Array base64 and hex',
+    'javascript.builtins.Uint8Array.fromBase64',
+    [140, 133, 18.2],
+    /\.(?:fromBase64|toBase64|fromHex|toHex)\(/,
+  ],
+  [
+    'explicit resource management',
+    'javascript.statements.using',
+    [134, 141, no],
+    /^\s*(?:await\s+)?using\s+\w+\s*=|Symbol\.(?:async)?[dD]ispose|DisposableStack/m,
+  ],
+  ['URL.parse', 'api.URL.parse_static', [126, 126, 18], /\bURL\.parse\(/],
+  [
+    'Element.getHTML and setHTMLUnsafe',
+    'api.Element.getHTML',
+    [125, 128, 18],
+    /\.getHTML\(|\.setHTMLUnsafe\(|parseHTMLUnsafe/,
+  ],
+  ['Element.ariaNotify', 'api.Element.ariaNotify', [141, 150, 27], /\.ariaNotify\(/],
+  [
+    'ARIA element reflection',
+    'api.Element.ariaLabelledByElements',
+    [135, 136, 16.4],
+    /\.aria[A-Z]\w*Elements?\b/,
+  ],
+  [
+    'caretPositionFromPoint',
+    'api.Document.caretPositionFromPoint',
+    [128, 20, 26.2],
+    /caretPositionFromPoint/,
+  ],
+  ['hidden="until-found"', 'api.Element.beforematch_event', [102, 139, 26.2], /until-found|beforematch/],
+  [
+    'IntersectionObserver scrollMargin',
+    'api.IntersectionObserver.scrollMargin',
+    [120, 141, 26],
+    /\bscrollMargin\s*:/,
+  ],
+  ['Selection.getComposedRanges', 'api.Selection.getComposedRanges', [137, 142, 17], /getComposedRanges/],
+  [
+    'Intl.Locale week info',
+    'javascript.builtins.Intl.Locale.getWeekInfo',
+    [130, 153, 17],
+    /\.getWeekInfo\b|\.weekInfo\b/,
+  ],
+  ['Float16Array', 'javascript.builtins.Float16Array', [135, 129, 18.2], /Float16Array|Math\.f16round/],
+  ['select.showPicker', 'api.HTMLSelectElement.showPicker', [121, 122, no], /\.showPicker\(/],
+  [
+    'document.activeViewTransition',
+    'api.Document.activeViewTransition',
+    [142, 147, 26.2],
+    /activeViewTransition/,
+  ],
+  ['EditContext', 'api.EditContext', [121, no, no], /\bEditContext\b/],
+  [
+    'Document Picture-in-Picture',
+    'api.Window.documentPictureInPicture',
+    [116, 151, no],
+    /documentPictureInPicture/,
+  ],
   ['RegExp.escape', 'javascript.builtins.RegExp.escape', [136, 134, 18.2], /RegExp\.escape\(/],
   [
     'lookbehind in a regular expression',
@@ -360,6 +563,40 @@ const js = [
 ];
 
 /**
+ * What the stylesheets are known to use: every name here was looked up (browser-compat-data 8.1.5,
+ * on 2026-10-12) and is within the minimums, or is newer and has a row with a note in the table
+ * above. A name the stylesheets use that is not here fails. To add one: look up its first versions;
+ * within the minimums, add the name here; newer, give it a fallback and a row with a note above,
+ * then add it here. `node scripts/check-browsers.mjs --dist --known` prints what is used now, in
+ * this shape. A name nothing uses any more fails too (with `--dist`), so the list stays true.
+ *
+ * ponytail: names only. The keyword values of a known property (`text-wrap: pretty`, `width:
+ * stretch`) are found by the rows above and by nothing else.
+ */
+const known = {
+  // `import` in the source only: the build inlines it.
+  'at-rule': 'container import keyframes media supports',
+  // `after` and `before` with one colon are what the minifier writes for the pseudo-elements.
+  // `global` is CSS Modules' own, gone from the built stylesheet.
+  'pseudo-class':
+    'active after before disabled empty enabled first-child first-of-type focus focus-visible focus-within global has hover is last-child last-of-type not nth-child root where',
+  // The `-webkit-` ones style what only Chrome and Safari draw (spin buttons, the search field's
+  // own button, the scrollbars before `scrollbar-width`): Firefox skips the rules.
+  'pseudo-element':
+    '-webkit-inner-spin-button -webkit-outer-spin-button -webkit-scrollbar -webkit-scrollbar-corner -webkit-scrollbar-thumb -webkit-search-cancel-button -webkit-search-decoration after before placeholder',
+  function:
+    'attr brightness calc color-mix counter cubic-bezier fit-content inset linear-gradient max min minmax oklab polygon radial-gradient repeat repeating-linear-gradient rgba selector var',
+  // The `-webkit-` ones: twins the build adds (checked below), the two halves of the line clamp
+  // every browser reads, and font smoothing, which only macOS browsers read. `composes` is CSS
+  // Modules' own, gone from the built stylesheet.
+  property:
+    '-webkit-backdrop-filter -webkit-box-orient -webkit-font-smoothing -webkit-line-clamp -webkit-mask -webkit-mask-image -webkit-text-decoration -webkit-user-select align-content align-items align-self animation animation-name appearance aspect-ratio backdrop-filter background background-clip background-color block-size border border-block border-block-end border-block-start border-bottom border-bottom-color border-collapse border-color border-end-end-radius border-end-start-radius border-inline border-inline-end border-inline-start border-inline-start-color border-inline-start-width border-inline-width border-radius border-spacing border-start-end-radius border-start-start-radius border-style border-top border-width bottom box-shadow box-sizing break-inside clip-path color column-gap column-width composes contain contain-intrinsic-block-size contain-intrinsic-inline-size container container-type content counter-increment counter-reset cursor direction display fill fill-opacity filter flex flex-basis flex-direction flex-flow flex-shrink flex-wrap font font-size font-variant-numeric font-weight gap grid-area grid-auto-columns grid-auto-flow grid-column grid-row grid-template grid-template-columns grid-template-rows height inline-size inset inset-block inset-block-end inset-block-start inset-inline inset-inline-end inset-inline-start isolation justify-content justify-items justify-self left letter-spacing line-clamp line-height list-style margin margin-block margin-block-end margin-block-start margin-bottom margin-inline margin-inline-end margin-inline-start margin-top mask mask-image max-block-size max-height max-inline-size max-width min-block-size min-height min-inline-size min-width object-fit opacity order outline outline-color outline-offset overflow overflow-wrap overflow-x overflow-y padding padding-block padding-block-end padding-block-start padding-bottom padding-inline padding-inline-end padding-inline-start padding-top paint-order place-content place-items pointer-events position resize rotate row-gap rx scale scroll-margin scroll-margin-top scroll-snap-align scroll-snap-type scrollbar-color scrollbar-width shape-rendering stroke stroke-dasharray stroke-linecap stroke-linejoin stroke-width table-layout text-align text-decoration text-overflow text-transform text-underline-offset top touch-action transform-box transform-origin transition transition-behavior transition-delay transition-timing-function translate user-select vector-effect vertical-align visibility white-space width z-index',
+  unit: '% ch cqi deg dvh dvw em fr lh ms px rem s vh vmax vw',
+  // Of `@media` and `@container`.
+  'query feature': 'height max-height max-width prefers-reduced-motion width',
+};
+
+/**
  * A prefixed twin the built stylesheet must hold in the same rule: the source writes the standard
  * property only, and Lightning CSS adds the prefix for the `cssTarget` of vite.config.ts.
  */
@@ -373,12 +610,18 @@ const walk = (dir) =>
     return statSync(path).isDirectory() ? walk(path) : [path];
   });
 const read = (path) => readFileSync(path, 'utf8');
-const noComments = (text) => text.replace(/\/\*[\s\S]*?\*\//g, ' ');
+const codeComments = (text) => text.replace(/\/\*[\s\S]*?\*\//g, ' ');
 const source = walk(join(root, 'src'));
 // Stories, samples and tests are not published (`npm run check:package` checks that).
 const published = (path) =>
   !/[/\\]stories[/\\]|\.stories\.|\.test\.|[/\\](?:samples|story)[^/\\]*$/.test(path);
 
+// Strings and the content of `url()` are emptied: a data URL holds `;` and `:` of its own.
+const noComments = (text) =>
+  text
+    .replace(/\/\*[\s\S]*?\*\//g, ' ')
+    .replace(/"(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'/g, '""')
+    .replace(/url\([^)]*\)/g, 'url()');
 const sheets = source
   .filter((path) => path.endsWith('.css'))
   .map((path) => [relative(root, path), noComments(read(path))]);
@@ -391,7 +634,7 @@ if (withDist) sheets.push(['dist/styles.css', noComments(read(built))]);
 const scripts = source
   .filter((path) => /\.tsx?$/.test(path) && published(path) && !path.endsWith('.generated.ts'))
   // Line comments too. A `//` inside a string ends the line early, which only hides what follows it.
-  .map((path) => [relative(root, path), noComments(read(path)).replace(/(^|[^:'"`\\])\/\/.*$/gm, '$1')]);
+  .map((path) => [relative(root, path), codeComments(read(path)).replace(/(^|[^:'"`\\])\/\/.*$/gm, '$1')]);
 
 // --- Checking ----------------------------------------------------------------------------------------
 
@@ -426,6 +669,76 @@ for (const [kind, table, files] of [
       );
   }
 }
+
+// What the stylesheets use, by name, against `known`.
+const featuresOf = (text) => {
+  const found = Object.fromEntries(Object.keys(known).map((kind) => [kind, new Set()]));
+  const inValue = (value) => {
+    for (const [, name] of value.matchAll(/(?<![\w-])(-?[a-z][a-z0-9-]*)\(/gi))
+      found.function.add(name.toLowerCase());
+    // Not a hex colour (`#1e1e2a`), not the `e` of an exponent (`5.9e-8`).
+    for (const [, unit] of value
+      .replace(/#[0-9a-f]{3,8}\b/gi, '')
+      .matchAll(/(?<![\w#-])(?:\d*\.)?\d+(?:e[+-]?\d+)?([a-z%]+)/gi))
+      if (unit !== 'e') found.unit.add(unit.toLowerCase());
+  };
+  // What stands before a `{`: a selector, or an at-rule with its condition.
+  for (const [, prelude] of text.matchAll(/(?:^|[{};])([^{};]+)(?=\{)/g)) {
+    const at = /^\s*@([a-z-]+)/i.exec(prelude);
+    if (!at) {
+      for (const [, name] of prelude.matchAll(/::([a-z-]+)/gi)) found['pseudo-element'].add(name);
+      for (const [, name] of prelude.matchAll(/(?<!:):([a-z-]+)/gi)) found['pseudo-class'].add(name);
+      continue;
+    }
+    found['at-rule'].add(at[1]);
+    inValue(prelude.replace(/^\s*@[a-z-]+/i, ''));
+    if (/^(?:media|container)$/.test(at[1]))
+      for (const [, name] of prelude.matchAll(/\(\s*([a-z-]+)\s*(?=[:<>=)])/gi))
+        found['query feature'].add(name);
+  }
+  // An at-rule without a block (`@import`).
+  for (const [, at] of text.matchAll(/(?:^|[{};])\s*@([a-z-]+)[^{};]*;/gi)) found['at-rule'].add(at);
+  for (const [, name, value] of text.matchAll(/[{;]\s*(-?-?[a-z][\w-]*)\s*:([^;{}]*)(?=[;}])/gi)) {
+    if (!name.startsWith('--')) found.property.add(name.toLowerCase());
+    inValue(value);
+  }
+  return found;
+};
+const usedNames = Object.fromEntries(Object.keys(known).map((kind) => [kind, new Map()]));
+for (const [path, text] of sheets)
+  for (const [kind, names] of Object.entries(featuresOf(text)))
+    for (const name of names) usedNames[kind].set(name, [...(usedNames[kind].get(name) ?? []), path]);
+if (process.argv.includes('--known')) {
+  for (const [kind, names] of Object.entries(usedNames))
+    console.log(`  '${kind}': '${[...names.keys()].sort().join(' ')}',`);
+  process.exit(0);
+}
+for (const [kind, names] of Object.entries(usedNames)) {
+  const list = new Set(known[kind].split(' '));
+  for (const [name, paths] of names)
+    if (!list.has(name))
+      failures.push(
+        `CSS: the ${kind} \`${name}\` is not on the list of what the stylesheets are known to use (in ${paths.slice(0, 3).join(', ')}).\n` +
+          `    Look up the first Chrome, Firefox and Safari that ship it (MDN browser-compat-data). Within Chrome ${MINIMUM.chrome}, Firefox ${MINIMUM.firefox}, Safari ${MINIMUM.safari}: add it to \`known\` in scripts/check-browsers.mjs. Newer: a fallback, and a row with a note, first.`,
+      );
+  if (withDist)
+    for (const name of list)
+      if (!names.has(name))
+        failures.push(
+          `CSS: \`known\` lists the ${kind} \`${name}\`, which no stylesheet uses any more. Remove it.`,
+        );
+}
+// `align-content` on a block container (Chrome 123, Safari 17.4; css.properties.align-content.context_block)
+// reads the same as on a flex or grid container, which every browser has: the rule must be one.
+for (const [path, text] of sheets)
+  for (const rule of path === 'dist/styles.css' ? [] : (text.match(/\{[^{}]*\}/g) ?? []))
+    if (
+      /(?:^|[{;\s])(?:align|place)-content\s*:/.test(rule) &&
+      !/display\s*:\s*(?:inline-)?(?:flex|grid)\b/.test(rule)
+    )
+      failures.push(
+        `CSS: ${path} sets align-content in a rule that is not \`display: flex\` or \`grid\`. On a block it needs Chrome 123 and Safari 17.4 (css.properties.align-content.context_block): set the display in the same rule, or centre another way.`,
+      );
 
 // The same versions everywhere they are stated.
 const stated = {
