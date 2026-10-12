@@ -188,6 +188,14 @@ function Root<T extends SliderValue = SliderValue>({
       endLabel,
     };
   };
+  // Disabled is said on the group too: the thumbs are disabled inputs, but the field's label points
+  // here. Set on the element: React Aria's slider does not pass the attribute on.
+  const group = useRef<HTMLDivElement>(null);
+  const off = control.disabled;
+  useLayoutEffect(() => {
+    if (off) group.current?.setAttribute('aria-disabled', 'true');
+    else group.current?.removeAttribute('aria-disabled');
+  }, [off]);
   return (
     <AriaSlider<number | number[]>
       {...rootRender('div', rest)}
@@ -197,8 +205,7 @@ function Root<T extends SliderValue = SliderValue>({
       data-range={range || undefined}
       data-readonly={readOnly || undefined}
       data-invalid={control.invalid || undefined}
-      // On the group too: the thumbs are disabled inputs, and the field's label points here.
-      aria-disabled={control.disabled || undefined}
+      ref={group}
       minValue={min}
       maxValue={max}
       step={step}

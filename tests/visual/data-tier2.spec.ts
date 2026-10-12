@@ -1,8 +1,8 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { contextPresets } from '../../src/styles/tokens.generated';
-import { expectFocusKept, openStory, pressKeys, settle } from './helpers';
+import { expectFocusKept, openStory, pressKeys, resizeTwice, settle } from './helpers';
 import { expectChangeHighlights } from './live';
-import { contrast } from './pixels';
+import { contrast, pixels } from './pixels';
 
 // Behaviour of SequenceDots, MediaCard and Comparison that a still image cannot show: names and roles
 // for assistive technology, keyboard and focus, and every "show less as it shrinks" step.
@@ -553,7 +553,7 @@ test.describe('Comparison', () => {
         expect(end(b)).toBeCloseTo(end(trackB), 0);
         expect(b.x).toBeGreaterThan(trackB.x + 10);
       }
-      const names = await Promise.all([box(part(table, 'side')), box(part(table, 'opposite'))]);
+      const names = await Promise.all([box(part(table, 'side').first()), box(part(table, 'side').last())]);
       expect(names[0].x < names[1].x).toBe(direction === 'ltr');
       // The values follow their sides.
       const cells = table.getByRole('row', { name: /Orders/ }).getByRole('cell');
@@ -569,7 +569,7 @@ test.describe('Comparison', () => {
     await expect(summary.getByRole('cell')).toHaveText(['12', '9']);
     const size = (locator: Locator) => locator.evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
     expect(await size(summary.getByRole('cell').first())).toBeGreaterThan(
-      (await size(part(table, 'side'))) * 1.5,
+      (await size(part(table, 'side').first())) * 1.5,
     );
     const [whole, middle] = await Promise.all([box(part(table, 'header')), box(summary)]);
     expect(Math.abs(middle.x + middle.width / 2 - (whole.x + whole.width / 2))).toBeLessThan(1);
@@ -705,5 +705,388 @@ test.describe('Comparison', () => {
       '5',
       '3Leading',
     ]);
+  });
+});
+
+// Review 1 of Milestone 2 (plan/reviews/milestone-2.md). The cases the components' own stories do not
+// reach are views of one story, `Integration/Data cases`, opened with its args.
+const openCase = (page: Page, args: string) => openStory(page, `integration-data-cases--cases&args=${args}`);
+const inCase = (page: Page, name: string) => page.locator(`[data-case="${name}"]`);
+/** Everything the page reports as wrong: errors thrown, and errors and warnings logged. */
+const faults = (page: Page) => {
+  const list: string[] = [];
+  page.on('pageerror', (error) => list.push(String(error)));
+  page.on('console', (message) => {
+    if (message.type() === 'error' || message.type() === 'warning') list.push(message.text());
+  });
+  return list;
+};
+/** Loading keeps the final layout: the box of the component is the same loading and loaded. */
+async function expectNothingMoves(page: Page, name: string, selector: string) {
+  const sizes = await Promise.all(
+    ['loaded', 'loading'].map((state) =>
+      inCase(page, name)
+        .locator(`[data-state="${state}"]`)
+        .locator(selector)
+        .first()
+        .evaluate((el) => {
+          const { width, height } = el.getBoundingClientRect();
+          return { width: Math.round(width * 2) / 2, height: Math.round(height * 2) / 2 };
+        }),
+    ),
+  );
+  expect(sizes[1], `${name}: loading, against loaded`).toEqual(sizes[0]);
+}
+
+test.describe('SequenceDots, review 1', () => {
+  const dots = '[data-umbra="sequence-dots"]';
+  const marks = (scope: Locator) => scope.locator('[data-part="mark"]');
+
+  for (const count of [60, 500, 5000]) {
+    for (const pressable of [false, true]) {
+      test(`${count} marks${pressable ? ' that can be pressed' : ''} in 100px settle in one bounded pass`, async ({
+        page,
+      }) => {
+        const wrong = faults(page);
+        await openCase(page, `view:dots;count:${count};width:100;pressable:${pressable}`);
+        const sequence = page.locator(dots);
+        // 10px dots 4px apart, or 24px targets side by side.
+        await expect(marks(sequence)).toHaveCount(pressable ? 4 : 7);
+        await expect(marks(sequence).last()).toHaveAttribute('data-id', `run-${count}`);
+        expect(await fits(sequence)).toBe(true);
+        expect((await sequence.getAttribute('aria-label'))!.split(', ')).toHaveLength(count);
+        expect(wrong).toEqual([]);
+      });
+    }
+  }
+
+  test('a resize from wide to narrow, and back, gives what a fresh load gives', async ({ page }) => {
+    const wrong = faults(page);
+    await openCase(page, 'view:dots;count:100;width:2000');
+    const sequence = page.locator(dots);
+    const holder = page.locator('[data-box]');
+    await expect(marks(sequence)).toHaveCount(100);
+    for (const [width, count] of [
+      [100, 7],
+      [2000, 100],
+      [300, 21],
+      [93, 6],
+      [10, 1],
+      [1000, 71],
+    ] as const) {
+      await resize(page, holder, { width });
+      await expect(marks(sequence)).toHaveCount(count);
+      await expect(marks(sequence).last()).toHaveAttribute('data-id', 'run-100');
+      if (width > 10) expect(await fits(sequence)).toBe(true);
+    }
+    // Two sizes within one frame are one change.
+    await resizeTwice(page, '[data-box]', 2000, 100);
+    await settle(page);
+    await expect(marks(sequence)).toHaveCount(7);
+    expect(wrong).toEqual([]);
+  });
+
+  test('loading keeps the size of the marks, at every size, as dots, bars and buttons', async ({ page }) => {
+    await openCase(page, 'view:loading');
+    for (const size of ['sm', 'md', 'lg']) {
+      for (const variant of ['dots', 'bars']) {
+        for (const pressable of ['', '-pressable']) {
+          await expectNothingMoves(page, `dots-${size}-${variant}${pressable}`, dots);
+        }
+      }
+    }
+  });
+
+  test('the accent mark keeps 3:1 against the card on every tint', async ({ page }) => {
+    for (const context of contextPresets) {
+      await openStory(page, 'data-sequencedots--variants', { context });
+      const mark = row(region(page, 'Dots'), 'Every tone').locator('[data-tone="accent"] svg');
+      const { x, y, width, height } = await box(mark);
+      const [fill, card] = await pixels(page, [
+        [x + width / 2, y + height / 2],
+        [x - 3, y + height / 2],
+      ]);
+      expect(contrast(fill!, card!), context).toBeGreaterThanOrEqual(3);
+    }
+  });
+
+  test('a tooltip is the description of a mark that can be pressed, and part of the summary', async ({
+    page,
+  }) => {
+    await openCase(page, 'view:dots;count:3;width:300;pressable:true');
+    const first = page.getByRole('button', { name: 'Run 1' });
+    await expect(first).toHaveAccessibleDescription('Took 1 min');
+    await first.focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(tooltip(page)).toHaveText('Took 2 min');
+    await openCase(page, 'view:dots;count:3;width:300');
+    await expect(page.getByRole('img')).toHaveAccessibleName(
+      'Run 1 (Took 1 min), Run 2 (Took 2 min), Run 3 (Took 3 min)',
+    );
+  });
+});
+
+test.describe('MediaCard, review 1', () => {
+  const card = '[data-umbra="media-card"]';
+  const part = (scope: Locator, name: string) => scope.locator(`[data-part="${name}"]`);
+  const lines = (locator: Locator) =>
+    locator.evaluate((el) =>
+      Math.round(el.getBoundingClientRect().height / parseFloat(getComputedStyle(el).lineHeight)),
+    );
+
+  test('a long title on a button card is held to its lines, with the whole of it in a tooltip', async ({
+    page,
+  }) => {
+    await openCase(page, 'view:media;width:220');
+    for (const name of ['button', 'link']) {
+      const title = part(inCase(page, name), 'title');
+      expect(await lines(title), name).toBe(2);
+      expect(await fits(inCase(page, name).locator(card))).toBe(true);
+      await title.hover();
+      await expect(tooltip(page)).toContainText('has to end in an ellipsis');
+      await page.mouse.move(0, 0);
+      await expect(tooltip(page)).toHaveCount(0);
+    }
+  });
+
+  test('the tooltip of a title cut short stays while the keyboard focus is on the card', async ({ page }) => {
+    await openCase(page, 'view:media;width:220');
+    // Reached with Tab alone, as a user does: the focus arrives on a card that was never focused.
+    await page.locator('body').click({ position: { x: 2, y: 2 } });
+    for (const role of ['button', 'link'] as const) {
+      await pressKeys(page, 'Tab');
+      await expect(inCase(page, role).getByRole(role)).toBeFocused();
+      // The title does not scroll under the focus: its first lines are the ones shown.
+      expect(
+        await inCase(page, role)
+          .locator('[data-part="title"]')
+          .evaluate((el) => el.scrollTop + (el.firstElementChild?.firstElementChild?.scrollTop ?? 0)),
+      ).toBe(0);
+      await expect(tooltip(page)).toContainText('has to end in an ellipsis');
+      // Still there well after the focus arrived: it went within 10ms.
+      await page.waitForTimeout(400);
+      await expect(tooltip(page)).toContainText('has to end in an ellipsis');
+    }
+    await page.keyboard.press('Tab');
+    await expect(tooltip(page)).toHaveCount(0);
+  });
+
+  test('where no height is given, a card is as tall as its content and hides nothing', async ({ page }) => {
+    await openCase(page, 'view:column');
+    for (const name of ['flex', 'card']) {
+      const cards = inCase(page, name).locator(card);
+      await expect(cards).toHaveCount(2);
+      for (const one of await cards.all()) {
+        await expect(one, name).not.toHaveAttribute('data-level');
+        for (const piece of ['image', 'title', 'meta']) await expect(part(one, piece)).toBeVisible();
+        expect(await fits(one)).toBe(true);
+      }
+      await expect(part(cards.first(), 'description')).toBeVisible();
+      expect(await lines(part(cards.first(), 'description'))).toBe(2);
+      // The picture of a hero card keeps its 16:9.
+      const picture = await box(part(cards.last(), 'image'));
+      expect(picture.width / picture.height).toBeCloseTo(16 / 9, 1);
+    }
+  });
+
+  test('loading keeps the size of the card, in each variant', async ({ page }) => {
+    await openCase(page, 'view:loading');
+    for (const name of ['compact', 'compact-title', 'pair', 'hero', 'hero-behind']) {
+      await expectNothingMoves(page, `media-${name}`, card);
+      await expect(inCase(page, `media-${name}`).locator(`[data-state="loading"] ${card}`)).toHaveAttribute(
+        'aria-busy',
+        'true',
+      );
+    }
+  });
+
+  test('the width steps are at 220 and 160px inside the padding of the card, to the pixel', async ({
+    page,
+  }) => {
+    await openCase(page, 'view:media;width:400');
+    const holder = inCase(page, 'steps');
+    const one = holder.locator(card);
+    // The room inside the card: its width without its padding and its border.
+    const around = await one.evaluate((el) => {
+      const css = getComputedStyle(el);
+      return ['paddingLeft', 'paddingRight', 'borderLeftWidth', 'borderRightWidth']
+        .map((side) => parseFloat(css[side as 'paddingLeft']))
+        .reduce((sum, width) => sum + width, 0);
+    });
+    for (const [inside, shown, hidden] of [
+      [221, ['image', 'title', 'description', 'meta', 'category'], []],
+      [220, ['image', 'title', 'meta'], ['description', 'category']],
+      [161, ['image', 'title', 'meta'], ['description', 'category']],
+      [160, ['title'], ['image', 'description', 'meta', 'category']],
+      [221, ['image', 'title', 'description', 'meta', 'category'], []],
+    ] as const) {
+      await resize(page, holder, { width: inside + around });
+      for (const name of shown) await expect(part(one, name), `${name} at ${inside}`).toBeVisible();
+      for (const name of hidden) await expect(part(one, name), `${name} at ${inside}`).toBeHidden();
+      expect(await fits(one)).toBe(true);
+    }
+  });
+
+  test('the focus ring keeps 3:1 against what is beside it, over a light picture, on every tint', async ({
+    page,
+  }) => {
+    for (const context of contextPresets) {
+      await openStory(page, 'data-mediacard--over-a-light-picture', { context });
+      await page.locator('body').click({ position: { x: 2, y: 2 } });
+      await pressKeys(page, 'Tab');
+      const link = page.getByRole('link', { name: 'A headline over a very light picture' });
+      await expect(link).toBeFocused();
+      const { x, y, width } = await box(page.getByRole('article').first());
+      // The ring is 2px, just inside the edge of the card; beside it, towards the picture, is a dark band.
+      const [ring, beside] = await pixels(page, [
+        [x + width / 2, y + 2],
+        [x + width / 2, y + 4],
+      ]);
+      expect(contrast(ring!, beside!), context).toBeGreaterThanOrEqual(3);
+    }
+  });
+
+  test('the card is named by a title that is there, by `loadingLabel` while loading, and has no empty line', async ({
+    page,
+  }) => {
+    await openCase(page, 'view:media;width:320');
+    const of = (name: string) => inCase(page, name).locator(card);
+    // No title: no empty heading, and no name that points at nothing.
+    await expect(of('no-title').getByRole('heading')).toHaveCount(0);
+    await expect(of('no-title')).not.toHaveAttribute('aria-labelledby');
+    // A title of the app's own in place of the part.
+    await expect(of('own-title')).not.toHaveAttribute('aria-labelledby');
+    await expect(of('own-title')).toContainText('A title of the app');
+    await expect(of('loading')).toHaveAccessibleName('Loading');
+    await expect(of('link')).toHaveAccessibleName(/^A headline that is far too long/);
+    // Every piece of the footer is hidden by its part: the footer's line goes too.
+    await expect(part(of('hidden-footer'), 'footer')).toBeHidden();
+    expect((await box(of('hidden-footer'))).height).toBe((await box(of('title-only'))).height);
+    // The chosen card of a set, in the component's own stories.
+    await openStory(page, 'data-mediacard--states');
+    const chosen = page.getByRole('article', { name: 'The chosen card of a set' });
+    await expect(chosen).toHaveAttribute('aria-current', 'true');
+    await expect(chosen).toHaveAttribute('data-selected', 'true');
+  });
+
+  test('a SummaryTile in a slot that takes its content is as tall as its content', async ({ page }) => {
+    await openCase(page, 'view:column');
+    const tile = inCase(page, 'tile').locator('[data-umbra="summary-tile"]');
+    await expect(tile.getByText('72%')).toBeVisible();
+    await expect(tile.getByText('Of capacity')).toBeVisible();
+    expect((await box(tile)).height).toBeGreaterThan(48);
+    expect(await tile.evaluate((el) => el.scrollHeight <= el.clientHeight + 1)).toBe(true);
+  });
+});
+
+test.describe('Comparison, review 1', () => {
+  const root = '[data-umbra="comparison"]';
+  const part = (scope: Locator, name: string) => scope.locator(`[data-part="${name}"]`);
+
+  test('loading keeps the size of the table and of the strip, and a loading strip is a strip', async ({
+    page,
+  }) => {
+    await openCase(page, 'view:loading');
+    for (const name of ['bars', 'summary', 'strip', 'strip-summary']) {
+      await expectNothingMoves(page, `comparison-${name}`, root);
+    }
+    // A row of placeholders is as tall as a row.
+    await expectNothingMoves(
+      page,
+      'comparison-bars',
+      '[data-part="body"] > div, [data-part="skeleton"] > div',
+    );
+    const strip = inCase(page, 'comparison-strip').locator(`[data-state="loading"] ${root}`);
+    await expect(strip).toHaveAttribute('aria-busy', 'true');
+    await expect(strip).toHaveAttribute('data-variant', 'strip');
+    await expect(strip.getByRole('table')).toHaveCount(0);
+    // The two sides are known, so they are shown; the values are placeholders.
+    await expect(part(strip, 'side')).toHaveText(['Region A', 'Region B']);
+    await expect(strip.locator('[data-umbra="skeleton"]')).toHaveCount(2);
+    expect((await box(strip)).height).toBeLessThanOrEqual(40);
+  });
+
+  test('a strip with a summary and no rows is the strip; with neither it is empty', async ({ page }) => {
+    await openCase(page, 'view:comparison;width:400');
+    const only = inCase(page, 'strip-summary-only').locator(root);
+    await expect(part(only, 'strip')).toHaveText(/Region A12–9Region BWeek 12/);
+    await expect(part(only, 'empty')).toHaveCount(0);
+    await expect(inCase(page, 'strip-nothing').locator('[data-part="empty"]')).toHaveText(
+      'Nothing to compare',
+    );
+  });
+
+  test('a value too long for its side ends in an ellipsis, with the whole of it in a tooltip', async ({
+    page,
+  }) => {
+    await openCase(page, 'view:comparison;width:320');
+    const long = inCase(page, 'long-values').locator(root);
+    const cells = long.getByRole('row', { name: /Total/ }).getByRole('cell');
+    await expect(cells.first()).toContainText('123,456,789,012,345 units sold');
+    for (const cell of await cells.all()) {
+      const inside = await cell.evaluate((el) => {
+        const row = el.closest('[data-part="row"]')!.getBoundingClientRect();
+        const own = el.getBoundingClientRect();
+        return own.left >= row.left - 0.5 && own.right <= row.right + 0.5;
+      });
+      expect(inside).toBe(true);
+    }
+    expect(await fits(long)).toBe(true);
+    await cells.first().locator('span').first().hover();
+    await expect(tooltip(page)).toHaveText('123,456,789,012,345 units sold');
+    // With room, a value is whole and has no tooltip.
+    await page.mouse.move(0, 0);
+    await expect(tooltip(page)).toHaveCount(0);
+    await resize(page, inCase(page, 'long-values'), { width: 700 });
+    await cells.first().locator('span').first().hover();
+    await page.waitForTimeout(700);
+    await expect(tooltip(page)).toHaveCount(0);
+  });
+
+  test('both sides are the `side` part, and the name of a side is read once', async ({ page }) => {
+    await openStory(page, 'data-comparison--variants');
+    const table = page.getByRole('table', { name: 'Region A and Region B', exact: true });
+    await expect(part(table, 'side')).toHaveCount(2);
+    await expect(part(table, 'opposite')).toHaveCount(0);
+    await expect(part(table, 'side').last()).toHaveAttribute('data-side', 'opposite');
+    await expect(table.getByRole('columnheader', { name: 'Region A', exact: true })).toBeVisible();
+    await expect(table.getByRole('columnheader', { name: 'Region B', exact: true })).toBeVisible();
+    await openStory(page, 'data-mediacard--variants');
+    await expect(page.getByRole('article', { name: /Region A/ }).first()).toHaveAccessibleName(
+      'Region A 12 to 9 Region B',
+    );
+  });
+
+  test('the strip, by width: the caption goes at 320px and the marks at 260px, to the pixel', async ({
+    page,
+  }) => {
+    await openCase(page, 'view:comparison;width:400');
+    const holder = inCase(page, 'strip');
+    const strip = holder.locator(root);
+    for (const [width, caption, marks] of [
+      [321, true, true],
+      [320, false, true],
+      [261, false, true],
+      [260, false, false],
+      [321, true, true],
+    ] as const) {
+      await resize(page, holder, { width });
+      await expect(part(strip, 'caption'), `caption at ${width}`).toBeVisible({ visible: caption });
+      await expect(part(strip, 'icon').first(), `marks at ${width}`).toBeVisible({ visible: marks });
+      // The two values stay whole.
+      await expect(part(strip, 'summary')).toHaveText('12–9');
+      expect(await fits(strip)).toBe(true);
+    }
+  });
+});
+
+test.describe('List, review 1', () => {
+  test('a bare ListItem in a List is left out: the list and its rows are still drawn', async ({ page }) => {
+    const wrong = faults(page);
+    await openCase(page, 'view:list');
+    await expect(page.getByRole('row', { name: 'A row' })).toBeVisible();
+    await expect(page.getByRole('row')).toHaveCount(1);
+    await expect(page.getByText('Not a row')).toHaveCount(0);
+    expect(wrong).toEqual([]);
   });
 });

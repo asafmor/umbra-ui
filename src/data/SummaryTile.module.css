@@ -2,7 +2,8 @@
   /* Read by a parent Stack: the height the tile needs to stay readable. */
   --umbra-slot-min-height: var(--umbra-summary-tile-min-height, var(--umbra-density-list-row));
 
-  flex: 1 1 0;
+  /* A share of a height that is given; where none is, a basis in per cent is the content's height. */
+  flex: 1 1 0%;
   display: flex;
   min-width: 0;
   min-height: 0;

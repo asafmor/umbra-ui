@@ -10,12 +10,15 @@ import {
   formatMonth,
   formatWeekday,
   isIsoDate,
+  isIsoMonth,
   monthWeeks,
   shiftMonth,
   startOfWeek,
   todayIso,
+  validDate,
   weekDays,
 } from './dates';
+import { itemsBetween, placeItems, type ScheduleItem } from './ScheduleSlot';
 
 describe('date arithmetic', () => {
   it('crosses month and year ends', () => {
@@ -164,5 +167,71 @@ describe('text', () => {
   it('is Gregorian whatever calendar the locale prefers', () => {
     expect(formatMonth('2026-10', 'th-TH')).toContain('2026');
     expect(formatDay('2026-10-11', 'fa-IR-u-nu-latn')).toBe('11');
+  });
+});
+
+describe('what is not a date', () => {
+  it('is given back as undefined, with one warning, and never throws', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    expect(validDate('2026-10-11', 'today')).toBe('2026-10-11');
+    expect(validDate(null, 'selectedDate')).toBe(null);
+    expect(validDate(undefined, 'today')).toBe(undefined);
+    expect(validDate('2026-02-30', 'unit today')).toBe(undefined);
+    expect(validDate('yesterday', 'unit today')).toBe(undefined);
+    expect(validDate('yesterday', 'unit today')).toBe(undefined);
+    expect(warn.mock.calls.map(([message]) => message as string)).toEqual([
+      expect.stringContaining('unit today: "2026-02-30" is not a date'),
+      expect.stringContaining('unit today: "yesterday" is not a date'),
+    ]);
+    expect(validDate('2026-13', 'unit month', 'month')).toBe(undefined);
+    expect(validDate('2026-10', 'unit month', 'month')).toBe('2026-10');
+    expect(isIsoMonth('2026-10-11')).toBe(true);
+    expect(isIsoMonth('October')).toBe(false);
+    warn.mockRestore();
+  });
+
+  it('leaves out an item whose date is not one', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const items = [
+      { id: 'a', date: '2026-10-12', label: 'A' },
+      { id: 'b', date: 'soon', label: 'B' },
+      { id: 'c', date: '2026-10-20', label: 'C' },
+    ];
+    expect(itemsBetween(items, '2026-10-11', '2026-10-17').map((item) => item.id)).toEqual(['a']);
+    expect(warn).toHaveBeenCalledTimes(1);
+    warn.mockRestore();
+  });
+});
+
+describe('placing items in the slots of a day', () => {
+  const day = '2026-10-14';
+  const item = (id: string, slot?: number): ScheduleItem => ({ id, date: day, slot, label: id });
+  const ids = (placed: ReturnType<typeof placeItems>) => ({
+    slots: placed.get(day)!.map((entry) => entry?.id ?? null),
+    rest: (placed.rest.get(day) ?? []).map((entry) => entry.id),
+  });
+
+  it('gives a named slot to its item and fills the others in order', () => {
+    expect(ids(placeItems([item('a'), item('b', 0), item('c')], [day], 3))).toEqual({
+      slots: ['b', 'a', 'c'],
+      rest: [],
+    });
+  });
+
+  it('puts an item whose slot is past the last line, or not a whole number, in the first free slot', () => {
+    expect(ids(placeItems([item('a', 0), item('b', 2)], [day], 2))).toEqual({ slots: ['a', 'b'], rest: [] });
+    expect(ids(placeItems([item('a', 1.5), item('b', -1)], [day], 2))).toEqual({
+      slots: ['a', 'b'],
+      rest: [],
+    });
+    // A slot that is named and valid still wins over one that is not.
+    expect(ids(placeItems([item('a', 7), item('b', 0)], [day], 2))).toEqual({ slots: ['b', 'a'], rest: [] });
+  });
+
+  it('keeps as the rest only what a full day has no slot for', () => {
+    expect(ids(placeItems([item('a', 0), item('b', 0), item('c'), item('d', 1.5)], [day], 2))).toEqual({
+      slots: ['a', 'b'],
+      rest: ['c', 'd'],
+    });
   });
 });

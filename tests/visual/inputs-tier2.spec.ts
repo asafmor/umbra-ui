@@ -1169,7 +1169,8 @@ test.describe('StarRating, review 1', () => {
     await page.mouse.move(fourth.x + fourth.width * 0.2, y, { steps: 6 });
     await page.mouse.up();
     await expect(halves.getByRole('radio', { name: '3.5 of 5' })).toBeChecked();
-    // The keyboard still walks in halves.
+    // The focus is on the value the drag chose, so the keyboard goes on from there, in halves.
+    await expect(halves.getByRole('radio', { name: '3.5 of 5' })).toBeFocused();
     await pressKeys(page, 'ArrowRight');
     await expect(halves.getByRole('radio', { name: '4 of 5', exact: true })).toBeChecked();
   });

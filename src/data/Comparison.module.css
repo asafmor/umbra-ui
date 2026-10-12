@@ -66,7 +66,7 @@
   font-weight: 700;
 }
 
-.side[data-part='opposite'] {
+.side[data-side='opposite'] {
   grid-area: 1 / 3;
   justify-self: end;
   flex-direction: row-reverse;
@@ -140,8 +140,33 @@
   display: inline-flex;
   align-items: center;
   gap: var(--umbra-space-2);
+  /* A value keeps its whole text up to two fifths of the width; a longer one ends in an ellipsis. */
+  min-width: 0;
+  max-width: 40cqi;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+}
+
+.number {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* A row of placeholders holds a line of text, unseen, so it is as tall as a row of values. */
+.body[data-part='skeleton'] > .row::before {
+  content: '\200b';
+  grid-area: 1 / 1;
+}
+
+/* The placeholders lie inside that line, and the one of the bars is as high as the bars. */
+.body[data-part='skeleton'] > .row > [data-shape='text'] {
+  padding-block: 0;
+}
+
+.body[data-part='skeleton'] > .row > .bars {
+  height: var(--umbra-comparison-bar-height, 0.25rem);
+  min-height: 0;
 }
 
 .value[data-side='opposite'] {

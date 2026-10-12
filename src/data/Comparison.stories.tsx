@@ -11,8 +11,8 @@ import { Box } from './samples';
 import { ValuePill } from './ValuePill';
 
 const sides: [ComparisonSide, ComparisonSide] = [
-  { name: 'Region A', icon: <EntityIcon name="Region A" size="sm" letters={2} /> },
-  { name: 'Region B', icon: <EntityIcon name="Region B" size="sm" letters={2} /> },
+  { name: 'Region A', icon: <EntityIcon name="Region A" alt="" size="sm" letters={2} /> },
+  { name: 'Region B', icon: <EntityIcon name="Region B" alt="" size="sm" letters={2} /> },
 ];
 const percent = (value: number) => `${value}%`;
 const rows: ComparisonRow[] = [

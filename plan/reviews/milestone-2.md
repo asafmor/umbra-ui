@@ -68,6 +68,8 @@ The 23 components were built by six agents that did not see each other's work. T
 | `TopBar` | The search trigger had no `data-part`. | `data-part="search"`. |
 | `useFitLevel` | A shared hook lived in `src/data/`. | `src/internal/useFitLevel.ts`. |
 | `useNarrow` | An app could not ask whether the columns are tabs. | Exported from `umbra-ui`. |
+| `List` (fix pass of review 1) | A `ListItem` placed directly in a `List` failed with an error from React when it held an SVG. | It is left out, with a development warning that names `List.Item`; the rows beside it are drawn. |
+| `SummaryTile`, `MediaCard` (fix pass of review 1) | A few pixels tall in a column without a height (a `size="content"` stack). | A flex basis of `0%` (`plan/layout.md`, "Mechanism"). The fixed height in the "Content cards" story is no longer needed and was left as it is. |
 | Storybook | No "Time" in the sidebar order. | Added, with "Integration". |
 | `plan/interaction.md` | The table of who has which states did not list the 23. | Listed, with a row for inputs. |
 
@@ -88,6 +90,7 @@ The 23 components were built by six agents that did not see each other's work. T
 | `EntitySwitcher` | Steppers follow the picker's order, not the order of `items`. | One order for both, now stated in the spec. |
 | `WidgetBoard` | No animated change of column. | Layout changes are instant during a resize, by rule. |
 | `WidgetBoard` header, `Comparison` | No "more" menu. | Neither has a row of the app's actions. |
+| `Comparison` strip | Empty room at both sides of the strip in a wide slot, and under it when it stands in for the table (examined in the fix pass of review 1). | One centred group on purpose: the names belong with the pair of values between them (`plan/specs/Comparison.md`, "Resolved"). |
 
 ### Open
 
@@ -96,13 +99,13 @@ The 23 components were built by six agents that did not see each other's work. T
 | Actions that overflow | Fixed (2026-10-11, review 3, F1). Only what can be a row of a menu moves into it; a control inside a component of the app, a `Tag`, a plain element and text stay in the row. Left: a component of the app that renders a button together with something that is no action is left out of the menu, with a development warning (the app's mistake; it cannot be drawn as a row). | Decision 07, "Controls among actions that overflow". |
 | `List` | A `ListItem` placed directly in a `List` (instead of `List.Item`) fails with an error from React when it holds an SVG. No development warning. | Tier 1; found while writing the stories. |
 | `SummaryTile` | In a `size="content"` slot it is a few pixels tall. | Found in the story; a fixed height works around it. Not looked into. |
-| `Planner` | The side column's content is mounted again when the column collapses or opens. The hidden items of a day cannot be activated (a name and a tooltip only). | The first needs the content moved as `Card` does. The second needs a popover of slots. |
+| `Planner` | The side column's content is mounted again when the column collapses or opens. | It needs the content moved as `Card` does. The hidden items of a day were the second half of this row: since the fix pass of review 1 the "+N" is a button that opens them in a popover, each calling `onAction(id)`, reached from the grid with F2 and Enter. Slot placement (T-7) is fixed too. |
 | `PieIndicator` | The root is a `div`. | React Aria's meter. |
 | `StarRating` | Fixed (review 1): a press chooses the whole star, a 24px target; a half is a drag along the row, or the arrow keys. | Its spec. |
 | `ColorScaleEditor` | Fixed (review 1): the rows scroll in a `ScrollArea`. | Its spec. |
 | `WeekStrip` | No shrink by height. | The card scrolls; which line matters is the app's. |
 | `HorizontalScroller` | The fade is a mask, not a part. | It is not an element; `fade` and its token cover it. |
-| Not examined | `EntitySwitcher`'s caret at icon-only, the `Planner`'s first scroll in tab mode, the empty space of the `Comparison` strip. | No fault showed in the compositions; not looked at one by one. |
+| Not examined | `EntitySwitcher`'s caret at icon-only, the `Planner`'s first scroll in tab mode. | No fault showed in the compositions; not looked at one by one. |
 
 ## Review 1: time, data and inputs (2026-10-11)
 
@@ -112,26 +115,26 @@ An independent reviewer (with two sub-reviewers) checked the 12 components again
 
 | Id | Component | Finding | Reproduce | Status |
 |---|---|---|---|---|
-| S-1 | SequenceDots | "Maximum update depth exceeded" and the tree unmounts when about 50 or more marks must be dropped (55 items in 100px is fine, 60 crashes; also a resize from 2000px to 100px with 100 items) | `<div style={{width:100}}><SequenceDots items={60 items} /></div>` | open |
-| T-1 | Planner | "Next month" or "Previous month" disables itself under the focus at `maxMonth` or `minMonth`; focus lands on `<body>` | Story `time-planner--plain`: focus "Next month", Enter | open |
-| T-2 | WeekStrip, Planner | Focus in a grid cell while the component swaps to its error or empty state: focus goes to `<body>` | `<WeekStrip today="2026-10-14" onDayAction onRetry error={flag} />`, Tab, ArrowRight, set `flag`; same for Planner with `error`, and `empty` | open |
+| S-1 | SequenceDots | "Maximum update depth exceeded" and the tree unmounts when about 50 or more marks must be dropped (55 items in 100px is fine, 60 crashes; also a resize from 2000px to 100px with 100 items) | `<div style={{width:100}}><SequenceDots items={60 items} /></div>` | fixed: the number of marks to drop is counted from the measured widths in one step (`advance` of `useShrinkLevel`), not one mark per render; tested with 60, 500 and 5,000 items and resizes both ways |
+| T-1 | Planner | "Next month" or "Previous month" disables itself under the focus at `maxMonth` or `minMonth`; focus lands on `<body>` | Story `time-planner--plain`: focus "Next month", Enter | fixed: the button that disables itself hands the focus to the other of the two (`leaveDisabled`, `src/internal/focus.ts`) |
+| T-2 | WeekStrip, Planner | Focus in a grid cell while the component swaps to its error or empty state: focus goes to `<body>` | `<WeekStrip today="2026-10-14" onDayAction onRetry error={flag} />`, Tab, ArrowRight, set `flag`; same for Planner with `error`, and `empty` | fixed: the grid moves the focus to the first control of the state (Retry), or to the state itself, and back to the cell when the grid returns (`src/time/grid.ts`). `DataTable` keeps its header in such a change, and its grid already took the focus back |
 | I-1 | Slider | Turning `readOnly` on for an uncontrolled slider discards the user's value (100 goes back to `defaultValue` 30; after `readOnly` off it is 0), with "changed from uncontrolled to controlled" | `<Slider defaultValue={30} readOnly={ro} />`, focus thumb, End, toggle `ro` on, Home, toggle off | fixed: the slider always gives React Aria the value, and holds an uncontrolled one itself |
 
 ### Major
 
 | Id | Component | Finding | Reproduce | Status |
 |---|---|---|---|---|
-| T-3 | DateChip in WeekStrip, Planner | The day number is cut, so a wrong date is drawn ("Wed 14" reads "Wed 1"), over day widths of 60 to 78px depending on density and `slotSize`; it is in a committed baseline, and `time.spec.ts` claims "never cut" | Story `time-weekstrip--default`, 1024x600, spacious | open |
-| T-4 | Planner | PageUp or PageDown from an outside-month day does nothing when the target is in the month shown; the other direction skips a month | Story `time-planner--default`: focus Sep 28, PageDown | open |
-| T-5 | WeekStrip | Pressable cells under 24px at the default `slotSize="small"`: compact 60x20 stacked with no gap; header 21px (default), 22px (spacious) | `<WeekStrip slotsPerDay={2} onAction onDayAction />` in a 420px box | open |
-| T-6 | Planner | With a side column the ARIA columns are off by one: 8 column headers, slot rows of 7 cells with no `aria-colindex`; a Monday slot sits under "Sunday" | Story `time-planner--default`, role dump | open |
-| T-7 | WeekStrip, Planner | An item whose `slot` index is past the last line becomes "+1" while a free slot is drawn beside it; `slot: 1.5` vanishes with no mark | Two items on one day with `slot: 0` and `slot: 2` | open |
-| M-1 | MediaCard | With `onPress` the title never clamps: `titleLines` is ignored, no ellipsis, no tooltip (15 lines where the same card with `href` has 2) | `<div style={{width:220}}><MediaCard title={long} onPress={fn} /></div>` | open |
-| M-2 | MediaCard | The title tooltip on keyboard focus of the card's link is gone within about 10ms; hover works | Story `data-mediacard--links-and-actions`, the linked card at 260px with a long title, Tab to it | open |
-| M-3 | MediaCard | In a column flex container without a height it collapses to its padding and hides everything (34px compact, 2px hero): in `Card > Stack > MediaCard` and in an app's own flex column | Harness; `size="content"` on the card avoids it | open |
-| M-4 | MediaCard | Loading does not hold the final layout in a content-sized place: compact 90px grows to 142px, hero 309 to 333, pair shrinks 82 to 74 | `loading` true then false, 320px wide | open |
-| C-1 | Comparison | `variant="strip"` while loading draws the 5-row table skeleton (188px, then 36px); in a 120px slot it overflows by 68px | `<Comparison variant="strip" loading />` | open |
-| C-2 | Comparison | A strip with a `summary` and `rows={[]}` shows "Nothing to compare" instead of the strip | `variant="strip" rows={[]} summary={{values:[1,2]}}` | open |
+| T-3 | DateChip in WeekStrip, Planner | The day number is cut, so a wrong date is drawn ("Wed 14" reads "Wed 1"), over day widths of 60 to 78px depending on density and `slotSize`; it is in a committed baseline, and `time.spec.ts` claims "never cut" | Story `time-weekstrip--default`, 1024x600, spacious | fixed: the weekday gives way first and the number stays; steps sized for the spacious density (room inside a day: 68 and 52px, 56 and 44px for `small`); beyond them the weekday is shortened, never the number. 1px sweep at three densities and both sizes; baselines re-captured |
+| T-4 | Planner | PageUp or PageDown from an outside-month day does nothing when the target is in the month shown; the other direction skips a month | Story `time-planner--default`: focus Sep 28, PageDown | fixed: a page towards the month shown moves to that day at once; a page towards the day's own month shows it and keeps the day, so one key never moves two months |
+| T-5 | WeekStrip | Pressable cells under 24px at the default `slotSize="small"`: compact 60x20 stacked with no gap; header 21px (default), 22px (spacious) | `<WeekStrip slotsPerDay={2} onAction onDayAction />` in a 420px box | fixed: a cell that can be pressed is at least 24px high; the chip and slot keep their look, and a strip that is only read keeps its height |
+| T-6 | Planner | With a side column the ARIA columns are off by one: 8 column headers, slot rows of 7 cells with no `aria-colindex`; a Monday slot sits under "Sunday" | Story `time-planner--default`, role dump | fixed: `aria-colcount` 8, `aria-colindex` on every header and cell, `aria-rowspan` on the side cell |
+| T-7 | WeekStrip, Planner | An item whose `slot` index is past the last line becomes "+1" while a free slot is drawn beside it; `slot: 1.5` vanishes with no mark | Two items on one day with `slot: 0` and `slot: 2` | fixed: an item whose slot is not one of the day's (past the last line, not a whole number, taken) takes the first free slot; "+N" only for a full day |
+| M-1 | MediaCard | With `onPress` the title never clamps: `titleLines` is ignored, no ellipsis, no tooltip (15 lines where the same card with `href` has 2) | `<div style={{width:220}}><MediaCard title={long} onPress={fn} /></div>` | fixed: the text of a button title is clamped inside the button (a button is one box that the heading's clamp does not reach); tooltip too |
+| M-2 | MediaCard | The title tooltip on keyboard focus of the card's link is gone within about 10ms; hover works | Story `data-mediacard--links-and-actions`, the linked card at 260px with a long title, Tab to it | fixed: the clamped title was a scrollable box, the focus scrolled it and the scroll closed the tip; it is clipped now (`overflow: clip`). Open beside it: a tip of `useHoverTip` still closes when an ancestor really scrolls to bring the focused control into view |
+| M-3 | MediaCard | In a column flex container without a height it collapses to its padding and hides everything (34px compact, 2px hero): in `Card > Stack > MediaCard` and in an app's own flex column | Harness; `size="content"` on the card avoids it | fixed in the CSS, not in `useFitLevel`: the cause is `flex: 1 1 0`, which is zero high in a column without a height; the basis is `0%` (the content's height there). The hook then never steps; its comment says what it needs. `Comparison` (`height: 100%`) was already right |
+| M-4 | MediaCard | Loading does not hold the final layout in a content-sized place: compact 90px grows to 142px, hero 309 to 333, pair shrinks 82 to 74 | `loading` true then false, 320px wide | fixed: with the content's props, each piece is laid out unseen under a placeholder of its size; measured per variant |
+| C-1 | Comparison | `variant="strip"` while loading draws the 5-row table skeleton (188px, then 36px); in a 120px slot it overflows by 68px | `<Comparison variant="strip" loading />` | fixed: a loading strip is the strip, with the two sides and placeholders for the values |
+| C-2 | Comparison | A strip with a `summary` and `rows={[]}` shows "Nothing to compare" instead of the strip | `variant="strip" rows={[]} summary={{values:[1,2]}}` | fixed: a strip with a `summary` is not empty without rows |
 | I-2 | Slider | The output never truncates, so a band label eats the track: with "100 · Very high" the track is 51px in a 200px slot, 0px at 130px, and the root overflows by 3px | Thresholds with labels "Low" / "Very high", `defaultValue={100}` | fixed: the output is cut with an ellipsis and a tooltip; the track keeps 48px |
 | I-3 | Slider | Dragging across a band whose label has another length makes the value jump (1px moves give 61…69, 70, then 96) | Same thresholds, `defaultValue={60}`, 260px slot | fixed: the output keeps the width of its longest text, so the track does not change size in a drag |
 | I-4 | Stepper | Native form reset does not reset it (a Slider in the same form resets) | Uncontrolled `Stepper name defaultValue={3}` in a form, ArrowUp, reset | fixed: one hook for a control that is not native (`src/inputs/formValue.tsx`); `forms.spec.ts` |
@@ -141,27 +144,27 @@ An independent reviewer (with two sub-reviewers) checked the 12 components again
 
 | Id | Component | Finding | Status |
 |---|---|---|---|
-| S-2 | SequenceDots | A `mark` part given as a function or a node logs React's missing-key warning | open |
-| S-3 | SequenceDots | `tone="accent"` marks are 2.56 to 2.59:1 against the card on all four tints | open |
-| S-4 | SequenceDots | Skeleton size differs from the data: `sm` dots 56px loading, 48px loaded; with `onAction` 66x10 loading, 120x24 loaded | open |
-| S-5 | SequenceDots | The tooltip of a pressable mark is not its description (`aria-describedby` is null), and the summary holds labels only | open |
-| M-5 | MediaCard | Compact width steps fire at a card width of 254 and 194px, not 220 and 160 (the query measures the content box); hero at 222 and 162 | open |
-| M-6 | MediaCard | Focus ring over a light picture (`behind`): 1.43:1 at the top edge | open |
-| M-7 | MediaCard | The article has no name while loading, or when `title` is replaced through `parts` (`aria-labelledby` points at a missing id); without a `title` an empty heading is rendered | open |
-| M-8 | MediaCard | With `meta`, `category` and `actions` hidden by `null` parts, an empty 28px footer row stays | open |
-| M-9 | MediaCard | `MediaCardActionsProps` is not exported though `parts.actions` uses it; the spec's props table lacks `selected` and `moreLabel` and still says "No `selected`"; no `selected` in the component's own stories | open |
-| C-3 | Comparison | Skeleton rows with bars are 26.3px, loaded rows 30px | open |
-| C-4 | Comparison | Very long values overflow and are clipped with no ellipsis or tooltip | open |
-| C-5 | Comparison | The second side carries `data-part="opposite"`, not `side` as the anatomy names it | open |
-| C-6 | Comparison, MediaCard stories | Sample icons use `EntityIcon name`, so headers read "Region A Region A" | open |
-| T-8 | Time | A selected slot with `aria-label` does not say "Selected" | open |
-| T-9 | Time | Loading does not hold the layout without `slotsPerDay` | open |
-| T-10 | Time | The `font` tokens do not resize `small` | open |
-| T-11 | Time | `slot`, `placeholder` and `day` have no `data-part` | open |
-| T-12 | Time | `weekEmpty: null` leaves a blank row | open |
-| T-13 | Time | An invalid `today`, `month` or `date` throws, while an invalid item date is dropped silently | open |
-| T-14 | Time | The two Shrinking stories are clipped at 1024x600 | open |
-| T-15 | Time | Steps fire at 132/68/60/52px, not 128/64/56/48; `hiddenItemsLabel` and `moreLabel` are missing from the props tables of the specs | open |
+| S-2 | SequenceDots | A `mark` part given as a function or a node logs React's missing-key warning | fixed: each mark is keyed by the component (unit test, `src/data/SequenceDots.test.tsx`) |
+| S-3 | SequenceDots | `tone="accent"` marks are 2.56 to 2.59:1 against the card on all four tints | fixed: the lighter violet of a selected row's stripe, 3:1 or more on every tint (`--umbra-sequence-dots-accent-color`) |
+| S-4 | SequenceDots | Skeleton size differs from the data: `sm` dots 56px loading, 48px loaded; with `onAction` 66x10 loading, 120x24 loaded | fixed: the placeholder is counted from the same private sizes as the marks; measured for 12 cases |
+| S-5 | SequenceDots | The tooltip of a pressable mark is not its description (`aria-describedby` is null), and the summary holds labels only | fixed: a text tooltip is the button's `aria-describedby`, and is in the default summary in brackets |
+| M-5 | MediaCard | Compact width steps fire at a card width of 254 and 194px, not 220 and 160 (the query measures the content box); hero at 222 and 162 | fixed in the spec, not the code: the thresholds are of the room inside the padding and border, which is what a container query measures; tested to the pixel |
+| M-6 | MediaCard | Focus ring over a light picture (`behind`): 1.43:1 at the top edge | fixed: a dark band inside the ring when the picture is behind (`--umbra-media-card-focus-band`); 3:1 measured on every tint |
+| M-7 | MediaCard | The article has no name while loading, or when `title` is replaced through `parts` (`aria-labelledby` points at a missing id); without a `title` an empty heading is rendered | fixed: `loadingLabel` names a loading card; `aria-labelledby` only while the title is in the card; no heading without a `title` |
+| M-8 | MediaCard | With `meta`, `category` and `actions` hidden by `null` parts, an empty 28px footer row stays | fixed: an empty footer is not displayed |
+| M-9 | MediaCard | `MediaCardActionsProps` is not exported though `parts.actions` uses it; the spec's props table lacks `selected` and `moreLabel` and still says "No `selected`"; no `selected` in the component's own stories | fixed: the type is exported, the spec lists `selected`, `moreLabel` and `loadingLabel`, a selected card is in the "States" story |
+| C-3 | Comparison | Skeleton rows with bars are 26.3px, loaded rows 30px | fixed: a placeholder row holds a line of text and a bar of the bars' height |
+| C-4 | Comparison | Very long values overflow and are clipped with no ellipsis or tooltip | fixed: a value is held to two fifths of the width and ends in an ellipsis, with a tooltip |
+| C-5 | Comparison | The second side carries `data-part="opposite"`, not `side` as the anatomy names it | fixed: both are `data-part="side"`, with `data-side` |
+| C-6 | Comparison, MediaCard stories | Sample icons use `EntityIcon name`, so headers read "Region A Region A" | fixed: the sample marks are decoration (`alt=""`); the spec says so for `icon` |
+| T-8 | Time | A selected slot with `aria-label` does not say "Selected" | fixed: `selectedLabel` is added to the `aria-label` |
+| T-9 | Time | Loading does not hold the layout without `slotsPerDay` | fixed: without `slotsPerDay`, loading keeps the lines of the items given, else those last shown, else two; the first load of an app is held by `slotsPerDay` (WeekStrip spec) |
+| T-10 | Time | The `font` tokens do not resize `small` | fixed: the smaller font of `small` is the default of the token |
+| T-11 | Time | `slot`, `placeholder` and `day` have no `data-part` | fixed: `data-part` `day`, `slot`, `placeholder` |
+| T-12 | Time | `weekEmpty: null` leaves a blank row | fixed: no row, and the side cell spans the headers alone |
+| T-13 | Time | An invalid `today`, `month` or `date` throws, while an invalid item date is dropped silently | fixed: one rule (`validDate`): a warning in development and a fallback, never a throw; the table is in the Planner spec, "Dates" |
+| T-14 | Time | The two Shrinking stories are clipped at 1024x600 | fixed: the strips wrap side by side, the two planners give way together |
+| T-15 | Time | Steps fire at 132/68/60/52px, not 128/64/56/48; `hiddenItemsLabel` and `moreLabel` are missing from the props tables of the specs | fixed: the spec was wrong (it gave the width of a day; a container query measures the room inside it, 4px less). The specs now state the room and the new steps of T-3; both props are in the tables |
 | I-6 | SplitButton, Menu | Duplicate item ids unmount the tree when the menu opens | fixed: a repeated id gets a key of its own and a development warning (`src/internal/distinctIds.ts`) in `Menu`, `Select`, `SearchField`, `List`, `Tabs`, `SegmentedFilter` |
 | I-7 | Stepper | `required` does not block submit | fixed: the browser validates the stepper; the field shows its message. Also `TextField`, `SearchField`, `Checkbox`, `CheckboxGroup`, `RadioGroup`, which showed no message |
 | I-8 | StarRating, Slider | A `FormField` label press focuses nothing | fixed: the field label gives the focus to the tab stop of a group (`fieldParts.tsx`); also `RadioGroup`, `CheckboxGroup`, `ColorScaleEditor` |
@@ -174,13 +177,14 @@ An independent reviewer (with two sub-reviewers) checked the 12 components again
 | I-15 | Slider | Duplicate marks log a key error | fixed: marks are keyed by position |
 | I-16 | SplitButton | `onPress` receives a press event | fixed, in `Button` too: the press event no longer reaches `onPress`. Still open in other groups: `MediaCard`, `ScheduleSlot` and `ContextBlock` hand `onPress` to a native `onClick` |
 | I-17 | ColorScaleEditor | At 180px the colour select shows only its caret | fixed: the colour choice keeps 64px, the boundary field gives way first |
-| X-1 | ScheduleSlot spec | "fixture chip" is a sport term in a spec | open |
+| X-1 | ScheduleSlot spec | "fixture chip" is a sport term in a spec | fixed: reworded |
 
 ### Test gaps named by the review
 
 No test for more than about 50 marks in SequenceDots; none presses Previous/Next up to a month limit, swaps state with focus in the grid, or pages from an outside day; no "nothing moves" measurement for loading in any of the 12, and no strip-loading case; MediaCard has no focus tooltip test, no long title on a button card, and widths are checked only at 300/210/150px; Comparison's strip width steps (320, 260) are untested; shrink tests in the time and inputs files sample fixed widths only (no sweep or boundary); inputs have no native reset, `required` or `readOnly` toggling tests.
 
 Inputs, closed in the fix pass: native reset, `required`, label press, a missing `name` and `disabled` for every named input (`tests/visual/forms.spec.ts`); `readOnly` toggling, a drag of one pixel at a time and a sweep of the slot width for `Slider` (`inputs-tier2.spec.ts`, "review 1").
+Data group, closed in the fix pass (`tests/visual/data-tier2.spec.ts`, "review 1", on the story `Integration/Data cases`): 60, 500 and 5,000 marks and resizes both ways; "nothing moves" for 12 cases of SequenceDots, 5 of MediaCard and 4 of Comparison, the loading strip among them; the focus tooltip and the long title of a button card; the width steps of MediaCard and of the strip to the pixel, both ways.
 
 ### Verified correct
 

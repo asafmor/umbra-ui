@@ -3,6 +3,7 @@ import {
   createElement,
   useContext,
   useId,
+  useLayoutEffect,
   useRef,
   useState,
   type CSSProperties,
@@ -41,6 +42,8 @@ export interface MediaCardRootProps extends BlockProps, SlotProps, RootAttribute
   interactive?: boolean | undefined;
   /** Marks the card busy for assistive technology. */
   loading?: boolean | undefined;
+  /** Names the card while it is loading, when there is no `aria-label`. */
+  loadingLabel?: string | undefined;
   /** The card is the chosen one of its set: the selected fill and an edge, and `aria-current`. */
   selected?: boolean | undefined;
   /** Names a card that has no title. */
@@ -52,8 +55,9 @@ function Root({
   imagePlacement = 'above',
   interactive,
   loading,
+  loadingLabel = 'Loading',
   selected,
-  'aria-label': label,
+  'aria-label': given,
   className,
   style,
   children,
@@ -61,6 +65,16 @@ function Root({
 }: MediaCardRootProps) {
   const { ref, props } = useSlot<HTMLElement>(slotProps);
   const titleId = useId();
+  const label = given ?? (loading ? loadingLabel : undefined);
+  // The card is named by its title only while one is there: none is while loading, without a `title`,
+  // or when the app draws its own in place of the part. A name must not point at nothing. Looked up
+  // after every render, because the title is a child's to draw.
+  useLayoutEffect(() => {
+    const card = ref.current;
+    if (!card) return;
+    if (!label && card.querySelector(`[id="${titleId}"]`)) card.setAttribute('aria-labelledby', titleId);
+    else card.removeAttribute('aria-labelledby');
+  });
   // Less is shown per level while the card is shorter than its content (plan/specs/MediaCard.md).
   const level = useFitLevel(ref, loading ? 0 : 4, variant);
   return (
@@ -161,9 +175,10 @@ interface LinkProps {
 function cover({ href, renderLink = (props) => <a {...props} />, onPress }: LinkProps, children: ReactNode) {
   if (href) return renderLink({ href, className: styles.link, children });
   if (!onPress) return children;
+  // A button is one box, which no line clamp of the heading around it reaches: its text is clamped inside.
   return (
     <button type="button" className={styles.link} onClick={onPress}>
-      {children}
+      <span className={styles.clamp}>{children}</span>
     </button>
   );
 }
@@ -178,7 +193,12 @@ export interface MediaCardTitleProps extends BlockProps, LinkProps {
 function Title({ headingLevel = 3, lines = 2, className, style, children, ...link }: MediaCardTitleProps) {
   const ref = useRef<HTMLElement>(null);
   const id = useContext(TitleId);
-  const tip = useHoverTip(ref, children, (el) => el.scrollHeight > el.clientHeight + 1);
+  const tip = useHoverTip(ref, children, (el) =>
+    // The heading, or the text inside the card's button, is what the clamp cuts.
+    [el, el.querySelector(`.${styles.clamp}`)].some(
+      (box) => !!box && box.scrollHeight > box.clientHeight + 1,
+    ),
+  );
   return (
     <>
       {createElement(
@@ -361,20 +381,48 @@ export function MediaCard({
     </Footer>
   );
   if (root.loading) {
+    // What the card will hold, when it is already known: each piece is laid out unseen under a
+    // placeholder of exactly its size, so nothing moves when the content arrives.
+    const ghost = (node: ReactNode) => (
+      <div className={styles.ghost}>
+        {node}
+        <Skeleton shape="block" className={styles.veil} />
+      </div>
+    );
+    const known = title != null || description != null || !!footer;
     return (
       <Root {...root} variant={variant}>
         {renderPart(parts?.skeleton, {}, () => (
           <>
-            {variant !== 'pair' && (
+            {variant !== 'pair' && parts?.image !== null && (
               <div data-part="skeleton" className={styles.media} aria-hidden="true">
                 <Skeleton shape="block" className={styles.picture} />
               </div>
             )}
-            <div data-part="skeleton" className={styles.content} aria-hidden="true">
-              <Skeleton width={variant === 'pair' ? '100%' : '80%'} className={styles.skeletonTitle} />
-              {variant === 'hero' && <Skeleton lines={2} />}
-              <Skeleton width="45%" />
-            </div>
+            {known ? (
+              <div data-part="skeleton" data-known="" className={styles.content} aria-hidden="true">
+                {/* The details of a pair card are above its two sides. */}
+                {opposite && footer && ghost(footer)}
+                {opposite
+                  ? ghost(<Pair side={{ ...side, title }} opposite={opposite} center={center} />)
+                  : title != null &&
+                    ghost(
+                      <div className={styles.title} style={{ ['--lines' as string]: titleLines ?? 2 }}>
+                        {title}
+                      </div>,
+                    )}
+                {!opposite &&
+                  description != null &&
+                  ghost(<Description lines={descriptionLines}>{description}</Description>)}
+                {!opposite && footer && ghost(footer)}
+              </div>
+            ) : (
+              <div data-part="skeleton" className={styles.content} aria-hidden="true">
+                <Skeleton width={variant === 'pair' ? '100%' : '80%'} className={styles.skeletonTitle} />
+                {variant === 'hero' && <Skeleton lines={2} />}
+                <Skeleton width="45%" />
+              </div>
+            )}
           </>
         ))}
       </Root>
@@ -398,9 +446,10 @@ export function MediaCard({
         <Image {...p} />
       ))}
       <Content>
-        {renderPart(parts?.title, { headingLevel, lines: titleLines, children: title, ...link }, (p) => (
-          <Title {...p} />
-        ))}
+        {title != null &&
+          renderPart(parts?.title, { headingLevel, lines: titleLines, children: title, ...link }, (p) => (
+            <Title {...p} />
+          ))}
         {description != null &&
           renderPart(parts?.description, { lines: descriptionLines, children: description }, (p) => (
             <Description {...p} />

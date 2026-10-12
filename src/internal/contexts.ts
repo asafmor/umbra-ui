@@ -77,3 +77,10 @@ export const ContextShrinkContext = createContext(0);
  * modal leaves reachable: everything outside it is inert.
  */
 export const OverlayContainerContext = createContext<HTMLElement | null>(null);
+
+/**
+ * True directly inside the rows of a `List`, where only `List.Item` and `List.Group` can be: React Aria
+ * renders what is there into a document of its own, which holds no drawing (an SVG there throws). A
+ * `List.Item` and a group header turn it off again for what they draw.
+ */
+export const RowsOnlyContext = createContext(false);
