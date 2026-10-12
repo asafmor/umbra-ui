@@ -678,8 +678,8 @@
   inset-block: 2px;
   inset-inline-end: 0;
   width: 2px;
-  background: var(--umbra-table-resize-color, var(--umbra-color-fixed-focus-ring));
-  opacity: 0;
+  /* No opacity here: it would give the header's text another kind of smoothing. */
+  background: transparent;
 }
 
 .resizeHandle[data-side='start']::after {
@@ -687,7 +687,7 @@
 }
 
 .resizeHandle:is(:hover, :focus, [data-resizing])::after {
-  opacity: 1;
+  background: var(--umbra-table-resize-color, var(--umbra-color-fixed-focus-ring));
 }
 
 /* The column menu: a bar of actions, then one row per column. */
