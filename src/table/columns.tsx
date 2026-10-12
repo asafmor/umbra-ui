@@ -3,7 +3,6 @@
 import { useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { Button } from '../basics/Button';
 import { Checkbox } from '../inputs/Checkbox';
-import { SearchField } from '../inputs/SearchField';
 import { Menu, type MenuEntry } from '../overlays/Menu';
 import { Icon } from '../provider/icons';
 import { cx } from '../utils/parts';
@@ -344,6 +343,8 @@ export function ColumnMenu({
           className={styles.columnCheck}
         >
           <span className={styles.columnLabel}>{item.label}</span>
+          {/* A space, so the name reads "Level No room". */}
+          {(item.noRoom || item.pin) && ' '}
           {item.noRoom && (
             <span data-part="noRoom" className={styles.columnNote}>
               {noRoomLabel}
@@ -365,12 +366,14 @@ export function ColumnMenu({
     <div data-part="columnMenu" className={cx(styles.columnMenu, className)} style={style}>
       <div className={styles.columnMenuBar}>
         {items.length >= searchFrom && (
-          <SearchField
-            size="small"
+          // A native field: `SearchField`, with its suggestions, would be a seventh of the table's weight.
+          <input
+            type="search"
             aria-label={searchLabel}
             placeholder={searchLabel}
             value={query}
-            onChange={setQuery}
+            onChange={(event) => setQuery(event.target.value)}
+            className={styles.columnSearch}
           />
         )}
         <span className={styles.columnMenuActions}>

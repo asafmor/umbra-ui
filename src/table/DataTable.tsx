@@ -562,6 +562,7 @@ function HeaderCell({
       aria-labelledby={description && !label ? labelId : undefined}
       aria-describedby={description ? descriptionId : undefined}
       aria-colindex={index}
+      aria-haspopup={onMenu ? 'menu' : undefined}
       colSpan={colSpan}
       tabIndex={-1}
       className={cx(styles.headerCell, className)}
@@ -603,16 +604,15 @@ function HeaderCell({
         </span>
       )}
       {onMenu && (
-        // Not a control of the cell for the grid: Enter on the header still sorts. Keys open the menu
-        // from the cell itself.
+        // For a pointer only, and hidden from assistive technology: the cell itself says it has a menu
+        // and opens it with Shift+F10, so the header keeps its name and its one control (the sort).
         <button
           type="button"
           tabIndex={-1}
+          aria-hidden="true"
           data-grid-ignore=""
           data-part="headerMenuButton"
-          aria-label={menuLabel}
-          aria-haspopup="menu"
-          aria-expanded={!!menuOpen}
+          title={menuLabel}
           className={styles.headerMenuButton}
           onClick={(event) => onMenu(event.currentTarget.closest('th')!)}
         >

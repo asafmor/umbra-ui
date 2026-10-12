@@ -715,6 +715,22 @@
   flex: 1 1 100%;
 }
 
+.columnSearch {
+  box-sizing: border-box;
+  min-width: 0;
+  height: 28px;
+  padding: 0 var(--umbra-space-3);
+  border: var(--umbra-border-width) solid var(--umbra-color-base-border-control);
+  border-radius: var(--umbra-radius-sm);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+
+.columnSearch::placeholder {
+  color: var(--umbra-color-base-text-muted);
+}
+
 .columnMenuActions {
   display: flex;
   gap: var(--umbra-space-2);
