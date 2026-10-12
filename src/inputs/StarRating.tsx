@@ -36,6 +36,8 @@ interface Shared {
   icon: ReactNode;
   emptyIcon: ReactNode;
   valueHidden: boolean;
+  /** A display too narrow for its row of stars: one star and the value as a number. */
+  compact: boolean;
   display: boolean;
 }
 
@@ -124,8 +126,12 @@ function Root({
   const [hovered, setHovered] = useState<number | null>(null);
   const value = valueProp === undefined ? own : valueProp;
   const control = useFieldControl({ id, invalid, required, disabled });
-  // One step of "show less": the value's text gives way before a star is cut.
-  const valueHidden = useShrinkLevel(ref, 1) === 1;
+  // "Show less": the value's text gives way first. A display that still does not fit (a narrow table
+  // cell) then draws one star and the value as a number, instead of a row cut at its end. An input
+  // keeps its stars: each is a choice.
+  const level = useShrinkLevel(ref, readOnly ? 2 : 1);
+  const valueHidden = level >= 1;
+  const compact = readOnly && level === 2;
   const text = (v: number) => formatValue(v, max);
   const shared: Shared = {
     max,
@@ -143,12 +149,14 @@ function Root({
     icon,
     emptyIcon,
     valueHidden,
+    compact,
     display: readOnly,
   };
   const common = {
     'data-umbra': 'star-rating',
     'data-size': size,
     'data-mode': readOnly ? 'display' : 'input',
+    'data-compact': compact ? '' : undefined,
     style: { '--stars': max, ...style } as CSSProperties,
   };
   const rootClass = cx(styles.root, className);
@@ -235,6 +243,15 @@ export interface StarRatingStarsProps {
 /** The row of stars. In input mode it also holds the choices: one radio over each step. */
 function Stars({ className, style, children }: StarRatingStarsProps) {
   const rating = useRating('Stars');
+  if (rating.compact)
+    return (
+      <span data-part="stars" className={cx(styles.stars, className)} style={style}>
+        <Star index={0} fill={1} />
+        <span data-part="value" aria-hidden="true" className={styles.value}>
+          {rating.value}
+        </span>
+      </span>
+    );
   return (
     <span data-part="stars" className={cx(styles.stars, className)} style={style}>
       {children ?? Array.from({ length: rating.max }, (_, index) => <Star key={index} index={index} />)}
