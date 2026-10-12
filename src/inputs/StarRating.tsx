@@ -7,6 +7,7 @@ import {
   useRef,
   useState,
   type CSSProperties,
+  type PointerEvent,
   type ReactNode,
 } from 'react';
 import { Radio as AriaRadio, RadioGroup as AriaRadioGroup } from 'react-aria-components';
@@ -15,8 +16,9 @@ import { useShrinkLevel } from '../internal/useShrinkLevel';
 import { RawIcon } from '../provider/icons';
 import { defined } from '../utils/defined';
 import { cx, renderPart, type Part } from '../utils/parts';
+import { useActionKind } from '../internal/contexts';
 import styles from './StarRating.module.css';
-import { useFieldControl } from './useField';
+import { ReportValidation, useFieldControl, useUnnamedGroup } from './useField';
 import { passThrough, rootRender } from '../utils/passThrough';
 
 export type StarRatingSize = 'small' | 'default' | 'large';
@@ -37,6 +39,12 @@ interface Shared {
   emptyIcon: ReactNode;
   valueHidden: boolean;
   display: boolean;
+  loading: boolean;
+  step: number;
+  disabled: boolean;
+  /** A drag along the stars: on from its start until just after it ends. */
+  setDragged: (on: boolean) => void;
+  isDragged: () => boolean;
 }
 
 const Context = createContext<Shared | null>(null);
@@ -122,8 +130,10 @@ function Root({
   const ref = useRef<HTMLElement>(null);
   const [own, setOwn] = useState(defaultValue ?? null);
   const [hovered, setHovered] = useState<number | null>(null);
+  const dragged = useRef(false);
   const value = valueProp === undefined ? own : valueProp;
   const control = useFieldControl({ id, invalid, required, disabled });
+  useUnnamedGroup(ref, readOnly || loading ? 'none' : name);
   // One step of "show less": the value's text gives way before a star is cut.
   const valueHidden = useShrinkLevel(ref, 1) === 1;
   const text = (v: number) => formatValue(v, max);
@@ -144,20 +154,27 @@ function Root({
     emptyIcon,
     valueHidden,
     display: readOnly,
+    loading,
+    step,
+    disabled: control.disabled,
+    setDragged: (on) => {
+      dragged.current = on;
+    },
+    isDragged: () => dragged.current,
   };
   const common = {
     'data-umbra': 'star-rating',
     'data-size': size,
     'data-mode': readOnly ? 'display' : 'input',
+    'data-step': step === 0.5 ? 'half' : undefined,
     style: { '--stars': max, ...style } as CSSProperties,
   };
   const rootClass = cx(styles.root, className);
   if (loading)
     return (
       <span {...passThrough(rest)} {...common} className={rootClass} aria-busy="true" data-loading>
-        <span data-part="skeleton" className={styles.skeleton}>
-          <Skeleton shape="block" width="100%" height="100%" />
-        </span>
+        {/* The blocks draw their placeholders, so the value text keeps its room too. */}
+        <Context value={shared}>{children}</Context>
       </span>
     );
   if (readOnly) {
@@ -195,9 +212,11 @@ function Root({
       ref={ref as React.RefObject<HTMLDivElement>}
       orientation="horizontal"
       value={value === null ? (clearable ? '0' : null) : String(value)}
-      onChange={(next) => shared.choose(Number(next) || null)}
+      // The press that ends a drag is on the star the drag began on: the drag has already chosen.
+      onChange={(next) => dragged.current || shared.choose(Number(next) || null)}
       isDisabled={control.disabled}
-      isInvalid={control.invalid}
+      // Only when it is set: a `false` would silence the group's own validation (required, on submit).
+      {...defined({ isInvalid: control.invalid || undefined })}
       isRequired={control.required}
       {...defined({
         className: rootClass,
@@ -208,6 +227,7 @@ function Root({
         'aria-describedby': control.describedBy,
       })}
     >
+      <ReportValidation />
       <Context value={shared}>{children}</Context>
     </AriaRadioGroup>
   );
@@ -235,8 +255,59 @@ export interface StarRatingStarsProps {
 /** The row of stars. In input mode it also holds the choices: one radio over each step. */
 function Stars({ className, style, children }: StarRatingStarsProps) {
   const rating = useRating('Stars');
+  const row = useRef<HTMLSpanElement>(null);
+  const press = useRef<number | null>(null);
+  if (rating.loading)
+    return (
+      <span data-part="skeleton" className={cx(styles.skeleton, className)} style={style}>
+        <Skeleton shape="block" width="100%" height="100%" />
+      </span>
+    );
+  // Half steps: a press chooses the whole star, so every pointer target is a star, 24px or more. A
+  // half is chosen by dragging along the row (and by the arrow keys): the value follows the pointer in
+  // half steps, as a slider does, and is taken where the pointer is let go.
+  const under = (x: number) => {
+    const box = row.current!.getBoundingClientRect();
+    const rtl = getComputedStyle(row.current!).direction === 'rtl';
+    const share = (rtl ? box.right - x : x - box.left) / box.width;
+    const value = Math.ceil((share * rating.max) / rating.step) * rating.step;
+    return Math.min(rating.max, Math.max(rating.step, value));
+  };
+  const halves = rating.step < 1 && !rating.display && !rating.disabled;
+  const drag = halves
+    ? {
+        // While it goes down: React Aria's press on a star keeps the event from coming up.
+        onPointerDownCapture: (event: PointerEvent) => {
+          press.current = event.clientX;
+        },
+        onPointerMove: (event: PointerEvent) => {
+          if (press.current === null) return;
+          if (!rating.isDragged() && Math.abs(event.clientX - press.current) < 4) return;
+          rating.setDragged(true);
+          rating.hover(under(event.clientX));
+        },
+        onPointerUp: (event: PointerEvent) => {
+          press.current = null;
+          if (!rating.isDragged()) return;
+          const value = under(event.clientX);
+          rating.choose(value);
+          rating.hover(null);
+          // Once the press that ends the drag is over: the focus goes to the value the drag chose.
+          setTimeout(() => {
+            rating.setDragged(false);
+            row.current?.querySelector<HTMLElement>(`input[value="${value}"]`)?.focus();
+          });
+        },
+        onPointerLeave: () => {
+          if (press.current === null) return;
+          press.current = null;
+          rating.setDragged(false);
+          rating.hover(null);
+        },
+      }
+    : {};
   return (
-    <span data-part="stars" className={cx(styles.stars, className)} style={style}>
+    <span ref={row} data-part="stars" className={cx(styles.stars, className)} style={style} {...drag}>
       {children ?? Array.from({ length: rating.max }, (_, index) => <Star key={index} index={index} />)}
       {!rating.display && (
         <span className={styles.choices}>
@@ -246,8 +317,10 @@ function Stars({ className, style, children }: StarRatingStarsProps) {
               key={choice}
               value={String(choice)}
               aria-label={rating.text(choice)}
+              data-half={!Number.isInteger(choice) || undefined}
               {...defined({ className: styles.choice })}
-              onHoverChange={(over) => rating.hover(over ? choice : null)}
+              // A half is not a pointer target: hovering shows the whole star a press would choose.
+              onHoverChange={(over) => rating.isDragged() || rating.hover(over ? Math.ceil(choice) : null)}
             >
               {/* A press on the chosen star clears a clearable rating: a radio alone cannot be unchosen. */}
               <span
@@ -309,6 +382,14 @@ export interface StarRatingValueProps {
 function Value({ className, style, children }: StarRatingValueProps) {
   const rating = useRating('Value');
   if (rating.valueHidden) return null;
+  if (rating.loading)
+    return (
+      <span data-part="value" className={cx(styles.value, styles.pending, className)} style={style}>
+        {/* The text itself, unseen, keeps the room it will take. */}
+        <span>{children ?? rating.value ?? rating.max}</span>
+        <Skeleton width="100%" />
+      </span>
+    );
   return (
     // In display mode the picture's name already says the value.
     <span
@@ -340,6 +421,7 @@ export interface StarRatingProps extends Omit<StarRatingRootProps, 'children'> {
  * fractions included; otherwise a control with the semantics of a radio group.
  */
 export function StarRating({ showValue = false, parts, ...root }: StarRatingProps) {
+  useActionKind('stays');
   const max = root.max ?? 5;
   return (
     <Root {...root}>

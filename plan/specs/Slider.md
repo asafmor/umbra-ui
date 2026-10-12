@@ -69,7 +69,7 @@ States: hover, dragging, focus (thumb), disabled, read-only, invalid.
 
 ## Behaviour as space shrinks
 
-A horizontal slider fills its slot; the track takes what the output leaves.
+A horizontal slider fills its slot; the track takes what the output leaves, and never less than 48px. The output keeps the width of the longest text it can show (each end of the scale with each band's label), so the track is the same size whatever the value; where the slot cannot give that, the text is cut with an ellipsis and its tooltip has the whole of it.
 
 | Step | Trigger | Result |
 |---|---|---|
@@ -102,3 +102,8 @@ Resolved 2026-10-11 (under the owner's delegation):
 - **The name inside a `FormField`**: React Aria names a thumb through the slider's group, and a name is not followed through two references, so the thumb's `aria-labelledby` is pointed at the field's label directly.
 - **Vertical has no shrink steps**: its labels are beside the track, where narrowing the height does not make them collide as soon.
 - **Among actions that overflow it stays in the row** (integration pass, 2026-10-11): as `Stepper`.
+- **The output has a fixed width** (review 1 of Milestone 2, I-2 and I-3, 2026-10-11): it was as wide as its text, so a band with a longer label took the track (to 0px in a narrow slot) and resized it under the pointer during a drag, which made the value jump. Tested with a drag of one pixel at a time across a band and a sweep of the slot's width.
+- **React Aria is always given the value** (I-1): the slider holds an uncontrolled value itself. Turning `readOnly` on or off no longer changes who holds the value, so what the user chose is kept.
+- **The bar of a scrubber is a 24px pointer target** (I-14), and **marks are keyed by position** (I-15), so a value given twice is drawn twice.
+- **A press on the field's label** gives the thumb the focus (I-8).
+- **No `loading`** (2026-10-11): none of the tier 1 inputs that hold a plain value has one (`TextField`, `Checkbox`, `Radio`, `Toggle`); `loading` is for a control that itself waits (`plan/interaction.md`, "Which states a component has"). A form that waits disables it.

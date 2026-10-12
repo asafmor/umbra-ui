@@ -1,6 +1,7 @@
 import { usePopoverRef } from './popoverRef';
 import {
   Children,
+  Component,
   Fragment,
   isValidElement,
   useContext,
@@ -26,6 +27,7 @@ import {
   type Key,
 } from 'react-aria-components';
 import { OverflowMenuContext, staysInRow, type OverflowRowProps } from '../internal/contexts';
+import { distinctIds } from '../internal/distinctIds';
 import { CheckMark, Hint } from '../internal/menuRow';
 import { Icon, IconSlot } from '../provider/icons';
 import { useScopeAttributes } from '../provider/UmbraProvider';
@@ -140,6 +142,27 @@ const allItems = (entries: MenuEntry[]): MenuItemData[] =>
   entries.flatMap((entry) =>
     isItem(entry) ? [entry, ...allItems(entry.items ?? [])] : 'items' in entry ? allItems(entry.items) : [],
   );
+/**
+ * The entries with a key of its own in place of an id that another row of the same list already has
+ * (`distinctIds`). A submenu is a list of its own.
+ */
+function distinct(entries: MenuEntry[], ids: ReturnType<typeof distinctIds>): MenuEntry[] {
+  const key = ids.scope();
+  const one = (item: MenuItemData): MenuItemData => {
+    const id = key(item.id);
+    return id === item.id && !item.items
+      ? item
+      : { ...item, id, ...(item.items && { items: distinct(item.items, ids) }) };
+  };
+  return entries.map((entry) =>
+    isItem(entry)
+      ? one(entry)
+      : 'items' in entry
+        ? { ...entry, items: entry.items.map((inner) => (isItem(inner) ? one(inner) : inner)) }
+        : entry,
+  );
+}
+
 /** Neighbouring rows of one kind: a run of checkboxes or radios is one selection group. */
 function runs(items: MenuItemData[]) {
   const out: MenuItemData[][] = [];
@@ -478,18 +501,19 @@ export function Menu({
 }: MenuProps) {
   const inOverflow = useContext(OverflowMenuContext);
   const [isOpen, setOpen] = useOpenState(open, defaultOpen, onOpenChange);
-  const entries = items ?? toEntries(children);
+  const rowIds = distinctIds('Menu');
+  const entries = distinct(items ?? toEntries(children), rowIds);
   const [ownSelected, setOwnSelected] = useState(defaultSelectedIds ?? []);
   const selected = selectedIds ?? ownSelected;
-  const isSelected = (item: MenuItemData) => item.checked ?? selected.includes(item.id);
+  const isSelected = (item: MenuItemData) => item.checked ?? selected.includes(rowIds.idOf(item.id));
   const shared: Shared = {
-    onAction,
+    onAction: onAction && ((id) => onAction(rowIds.idOf(id))),
     isSelected,
     select: (group, ids) => {
       const next = allItems(entries)
         .filter(checkable)
         .filter((item) => (group.includes(item.id) ? ids.includes(item.id) : isSelected(item)))
-        .map((item) => item.id);
+        .map((item) => rowIds.idOf(item.id));
       setOwnSelected(next);
       onSelectionChange?.(next);
     },
@@ -606,6 +630,8 @@ function Context({
   );
 }
 
+/** Among actions that overflow, a submenu of the "more" menu (`ActionsOverflow`). */
+Menu.overflowsToMenu = true;
 Menu.Item = Item;
 Menu.Section = Section;
 Menu.Separator = Separator;
@@ -613,16 +639,39 @@ Menu.Sub = Sub;
 Menu.Context = Context;
 
 /**
+ * The last line of defence of the "more" menu. `ActionsOverflow` only sends what it saw to be buttons,
+ * but it cannot see everything a component of the app draws: one that renders an icon, a `Tag` or text
+ * beside its button makes React Aria's list of rows throw, which would take the whole app down. Such an
+ * action is left out of the menu instead, with a warning in development.
+ */
+class RowBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
+  override state = { failed: false };
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+  override componentDidCatch() {
+    warn(
+      'an action could not be drawn in the "more" menu and was left out: a component among actions ' +
+        'that overflow must render a Button, an IconButton, a Menu or a SplitButton, and nothing else.',
+    );
+  }
+  override render() {
+    return this.state.failed ? null : this.props.children;
+  }
+}
+
+/**
  * A menu can only hold rows, and one plain element among them makes React Aria drop the rows after it.
  * So a plain wrapper (`<div>`, `<span>`) gives way to what it holds, and text is left out. A component
- * stays: it is expected to render a `Button`, an `IconButton` or a `Menu`. A control that says it
- * cannot be a row (`staysInRow`) is left out: `ActionsOverflow` keeps it beside the "more" button.
+ * stays: `ActionsOverflow` has seen it render a `Button`, an `IconButton`, a `Menu` or a `SplitButton`.
+ * A control that says it cannot be a row (`staysInRow`) is left out: `ActionsOverflow` keeps it beside
+ * the "more" button.
  */
 function rowsOnly(children: ReactNode): ReactNode {
   return Children.map(children, (child) => {
     if (!isValidElement<{ children?: ReactNode | undefined }>(child) || staysInRow(child)) return null;
     const plain = typeof child.type === 'string' || child.type === Fragment;
-    return plain ? rowsOnly(child.props.children) : child;
+    return plain ? rowsOnly(child.props.children) : <RowBoundary>{child}</RowBoundary>;
   });
 }
 

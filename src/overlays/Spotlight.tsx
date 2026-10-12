@@ -362,7 +362,8 @@ function Callout({
 }: SpotlightCalloutProps) {
   const spotlight = useSpotlight();
   const callout = useRef<HTMLElement>(null);
-  const { has } = spotlight;
+  // The ring's ref is the same object for the life of the spotlight.
+  const { has, ring } = spotlight;
   const mounted = !!spotlight.root;
   // Focus goes to the callout when it opens and at every step: a screen reader starts on its text.
   useEffect(() => {
@@ -383,7 +384,7 @@ function Callout({
       let y = shift(box.top, box.bottom, window.innerHeight);
       // Moved back in along the line, it lies over the target: it goes below it, or above, where one
       // of the two has the room. Where none has, it stays over the target's edge.
-      const target = spotlight.ring.current?.getBoundingClientRect();
+      const target = ring.current?.getBoundingClientRect();
       if (x && target && box.top + y < target.bottom && box.bottom + y > target.top) {
         const below = target.bottom + offset;
         const above = target.top - offset - box.height;
@@ -407,7 +408,7 @@ function Callout({
       observer.disconnect();
       window.removeEventListener('resize', soon);
     };
-  }, [mounted, spotlight.moves, placement, offset]);
+  }, [mounted, spotlight.moves, placement, offset, ring]);
   if (!spotlight.root) return null;
   return (
     <AriaPopover

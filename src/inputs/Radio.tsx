@@ -1,4 +1,4 @@
-import { createContext, useContext, type ReactNode } from 'react';
+import { createContext, useContext, useRef, type ReactNode } from 'react';
 import { Radio as AriaRadio, RadioGroup as AriaRadioGroup } from 'react-aria-components';
 import { cx, renderPart, type Part } from '../utils/parts';
 import {
@@ -15,7 +15,7 @@ import {
   type BlockProps,
 } from './fieldParts';
 import styles from './Radio.module.css';
-import { FieldContext, noField, useFieldControl } from './useField';
+import { FieldContext, noField, ReportValidation, useFieldControl, useUnnamedGroup } from './useField';
 import { defined } from '../utils/defined';
 import { rootRender } from '../utils/passThrough';
 
@@ -181,6 +181,8 @@ function GroupRoot({
     labelledBy: slots.labelledBy,
     describedBy: slots.describedBy,
   });
+  const group = useRef<HTMLDivElement>(null);
+  useUnnamedGroup(group, name);
   return (
     <AriaRadioGroup
       {...rootRender('div', rest)}
@@ -190,8 +192,11 @@ function GroupRoot({
       orientation={orientation}
       isDisabled={control.disabled}
       {...defined({ isReadOnly: readOnly })}
-      isInvalid={control.invalid}
+      // Only when it is set: a `false` would tell React Aria that the app decides, and silence the
+      // control's own validation (required, on submit).
+      {...defined({ isInvalid: control.invalid || undefined })}
       isRequired={control.required}
+      ref={group}
       {...defined({
         name,
         id: control.id,
@@ -200,6 +205,7 @@ function GroupRoot({
         'aria-describedby': control.describedBy,
       })}
     >
+      <ReportValidation />
       <TextSlotsProvider
         value={{ ...slots, marker: required && <Marker kind="required">{requiredLabel}</Marker> }}
       >

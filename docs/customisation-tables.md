@@ -56,7 +56,6 @@ translate a component. A name followed by brackets can also be a function of wha
 | [`ListItem`](#listitem) | `unreadLabel`, `accentLabel`, `increasedLabel`, `decreasedLabel` |
 | [`MediaCard`](#mediacard) | `moreLabel`, `loadingLabel` |
 | [`Menu`](#menu) | `emptyLabel` |
-| [`MeterList`](#meterlist) | `retryLabel` |
 | [`Modal`](#modal) | `navLabel`, `closeLabel` |
 | [`PageHeader`](#pageheader) | `moreLabel`, `backLabel`, `breadcrumbsLabel` |
 | [`PieIndicator`](#pieindicator) | `noValueLabel`, `increasedLabel`, `decreasedLabel` |
@@ -683,8 +682,21 @@ Edits a scale of value bands and their colours: the `thresholds` that `ValuePill
 
 | Token | Default |
 |---|---|
+| `--umbra-color-scale-editor-chip-size` | `16px` |
+| `--umbra-color-scale-editor-gap` | `--umbra-space-3` (8px) |
+| `--umbra-color-scale-editor-handle-bg` | `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-color-scale-editor-hatch` | `color-mix(in oklab, var(--umbra-color-base-surface1) 75%, transparent)` |
+| `--umbra-color-scale-editor-swatch-radius` | `--umbra-radius-control` (4px) |
+| `--umbra-color-scale-editor-width` | `480px` |
+| `--umbra-field-description-color` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-field-error-color` | `--umbra-color-semantic-danger` (#f0455a) |
+| `--umbra-field-marker-color` | `--umbra-color-base-text-secondary` (#b3adbf) |
 | `--umbra-focus-color` | `--umbra-color-fixed-focus-ring` (#ffb3f5) |
 | `--umbra-focus-offset` | `2px` |
+| `--umbra-option-group-gap` | `--umbra-space-3` (8px) |
+| `--umbra-option-group-inline-gap` | `--umbra-space-6` (20px) |
+| `--umbra-option-group-min-option-width` | `12em` |
+| `--umbra-option-group-text-gap` | `--umbra-space-2` (4px) |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -714,7 +726,7 @@ Edits a scale of value bands and their colours: the `thresholds` that `ValuePill
 | `addLabel` | `string` |  |
 | `resetLabel` | `string` |  |
 | `trackLabel` | `string` | Names the track with the boundary handles. |
-| `toneLabels` | `Partial<Record<"default" \| ThresholdTone \| "custom", string>>` | The names of the colour choices. |
+| `toneLabels` | `ColorScaleToneLabels` | The names of the colour choices. |
 | `formatAnnouncement` | `((change: ColorScaleChange) => string)` | What a screen reader hears after a stop is added or removed, and after a reset. |
 
 **Parts**: `preview`, `track`, `stops`, `actions`.
@@ -912,21 +924,17 @@ The two-line status of a `TopBar`, with a short value in a chip, usually the tim
 
 | Token | Default |
 |---|---|
-| `--umbra-context-block-bg` | `var(--umbra-color-brand-inset, color-mix(in srgb, var(--umbra-color-brand), var(--umbra-color-on-brand, #fff) 14%))` |
 | `--umbra-context-block-chip-bg` | `transparent` |
 | `--umbra-context-block-chip-border` | `currentColor` |
-| `--umbra-context-block-chip-font` | `700 var(--umbra-density-label-size) / 1.231 var(--umbra-font-family-body)` |
+| `--umbra-context-block-chip-font` | `--umbra-font-label` |
 | `--umbra-context-block-chip-padding-x` | `--umbra-space-3` (8px) |
 | `--umbra-context-block-chip-padding-y` | `--umbra-space-1` (2px) |
 | `--umbra-context-block-chip-radius` | `--umbra-radius-control` (4px) |
 | `--umbra-context-block-gap` | `--umbra-space-4` (12px) |
-| `--umbra-context-block-hover-bg` | `color-mix(in oklab, currentColor 12%, var(--bg))` |
+| `--umbra-context-block-hover-bg` | `color-mix(in oklab, currentColor 12%, transparent)` |
 | `--umbra-context-block-max-width` | `none` |
-| `--umbra-context-block-padding-x` | `--umbra-space-4` (12px) |
-| `--umbra-context-block-padding-y` | `--umbra-space-2` (4px) |
-| `--umbra-context-block-primary-font` | `700 var(--umbra-density-label-size) / 1.231 var(--umbra-font-family-body)` |
-| `--umbra-context-block-radius` | `--umbra-radius-control` (4px) |
-| `--umbra-context-block-secondary-font` | `400 var(--umbra-density-label-size) / 1.231 var(--umbra-font-family-body)` |
+| `--umbra-context-block-primary-font` | `--umbra-font-label` |
+| `--umbra-context-block-secondary-font` | `--umbra-font-label` |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -943,7 +951,6 @@ The two-line status of a `TopBar`, with a short value in a chip, usually the tim
 | `style` | `CSSProperties` |  |
 | `id` | `string` | The `id` of the root element. |
 | `href` | `string` | Makes the block a link. |
-| `variant` | `"plain" \| "filled"` | `filled` sets the block on a surface of its own, a little lighter or darker than the bar it is on, whatever the brand colour. |
 | `disabled` | `boolean` |  |
 | `onPress` | `(() => void)` | Makes the block a button. |
 
@@ -1540,7 +1547,7 @@ A grid of cells coloured by value: two categories against each other, or points 
 | `onRetry` | `(() => void)` | Adds a retry button to the error state. |
 | `retryLabel` | `string` | Label of the retry button. |
 | `aria-labelledby` | `string` | Id of the element that names the chart, for example a card title. |
-| `valueDomain` | `[number, number]` | The range of the colour scale. Defaults to round numbers at or beyond the lowest and the highest value. |
+| `valueDomain` | `[number, number]` | The range of the colour scale. Defaults to the lowest and highest value. |
 | `xTitle` | `string` |  |
 | `yTitle` | `string` |  |
 | `legend` | `string \| number \| bigint \| boolean \| ReactElement<unknown, string \| JSXElementConstructor<any>> \| Iterable<ReactNode> \| ReactPortal \| Promise<string \| number \| bigint \| boolean \| ReactPortal \| ReactElement<unknown, string \| JSXElementConstructor<any>> \| Iterable<ReactNode> \| null \| undefined> \| null` | The legend: `true` or a placement shows the built-in one, `false` hides it, and a node replaces it. By default it is shown below the chart when there is more than one series. |
@@ -2229,40 +2236,6 @@ A list of actions or links that opens from a control. One tab stop; arrow keys, 
 
 **Blocks**: `Menu.Item`, `Menu.Section`, `Menu.Separator`, `Menu.Sub`, `Menu.Context`.
 
-## MeterList
-
-A group of meters in aligned columns: every label in one column, every bar in the next, every value in the last. Takes any of the four meters as children.
-
-**Tokens**: each with its default.
-
-| Token | Default |
-|---|---|
-| `--umbra-meter-list-bar-min-width` | `calc(2 * var(--umbra-space-8))` |
-| `--umbra-meter-list-column-gap` | `--umbra-space-3` (8px) |
-| `--umbra-meter-list-gap` | `--umbra-space-3` (8px) |
-| `--umbra-meter-list-label-fg` | `--umbra-color-base-text-secondary` (#b3adbf) |
-| `--umbra-meter-list-skeleton-height` | `6px` |
-
-| Prop | Type | Purpose |
-|---|---|---|
-| `skeletonRows` | `number` | Number of skeleton rows. |
-| `parts` | `see Parts` | Replace or hide named pieces. |
-| `children` | `ReactNode` | The meters: `ProgressBar`, `LevelMeter`, `PieIndicator` and `DivergingMeter`, in any mix. |
-| `aria-label` | `string` | Names the group for assistive technology. |
-| `className` | `string` |  |
-| `style` | `CSSProperties` |  |
-| `id` | `string` | The `id` of the root element. |
-| `labelWidth` | `string \| number` | Width of the shared label column: pixels, or any CSS track size (`"40%"`, `"12rem"`, `"fit-content(50%)"`). Default: as wide as the longest label, as far as the bars keep their minimum. |
-| `loading` | `boolean` | Shows skeletons in the final layout and marks the component busy. |
-| `empty` | `ReactNode \| DataStateContent` | Shown when there is no data: text, a node, or `{ title, description, icon, action }`. Defaults to a short English text. |
-| `error` | `ReactNode \| DataStateContent` | Shown in place of the data when set: text, a node, `{ title, description, icon, action }`, or `true` for a default text. |
-| `onRetry` | `(() => void)` | Adds a retry button to the error state. |
-| `retryLabel` | `string` | Label of the retry button. |
-
-**Parts**: `skeleton`, `empty`, `error`.
-
-**Blocks**: `MeterList.Root`.
-
 ## Modal
 
 A panel over a dimmed page, for a focused task. Focus stays inside it and the page behind is inert until it closes. Its body scrolls inside; the page never does.
@@ -2406,8 +2379,7 @@ A small disc of wedges that fills with a value: a level gauge for table cells, r
 | `--umbra-pie-indicator-gap` | `--umbra-space-2` (4px) |
 | `--umbra-pie-indicator-size` | `16px`; `12px`; `24px` |
 | `--umbra-pie-indicator-track` | `--umbra-color-base-surface3` (#261b38) |
-| `--umbra-pie-indicator-track-border` | `--umbra-color-base-text-muted` (#948da2) |
-| `--umbra-pie-indicator-track-border-width` | `1.5px` |
+| `--umbra-pie-indicator-track-border` | `--umbra-color-base-border-control` (#7a6e91) |
 | `--umbra-pie-indicator-wedge-gap` | `0.16` |
 
 | Prop | Type | Purpose |
@@ -3835,7 +3807,14 @@ Previous and next around one value, with a row of segments for the position. It 
 
 | Token | Default |
 |---|---|
+| `--umbra-field-description-color` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-field-error-color` | `--umbra-color-semantic-danger` (#f0455a) |
+| `--umbra-field-marker-color` | `--umbra-color-base-text-secondary` (#b3adbf) |
 | `--umbra-focus-color` | `--umbra-color-fixed-focus-ring` (#ffb3f5) |
+| `--umbra-option-group-gap` | `--umbra-space-3` (8px) |
+| `--umbra-option-group-inline-gap` | `--umbra-space-6` (20px) |
+| `--umbra-option-group-min-option-width` | `12em` |
+| `--umbra-option-group-text-gap` | `--umbra-space-2` (4px) |
 | `--umbra-stepper-button-fg` | `--umbra-color-base-text-secondary` (#b3adbf) |
 | `--umbra-stepper-height` | `--umbra-density-control-height` (36px at the default density) |
 | `--umbra-stepper-indicator-gap` | `3px` |
@@ -4412,7 +4391,7 @@ Side navigation for a modal, a settings screen or one column of a page.
 | `--umbra-vertical-nav-rail-width` | `calc(var(--row) + 2 * var(--pad))` |
 | `--umbra-vertical-nav-row-height` | `--umbra-density-control-height` (36px at the default density) |
 | `--umbra-vertical-nav-stripe-width` | `3px` |
-| `--umbra-vertical-nav-width` | `100%` or `240px` |
+| `--umbra-vertical-nav-width` | `240px` |
 
 | Prop | Type | Purpose |
 |---|---|---|

@@ -218,9 +218,10 @@ test.describe('controls in rows of actions', () => {
     await expect(toolbar.getByRole('button', { name: 'Today' })).toBeVisible();
     const more = toolbar.getByRole('button', { name: 'More actions' });
     await more.click();
-    // A control inside a component of the app arrives in the menu: it draws nothing there, and the
-    // menu is whole.
+    // A control inside a component of the app stays in the row, as a control given directly does: the
+    // menu holds the buttons only, and is whole.
     await expect(page.getByRole('menuitem')).toHaveText(['Copy month', 'Clear']);
+    await expect(toolbar.getByRole('spinbutton', { name: 'Wrapped' })).toBeAttached();
     await pressKeys(page, 'Escape');
     await expect(more).toBeFocused();
     await noPageScroll(page);

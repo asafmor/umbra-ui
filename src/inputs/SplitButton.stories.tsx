@@ -207,3 +207,35 @@ export const RightToLeft: Story = {
   ),
   globals: { direction: 'rtl' },
 };
+
+function Reported() {
+  const [last, setLast] = useState('nothing yet');
+  return (
+    <>
+      <SplitButton
+        id="reported-split"
+        items={items}
+        // A callback of the library takes what its type says, and no event behind it.
+        onPress={(...given: unknown[]) => setLast(`press with ${given.length} arguments`)}
+        onAction={(...given: unknown[]) =>
+          setLast(`action ${String(given[0])} with ${given.length} arguments`)
+        }
+      >
+        Report
+      </SplitButton>
+      <Button onPress={(...given: unknown[]) => setLast(`button press with ${given.length} arguments`)}>
+        Plain button
+      </Button>
+      <Log>Last: {last}.</Log>
+    </>
+  );
+}
+
+/** The root takes an `id`; `onPress` is called with nothing, and `onAction` with the row's id alone. */
+export const Callbacks: Story = {
+  render: () => (
+    <div style={{ ...column, justifyItems: 'start' }}>
+      <Reported />
+    </div>
+  ),
+};

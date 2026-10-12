@@ -109,12 +109,7 @@ test.describe('StarRating', () => {
     await choices.nth(4).click();
     await expect(whole.getByRole('radio', { name: '5 of 5' })).toBeChecked();
 
-    // Half steps: the left half of the fourth star is 3.5.
-    const halves = page.getByRole('radiogroup', { name: 'Half steps' });
-    const fourth = await box(halves.locator('[data-part="star"]').nth(3));
-    await page.mouse.click(fourth.x + fourth.width * 0.25, fourth.y + fourth.height / 2);
-    await expect(halves.getByRole('radio', { name: '3.5 of 5' })).toBeChecked();
-    await expect(halves.locator('[data-part="star"]').nth(3)).toHaveAttribute('data-fill', 'partial');
+    // Half steps by pointer: see "StarRating, review 1".
 
     const clearable = page.getByRole('radiogroup', { name: 'Controlled' });
     // The first label is "No rating", which takes no pointer; the fourth is the third star.
@@ -1014,5 +1009,353 @@ test.describe('ColorScaleEditor', () => {
     await expect(handle).toHaveValue('41');
     await pressKeys(page, 'ArrowRight', 'ArrowRight');
     await expect(handle).toHaveValue('39');
+  });
+});
+
+// Review 1 of Milestone 2 (plan/reviews/milestone-2.md): one test per finding, each failing without
+// its fix. The form findings (I-4, I-7, I-8, I-10, I-13) are in forms.spec.ts, for every input at once.
+test.describe('Slider, review 1', () => {
+  const id = 'inputs-slider--edge-cases';
+  const slider = (page: Page, name: string) => page.getByRole('group', { name }).first();
+  const trackWidth = async (root: Locator) => (await box(root.locator('[data-part="track"]'))).width;
+
+  test('I-1: locking and unlocking an uncontrolled slider keeps the value the user chose', async ({
+    page,
+  }) => {
+    await open(page, id);
+    const thumb = page.getByRole('slider', { name: 'Lockable' });
+    await thumb.focus();
+    await pressKeys(page, 'End');
+    await expect(thumb).toHaveValue('100');
+    await page.getByRole('button', { name: 'Lock', exact: true }).click();
+    await expect(thumb).toHaveValue('100');
+    await thumb.focus();
+    await pressKeys(page, 'Home');
+    await expect(thumb).toHaveValue('100');
+    await page.getByRole('button', { name: 'Unlock' }).click();
+    await expect(thumb).toHaveValue('100');
+    await thumb.focus();
+    await pressKeys(page, 'ArrowLeft');
+    await expect(thumb).toHaveValue('99');
+  });
+
+  test('I-2: a long band label never takes the track: it is cut, and the slider stays in its slot', async ({
+    page,
+  }) => {
+    await open(page, id);
+    for (const width of [260, 200, 130]) {
+      const root = at(page, width).locator('[data-umbra="slider"]');
+      expect(await trackWidth(root), `track at ${width}`).toBeGreaterThanOrEqual(48);
+      await inside(at(page, width), root);
+    }
+    // At every width of the slot, pixel by pixel: the track keeps its least width and nothing sticks out.
+    const worst = await at(page, 260).evaluate((slot) => {
+      const root = slot.querySelector<HTMLElement>('[data-umbra="slider"]')!;
+      const track = root.querySelector<HTMLElement>('[data-part="track"]')!;
+      let least = Infinity;
+      let over = 0;
+      for (let width = 320; width >= 100; width--) {
+        slot.style.width = `${width}px`;
+        least = Math.min(least, track.getBoundingClientRect().width);
+        over = Math.max(over, root.scrollWidth - root.clientWidth);
+      }
+      slot.style.width = '';
+      return { least, over };
+    });
+    expect(worst.least).toBeGreaterThanOrEqual(48);
+    expect(worst.over).toBe(0);
+    // Cut text has its whole text in a tooltip.
+    const output = at(page, 200).locator('[data-part="output"]');
+    await at(page, 200).evaluate((slot) => (slot.style.width = '170px'));
+    await output.hover();
+    await expect(page.getByRole('tooltip')).toHaveText('100 · Very high');
+  });
+
+  test('I-3: a drag across a band with a longer label moves one pixel at a time: the track keeps its size', async ({
+    page,
+  }) => {
+    await open(page, id);
+    const root = at(page, 260).locator('[data-umbra="slider"]');
+    const thumb = root.getByRole('slider');
+    const width = await trackWidth(root);
+    const handle = await box(root.locator('[data-part="thumb"]'));
+    const y = handle.y + handle.height / 2;
+    let x = handle.x + handle.width / 2;
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    let last = Number(await thumb.inputValue());
+    expect(last).toBe(60);
+    const perPixel = 100 / width;
+    // From 60 to past 90: over the boundary at 70, where the label changes from "Low" to "Very high".
+    for (let step = 0; step < Math.ceil(32 / perPixel); step++) {
+      x += 1;
+      await page.mouse.move(x, y);
+      const value = Number(await thumb.inputValue());
+      expect(value - last, `at ${value}`).toBeGreaterThanOrEqual(0);
+      expect(value - last, `at ${value}`).toBeLessThanOrEqual(Math.ceil(perPixel) + 1);
+      expect(await trackWidth(root)).toBe(width);
+      last = value;
+    }
+    await page.mouse.up();
+    expect(last).toBeGreaterThan(85);
+    await expect(root.locator('[data-part="output"]')).toContainText('Very high');
+  });
+
+  test('I-14: the bar of a scrubber is a pointer target 24px wide', async ({ page }) => {
+    await open(page, 'inputs-slider--scrubber-and-vertical');
+    const thumb = slider(page, 'Position').locator('[data-part="thumb"]');
+    const bar = await box(thumb);
+    expect(bar.width).toBeLessThan(24);
+    const centre = { x: bar.x + bar.width / 2, y: bar.y + bar.height / 2 };
+    for (const [dx, dy] of [
+      [-11, 0],
+      [11, 0],
+      [0, -11],
+      [0, 11],
+    ] as const) {
+      const hit = await page.evaluate(
+        ([x, y]) => !!document.elementFromPoint(x, y)?.closest('[data-part="thumb"]'),
+        [centre.x + dx, centre.y + dy] as const,
+      );
+      expect(hit, `${dx}, ${dy}`).toBe(true);
+    }
+  });
+
+  test('I-15: a value given twice among the marks is drawn twice, with nothing logged', async ({ page }) => {
+    const logged: string[] = [];
+    page.on('console', (message) => {
+      if (message.type() === 'error') logged.push(message.text());
+    });
+    await open(page, id);
+    await expect(slider(page, 'Repeated marks').locator('[data-part="tick"]')).toHaveCount(4);
+    expect(logged).toEqual([]);
+  });
+});
+
+test.describe('StarRating, review 1', () => {
+  test('half steps: a press chooses the whole star (a target of 24px), a drag along the row a half', async ({
+    page,
+  }) => {
+    await open(page, 'inputs-starrating--states');
+    const halves = page.getByRole('radiogroup', { name: 'Half steps' });
+    const star = (index: number) => box(halves.locator('[data-part="star"]').nth(index));
+    const fourth = await star(3);
+    expect(fourth.width).toBeGreaterThanOrEqual(24);
+    // Both halves of the star are one target: the choice "4 of 5".
+    for (const share of [0.1, 0.4, 0.6, 0.9]) {
+      const target = await page.evaluate(
+        ([x, y]) => document.elementFromPoint(x, y)?.closest('label')?.querySelector('input')?.value,
+        [fourth.x + fourth.width * share, fourth.y + fourth.height / 2] as const,
+      );
+      expect(target, `at ${share}`).toBe('4');
+    }
+    await page.mouse.click(fourth.x + fourth.width * 0.25, fourth.y + fourth.height / 2);
+    await expect(halves.getByRole('radio', { name: '4 of 5', exact: true })).toBeChecked();
+
+    // A drag: the stars follow the pointer in half steps, and the value is taken where it is let go.
+    const [first, third] = [await star(0), await star(2)];
+    const y = first.y + first.height / 2;
+    await page.mouse.move(first.x + first.width / 2, y);
+    await page.mouse.down();
+    await page.mouse.move(third.x + third.width * 0.25, y, { steps: 8 });
+    await expect(halves.locator('[data-part="star"]').nth(2)).toHaveAttribute('data-fill', 'partial');
+    await page.mouse.up();
+    await expect(halves.getByRole('radio', { name: '2.5 of 5' })).toBeChecked();
+    await expect(halves.locator('[data-part="value"]')).toHaveText('2.5');
+    await expectFocusKept(page);
+    // A drag that ends on the star it began on, in its first half.
+    await page.mouse.move(fourth.x + fourth.width * 0.9, y);
+    await page.mouse.down();
+    await page.mouse.move(fourth.x + fourth.width * 0.2, y, { steps: 6 });
+    await page.mouse.up();
+    await expect(halves.getByRole('radio', { name: '3.5 of 5' })).toBeChecked();
+    // The focus is on the value the drag chose, so the keyboard goes on from there, in halves.
+    await expect(halves.getByRole('radio', { name: '3.5 of 5' })).toBeFocused();
+    await pressKeys(page, 'ArrowRight');
+    await expect(halves.getByRole('radio', { name: '4 of 5', exact: true })).toBeChecked();
+  });
+
+  test('I-11: loading holds the layout: the placeholder is as large as the stars with their value', async ({
+    page,
+  }) => {
+    await open(page, 'inputs-starrating--loading');
+    for (const size of ['small', 'default', 'large']) {
+      const [loading, loaded] = await page
+        .locator(`[data-size-row="${size}"] [data-umbra="star-rating"]`)
+        .evaluateAll((els) => els.map((el) => el.getBoundingClientRect()).map((r) => [r.width, r.height]));
+      expect(Math.abs(loading![0]! - loaded![0]!), `${size} width`).toBeLessThanOrEqual(2);
+      expect(Math.abs(loading![1]! - loaded![1]!), `${size} height`).toBeLessThanOrEqual(1);
+    }
+  });
+});
+
+test.describe('SplitButton, review 1', () => {
+  test('I-9, I-16: the root takes an id, and the callbacks get what their types say and no event', async ({
+    page,
+  }) => {
+    await open(page, 'inputs-splitbutton--callbacks');
+    await expect(page.locator('#reported-split')).toHaveAttribute('data-umbra', 'split-button');
+    await page.getByRole('button', { name: 'Report', exact: true }).click();
+    await expect(page.getByText('Last: press with 0 arguments.')).toBeVisible();
+    await page.getByRole('button', { name: 'More options' }).click();
+    await page.getByRole('menuitem', { name: 'Save a copy' }).click();
+    await expect(page.getByText('Last: action copy with 1 arguments.')).toBeVisible();
+    // The same for `Button` itself, which the action is made of.
+    await page.getByRole('button', { name: 'Plain button' }).click();
+    await expect(page.getByText('Last: button press with 0 arguments.')).toBeVisible();
+  });
+});
+
+test.describe('I-6: two rows with one id', () => {
+  const id = 'integration-duplicate-ids--rows';
+  const names = ['First', 'Second', 'Third'];
+
+  test('Menu and SplitButton draw every row, and report the id the app gave', async ({ page }) => {
+    await open(page, id);
+    await page.getByRole('button', { name: 'Open menu' }).click();
+    await expect(page.getByRole('menuitem')).toHaveText(names);
+    await pressKeys(page, 'ArrowDown', 'ArrowDown', 'ArrowDown');
+    await expect(page.getByRole('menuitem', { name: 'Third' })).toBeFocused();
+    await pressKeys(page, 'Escape');
+    await page.getByRole('button', { name: 'More saves' }).click();
+    await expect(page.getByRole('menuitem')).toHaveText(names);
+    await pressKeys(page, 'Escape');
+    await expect(page.getByRole('button', { name: 'Open menu' })).toBeVisible();
+  });
+
+  test('Select and SearchField draw every option; choosing the second of the two gives their id', async ({
+    page,
+  }) => {
+    await open(page, id);
+    await page.locator('[data-umbra="select"] [data-part="trigger"]').click();
+    await expect(page.getByRole('option')).toHaveText(names);
+    await page.getByRole('option', { name: 'Second' }).click();
+    await expect(page.locator('[data-umbra="select"] [data-part="trigger"]')).toContainText('First');
+    await page.getByRole('combobox', { name: 'Search' }).fill('s');
+    await expect(page.getByRole('option')).toHaveText(names);
+    await pressKeys(page, 'Escape');
+  });
+
+  test('List, Tabs and SegmentedFilter draw every row and stay usable', async ({ page }) => {
+    await open(page, id);
+    await expect(page.getByRole('grid', { name: 'List' }).getByRole('row')).toHaveText(names);
+    await expect(page.getByRole('tab')).toHaveText(names);
+    await page.getByRole('tab', { name: 'Third' }).click();
+    await expect(page.getByRole('tabpanel')).toHaveText('Panel of Third');
+    const segments = page.getByRole('radiogroup', { name: 'Segments' }).getByRole('radio');
+    await expect(segments).toHaveText(names);
+    await segments.nth(0).click();
+    await expect(segments.nth(0)).toBeChecked();
+    await expectFocusKept(page);
+  });
+});
+
+test.describe('ColorScaleEditor, review 1', () => {
+  const id = 'inputs-colorscaleeditor--tight';
+
+  test('I-17: at 180px the colour of a stop still shows beside the caret of its choice', async ({ page }) => {
+    await open(page, id);
+    const editor = at(page, 180).getByRole('group', { name: 'At 180' });
+    await inside(at(page, 180), editor);
+    for (const row of await editor.locator('[data-part="stop"]').all()) {
+      const select = row.locator('[data-umbra="select"]');
+      const swatch = await box(select.locator('[data-part="swatch"]'));
+      const frame = await box(select);
+      expect(frame.width).toBeGreaterThanOrEqual(60);
+      expect(swatch.width).toBeGreaterThanOrEqual(10);
+      expect(swatch.x).toBeGreaterThanOrEqual(frame.x);
+      expect(swatch.x + swatch.width).toBeLessThanOrEqual(frame.x + frame.width);
+      await inside(editor, row);
+      expect((await box(row.locator('[data-umbra="text-field"]').first())).width).toBeGreaterThanOrEqual(44);
+    }
+  });
+
+  test('in a short slot the rows scroll in a ScrollArea, and the keyboard reaches the last row', async ({
+    page,
+  }) => {
+    await open(page, id);
+    const slot = page.locator('[data-case="short"]');
+    const editor = slot.getByRole('group', { name: 'Short' });
+    const [outer, inner] = [await box(slot), await box(editor)];
+    expect(inner.y + inner.height).toBeLessThanOrEqual(outer.y + outer.height + 0.5);
+    const rows = editor.locator('[data-part="stops"]');
+    await expect(rows).toHaveAttribute('data-umbra', 'scroll-area');
+    const viewport = rows.locator('[data-part="viewport"]');
+    expect(await viewport.evaluate((el) => el.scrollHeight > el.clientHeight)).toBe(true);
+    // The library's thin thumb, not the browser's bar: the viewport is as wide as the rows' area.
+    expect(
+      await viewport.evaluate((el) => (el as HTMLElement).offsetWidth - el.clientWidth),
+    ).toBeLessThanOrEqual(8);
+    const last = editor.getByRole('spinbutton', { name: 'Stop 5: From' });
+    await last.focus();
+    await expectFocusKept(page);
+    const [field, area] = [await box(last), await box(rows)];
+    expect(field.y).toBeGreaterThanOrEqual(area.y - 0.5);
+    expect(field.y + field.height).toBeLessThanOrEqual(area.y + area.height + 0.5);
+  });
+});
+
+// Whatever an app puts among actions that overflow, the "more" menu never breaks (decision 07,
+// "Controls among actions that overflow"; review 3, F1).
+test.describe('actions that overflow: anything among them', () => {
+  const id = 'integration-actions-that-overflow--any-node';
+  const card = (page: Page, name: string) => page.locator(`[data-case="${name}"]`);
+  const openMore = async (page: Page, name: string) => {
+    await card(page, name).getByRole('button', { name: 'More actions' }).click();
+    await expectFocusKept(page);
+  };
+
+  test('a Tag and a plain element stay in the row; the buttons move, and the menu opens', async ({
+    page,
+  }) => {
+    await open(page, id);
+    for (const [name, text] of [
+      ['Tag', 'Beta'],
+      ['Span', 'Today'],
+    ] as const) {
+      await expect(card(page, name).locator('[data-part="actions"]').getByText(text)).toBeVisible();
+      await openMore(page, name);
+      await expect(page.getByRole('menuitem')).toHaveText(['Refresh', 'Export']);
+      await pressKeys(page, 'Escape');
+      await expect(card(page, name).getByRole('button', { name: 'More actions' })).toBeFocused();
+    }
+    await expect(page.locator('[data-case]')).toHaveCount(5);
+  });
+
+  test('a component of the app: a button inside it moves, a control inside it stays and still works', async ({
+    page,
+  }) => {
+    await open(page, id);
+    const stepper = card(page, 'Wrapped').getByRole('spinbutton', { name: 'Own stepper' });
+    await expect(stepper).toBeVisible();
+    await stepper.focus();
+    await pressKeys(page, 'ArrowRight');
+    await expect(stepper).toHaveAttribute('aria-valuetext', 'Week');
+    await openMore(page, 'Wrapped');
+    await expect(page.getByRole('menuitem')).toHaveText(['Refresh', 'Export', 'Archive']);
+    await pressKeys(page, 'Escape');
+    // The control kept its state through the menu.
+    await expect(stepper).toHaveAttribute('aria-valuetext', 'Week');
+
+    const select = card(page, 'Select').locator('[data-umbra="select"] [data-part="trigger"]');
+    await expect(select).toBeVisible();
+    await openMore(page, 'Select');
+    await expect(page.getByRole('menuitem')).toHaveText(['Refresh', 'Export']);
+    await pressKeys(page, 'Escape');
+    await select.click();
+    await page.getByRole('option', { name: 'Open' }).click();
+    await expect(select).toContainText('Open');
+  });
+
+  test('a component that mixes a button with what is no action is left out of the menu, which stays whole', async ({
+    page,
+  }) => {
+    await open(page, id);
+    await openMore(page, 'Mixture');
+    await expect(page.getByRole('menuitem')).toHaveText(['Refresh', 'Export']);
+    await pressKeys(page, 'ArrowDown', 'ArrowDown');
+    await expect(page.getByRole('menuitem', { name: 'Export' })).toBeFocused();
+    await pressKeys(page, 'Escape');
+    await expect(page.locator('[data-case]')).toHaveCount(5);
   });
 });

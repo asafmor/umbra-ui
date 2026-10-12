@@ -87,9 +87,11 @@ for (const file of ['src/styles/tokens.css', 'src/styles/index.css'])
     /^\s*(--umbra-[a-z0-9-]+):\s*([^;]+);/gm,
   ))
     if (!globals.has(name)) globals.set(name, value.trim());
-// Global tokens that happen to be read with a fallback are not component tokens.
+// Global tokens that happen to be read with a fallback are not component tokens. A token that carries
+// a component's name is that component's, also where the name starts like a group of global tokens
+// (`--umbra-color-scale-editor-width` is `ColorScaleEditor`'s, not a colour).
 const isGlobal = (name) =>
-  globals.has(name) || /^--umbra-(color|density|font|space|size|context(?!-block))-/.test(name);
+  globals.has(name) || (/^--umbra-(color|density|font|space|size|context)-/.test(name) && !ownerOf(name));
 
 /** `var(--name, fallback)` when the whole expression is one `var()`; the fallback may be missing. */
 function oneVar(expression) {

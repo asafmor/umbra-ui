@@ -106,3 +106,6 @@ export function IconButton({
     </ButtonBase>
   );
 }
+
+/** A row of the "more" menu among actions that overflow (`ActionsOverflow`). */
+IconButton.overflowsToMenu = true;

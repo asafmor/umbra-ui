@@ -8,13 +8,15 @@
   --rail: var(--umbra-slider-track-height, 4px);
   --ink: var(--umbra-slider-hatch, color-mix(in oklab, var(--umbra-color-base-surface1) 75%, transparent));
   --hatch: transparent 0 3px, var(--ink) 3px 5px;
+  /* The output never takes more than leaves the track 48px between the two half thumbs. */
+  --track-min: calc(48px + var(--thumb));
 
   container-type: inline-size;
   contain-intrinsic-inline-size: var(--umbra-slider-width, 200px);
   display: grid;
   grid-template:
     'track output' auto
-    'marks .' auto / minmax(0, 1fr) auto;
+    'marks .' auto / minmax(min(var(--track-min), 100%), 1fr) minmax(0, auto);
   align-items: center;
   inline-size: 100%;
   min-inline-size: 0;
@@ -152,14 +154,31 @@
   opacity: 1;
 }
 
+/*
+ * The text and, unseen under it, the longest texts it can become: the output is as wide as the widest
+ * of them, whatever the value is, and the track beside it never changes size during a drag.
+ */
 .output {
   grid-area: output;
-  min-inline-size: 3ch;
+  min-inline-size: 0;
   margin-inline-start: var(--umbra-space-4);
   color: var(--umbra-slider-output-fg, var(--umbra-color-base-text-secondary));
   font-variant-numeric: tabular-nums;
   text-align: end;
   white-space: nowrap;
+}
+
+.outputText {
+  display: block;
+}
+
+.output::after {
+  content: attr(data-room);
+  display: block;
+  block-size: 0;
+  overflow: hidden;
+  visibility: hidden;
+  white-space: pre;
 }
 
 .marks {
@@ -194,13 +213,18 @@
 
   grid-template:
     'output track' auto
-    '. marks' auto / auto minmax(0, 1fr);
+    '. marks' auto / minmax(0, auto) minmax(min(var(--track-min), 100%), 1fr);
 }
 
 .root[data-variant='scrubber'] .thumb {
   inline-size: 6px;
   border: 0;
   border-radius: 2px;
+}
+
+/* The bar is 6px wide: its pointer target is 24px all the same. */
+.root[data-variant='scrubber'] .thumb::after {
+  inset: calc((var(--thumb) - 24px) / 2) -9px;
 }
 
 .root[data-variant='scrubber'] .output {
