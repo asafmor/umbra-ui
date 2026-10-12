@@ -400,7 +400,8 @@ function Grid({
     const el = ref.current;
     const view = el?.closest<HTMLElement>('[data-part="viewport"]');
     if (!el || !view) return;
-    const observer = new ResizeObserver(() => show(inView.current));
+    // Not with the focus in the weeks: the user is on a day, and `show` would move the tab stop.
+    const observer = new ResizeObserver(() => el.contains(document.activeElement) || show(inView.current));
     observer.observe(el);
     observer.observe(view);
     const events = ['wheel', 'touchstart', 'pointerdown', 'keydown'] as const;
