@@ -64,7 +64,7 @@ The owner approved the plan and delegated the open questions (`plan/reviews/mile
 | Owner's feedback from Storybook (O-1 to O-10) | done: every row is fixed; O-5's focus ring was not reproduced |
 | Three independent reviews: time, data and inputs; meters, charts, shell, layout and overlays; the package, the checks, the docs and the examples | done |
 | Fix pass of the reviews, one branch per group, `MeterList` (O-7), `DataTable` column management (O-2), theming (O-4, O-6, O-10) | done; the full suite passes on the merged result |
-| Storybook on GitHub Pages with the Milestone 2 state (review 3, F3) | to do (orchestrator) |
+| Storybook on GitHub Pages with the Milestone 2 state (review 3, F3) | done 2026-10-12 (`gh workflow run docs.yml --ref main`; published by hand, so run it again after later changes) |
 
 **Next step**: the owner's look at the result in Storybook. Then the items under "Open after Milestone 2" in `plan/reviews/milestone-2.md`, and the manual Firefox and Safari checklist (`docs/browser-checks.md`) before any release. No release is planned; never publish without the owner's explicit go-ahead. A batch is built from `plan/prompts/component-brief.md`, one agent per group in its own git worktree with its own `UMBRA_TEST_PORT`, merged into `main` after the full suite passes. Run one full browser suite at a time on a machine: several at once time out.
 
