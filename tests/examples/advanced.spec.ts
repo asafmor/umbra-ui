@@ -139,6 +139,23 @@ test('bulk selection opens the action bar; delete asks first', async ({ page }) 
   await page.getByRole('checkbox', { name: 'Select order 1002' }).check({ force: true });
   await page.getByRole('checkbox', { name: 'Select order 1003' }).check({ force: true });
   await expect(bar).toContainText('2 selected');
+  // Owner's O-8: nothing of the table (its sticky header, a pinned cell, a summary row) covers the bar.
+  await expect(bar).toHaveCSS('opacity', '1');
+  const covered = await bar.evaluate((el) => {
+    const box = el.getBoundingClientRect();
+    const points: [number, number][] = [
+      [box.left + 3, box.top + 3],
+      [box.right - 3, box.top + 3],
+      [box.left + 3, box.bottom - 3],
+      [box.right - 3, box.bottom - 3],
+      ...[...el.querySelectorAll('button')].map((button): [number, number] => {
+        const b = button.getBoundingClientRect();
+        return [b.x + b.width / 2, b.y + b.height / 2];
+      }),
+    ];
+    return points.filter(([x, y]) => !el.contains(document.elementFromPoint(x, y))).length;
+  });
+  expect(covered).toBe(0);
 
   await bar.getByRole('button', { name: 'Clear selection' }).click();
   await expect(bar).toBeHidden();

@@ -20,6 +20,11 @@
   height: 100%;
   min-width: 0;
   min-height: 0;
+  /*
+   * The sticky header, footer and pinned cells are layered among themselves only. Without this their
+   * z-index counted in the card around the table, and the summary row lay over a floating `ActionBar`.
+   */
+  isolation: isolate;
   --ink: var(--umbra-table-color, var(--umbra-color-base-text-primary));
   color: var(--ink);
   font: var(--umbra-table-font, var(--umbra-font-table-cell));
