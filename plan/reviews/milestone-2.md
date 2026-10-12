@@ -276,13 +276,13 @@ Found by the owner while using the Storybook. Each is a requirement of the fix p
 | O-1 | `WidgetBoard` (analysis page) | Collapsing a card is not smooth: it flickers before closing (the same as SL-4) | open |
 | O-2 | `DataTable` (table page) | When the width cannot show every column, the user cannot choose which columns to show or hide, nor resize or reorder them. **Changes the decision "no end-user column editing"**: the table gets a column menu (show, hide, reorder, resize, reset), controlled by the app so it can save the choice | open |
 | O-3 | Table page, "Views" card (`VerticalNav`) | The items hug the left and leave the right of the card empty: they should fill the width | open |
-| O-4 | Selected and highlighted rows | The left edge stripe is unwanted on: the selected item of a `VerticalNav`, the highlighted row of the command palette, the selected option of an open `Select` or `Menu`. It stays on list items of the inbox kind and on table rows. The second cue that is not colour must remain (a check, a weight change) | open |
+| O-4 | Selected and highlighted rows | The left edge stripe is unwanted on: the selected item of a `VerticalNav`, the highlighted row of the command palette, the selected option of an open `Select` or `Menu`. It stays on list items of the inbox kind and on table rows. The second cue that is not colour must remain (a check, a weight change) | fixed: no stripe on menu-like and nav-like rows; highlight is a surface step, not the selected fill (`decisions/08-theming.md`) |
 | O-5 | Inbox page, favourite button (`IconButton` toggle) | A pressed star is an outline star in an outlined box: it should be a filled, coloured star, and a pointer press should not leave a focus ring | open |
-| O-6 | Theming | Changing the brand colour changes little: everything stays purple and magenta. Brand and context should visibly drive the look. **Changes the decision "violet (selected) and magenta (primary action) are fixed"**: they become defaults derived from the brand, still overridable as tokens | open |
+| O-6 | Theming | Changing the brand colour changes little: everything stays purple and magenta. Brand and context should visibly drive the look. **Changes the decision "violet (selected) and magenta (primary action) are fixed"**: they become defaults derived from the brand, still overridable as tokens | fixed: `interaction` and `action` inputs, a palette derived from the brand, neutrals from the context (`decisions/08-theming.md`) |
 | O-7 | `LevelMeter` rows (list and detail page) | Each meter starts right after its label, so the meters do not line up: labels need their own column and the meters theirs | open |
 | O-8 | Table page | The `ActionBar` of the selection is hidden under the table's summary row | open |
 | O-9 | `ContextBlock` | An optional background, slightly lighter or darker than the bar it sits in, as in the source | open |
-| O-10 | Theming | One global setting for how opaque card backgrounds are over the app background | open |
+| O-10 | Theming | One global setting for how opaque card backgrounds are over the app background | fixed: `surfaceOpacity` / `--umbra-surface-opacity` (`decisions/08-theming.md`) |
 
 ## Review 3: the package, the checks, the docs, the examples, the open items (2026-10-11)
 

@@ -137,6 +137,7 @@ Pitch, FormationView, PlayerToken, KitIcon, ShirtNumberIcon, OppositionSummary, 
 - **Domain-neutral**: no football or manager components.
 - **Scrolling**: the page never scrolls; regions may.
 - **Theme**: dark base; the app sets brand and context tint; violet (selected) and magenta (primary action) are fixed.
+- **Theme, changed 2026-10-11** (owner's O-6, O-10, O-4; `decisions/08-theming.md`): violet and magenta are no longer fixed. The provider and `UmbraScope` take four colours: `brand`, `context`, and the new optional `interaction` (selected, checked, accent, links) and `action` (the primary action). A brand alone re-skins the app: interaction, action and context are derived from it unless set, in OKLCH, with contrast guaranteed for any input; the context also sets the hue of surfaces, borders and dim text. With no colour prop the look is unchanged. Every derived colour is a token, and a token set by hand wins. The semantic colours, the value ramp and the series palette do not follow the brand. `surfaceOpacity` sets how opaque card surfaces are. The edge stripe marks selected rows of data only (list items, table rows), not menu-like or nav-like rows.
 - **Density**: three levels, set on the provider.
 - **DataTable**: sorting, rich cells, row highlight, columns auto-hide by priority. No end-user column editing or saved views.
 - **Charts, first release**: radar, line, bar, donut. Heatmap and scatter later.
@@ -146,7 +147,7 @@ Pitch, FormationView, PlayerToken, KitIcon, ShirtNumberIcon, OppositionSummary, 
 
 ## Cross-cutting findings
 
-- **Theming has three layers**: brand (TopBar, can be light), context tint (page background and card tint per section), and fixed interaction colours (violet = selected, magenta = primary action).
+- **Theming has three layers**: brand (TopBar, can be light), context tint (page background and card tint per section), and interaction colours (violet = selected, magenta = primary action). Since 2026-10-11 the third follows the brand unless the app sets it (`decisions/08-theming.md`).
 - **Density is a setting** in the source (Default / Detailed / Condensed).
 - **Colour carries data** everywhere (thresholds, row tints, stripes); every such use needs a non-colour fallback.
 - **The source is inconsistent** (primary button colour, four SectionTitle styles, two checkbox styles); the library must pick one rule each.

@@ -1,5 +1,6 @@
 // Generates src/styles/tokens.css and src/styles/tokens.generated.ts from plan/tokens.json,
 // so the tokens have one source. Run by `npm run tokens` (and on install, build and Storybook start).
+import { Buffer } from 'node:buffer';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { buildSync } from 'esbuild';

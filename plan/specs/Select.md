@@ -49,7 +49,7 @@ States: hover (the box lightens one step; a coloured cell darkens instead), pres
 
 ### 1. Tokens
 
-`--umbra-select-height`, `--umbra-select-width`, `--umbra-select-padding-x`, `--umbra-select-radius`, `--umbra-select-bg`, `--umbra-select-ghost-bg`, `--umbra-select-fg`, `--umbra-select-border`, `--umbra-select-invalid-border`, `--umbra-select-placeholder`, `--umbra-select-icon-color`, `--umbra-select-swatch-size`, `--umbra-select-popover-max-width`, `--umbra-select-option-selected-bg`, `--umbra-select-option-stripe-width`.
+`--umbra-select-height`, `--umbra-select-width`, `--umbra-select-padding-x`, `--umbra-select-radius`, `--umbra-select-bg`, `--umbra-select-ghost-bg`, `--umbra-select-fg`, `--umbra-select-border`, `--umbra-select-invalid-border`, `--umbra-select-placeholder`, `--umbra-select-icon-color`, `--umbra-select-swatch-size`, `--umbra-select-popover-max-width`, `--umbra-select-option-selected-bg`.
 
 The panel and its rows are a `Menu`'s, so they also follow `--umbra-menu-bg`, `--umbra-menu-border`, `--umbra-menu-radius`, `--umbra-menu-item-height`, `--umbra-menu-item-radius` and `--umbra-menu-item-hover-bg`: menus and selects stay alike.
 
@@ -110,7 +110,7 @@ The panel and its rows are a `Menu`'s, so they also follow `--umbra-menu-bg`, `-
 - The trigger is a button with `aria-haspopup="listbox"` and `aria-expanded`, named by its value and its label. `ArrowDown`, `Enter` and `Space` open the list with focus on the chosen option. Closed, typing a letter or `ArrowLeft` / `ArrowRight` changes the choice.
 - The list is a `listbox`; one tab stop. Arrows, `Home`, `End` and type-ahead move through the options and pass over disabled ones; `Enter` or `Space` chooses; `Escape` closes without a change. Focus returns to the trigger. A single select closes when an option is chosen; a `multiple` one stays open (`aria-multiselectable`).
 - `searchable`: focus is in the filter field for as long as the list is open, and the option the arrow keys are on is its active descendant (`aria-autocomplete="list"`). `Escape` empties the filter first, then closes the list. Closing resets the filter.
-- A chosen option has `aria-selected`, the violet tint with an edge stripe, and a check (or a checked box), so it does not depend on colour.
+- A chosen option has `aria-selected`, the tint of the interaction colour, and a check (or a checked box), so it does not depend on colour. No edge stripe (2026-10-11, owner's O-4: the stripe is for rows of data).
 - The clear button is a separate button after the trigger, at least 24 by 24px. Pressing it empties the choice, calls `onChange('')` (or `onValuesChange([])`) and puts focus on the trigger. It is not rendered while nothing is chosen, or when disabled or read-only.
 - Inside a `FormField` the trigger takes the field's id, label, description, error, `required` and `disabled`.
 - `name` sends the chosen ids with a form (one entry per id when `multiple`), and `required` holds the form back while nothing is chosen, as a native select does. An invalid select holds its form back too.
@@ -133,7 +133,7 @@ Resolved 2026-10-10:
 
 - `value` is a plain string and `''` means no choice, so `useState('')` and a form field behave the same way. A `multiple` select has its own `values` and `onValuesChange`, so each callback has one type and the generated props table lists both.
 - The "person" and "role" selects of the source are this component with `avatar`, `tone` / `color`, `description` and `valueDescription`, not separate components. `renderOption` and `renderValue` cover the rest.
-- Option rows and the panel reuse the `Menu` look and its tokens; a chosen option adds the selected tint and edge stripe of a list row.
+- Option rows and the panel reuse the `Menu` look and its tokens; a chosen option adds the selected tint of a list row, without its edge stripe (2026-10-11).
 - The default width is the width of the value (as in the source's toolbars); `fullWidth` fills the slot, and `inCell` always does.
 - The filter is applied by the select itself to its `options`; `onSearchChange` reports the text for the server and `filter={() => true}` turns the local filter off. The chosen options must stay among `options` for their labels to show.
 - The error state supports a retry button (`onRetry`). It is rendered beside the list, not inside it, because a `listbox` cannot hold a button.
@@ -145,5 +145,5 @@ Resolved 2026-10-11 (review 2):
 
 - **Invalid, exactly where** (F13). The trigger button carries `aria-invalid="true"` (a global ARIA attribute, valid on a button; `aria-required` is not, so required is said by the label's marker and by the message below). The error icon is shown beside the value. The visually hidden native `<select>` carries `required` and `name`: it is what the browser validates and submits; it is not focusable and not read. The message of a field's `error` is the trigger's description (`aria-describedby`).
 - **Required, on submit.** A required select left empty holds the form back and says why: the browser's own message ("Please select an item in the list.", in the browser's language) is shown as the error of the `FormField` around it and is the trigger's description; without a field it is the description only. Choosing a value clears it. The select passed `invalid={false}` to React Aria, which silenced this; it now passes `invalid` only when set.
-- The stripe of the selected option is on the start side in either direction; the list renders into the modal it was opened from.
+- The list renders into the modal it was opened from.
 - `inCell`: the focus ring is the fixed focus colour on a dark gap ring, so it keeps 3:1 on any fill (F30). The filter input of a searchable list has a visible ring (F30). The caret turns with the motion easing token (F33).

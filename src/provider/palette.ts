@@ -260,11 +260,17 @@ function focusRing(fill: Rgb, d: PaletteDefaults): string {
  */
 export function derivePalette(inputs: PaletteInputs, d: PaletteDefaults): Record<string, string> {
   const out: Record<string, string> = {};
-  const brand = inputs.brand ? parseColour(inputs.brand) : null;
+  const given = inputs.brand ? parseColour(inputs.brand) : null;
+  // The default brand is the default look: nothing is derived from it.
+  const brand = given && toHex(given) !== toHex(rgbOf(d.brand)) ? given : null;
   const read = (colour: string | undefined) => (colour ? parseColour(colour) : null);
 
-  // Context: the app's colour, else the brand's hue.
-  const contextInput = read(inputs.context) ? inputs.context : brand ? inputs.brand : undefined;
+  // Context: the app's colour, else the default violet turned with the brand.
+  const contextInput = read(inputs.context)
+    ? inputs.context
+    : brand
+      ? toHex(fromLch(turned(toLch(brand), d.brand, d.context, [])))
+      : undefined;
   if (contextInput) {
     const context = safeContext(contextInput, d);
     out['context'] = context;

@@ -43,7 +43,7 @@ A command is `{ id, label, description?, icon?, section?, keywords?, shortcut?, 
 
 Ranking of the fixed list, best first: the text starts the label; starts a word of the label; is inside the label; is in the keywords or the description; its letters appear in the label in order (three letters or more). Case and accents do not matter. Every word typed must match, and the weakest word gives the rank. Within a rank the given order is kept. Sections appear in the order of their best result.
 
-Row states: active (the row the arrow keys are on: violet fill with an edge stripe), disabled (40%; passed over by the keys). Data attributes: `data-active`, `data-disabled`.
+Row states: active (the row the arrow keys are on: a highlight one surface step lighter, as in a menu; not the selected fill and no stripe, 2026-10-11, owner's O-4), disabled (40%; passed over by the keys). Data attributes: `data-active`, `data-disabled`.
 
 ## Customisation
 

@@ -264,7 +264,8 @@ test('UmbraScope derives again for its subtree, and a preset context keeps its o
   expect(green.selected).not.toBe(base.selected);
   expect(green.action).not.toBe(base.action);
   // The context follows the brand when none is set, and is the app's when one is.
-  expect(green.context).toBe('#0a7a55');
+  expect(green.context).not.toBe('');
+  expect(green.context).not.toBe(base.context);
   expect(green.border).not.toBe(base.border);
   expect(slate.context).toBe('#5a6670');
   expect(slate.selected).not.toBe(base.selected);

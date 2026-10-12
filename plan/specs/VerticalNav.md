@@ -43,7 +43,7 @@ States per item: current, hover, pressed, focus, disabled. Per group: open, clos
 
 ### 1. Tokens
 
-`--umbra-vertical-nav-width` (240px), `--umbra-vertical-nav-rail-width`, `--umbra-vertical-nav-rail-below` (160px, in px: narrower than this the nav becomes a rail), `--umbra-vertical-nav-bg`, `--umbra-vertical-nav-fg`, `--umbra-vertical-nav-current-bg`, `--umbra-vertical-nav-current-fg`, `--umbra-vertical-nav-stripe-width`, `--umbra-vertical-nav-row-height`, `--umbra-vertical-nav-radius`, `--umbra-vertical-nav-padding`, `--umbra-vertical-nav-gap`.
+`--umbra-vertical-nav-width` (240px), `--umbra-vertical-nav-rail-width`, `--umbra-vertical-nav-rail-below` (160px, in px: narrower than this the nav becomes a rail), `--umbra-vertical-nav-bg`, `--umbra-vertical-nav-fg`, `--umbra-vertical-nav-current-bg`, `--umbra-vertical-nav-current-fg`, `--umbra-vertical-nav-row-height`, `--umbra-vertical-nav-radius`, `--umbra-vertical-nav-padding`, `--umbra-vertical-nav-gap`.
 
 ### 2. Props
 
@@ -81,7 +81,7 @@ Without an icon on every item there is no rail to switch to, and step 0 is all t
 ## Interaction and accessibility
 
 - The root is a `nav` landmark named by `aria-label`.
-- The current item has `aria-current="page"`, the violet fill, and two cues that are not colour: an edge stripe and bold weight. A closed group that holds the current item carries the stripe.
+- The current item has `aria-current="page"`, the fill of the interaction colour, and bold weight as the cue that is not colour. A closed group that holds the current item is tinted and bold (`--umbra-vertical-nav-holds-current-bg`). No edge stripe (2026-10-11, owner's O-4).
 - The list is one tab stop: the focused item, else the current one, else the first. `Up` and `Down` move (no wrap), `Home` and `End` jump. On a group, `Right` opens it and then moves into it, `Left` closes it; on an item of a group, `Left` goes back to the group. `Enter` and `Space` choose.
 - A group is a button with `aria-expanded`. It does not navigate.
 - A disabled item has `aria-disabled`, keeps its place in the arrow-key order and does nothing.
@@ -95,7 +95,7 @@ None.
 
 Resolved 2026-10-10:
 
-- The radio glyph of the source (21) is not copied: the current item is the library's selected look (violet, stripe, weight).
+- The radio glyph of the source (21) is not copied: the current item is the library's selected look (the interaction fill and weight).
 - One level of nesting. A group only opens and closes; give the overview page its own item inside it.
 - In the rail the items of an open group stay, as icons under it; there is no fly-out menu.
 - The hover hint in the rail is the public `Tooltip` (integration pass), not the native `title`: it also shows on keyboard focus and takes any label node. A row drawn by the app's own link (`renderLink`) gets it when that link passes its props and ref on to its element.

@@ -155,9 +155,11 @@ export function App() {
   };
 
   return (
-    // The theme: one brand colour for the bar; each section's `Page` sets its own context tint.
+    // The theme: a brand colour, from which the primary action is derived, and an interaction colour of
+    // the app's own for everything selected. Each section's `Page` sets its own context tint.
     <UmbraProvider
       brand="#14506b"
+      interaction="#d97706"
       density={settings.density}
       reducedMotion={settings.reduceMotion ? 'always' : 'system'}
       shortcuts={shortcuts}

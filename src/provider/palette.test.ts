@@ -64,16 +64,20 @@ test('an input that cannot be read is skipped', () => {
   );
 });
 
-test('the default brand gives the default hues back', () => {
-  const p = derivePalette({ brand: d.brand }, d);
-  // Lighter only by what 3:1 against the surface asks (the default violet has 2.65:1).
+test('the default brand is the default look: nothing is derived from it', () => {
+  expect(derivePalette({ brand: d.brand }, d)).toEqual({});
+  expect(derivePalette({ brand: 'rgb(42, 47, 143)' }, d)).toEqual({});
+});
+
+test('a brand a step away from the default gives colours a step away from the defaults', () => {
+  const p = derivePalette({ brand: '#2a308f' }, d);
   expect(distance(rgb(p['color-interaction']!), rgb(d.interaction))).toBeLessThan(0.05);
   expect(distance(rgb(p['color-action']!), rgb(d.action))).toBeLessThan(0.03);
-  expect(distance(rgb(p['color-interaction-text']!), rgb(d.interactionText))).toBeLessThan(0.03);
+  expect(distance(rgb(p['context']!), rgb(d.context))).toBeLessThan(0.03);
   expect(p['color-focus-ring']).toBe(d.focusRing);
 });
 
-describe.each(matrix)('brand %s', (brand) => {
+describe.each(matrix.filter((colour) => colour !== d.brand))('brand %s', (brand) => {
   const p = derivePalette({ brand }, d);
 
   it('derives every role', () => {

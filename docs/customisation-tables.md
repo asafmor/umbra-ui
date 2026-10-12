@@ -193,6 +193,7 @@ The outermost frame: exactly the size of the window, never scrolls, bars above o
 |---|---|
 | `--umbra-shell-bg` | `--umbra-context-page-background` |
 | `--umbra-shell-bg-end` | `--umbra-context-page-background-end` |
+| `--umbra-shell-image` | `none` |
 | `--umbra-shell-pattern-opacity` | `0` |
 
 | Prop | Type | Purpose |
@@ -758,8 +759,8 @@ A search over everything the app can do or open, in a dialog near the top of the
 
 | Token | Default |
 |---|---|
-| `--umbra-command-palette-active-bg` | `--umbra-color-interaction` (#6a1fd6) |
-| `--umbra-command-palette-active-fg` | `--umbra-color-on-interaction` (#ffffff) |
+| `--umbra-command-palette-active-bg` | `--umbra-color-base-surface3` (#261b38) |
+| `--umbra-command-palette-active-fg` | `--umbra-color-base-text-primary` (#f5f3f8) |
 | `--umbra-command-palette-bg` | `--umbra-color-base-surface2` (#1b1329) |
 | `--umbra-command-palette-border` | `--umbra-color-base-border-strong` (#47395e) |
 | `--umbra-command-palette-item-height` | `--umbra-density-control-height` (36px at the default density) |
@@ -970,7 +971,7 @@ A table of rows and columns that fills its slot and scrolls inside it: sorting, 
 | `--umbra-table-pin-border-color` | `--umbra-color-base-border-strong` (#47395e) |
 | `--umbra-table-row-bg` | `var(--umbra-scroll-fade-color, var(--scroll-fade-color, var(--umbra-context-card-tint)))` |
 | `--umbra-table-row-height` | `--umbra-density-table-row` (26px at the default density) |
-| `--umbra-table-selected-bg` | `color-mix(in oklab, var(--umbra-color-interaction) 32%, var(--surface))` |
+| `--umbra-table-selected-bg` | `color-mix(in oklab, var(--umbra-color-interaction-tint) 32%, var(--surface))` |
 | `--umbra-table-stripe-bg` | `color-mix(in srgb, var(--umbra-color-base-text-primary) var(--umbra-state-stripe-strength), var(--surface))` |
 | `--umbra-table-stripe-width` | `3px` |
 
@@ -2052,7 +2053,7 @@ The content of one row of a list: a title with optional lines, and leading and t
 | `--umbra-list-item-padding-y` | `--umbra-space-3` (8px) or `--umbra-space-2` (4px) |
 | `--umbra-list-item-read-color` | `--umbra-color-base-text-muted` (#948da2) |
 | `--umbra-list-item-secondary-color` | `--umbra-color-base-text-secondary` (#b3adbf) |
-| `--umbra-list-item-selected-bg` | `color-mix(in oklab, var(--umbra-color-interaction) 28%, transparent)` |
+| `--umbra-list-item-selected-bg` | `color-mix(in oklab, var(--umbra-color-interaction-tint) 28%, transparent)` |
 | `--umbra-list-item-selected-stripe` | `color-mix(in oklab, var(--umbra-color-interaction), #fff 35%)` |
 | `--umbra-list-item-stripe-width` | `3px` |
 | `--umbra-list-item-title-font` | `--umbra-font-body` |
@@ -3163,8 +3164,7 @@ Chooses one option, or several with `multiple`, from a list that opens under a b
 | `--umbra-select-height` | `--umbra-density-control-height` (36px at the default density) |
 | `--umbra-select-icon-color` | `--umbra-color-base-text-secondary` (#b3adbf) |
 | `--umbra-select-invalid-border` | `--umbra-color-semantic-danger` (#f0455a) |
-| `--umbra-select-option-selected-bg` | `color-mix(in oklab, var(--umbra-color-interaction) 28%, transparent)` |
-| `--umbra-select-option-stripe-width` | `3px` |
+| `--umbra-select-option-selected-bg` | `color-mix(in oklab, var(--umbra-color-interaction-tint) 28%, transparent)` |
 | `--umbra-select-padding-x` | `--umbra-space-4` (12px) |
 | `--umbra-select-placeholder` | `--umbra-color-base-text-muted` (#948da2) |
 | `--umbra-select-popover-max-width` | `480px` |
@@ -4258,8 +4258,11 @@ Wraps the app once. Supplies the theme, density, icon map and shortcut registry 
 | `shortcuts` | `Shortcut[]` | The app's key bindings. |
 | `reducedMotion` | `"system" \| "always" \| "never"` | `system` follows the operating system setting. |
 | `locale` | `string` | Locale for number and date formatting and text direction. Defaults to the browser's. |
-| `brand` | `string` | Brand colour, used by the TopBar. Text on it is computed for contrast. Hex or `rgb()`. |
-| `context` | `ContextTint` | Context tint for the page background and tinted cards. |
+| `brand` | `string` | Brand colour, hex or `rgb()`. Colours the TopBar, and the interaction colour, the action colour and the context follow it unless they are set. Text on it is computed for contrast. |
+| `context` | `ContextTint` | Context tint: the page background, card tints, and the hue of surfaces, borders and dim text. |
+| `interaction` | `string` | The colour of selected and checked things, the accent tone, links and thin marks. Hex or `rgb()`. Its lightness is adjusted where needed, so text on it and its edge against the surface keep their contrast. |
+| `action` | `string` | The colour of the primary action. Hex or `rgb()`; adjusted like `interaction`. |
+| `surfaceOpacity` | `number` | How opaque card surfaces are over the app background, 0 to 1. Overlays stay opaque. |
 | `density` | `"compact" \| "default" \| "spacious"` | Spacing, row heights and text sizes. |
 | `tokens` | `Partial<Record<(string & {}) \| TokenName, string \| number \| undefined>>` | Overrides individual tokens for this subtree. |
 | `className` | `string` |  |
@@ -4273,7 +4276,7 @@ Wraps the app once. Supplies the theme, density, icon map and shortcut registry 
 
 ## UmbraScope
 
-The same `context`, `density`, `brand` and `tokens` as the provider, for one subtree.
+The same colour inputs, `density` and `tokens` as the provider, for one subtree.
 
 **Tokens**: each with its default.
 
@@ -4283,8 +4286,11 @@ The same `context`, `density`, `brand` and `tokens` as the provider, for one sub
 
 | Prop | Type | Purpose |
 |---|---|---|
-| `brand` | `string` | Brand colour, used by the TopBar. Text on it is computed for contrast. Hex or `rgb()`. |
-| `context` | `ContextTint` | Context tint for the page background and tinted cards. |
+| `brand` | `string` | Brand colour, hex or `rgb()`. Colours the TopBar, and the interaction colour, the action colour and the context follow it unless they are set. Text on it is computed for contrast. |
+| `context` | `ContextTint` | Context tint: the page background, card tints, and the hue of surfaces, borders and dim text. |
+| `interaction` | `string` | The colour of selected and checked things, the accent tone, links and thin marks. Hex or `rgb()`. Its lightness is adjusted where needed, so text on it and its edge against the surface keep their contrast. |
+| `action` | `string` | The colour of the primary action. Hex or `rgb()`; adjusted like `interaction`. |
+| `surfaceOpacity` | `number` | How opaque card surfaces are over the app background, 0 to 1. Overlays stay opaque. |
 | `density` | `"compact" \| "default" \| "spacious"` | Spacing, row heights and text sizes. |
 | `tokens` | `Partial<Record<(string & {}) \| TokenName, string \| number \| undefined>>` | Overrides individual tokens for this subtree. |
 | `className` | `string` |  |
@@ -4351,12 +4357,12 @@ Side navigation for a modal, a settings screen or one column of a page.
 | `--umbra-vertical-nav-current-fg` | `--umbra-color-on-interaction` (#ffffff) |
 | `--umbra-vertical-nav-fg` | `--umbra-color-base-text-secondary` (#b3adbf) |
 | `--umbra-vertical-nav-gap` | `--umbra-space-1` (2px) |
+| `--umbra-vertical-nav-holds-current-bg` | `color-mix(in oklab, var(--umbra-vertical-nav-current-bg, var(--umbra-color-interaction)) 28%, transparent)` |
 | `--umbra-vertical-nav-padding` | `--umbra-space-3` (8px) |
 | `--umbra-vertical-nav-radius` | `--umbra-radius-control` (4px) |
 | `--umbra-vertical-nav-rail-below` | `160px` |
 | `--umbra-vertical-nav-rail-width` | `calc(var(--row) + 2 * var(--pad))` |
 | `--umbra-vertical-nav-row-height` | `--umbra-density-control-height` (36px at the default density) |
-| `--umbra-vertical-nav-stripe-width` | `3px` |
 | `--umbra-vertical-nav-width` | `240px` |
 
 | Prop | Type | Purpose |
