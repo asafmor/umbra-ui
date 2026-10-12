@@ -1,6 +1,6 @@
 import { useRef, type CSSProperties, type ReactNode } from 'react';
 import { cx } from '../utils/parts';
-import { ActionsOverflow, wrapsKept } from './ActionsOverflow';
+import { ActionsOverflow } from './ActionsOverflow';
 import styles from './ActionsRow.module.css';
 import { useShrinkLevel } from './useShrinkLevel';
 
@@ -30,7 +30,7 @@ export function ActionsRow({
       ref={ref}
       data-part="actions"
       data-shrunk={shrunk || undefined}
-      className={cx(styles.row, wrapsKept, className)}
+      className={cx(styles.row, className)}
       style={style}
     >
       <ActionsOverflow shrunk={shrunk} label={moreLabel} size={size}>

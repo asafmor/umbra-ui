@@ -44,7 +44,7 @@
  * The host marks its last step on the row (`data-wrap`) and gives its actions this
  * class. Doubled, to win over the host's own rule for its actions whichever stylesheet comes first.
  */
-:is([data-wrap] > .wrap.wrap, [data-umbra='page-header'][data-truncate] .wrap.wrap, .wrap.wrap[data-shrunk]) {
+:is([data-wrap] > .wrap.wrap, [data-umbra='page-header'][data-truncate] .wrap.wrap) {
   flex: 0 1 auto;
   min-width: 0;
   max-width: 100%;
@@ -53,31 +53,29 @@
   row-gap: var(--umbra-space-2);
 }
 
-:is([data-wrap] > .wrap.wrap, [data-umbra='page-header'][data-truncate] .wrap.wrap, .wrap.wrap[data-shrunk])
-  > * {
+:is([data-wrap] > .wrap.wrap, [data-umbra='page-header'][data-truncate] .wrap.wrap) > * {
   flex: 0 1 auto;
   min-width: 0;
   max-width: 100%;
 }
 
 /* A field counts at its minimum when the lines are made, and takes what its line has left. */
-:is([data-wrap] > .wrap.wrap, [data-umbra='page-header'][data-truncate] .wrap.wrap, .wrap.wrap[data-shrunk])
+:is([data-wrap] > .wrap.wrap, [data-umbra='page-header'][data-truncate] .wrap.wrap)
   > [data-umbra='search-field'] {
   flex: 1 1 var(--umbra-search-field-min-width, 120px);
 }
 
-:is([data-wrap] > .wrap.wrap, [data-umbra='page-header'][data-truncate] .wrap.wrap, .wrap.wrap[data-shrunk])
-  > [data-umbra='select'] {
+:is([data-wrap] > .wrap.wrap, [data-umbra='page-header'][data-truncate] .wrap.wrap) > [data-umbra='select'] {
   flex: 1 1 var(--umbra-select-min-width, 96px);
 }
 
-:is([data-wrap] > .wrap.wrap, [data-umbra='page-header'][data-truncate] .wrap.wrap, .wrap.wrap[data-shrunk])
+:is([data-wrap] > .wrap.wrap, [data-umbra='page-header'][data-truncate] .wrap.wrap)
   > [data-umbra='text-field'] {
   flex: 1 1 var(--umbra-text-field-min-width, 96px);
 }
 
 /* A label beside a box stays on one line and truncates: wrapped here, it would be a letter per line. */
-:is([data-wrap] > .wrap.wrap, [data-umbra='page-header'][data-truncate] .wrap.wrap, .wrap.wrap[data-shrunk])
+:is([data-wrap] > .wrap.wrap, [data-umbra='page-header'][data-truncate] .wrap.wrap)
   > :is([data-umbra='checkbox'], [data-umbra='toggle'])
   > * {
   white-space: nowrap;
