@@ -232,6 +232,9 @@ export function UmbraProvider({
       // Also by where the focus is: a field that keeps the focus while the arrow keys move through a
       // list (the filter of a `Select`) passes its keys on to the list, and those arrive from the list.
       if (!typing && (isTypingTarget(event.target) || isTypingTarget(document.activeElement))) return;
+      // A spotlight that is not `interactive` lets nothing but its callout be used: no shortcut either.
+      // Its own keys (Escape, the buttons of a tour) are not in the registry.
+      if (document.documentElement.getAttribute('data-umbra-spotlight') === 'locked') return;
       // With nothing to run (a reserved key whose component is not mounted) the key is left alone.
       const run = bound.get(shortcut.id) ?? shortcut.action;
       if (!run) return;

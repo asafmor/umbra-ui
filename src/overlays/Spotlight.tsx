@@ -167,8 +167,9 @@ function Root({
     const moved = latest.current.target !== target;
     latest.current = { target, onTargetLost, setOpen, dismissable };
     // Another target (the next step of a tour): found before the paint, so the callout and the ring
-    // change together.
-    if (moved) measureNow.current?.();
+    // change together. Not once it has closed: a tour that ends goes back to its first step, and
+    // looking for that target reported a step after the tour had said it was closed.
+    if (moved && isOpen) measureNow.current?.();
   });
 
   // Follows the target: its place is read once per frame for as long as the spotlight is open. Not
@@ -200,6 +201,13 @@ function Root({
         return;
       }
       lostFor = null;
+      // A modal that opens while the spotlight shows (the target opened it, or the app did) would lie
+      // under the dim with the focus in it: the spotlight gives way to it and closes. A modal the
+      // target is in is not one: the spotlight is rendered into that.
+      const modal = [...document.querySelectorAll('[data-umbra="modal-backdrop"]:not([data-exiting])')].at(
+        -1,
+      );
+      if (modal && !modal.contains(next)) return latest.current.setOpen(false);
       if (next !== el) {
         el = next;
         // The page never scrolls, but the target may be out of sight inside a scroll area.
@@ -243,7 +251,8 @@ function Root({
   useEffect(() => {
     if (!root || !targetEl) return;
     // What the target opens is lifted above the dim (src/styles/index.css).
-    document.documentElement.setAttribute('data-umbra-spotlight', '');
+    // Also read by the provider: while the spotlight is `locked`, no shortcut of the registry runs.
+    document.documentElement.setAttribute('data-umbra-spotlight', interactive ? 'interactive' : 'locked');
     const restore = inertOutside(interactive ? [root, targetEl] : [root]);
     return () => {
       document.documentElement.removeAttribute('data-umbra-spotlight');
