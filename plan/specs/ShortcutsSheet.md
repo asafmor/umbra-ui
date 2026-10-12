@@ -108,3 +108,5 @@ Weaker than it could be:
 
 - The search is a plain "contains every word": no ranking and no fuzzy match, unlike the palette.
 - `extra` items are not checked against the registry: an app can list a key twice.
+- **The root carries `data-umbra="shortcuts-sheet"`** (review 2, OP-9, 2026-10-11), not `modal`: a component built on `Modal` is found by its own name, as an `IconButton` is not a `button`. `ConfirmDialog` carries `confirm-dialog` for the same reason. Both keep every state attribute of the modal's panel (`data-variant`, `data-size`, `data-side`).
+- **A key is found by its name as well as by its sign** (review 2, OP-11): "arrowup" finds "↑", "shift" finds "⇧". The name matches from its start, so "row" does not find `ArrowUp`.

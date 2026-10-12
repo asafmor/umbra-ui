@@ -205,11 +205,14 @@ function Panel({
 
   const words = query.toLowerCase().split(/\s+/).filter(Boolean);
   const matches = (section: string, item: ShortcutsSheetItemData) => {
-    // The keys as they are drawn ("↑") and as they are written ("ArrowUp").
-    const text = [section, item.label, ...[item.keys].flat().flatMap((keys) => [formatKeys(keys), keys])]
+    const keys = [item.keys].flat();
+    const text = [section, item.label, ...keys.map((combination) => formatKeys(combination))]
       .join(' ')
       .toLowerCase();
-    return words.every((word) => text.includes(word));
+    // A key is also found by its name as it is written ("arrowup" for "↑"), from its start: "row" is
+    // a word of a label, not the end of "ArrowUp".
+    const names = keys.flatMap((combination) => combination.toLowerCase().split('+'));
+    return words.every((word) => text.includes(word) || names.some((name) => name.startsWith(word)));
   };
   const shown = [...sections]
     .map(([section, items]) => [section, items.filter((item) => matches(section, item))] as const)

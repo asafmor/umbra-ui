@@ -150,3 +150,4 @@ Resolved 2026-10-11 (review 2):
 - The backdrop, the drawer and `ConfirmDialog` carry the page's `dir` (F8): the `start` drawer is on the right when the direction is right to left.
 - **Focus when it closes** is never left on nothing: it returns to what had it when the modal opened; a modal that opened without a press (`defaultOpen`, or opened by the app) gives it to its own trigger, and without one to the first control of the page. Below the minimum window, choosing a section in the navigation moves the focus to the "Sections" toggle, since the chosen control is hidden with the list (F18).
 - `ConfirmDialog` `parts` (`cancel`, `confirm`) have a story and a test (F22).
+- **`ConfirmDialog`'s panel carries `data-umbra="confirm-dialog"`** (review 2, OP-9, 2026-10-11), and a `ShortcutsSheet` `shortcuts-sheet`: each component is found by its own name. A plain `Modal` is still `modal`; the backdrop is `modal-backdrop` for all three.
