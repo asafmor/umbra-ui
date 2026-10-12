@@ -25,6 +25,7 @@ and the fonts and renders `<App />`.
 | 17  | [A tour and the shortcuts](#17-a-tour-and-the-sheet-of-shortcuts)               | `Spotlight`, `ShortcutsSheet`                                     |
 | 18  | [A settings form](#18-a-settings-form-with-a-slider-a-stepper-and-a-scale)      | `Slider`, `Stepper`, `ColorScaleEditor`                           |
 | 19  | [Charts over a backdrop](#19-charts-over-a-backdrop)                            | `Scatter` and `Heatmap` with a `backdrop`                         |
+| 20  | [Remember a user's columns](#20-remember-a-users-columns)                       | `columnMenu`, `columnState`, saving it in the app's own storage   |
 
 ## 1. A first page
 
@@ -537,6 +538,7 @@ export function App() {
 - An action that cannot be undone belongs behind a `ConfirmDialog`.
 - A column of row actions: `actionsColumn({ menu: (row) => [...], onMenuAction })`.
 - `expandableHidden` gives each row a control that shows the values of its hidden columns.
+- The end user can show, hide, move, pin and resize the columns: [recipe 20](#20-remember-a-users-columns).
 
 ## 7. Server-side data
 
@@ -1934,6 +1936,125 @@ export function App() {
 - The `Heatmap` sums `points` into `bins`. Over a backdrop its cells are a little transparent
   (`--umbra-heatmap-backdrop-opacity`).
 - The drawing is decoration to a screen reader: the points and cells are read from the data.
+
+## 20. Remember a user's columns
+
+The end user can show, hide, move, pin and resize the columns of every `DataTable`: from the columns
+button at the end of the header row, from the menu of each header, and by dragging a header's edge.
+What they did is one value, `columnState`. The table keeps it while the page lives; to keep it longer,
+hold it yourself and save it wherever your app saves things. The table ships no storage.
+
+```tsx
+import { useEffect, useState } from 'react';
+import {
+  AppShell,
+  Card,
+  DataTable,
+  numberColumn,
+  Page,
+  TopBar,
+  UmbraProvider,
+  type DataTableColumn,
+  type DataTableColumnState,
+} from 'umbra-ui';
+
+interface Order {
+  id: string;
+  client: string;
+  region: string;
+  owner: string;
+  items: number;
+  total: number;
+}
+
+const orders: Order[] = Array.from({ length: 40 }, (_, i) => ({
+  id: `Order ${1001 + i}`,
+  client: `Client ${(i % 7) + 1}`,
+  region: `Region ${(i % 4) + 1}`,
+  owner: `Person ${String.fromCharCode(65 + (i % 5))}`,
+  items: 1 + ((i * 7) % 12),
+  total: 120 + ((i * 131) % 900),
+}));
+
+// Defined once, outside the component: the table asks for stable columns.
+const columns: DataTableColumn<Order>[] = [
+  { id: 'id', header: 'Order', accessor: 'id', rowHeader: true, priority: 'always', hideable: false },
+  { id: 'client', header: 'Client', accessor: 'client', sortable: true, priority: 3 },
+  { id: 'region', header: 'Region', accessor: 'region', sortable: true, priority: 2 },
+  { id: 'owner', header: 'Owner', accessor: 'owner', priority: 1 },
+  numberColumn({ id: 'items', header: 'Items', accessor: 'items', priority: 1 }),
+  numberColumn({
+    id: 'total',
+    header: 'Total',
+    accessor: 'total',
+    sortable: true,
+    priority: 4,
+    minWidth: 64,
+  }),
+];
+
+/** State that is read from `localStorage` once and written back on every change. */
+function useSavedColumns(key: string) {
+  const [state, setState] = useState<DataTableColumnState>(() => {
+    try {
+      return JSON.parse(localStorage.getItem(key) ?? '{}') as DataTableColumnState;
+    } catch {
+      // No storage, or a value that is not JSON: start from the columns as they are defined.
+      return {};
+    }
+  });
+  useEffect(() => {
+    try {
+      localStorage.setItem(key, JSON.stringify(state));
+    } catch {
+      // Storage is full or blocked: the choice lasts for this visit.
+    }
+  }, [key, state]);
+  return [state, setState] as const;
+}
+
+export function App() {
+  const [columnState, setColumnState] = useSavedColumns('orders.columns');
+  return (
+    <UmbraProvider>
+      <AppShell topBar={<TopBar logo="U" />}>
+        <Page>
+          <Card title="Orders" padding="none">
+            <DataTable
+              aria-label="Orders"
+              data={orders}
+              getRowId={(order) => order.id}
+              columns={columns}
+              columnMenu
+              columnState={columnState}
+              onColumnStateChange={setColumnState}
+            />
+          </Card>
+        </Page>
+      </AppShell>
+    </UmbraProvider>
+  );
+}
+```
+
+- `columnState` is plain JSON: `order` (column ids), `visibility` (`false` hides a column at any
+  width; `true` is a column the user ticked, which the table then never hides for lack of room),
+  `widths` (pixels, as in a column's `width`) and `pins`. Every member is optional and `{}` means "as
+  the columns are defined". Save it per user and per table.
+- The saved value survives a change of your columns: an id it does not know is ignored, and a column
+  it has never seen takes its place after the one before it in `columns`.
+- "Reset" in the column menu returns to `defaultColumnState`, or to `{}`.
+- `columnMenu` keeps the columns button in the header always. Without it the button appears when a
+  column is not shown, and "Columns…" in the menu of any header opens the same list.
+- `columnMenu={false}` takes the controls away; `resizableColumns={false}` and
+  `reorderableColumns={false}` take one of them away. Per column: `hideable`, `reorderable`,
+  `resizable`, `minWidth` and `maxWidth`.
+- Nothing needs a drag: a column moves with Alt + Arrow Up or Down on its handle, or from the menus,
+  and "Resize" in a header's menu hands the arrow keys to the handle (Enter keeps, Escape cancels).
+- Every string is a prop (`columnsLabel`, `hideColumnLabel`, `noRoomLabel`, …): see the table of
+  built-in strings in [Customisation](customisation.md).
+- To put the list somewhere else (a toolbar, a drawer), render `DataTable.ColumnMenu` yourself with
+  `columnMenu={false}`.
 
 ## Next
 

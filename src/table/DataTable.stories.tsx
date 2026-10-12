@@ -17,6 +17,7 @@ import { Select } from '../inputs/Select';
 import { Card } from '../layout/Card';
 import { Columns } from '../layout/Columns';
 import { Stack } from '../layout/Stack';
+import { Menu } from '../overlays/Menu';
 import { LevelMeter } from '../meters/LevelMeter';
 import { ProgressBar } from '../meters/ProgressBar';
 import { Log } from '../stories/placeholders';
@@ -25,6 +26,7 @@ import {
   DataTable,
   numberColumn,
   type DataTableColumn,
+  type DataTableColumnState,
   type DataTableRowAccent,
   type DataTableSort,
 } from './DataTable';
@@ -1454,4 +1456,209 @@ export const HiddenColumns: Story = {
       </Box>
     </div>
   ),
+};
+
+// --- The end user's columns ------------------------------------------------------------------------------
+
+const everyColumn: DataTableColumn<Person>[] = [
+  {
+    id: 'name',
+    header: 'Name',
+    accessor: 'name',
+    rowHeader: true,
+    pin: 'start',
+    priority: 'always',
+    sortable: true,
+    width: { min: 120 },
+  },
+  { id: 'id', header: 'Id', accessor: 'id', priority: 1, width: 64 },
+  { id: 'team', header: 'Team', accessor: 'team', priority: 5, sortable: true, width: { min: 96 } },
+  { id: 'role', header: 'Role', accessor: 'role', priority: 4, sortable: true, width: { min: 96 } },
+  {
+    id: 'status',
+    header: 'Status',
+    accessor: 'status',
+    priority: 3,
+    width: { min: 110 },
+    cell: (person) => (
+      <StatusIndicator status={statusOf[person.status].status}>
+        {statusOf[person.status].label}
+      </StatusIndicator>
+    ),
+  },
+  numberColumn({ id: 'tasks', header: 'Tasks', accessor: 'tasks', priority: 2, sortable: true, width: 72 }),
+  numberColumn({ id: 'level', header: 'Level', accessor: 'level', priority: 1, width: 72 }),
+  numberColumn({ id: 'change', header: 'Change', accessor: 'change', priority: 1, width: 80 }),
+  numberColumn({ id: 'progress', header: 'Progress', accessor: 'progress', priority: 2, width: 88 }),
+  numberColumn({
+    id: 'score',
+    header: 'Score',
+    accessor: 'score',
+    priority: 6,
+    sortable: true,
+    width: 72,
+    footer: (rows) => sum(rows.map((row) => row.score)),
+  }),
+];
+
+function ColumnsCard() {
+  // The app keeps the state: here in memory, in an app wherever it likes (docs/recipes.md).
+  const [state, setState] = useState<DataTableColumnState>({});
+  return (
+    <div style={{ display: 'flex', gap: 16, height: '100%', minWidth: 0 }}>
+      <Card
+        title="People"
+        padding="none"
+        style={{ flex: '1 1 0', minWidth: 0 }}
+        parts={footer(<Log>Columns: {JSON.stringify(state)}</Log>)}
+      >
+        <DataTable
+          aria-label="People"
+          data={forty}
+          getRowId={(person) => person.id}
+          columns={everyColumn}
+          columnMenu
+          columnState={state}
+          onColumnStateChange={setState}
+          selectionMode="multiple"
+          striped
+        />
+      </Card>
+      <Box width={360} height={240} label="By default: the button comes with the first hidden column">
+        <DataTable
+          aria-label="Narrow people"
+          data={five}
+          getRowId={(person) => person.id}
+          columns={narrowColumns}
+        />
+      </Box>
+    </div>
+  );
+}
+
+/**
+ * The end user's columns. The columns button at the end of the header row opens a list of every
+ * column: tick to show or hide (a column the table hid says "No room"; ticking it overrules the
+ * table), drag a handle or press Alt + Arrow Up or Down to move, and "Reset". Every header has a menu
+ * ("more", a right click, Shift+F10) to sort, move, pin, hide and resize; the edge of a header drags to
+ * resize and fits to content on a double click. The state is one JSON value, which the app saves.
+ */
+export const ColumnControls: Story = { render: () => <ColumnsCard /> };
+
+function HandBuiltColumns() {
+  const [hidden, setHidden] = useState<string[]>(['role']);
+  const [order, setOrder] = useState(['name', 'team', 'role', 'score']);
+  const [width, setWidth] = useState(120);
+  const labels: Record<string, string> = { name: 'Name', team: 'Team', role: 'Role', score: 'Score' };
+  const shown = order.filter((id) => !hidden.includes(id));
+  return (
+    <div style={{ display: 'flex', gap: 16, alignItems: 'start' }}>
+      <Box width={300} height={170} label="Blocks: the list and a handle, state in the app">
+        <DataTable.Root aria-label="Composed columns" width={width + (shown.length - 1) * 80}>
+          <colgroup>
+            {shown.map((id) => (
+              <col key={id} style={{ width: id === 'name' ? width : 80 }} />
+            ))}
+          </colgroup>
+          <DataTable.Header>
+            <DataTable.Row>
+              {shown.map((id) => (
+                <DataTable.HeaderCell
+                  key={id}
+                  columnId={id}
+                  resizeHandle={
+                    id === 'name' && (
+                      <DataTable.ResizeHandle
+                        label="Resize Name"
+                        value={width}
+                        min={80}
+                        max={240}
+                        onResize={(next, phase) => phase !== 'cancel' && setWidth(next)}
+                      />
+                    )
+                  }
+                >
+                  {labels[id]}
+                </DataTable.HeaderCell>
+              ))}
+            </DataTable.Row>
+          </DataTable.Header>
+          <DataTable.Body>
+            {five.slice(0, 3).map((person) => (
+              <DataTable.Row key={person.id} rowKey={person.id}>
+                {shown.map((id) => (
+                  <DataTable.Cell key={id} columnId={id}>
+                    {String(person[id as 'name' | 'team' | 'role' | 'score'])}
+                  </DataTable.Cell>
+                ))}
+              </DataTable.Row>
+            ))}
+          </DataTable.Body>
+        </DataTable.Root>
+      </Box>
+      <Box width={220} height={170} label="DataTable.ColumnMenu">
+        <DataTable.ColumnMenu
+          items={order.map((id) => ({ id, label: labels[id]!, visible: !hidden.includes(id) }))}
+          onVisibleChange={(id, visible) =>
+            setHidden(visible ? hidden.filter((other) => other !== id) : [...hidden, id])
+          }
+          onMove={(id, to) => {
+            const next = order.filter((other) => other !== id);
+            next.splice(to, 0, id);
+            setOrder(next);
+          }}
+          onReset={() => {
+            setHidden([]);
+            setOrder(['name', 'team', 'role', 'score']);
+          }}
+        />
+      </Box>
+    </div>
+  );
+}
+
+/**
+ * The column controls through the other layers. Parts: a header menu with a row of the app's own, one
+ * column left out of the column menu, no resize handles. Switched off: `columnMenu={false}` leaves the
+ * plain mark, and `resizableColumns={false}` no handles. Blocks: `DataTable.ColumnMenu` and
+ * `DataTable.ResizeHandle` on a table composed by hand, with the state in the app.
+ */
+export const ColumnControlsParts: Story = {
+  render: function Render() {
+    const [chosen, setChosen] = useState('none');
+    return (
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'start' }}>
+        <Box width={330} height={170} label={`Parts: exported ${chosen}`}>
+          <DataTable
+            aria-label="With parts"
+            data={five}
+            getRowId={(person) => person.id}
+            columns={narrowColumns}
+            parts={{
+              headerMenu: ({ column, ...menu }) => (
+                <Menu
+                  {...menu}
+                  items={[...(menu.items ?? []), { id: 'export', label: 'Export column' }]}
+                  onAction={(id) => (id === 'export' ? setChosen(column.id) : menu.onAction?.(id))}
+                />
+              ),
+              columnMenuItem: ({ item, children }) => (item.id === 'tasks' ? null : children),
+              resizeHandle: null,
+            }}
+          />
+        </Box>
+        <Box width={330} height={170} label="Switched off">
+          <DataTable
+            aria-label="Without controls"
+            data={five}
+            getRowId={(person) => person.id}
+            columns={narrowColumns}
+            columnMenu={false}
+            resizableColumns={false}
+          />
+        </Box>
+        <HandBuiltColumns />
+      </div>
+    );
+  },
 };
