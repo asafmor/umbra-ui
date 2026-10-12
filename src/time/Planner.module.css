@@ -45,6 +45,15 @@
   min-height: 0;
 }
 
+/*
+ * The weekday names stay at the top of what scrolls. Whatever brings a week into view (a `Spotlight`
+ * on it, the browser's own `scrollIntoView`) stops clear of them: this is their height, one line of
+ * the label font and its padding.
+ */
+.scroll [data-part='viewport'] {
+  scroll-padding-top: calc(var(--umbra-density-label-size) * 1.231 + 2 * var(--umbra-space-2) + 1px);
+}
+
 .state {
   display: grid;
   flex: 1 1 auto;

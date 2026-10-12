@@ -3,6 +3,7 @@ import {
   useContext,
   useId,
   useLayoutEffect,
+  useRef,
   useMemo,
   useState,
   type CSSProperties,
@@ -360,6 +361,30 @@ function Grid({
     show(todayPresses ? today : home);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- only on a press; `show` reads the page
   }, [todayPresses]);
+
+  // The planner gets its size after its first render: the side column collapses, a stack gives the
+  // card its height, the columns become tabs, a font arrives. The day stays in view through all of
+  // that, until the user scrolls or moves in the weeks; from then on the place is theirs.
+  const inView = useRef(home);
+  useLayoutEffect(() => {
+    inView.current = todayPresses ? today : home;
+  });
+  useLayoutEffect(() => {
+    const el = ref.current;
+    const view = el?.closest<HTMLElement>('[data-part="viewport"]');
+    if (!el || !view) return;
+    const observer = new ResizeObserver(() => show(inView.current));
+    observer.observe(el);
+    observer.observe(view);
+    const events = ['wheel', 'touchstart', 'pointerdown', 'keydown'] as const;
+    const stop = () => {
+      observer.disconnect();
+      for (const event of events) view.removeEventListener(event, stop);
+    };
+    for (const event of events) view.addEventListener(event, stop, { passive: true });
+    return stop;
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `show` reads the page
+  }, [ref, hidden]);
 
   // The side column collapses when the days would get narrower than `MIN_DAY` beside it. A function of
   // the width alone, so a resize and a fresh load at a width give the same result.
