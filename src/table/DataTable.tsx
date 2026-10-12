@@ -558,8 +558,8 @@ function HeaderCell({
       data-tip-always={tooltip ? '' : undefined}
       aria-sort={sort === 'asc' ? 'ascending' : sort === 'desc' ? 'descending' : sort}
       aria-label={label}
-      // The description sits inside the cell, so the name is taken from the label alone.
-      aria-labelledby={description && !label ? labelId : undefined}
+      // The description and the resize handle sit inside the cell, so the name is taken from the label alone.
+      aria-labelledby={label ? undefined : labelId}
       aria-describedby={description ? descriptionId : undefined}
       aria-colindex={index}
       aria-haspopup={onMenu ? 'menu' : undefined}

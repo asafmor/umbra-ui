@@ -52,10 +52,11 @@ export function ResizeHandle({
   // The width while a resize is under way; `null` otherwise.
   const [draft, setDraft] = useState<number | null>(null);
   const live = useRef<number | null>(null);
-  const report = (width: number | null, phase: 'move' | 'commit' | 'cancel') => {
-    live.current = phase === 'move' ? width : null;
+  const report = (width: number, phase: 'move' | 'commit' | 'cancel') => {
+    const next = Math.max(min, Math.min(max, Math.round(width)));
+    live.current = phase === 'move' ? next : null;
     setDraft(live.current);
-    if (width !== null) onResize(Math.max(min, Math.min(max, Math.round(width))), phase);
+    onResize(next, phase);
   };
   const rtl = (el: Element) => getComputedStyle(el).direction === 'rtl';
   return (

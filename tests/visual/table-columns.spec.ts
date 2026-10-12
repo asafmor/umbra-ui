@@ -63,6 +63,9 @@ const choose = async (page: Page, table: Locator, column: string, item: string) 
   await page.getByRole('menuitem', { name: item, exact: true }).click();
   await expect(page.getByRole('menu')).toHaveCount(0);
   await expectFocusKept(page);
+  // "Resize" hands the focus to the column's handle a frame after the menu has closed.
+  if (item === 'Resize')
+    await expect(table.locator(`thead th[data-col="${column}"] [role="separator"]`)).toBeFocused();
 };
 const noPageScroll = (page: Page) =>
   page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth);
@@ -88,7 +91,8 @@ test.describe('column menu', () => {
     await expect(mark).toHaveAccessibleDescription('Level, Change');
 
     // Keys only: the button's cell is the last of the header row, and Enter opens the list.
-    await pressKeys(page, 'Tab', 'Tab', 'End');
+    await header(table, 'Name').focus();
+    await pressKeys(page, 'End');
     await expect(mark).toBeFocused();
     await page.keyboard.press('Enter');
     await expect(dialog(page)).toBeVisible();
@@ -146,7 +150,7 @@ test.describe('column menu', () => {
     await page.keyboard.press('Escape');
     await expect(dialog(page)).toHaveCount(0);
     await expectFocusKept(page);
-    expect(await focused(page)).toMatchObject({ col: '__hidden', row: 'head' });
+    await expect.poll(() => focused(page)).toMatchObject({ col: '__hidden', row: 'head' });
   });
 
   test('a handle moves its column with Alt or Ctrl + Arrow, keeps the focus and says where it went', async ({
@@ -309,7 +313,7 @@ test.describe('columns and the width of the table', () => {
     await page.keyboard.press('Escape');
     await expect(dialog(page)).toHaveCount(0);
     await expectFocusKept(page);
-    expect((await focused(page)).isCell).toBe(true);
+    await expect.poll(async () => (await focused(page)).isCell).toBe(true);
 
     // With no button, the list is one step away in every header's menu.
     await choose(page, table, 'team', 'Columns…');
@@ -337,7 +341,7 @@ test.describe('columns and the width of the table', () => {
       const frame = () => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
       const seen = { down: [] as string[], up: [] as string[] };
       const spills: number[] = [];
-      const widths = Array.from({ length: 330 }, (_, i) => 480 - i);
+      const widths = Array.from({ length: 330 }, (_, i) => 600 - i);
       for (const [pass, list] of [
         ['down', widths],
         ['up', [...widths].reverse()],
@@ -346,7 +350,7 @@ test.describe('columns and the width of the table', () => {
           el.style.width = `${width}px`;
           await frame();
           const ids = [...el.querySelectorAll<HTMLElement>('thead th')].map((th) => th.dataset.col);
-          seen[pass]![480 - width] = ids.join(' ');
+          seen[pass][600 - width] = ids.join(' ');
           const view = el.querySelector('[data-part="viewport"]')!;
           // Sideways scroll only once nothing more may hide: the columns left are those that must stay.
           if (view.scrollWidth > view.clientWidth && ids.join(' ') !== 'name role __hidden')
@@ -583,23 +587,31 @@ test.describe('resize', () => {
     expect(await page.evaluate(() => window.getSelection()?.toString())).toBe('');
   });
 
-  test('a width the user set stays while the table narrows; lower priorities hide, then the table scrolls inside', async ({
+  test('a width the user set is kept: lower priorities hide for it, then the table scrolls inside', async ({
     page,
   }) => {
     await open(page, 'column-controls');
     const table = grid(page, 'People');
-    await choose(page, table, 'role', 'Resize');
-    await pressKeys(page, 'End', 'Enter');
-    expect(await widthOf(table, 'role')).toBe(800);
-    // Only what never hides and the wide column are left, and they scroll sideways inside the table.
-    expect(await shown(table)).toEqual(['name', 'role', 'score']);
     const view = table.locator('xpath=ancestor::*[@data-part="viewport"][1]');
+    const before = await shown(table);
+    const start = await widthOf(table, 'status');
+    await choose(page, table, 'status', 'Resize');
+    await pressKeys(page, ...Array<string>(12).fill('ArrowRight'), 'Enter');
+    expect(await widthOf(table, 'status')).toBe(start + 96);
+    // The lowest priorities gave their place; nothing spills.
+    expect(await shown(table)).toEqual(before.filter((id) => id !== 'id' && id !== 'progress'));
     expect(await view.evaluate((el) => el.scrollWidth - el.clientWidth)).toBe(0);
+
+    // A column that never hides, made wider than the table: the rest hide, and it scrolls sideways inside.
+    await choose(page, table, 'name', 'Resize');
+    await pressKeys(page, 'End', 'Enter');
+    expect(await widthOf(table, 'name')).toBe(800);
+    expect(await shown(table)).toEqual(['name']);
     await page.setViewportSize({ width: 1024, height: 600 });
-    await expect.poll(() => shown(table)).toEqual(['name', 'role']);
-    expect(await widthOf(table, 'role')).toBe(800);
-    expect(await view.evaluate((el) => el.scrollWidth - el.clientWidth)).toBeGreaterThan(0);
+    await expect.poll(() => view.evaluate((el) => el.scrollWidth - el.clientWidth)).toBeGreaterThan(0);
+    expect(await widthOf(table, 'name')).toBe(800);
     expect(await noPageScroll(page)).toBe(true);
+    await expectFocusKept(page);
   });
 
   test('right to left: the handle is on the left edge, and left grows the column', async ({ page }) => {
