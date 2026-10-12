@@ -351,3 +351,5 @@ Not verified: a complete local browser run under load (CI on `9f0ad6f` is green)
 | An internal tuple type with an optional member without `\| undefined` (`src/overlays/shared.ts`) | fixed |
 
 Not done: `Planner` on demand (decision 05, "Sizes on 2026-10-12"). Left open: after `Tab` out of a picker that was open from the start, a second `Tab` left the focus on `<body>` in one probe (story `Shell/EntitySwitcher`, "Picker states"); seen, not investigated.
+
+Seen on `main` at `50e2ddb` (the merge of the table's column controls), not caused by this branch and not fixed here: `tests/visual/modal-overlays.spec.ts` fails, 8 of 8. In the story `Overlays/Layers`, "Data in modal", the modal that is open from the start is removed about 30 ms after it mounts (it holds a `DataTable`). The same 8 fail in a clean checkout of `50e2ddb`; they passed on this branch before that merge.

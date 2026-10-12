@@ -6,6 +6,28 @@ import { expectFocusKept, openStory, settle } from './helpers';
 // "Next" at the last item, the button at the edge of a row that has scrolled to its end. Each test
 // walks a control to its end with the keyboard and with the mouse, and asks where the focus is.
 
+/**
+ * Waits until nothing scrolls any more: a press on the button at the edge of a row starts a smooth
+ * scroll, and the button leaves when the scroll arrives. The next step must not land in between.
+ */
+const atRest = (page: Page) =>
+  page.evaluate(
+    () =>
+      new Promise<void>((done) => {
+        const read = () => [...document.querySelectorAll('*')].reduce((sum, el) => sum + el.scrollLeft, 0);
+        let last = read();
+        let still = 0;
+        const frame = () => {
+          const now = read();
+          still = now === last ? still + 1 : 0;
+          last = now;
+          if (still >= 5) done();
+          else requestAnimationFrame(frame);
+        };
+        requestAnimationFrame(frame);
+      }),
+  );
+
 /** Presses the control until it is disabled or gone, checking the focus after every press. */
 async function walkToTheEnd(page: Page, control: Locator, press: (control: Locator) => Promise<void>) {
   for (let i = 0; i < 20; i++) {
@@ -15,7 +37,7 @@ async function walkToTheEnd(page: Page, control: Locator, press: (control: Locat
     );
     if (left) return expectFocusKept(page);
     await press(control);
-    await settle(page);
+    await atRest(page);
     await expectFocusKept(page);
   }
   throw new Error('The control never reached its end');
