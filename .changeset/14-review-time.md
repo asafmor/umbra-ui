@@ -1,0 +1,5 @@
+---
+'umbra-ui': patch
+---
+
+**Time**: the number of a day is never drawn cut: as a day narrows the weekday gives way first ("Wed 14", "W 14", "14"). The "+N" of a full day is a button that opens the hidden items, each calling `onAction`. Focus is kept when "Next month" or "Previous month" disables itself and when a `WeekStrip` or `Planner` changes to its empty or error state. PageUp and PageDown work from a day of another month. With a side column, `Planner` cells say their column (`aria-colindex`). Pressable cells are at least 24px high. An item whose `slot` is not one of the day's takes the first free slot. A date or month that is not one warns in development and falls back instead of throwing. `--umbra-date-chip-font` and `--umbra-schedule-slot-font` resize the small size. `day`, `slot` and `placeholder` carry `data-part`; `weekEmpty: null` leaves no row; a selected slot with `aria-label` says "Selected". Enter on a cell that can be pressed always presses the cell; a control inside it is reached with F2. New: `sideColumn` on `Planner.Row` and `WeekStrip.Row`.
