@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { useLocale } from 'react-aria-components';
+import { uniqueIds, valueOrNull } from '../utils/finite';
 import { Skeleton } from '../basics/Skeleton';
 import styles from './Chart.module.css';
 import {
@@ -133,14 +134,15 @@ function Root({
   const format = (v: number) => number(diverging ? Math.abs(v) : v);
   const horizontal = orientation === 'horizontal';
 
-  const all = series.map((s, i) => ({
+  const all = uniqueIds(series, 'BarChart').map((s, i) => ({
     ...s,
     color: s.color ?? seriesColour(i),
     fill: s.marker ?? fillKind(i),
     // In a diverging chart every second series points the other way.
-    values: s.values.map((v) =>
-      v == null ? null : diverging ? (i % 2 && v ? -Math.abs(v) : Math.abs(v)) : v,
-    ),
+    // A number that is not finite is a missing value (plan/decisions/03-charts.md, "Invalid input").
+    values: s.values
+      .map((raw) => valueOrNull(raw, 'BarChart'))
+      .map((v) => (v == null ? null : diverging ? (i % 2 && v ? -Math.abs(v) : Math.abs(v)) : v)),
   }));
 
   const build = ({ width, height, fontSize, measure, level, hidden }: BuildInput): BarModel => {

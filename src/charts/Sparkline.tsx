@@ -13,6 +13,7 @@ import { Skeleton } from '../basics/Skeleton';
 import { Tip } from '../internal/TruncatedText';
 import type { DataTableColumn } from '../table/DataTable';
 import { defined } from '../utils/defined';
+import { isValue, valueOrNull } from '../utils/finite';
 import { cx, renderPart, type Part } from '../utils/parts';
 import { resolveThreshold, type ThresholdList, type ThresholdTone } from '../utils/thresholds';
 import { areaPath, linePath, type LineCurve } from './internal/line';
@@ -140,7 +141,7 @@ const positive = 'var(--umbra-sparkline-positive, var(--umbra-color-semantic-suc
 const negative = 'var(--umbra-sparkline-negative, var(--umbra-color-semantic-danger))';
 
 function Root({
-  data,
+  data: dataProp,
   variant = 'line',
   labels,
   domain,
@@ -172,7 +173,9 @@ function Root({
   const format = formatValue ?? numberFormat(locale, { maximumFractionDigits: 2 });
   const [activeIndex, setActive] = useState<number | null>(null);
 
-  const numbers = data.filter((v): v is number => typeof v === 'number' && !Number.isNaN(v));
+  // Only a finite number is a value (plan/decisions/03-charts.md, "Invalid input").
+  const data = dataProp.map((v) => valueOrNull(v, 'Sparkline'));
+  const numbers = data.filter(isValue);
   const empty = !numbers.length;
   const [min, max] = [Math.min(...numbers), Math.max(...numbers)];
   const bars = variant === 'bars' || variant === 'signed';
@@ -194,7 +197,7 @@ function Root({
   const middle = height / 2;
 
   const marks = data.flatMap((v, index): Mark[] => {
-    if (typeof v !== 'number' || Number.isNaN(v)) return [];
+    if (v === null) return [];
     const band = variant === 'signed' ? undefined : resolveThreshold(v, thresholds, { lowerIsBetter });
     return [
       {
@@ -223,7 +226,7 @@ function Root({
     width,
     height,
     marks,
-    pixels: data.map((v, i) => [x(i), typeof v === 'number' && !Number.isNaN(v) ? y(v) : null] as const),
+    pixels: data.map((v, i) => [x(i), v !== null ? y(v) : null] as const),
     base: variant === 'signed' ? middle : Math.min(Math.max(y(0), pad), height - pad),
     bar: Math.max(1, step - Math.min(2, step * 0.3)),
     color,
@@ -281,7 +284,8 @@ function Root({
         role={loading && !label ? undefined : 'img'}
         aria-label={loading ? label : (label ?? summary)}
         aria-busy={loading || undefined}
-        tabIndex={live ? 0 : undefined}
+        // While it loads it is no tab stop, and still holds the focus it had ("focus is never lost").
+        tabIndex={live ? 0 : interactive ? -1 : undefined}
         className={cx(styles.root, className)}
         style={style}
         {...(live && {
@@ -396,7 +400,8 @@ function Markers() {
           cx={d.mark.x}
           cy={d.mark.y}
           r={2.5}
-          fill={d.kind === 'last' ? d.mark.color : undefined}
+          // As a style: the class sets a fill, which would win over the attribute.
+          style={d.kind === 'last' ? { fill: d.mark.color } : undefined}
         />
       ))}
     </g>
@@ -453,7 +458,8 @@ export function sparklineColumn<Row>({
 }): DataTableColumn<Row> {
   return {
     width: 96,
-    accessor: (row) => values(row).findLast((v) => typeof v === 'number') ?? null,
+    // The last value there is: a `NaN` is none, and would break the sort.
+    accessor: (row) => values(row).findLast(isValue) ?? null,
     ...defined(column),
     cell: (row) => (
       <Sparkline {...(typeof sparkline === 'function' ? sparkline(row) : sparkline)} data={values(row)} />

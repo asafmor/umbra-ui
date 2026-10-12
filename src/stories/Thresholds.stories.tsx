@@ -2,8 +2,12 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import type { ReactNode } from 'react';
 import { BarChart } from '../charts/BarChart';
 import { DonutChart } from '../charts/DonutChart';
+import { Heatmap } from '../charts/Heatmap';
+import { Sparkline } from '../charts/Sparkline';
 import { ValuePill } from '../data/ValuePill';
+import { DivergingMeter } from '../meters/DivergingMeter';
 import { LevelMeter } from '../meters/LevelMeter';
+import { PieIndicator } from '../meters/PieIndicator';
 import { ProgressBar } from '../meters/ProgressBar';
 import { Board, Panel } from '../meters/storyKit';
 import type { Threshold } from '../utils/thresholds';
@@ -118,6 +122,74 @@ export const OneList: Story = {
           lowerIsBetter
           showValue
         />
+      </Panel>
+    </Board>
+  ),
+};
+
+/**
+ * The same list on the components of tier 2: `PieIndicator`, `DivergingMeter`, the bars and the last
+ * point of a `Sparkline`, and the cells of a `Heatmap`. The same values land in the same bands.
+ */
+export const Tier2: Story = {
+  name: 'One list, the tier 2 meters and charts',
+  render: () => (
+    <Board>
+      <Panel title="PieIndicator">
+        <Sample id="pie">
+          {values.map((value, i) => (
+            <PieIndicator key={value} label={regions[i]} value={value} thresholds={bands} showValue />
+          ))}
+        </Sample>
+        <Sample id="pie-low">
+          <PieIndicator label="Lower is better" value={25} thresholds={bands} lowerIsBetter showValue />
+        </Sample>
+      </Panel>
+      <Panel title="DivergingMeter">
+        <Sample id="diverging">
+          {values.map((value, i) => (
+            <DivergingMeter
+              key={value}
+              label={regions[i]}
+              min={0}
+              max={100}
+              origin={50}
+              value={value}
+              thresholds={bands}
+              formatValue={String}
+              showValue
+            />
+          ))}
+        </Sample>
+        <Sample id="diverging-low">
+          <DivergingMeter
+            label="Lower is better"
+            min={0}
+            max={100}
+            origin={50}
+            value={25}
+            thresholds={bands}
+            lowerIsBetter
+            formatValue={String}
+            showValue
+          />
+        </Sample>
+      </Panel>
+      <Panel title="Sparkline and Heatmap">
+        <Sample id="spark" height={28}>
+          <Sparkline data={values} variant="bars" domain={[0, 100]} thresholds={bands} />
+          <Sparkline data={values} domain={[0, 100]} thresholds={bands} lastPoint />
+        </Sample>
+        <Sample id="heat" height={110}>
+          <Heatmap
+            aria-label="Completion by region"
+            rows={['Completed']}
+            columns={regions}
+            values={[values]}
+            thresholds={bands}
+            legend={false}
+          />
+        </Sample>
       </Panel>
     </Board>
   ),

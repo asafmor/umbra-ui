@@ -1,9 +1,5 @@
 import { createContext, useContext, useRef, type CSSProperties, type ReactNode } from 'react';
-import {
-  Label as AriaLabel,
-  Meter as AriaMeter,
-  ProgressBar as AriaProgressBar,
-} from 'react-aria-components';
+import { Meter as AriaMeter, ProgressBar as AriaProgressBar } from 'react-aria-components';
 import { Skeleton } from '../basics/Skeleton';
 import { useHoverTip } from '../internal/TruncatedText';
 import { useShrinkLevel } from '../internal/useShrinkLevel';
@@ -14,6 +10,7 @@ import {
   type ChangeHighlightProps,
 } from '../internal/ChangeHighlight';
 import { cx, renderPart, type Part } from '../utils/parts';
+import { MeterLabel, notOnCutLabel, useInMeterList } from './label';
 import styles from './ProgressBar.module.css';
 import { resolveThreshold, type ThresholdList } from '../utils/thresholds';
 import {
@@ -27,6 +24,7 @@ import {
   type MeterTone,
 } from './scale';
 import { defined } from '../utils/defined';
+import { valueOrNull } from '../utils/finite';
 import { tooNarrow } from './fit';
 import { passThrough, rootRender, type RootAttributes } from '../utils/passThrough';
 
@@ -132,9 +130,9 @@ function Root({
   thresholds,
   lowerIsBetter,
   size = 'default',
-  layout = 'block',
+  layout: layoutProp = 'block',
   segments,
-  stack,
+  stack: stackProp,
   target,
   targetLabel = 'Target',
   formatValue,
@@ -148,13 +146,18 @@ function Root({
   ...rest
 }: ProgressBarRootProps) {
   const ref = useRef<HTMLDivElement>(null);
-  const hideValue = useShrinkLevel(ref, 1, undefined, { overflowing: tooNarrow }) === 1;
+  // In a `MeterList` the list sets the columns and hides the values of all its rows together.
+  const inList = useInMeterList();
+  const layout = inList ? 'inline' : layoutProp;
+  const hideValue = useShrinkLevel(ref, inList ? 0 : 1, undefined, { overflowing: tooNarrow }) === 1;
 
   const range = max > min ? max - min : 0;
+  // Only a finite number is a value (plan/decisions/03-charts.md, "Invalid input").
+  const given = valueOrNull(valueProp, 'ProgressBar');
+  const stack = stackProp?.map((item) => ({ ...item, value: valueOrNull(item.value, 'ProgressBar') ?? 0 }));
   // No value is not zero: the bar is drawn empty and the text says that the value is missing.
-  const missing =
-    !stack && !indeterminate && (valueProp === undefined || valueProp === null || Number.isNaN(valueProp));
-  const value = valueProp ?? stack?.reduce((sum, item) => sum + item.value, 0) ?? min;
+  const missing = !stack && !indeterminate && given === null;
+  const value = given ?? stack?.reduce((sum, item) => sum + item.value, 0) ?? min;
   const percentOf = (amount: number) => (range ? (amount / range) * 100 : 0);
   const format = (v: number, percent = percentOf(v - min)) =>
     formatValue ? formatValue(v, { min, max, percent }) : `${Math.round(percent)}%`;
@@ -230,7 +233,7 @@ function Root({
   };
   const content = <Context.Provider value={context}>{children}</Context.Provider>;
   // The exact value, for a bar that is too small to show it or shows none.
-  const tip = useHoverTip(ref, tooltip && !loading && !indeterminate ? spoken : null);
+  const tip = useHoverTip(ref, tooltip && !loading && !indeterminate ? spoken : null, notOnCutLabel);
 
   if (loading) {
     return (
@@ -285,9 +288,11 @@ const stackPatterns: MeterPattern[] = ['none', 'diagonal', 'vertical', 'reverse'
 
 /** The name of the bar. Truncates when the bar is narrow. */
 function Label({ children, className, style }: BlockProps) {
-  const props = { 'data-part': 'label', className: cx(styles.label, className), style };
-  // While loading the root is not a progress element, so there is nothing to label.
-  return useBar().loading ? <span {...props}>{children}</span> : <AriaLabel {...props}>{children}</AriaLabel>;
+  return (
+    <MeterLabel loading={useBar().loading} className={cx(styles.label, className)} style={style}>
+      {children}
+    </MeterLabel>
+  );
 }
 
 export interface ProgressBarValueProps extends BlockProps, ChangeHighlightProps {

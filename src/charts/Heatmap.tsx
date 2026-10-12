@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { useLocale } from 'react-aria-components';
+import { isValue, valueOrNull, warnOnce } from '../utils/finite';
 import { Skeleton } from '../basics/Skeleton';
 import { Legend } from '../data/Legend';
 import { renderPart, type Part } from '../utils/parts';
@@ -61,7 +62,7 @@ export interface HeatmapRootProps extends ChartCommonProps {
   yDomain?: [number, number] | undefined;
   /** Number of steps of the colour scale. `thresholds` replaces it. */
   steps?: number | undefined;
-  /** The range of the colour scale. Defaults to the lowest and highest value. */
+  /** The range of the colour scale. Defaults to round numbers at or beyond the lowest and the highest value. */
   valueDomain?: [number, number] | undefined;
   /**
    * Colours cells by the band of their value in place of the scale: an ascending list of
@@ -82,6 +83,21 @@ export interface HeatmapRootProps extends ChartCommonProps {
   parts?: HeatmapParts | undefined;
   /** The blocks to draw, in order. */
   children?: ReactNode | undefined;
+}
+
+/**
+ * Names that are all different: the second "A" becomes "A (2)", with a warning. Two rows of one name
+ * would otherwise be drawn on one another.
+ */
+function distinct(names: string[]) {
+  const seen = new Map<string, number>();
+  return names.map((name) => {
+    const n = (seen.get(name) ?? 0) + 1;
+    seen.set(name, n);
+    if (n > 1)
+      warnOnce(`Heatmap: the name "${name}" is used twice; the later one is shown as "${name} (${n})".`);
+    return n > 1 ? `${name} (${n})` : name;
+  });
 }
 
 /** The chart's own default for a part: used unless the app gave the part (`null` hides it, as everywhere). */
@@ -118,14 +134,15 @@ function Root({
   // Binned points become the same grid as named rows and columns: each is named by its range.
   const grid = points ? binPoints(points, { bins, xDomain, yDomain }) : undefined;
   const pairs = (edges: number[]) => edges.slice(0, -1).map((from, i) => span(from, edges[i + 1]!));
-  const columns = grid ? pairs(grid.xEdges) : columnsProp;
-  const rows = grid ? pairs(grid.yEdges).reverse() : rowsProp;
-  const values = grid ? grid.values : valuesProp;
-  const numbers = values.flat().filter((v): v is number => typeof v === 'number' && !Number.isNaN(v));
+  const columns = grid ? pairs(grid.xEdges) : distinct(columnsProp);
+  const rows = grid ? pairs(grid.yEdges).reverse() : distinct(rowsProp);
+  // A number that is not finite is no value: the cell is left out (plan/decisions/03-charts.md).
+  const values = (grid ? grid.values : valuesProp).map((row) => row.map((v) => valueOrNull(v, 'Heatmap')));
+  const numbers = values.flat().filter(isValue);
 
   // The colour scale: the bands of `thresholds`, or equal steps between the lowest and highest value.
   const list = normalizeThresholds(thresholds);
-  const count = list.length || Math.max(1, Math.floor(steps));
+  const count = list.length || (Number.isFinite(steps) ? Math.max(1, Math.floor(steps)) : 5);
   // Round ends, so the steps of the scale start at round numbers.
   const domain = valueDomain ?? niceDomain(numbers, false, count);
   const ramp = (cue: number) =>
@@ -146,6 +163,7 @@ function Root({
       color: look?.color ?? (look?.tone ? toneColours[look.tone] : ramp(cue)),
     };
   });
+  const below = { id: 'below', cue: 0, color: 'var(--umbra-heatmap-low, var(--umbra-color-base-surface3))' };
   /** The step a value is on, or `undefined` for a value below the first band. */
   const stepOf = (v: number) =>
     list.length ? resolveThreshold(v, thresholds, { lowerIsBetter })?.index : stepIndex(v, domain, count);
@@ -185,10 +203,12 @@ function Root({
     const lines = rows.map((row, r) =>
       columns.flatMap((column, c): PointModel[] => {
         const v = values[r]?.[c];
-        if (v == null || Number.isNaN(v)) return [];
+        if (v == null) return [];
         const step = stepOf(v);
-        if (step === undefined || hidden.includes(scale[step]!.id)) return [];
-        const { id, cue, color } = scale[step]!;
+        // A value below the first band is in no band: it is drawn in the scale's low colour, at the
+        // smallest size, and is a point like any other.
+        const { id, cue, color } = step === undefined ? below : scale[step]!;
+        if (hidden.includes(id)) return [];
         const hit = { x: x(column), y: y(row), width: x.width, height: y.width };
         const share = printed ? 1 : stepSize(cue, count);
         const size: [number, number] = [hit.width * share, hit.height * share];
@@ -258,7 +278,7 @@ function Root({
           label: row,
           cells: columns.map((_, c) => {
             const v = values[r]?.[c];
-            return v == null || Number.isNaN(v) ? '' : text(v, stepOf(v));
+            return v == null ? '' : text(v, stepOf(v));
           }),
         })),
       }}

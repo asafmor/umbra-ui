@@ -42,7 +42,7 @@ States: loading (`data-loading`), no values (`data-empty`), interactive (`data-i
 
 ### 1. Tokens
 
-`--umbra-sparkline-height` (20px), `--umbra-sparkline-color`, `--umbra-sparkline-line-width`, `--umbra-sparkline-area-opacity`, `--umbra-sparkline-marker`, `--umbra-sparkline-reference`, `--umbra-sparkline-positive`, `--umbra-sparkline-negative`.
+`--umbra-sparkline-height` (20px), `--umbra-sparkline-width` (4rem: its width where the container has none to give), `--umbra-sparkline-color`, `--umbra-sparkline-line-width`, `--umbra-sparkline-area-opacity`, `--umbra-sparkline-marker`, `--umbra-sparkline-reference`, `--umbra-sparkline-positive`, `--umbra-sparkline-negative`.
 
 ### 2. Props
 
@@ -89,6 +89,13 @@ A sparkline has one size rule and no steps: it is as wide as its container and `
 ## Open questions
 
 None.
+
+Resolved 2026-10-11 (fix pass of review 2, plan/reviews/milestone-2.md):
+
+- **Invalid input** follows the one rule of plan/decisions/03-charts.md ("Invalid input"): only a finite number is a value, in the drawing, the summary and the sort of `sparklineColumn` (a `NaN` as the last value broke the sort) (MC-8).
+- **The last point takes the colour of its band**: the colour is set as a style, because the marker's class sets a fill, which won over the attribute (MC-5).
+- **An interactive sparkline keeps the focus while it loads**: it is then no tab stop (`tabindex="-1"`), and one again when the values are back (MC-6).
+- `--umbra-sparkline-width` is in the token list (MC-17).
 
 Resolved 2026-10-11:
 
