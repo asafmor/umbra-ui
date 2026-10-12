@@ -164,14 +164,16 @@
 
 /* The rows scroll inside the editor when its slot is shorter than they are. */
 .stops {
-  display: grid;
-  gap: var(--umbra-space-2);
-  min-block-size: 0;
+  /* As tall as the rows, and no taller than what the editor has left. */
+  flex: 0 1 auto;
   /* Room for the focus rings of the fields, which the scrolling would cut. */
   margin: -3px;
+}
+
+.rows {
+  display: grid;
+  gap: var(--umbra-space-2);
   padding: 3px;
-  overflow-y: auto;
-  scrollbar-width: thin;
 }
 
 .stop {
@@ -250,8 +252,10 @@
     display: none;
   }
 
+  /* The colour choice keeps room for its swatch beside its caret: the colour is half of the value. */
   .stop {
-    grid-template-columns: minmax(56px, 80px) minmax(0, 1fr) auto;
+    grid-template-columns: minmax(48px, 72px) minmax(64px, 1fr) auto;
+    gap: var(--umbra-space-2);
   }
 
   .number {

@@ -13,7 +13,7 @@ import { I18nProvider, useLocale } from 'react-aria-components';
 import { contextPresets, densities, paletteDefaults, type TokenName } from '../styles/tokens.generated';
 import { warn } from '../utils/dev';
 import { cx } from '../utils/parts';
-import { focusColourOn, mutedTextOn, parseColour, textColourOn } from './contrast';
+import { focusColourOn, insetOn, mutedTextOn, parseColour, textColourOn } from './contrast';
 import { derivePalette, type PaletteInputs } from './palette';
 import { resolveLocale } from './direction';
 import { defaultIcons, type IconMap } from './icons';
@@ -190,6 +190,9 @@ function paletteVars(inputs: ScopeState['inputs'], brandOnly = false): Vars {
     // Resting nav items and the focus ring on the brand bar keep their contrast on any brand.
     vars['--umbra-color-on-brand-muted'] = mutedTextOn(brand, on) ?? on;
     vars['--umbra-color-on-brand-focus'] = focusColourOn(brand, paletteDefaults.focusRing, on);
+    // A surface inside the bar (the `filled` `ContextBlock`), on which the bar's text stays readable.
+    const inset = insetOn(brand, on);
+    if (inset) vars['--umbra-color-brand-inset'] = inset;
   }
   return vars;
 }

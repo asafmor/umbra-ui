@@ -35,7 +35,7 @@ translate a component. A name followed by brackets can also be a function of wha
 | [`CommandPalette`](#commandpalette) | `label`, `placeholder`, `emptyLabel`, `errorLabel`, `retryLabel`, `loadingLabel`, `recentLabel`, `shortcutsLabel`, `resultsLabel`, `backLabel`, `moveHint`, `enterKeyLabel`, `backspaceKeyLabel`, `escapeKeyLabel`, `runHint`, `backHint`, `closeHint` |
 | [`Comparison`](#comparison) | `metricLabel`, `summaryLabel`, `leaderLabel`, `retryLabel`, `increasedLabel`, `decreasedLabel` |
 | [`ConfirmDialog`](#confirmdialog) | `confirmLabel`, `cancelLabel`, `loadingLabel` |
-| [`DataTable`](#datatable) | `selectRowLabel(row)`, `selectAllLabel`, `highlightLabel`, `collapseGroupLabel`, `expandGroupLabel`, `showDetailsLabel`, `hideDetailsLabel`, `hiddenColumnsLabel(count)`, `loadingMoreLabel`, `increasedLabel`, `decreasedLabel`, `retryLabel` |
+| [`DataTable`](#datatable) | `selectRowLabel(row)`, `selectAllLabel`, `highlightLabel`, `collapseGroupLabel`, `expandGroupLabel`, `showDetailsLabel`, `hideDetailsLabel`, `hiddenColumnsLabel(count)`, `columnsLabel`, `showAllColumnsLabel`, `resetColumnsLabel`, `searchColumnsLabel`, `noColumnsLabel`, `noRoomLabel`, `moveColumnLabel`, `moveUpLabel`, `moveDownLabel`, `moveLeftLabel`, `moveRightLabel`, `pinStartLabel`, `pinEndLabel`, `unpinLabel`, `hideColumnLabel`, `sortAscendingLabel`, `sortDescendingLabel`, `clearSortLabel`, `resizeColumnLabel`, `autosizeColumnLabel`, `resetWidthLabel`, `columnOptionsLabel`, `columnMovedLabel(label, position, count)`, `columnWidthLabel(label, width)`, `loadingMoreLabel`, `increasedLabel`, `decreasedLabel`, `retryLabel` |
 | [`DateChip`](#datechip) | `selectedLabel`, `todayLabel` |
 | [`DivergingMeter`](#divergingmeter) | `noValueLabel`, `increasedLabel`, `decreasedLabel` |
 | [`DonutChart`](#donutchart) | `retryLabel`, `allHiddenLabel`, `pointsLabel`, `legendLabel`, `valueLabel` |
@@ -56,6 +56,7 @@ translate a component. A name followed by brackets can also be a function of wha
 | [`ListItem`](#listitem) | `unreadLabel`, `accentLabel`, `increasedLabel`, `decreasedLabel` |
 | [`MediaCard`](#mediacard) | `moreLabel`, `loadingLabel` |
 | [`Menu`](#menu) | `emptyLabel` |
+| [`MeterList`](#meterlist) | `retryLabel` |
 | [`Modal`](#modal) | `navLabel`, `closeLabel` |
 | [`PageHeader`](#pageheader) | `moreLabel`, `backLabel`, `breadcrumbsLabel` |
 | [`PieIndicator`](#pieindicator) | `noValueLabel`, `increasedLabel`, `decreasedLabel` |
@@ -683,8 +684,21 @@ Edits a scale of value bands and their colours: the `thresholds` that `ValuePill
 
 | Token | Default |
 |---|---|
+| `--umbra-color-scale-editor-chip-size` | `16px` |
+| `--umbra-color-scale-editor-gap` | `--umbra-space-3` (8px) |
+| `--umbra-color-scale-editor-handle-bg` | `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-color-scale-editor-hatch` | `color-mix(in oklab, var(--umbra-color-base-surface1) 75%, transparent)` |
+| `--umbra-color-scale-editor-swatch-radius` | `--umbra-radius-control` (4px) |
+| `--umbra-color-scale-editor-width` | `480px` |
+| `--umbra-field-description-color` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-field-error-color` | `--umbra-color-semantic-danger` (#f0455a) |
+| `--umbra-field-marker-color` | `--umbra-color-base-text-secondary` (#b3adbf) |
 | `--umbra-focus-color` | `--umbra-color-focus-ring` (#ffb3f5) |
 | `--umbra-focus-offset` | `2px` |
+| `--umbra-option-group-gap` | `--umbra-space-3` (8px) |
+| `--umbra-option-group-inline-gap` | `--umbra-space-6` (20px) |
+| `--umbra-option-group-min-option-width` | `12em` |
+| `--umbra-option-group-text-gap` | `--umbra-space-2` (4px) |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -714,7 +728,7 @@ Edits a scale of value bands and their colours: the `thresholds` that `ValuePill
 | `addLabel` | `string` |  |
 | `resetLabel` | `string` |  |
 | `trackLabel` | `string` | Names the track with the boundary handles. |
-| `toneLabels` | `Partial<Record<"default" \| ThresholdTone \| "custom", string>>` | The names of the colour choices. |
+| `toneLabels` | `ColorScaleToneLabels` | The names of the colour choices. |
 | `formatAnnouncement` | `((change: ColorScaleChange) => string)` | What a screen reader hears after a stop is added or removed, and after a reset. |
 
 **Parts**: `preview`, `track`, `stops`, `actions`.
@@ -908,7 +922,25 @@ The confirm step before an action that cannot be undone. An alert dialog: it ope
 
 The two-line status of a `TopBar`, with a short value in a chip, usually the time.
 
-**Tokens**: none of its own.
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-context-block-bg` | `var(--umbra-color-brand-inset, color-mix(in srgb, var(--umbra-color-brand), var(--umbra-color-on-brand, #fff) 14%))` |
+| `--umbra-context-block-chip-bg` | `transparent` |
+| `--umbra-context-block-chip-border` | `currentColor` |
+| `--umbra-context-block-chip-font` | `700 var(--umbra-density-label-size) / 1.231 var(--umbra-font-family-body)` |
+| `--umbra-context-block-chip-padding-x` | `--umbra-space-3` (8px) |
+| `--umbra-context-block-chip-padding-y` | `--umbra-space-1` (2px) |
+| `--umbra-context-block-chip-radius` | `--umbra-radius-control` (4px) |
+| `--umbra-context-block-gap` | `--umbra-space-4` (12px) |
+| `--umbra-context-block-hover-bg` | `color-mix(in oklab, currentColor 12%, var(--bg))` |
+| `--umbra-context-block-max-width` | `none` |
+| `--umbra-context-block-padding-x` | `--umbra-space-4` (12px) |
+| `--umbra-context-block-padding-y` | `--umbra-space-2` (4px) |
+| `--umbra-context-block-primary-font` | `700 var(--umbra-density-label-size) / 1.231 var(--umbra-font-family-body)` |
+| `--umbra-context-block-radius` | `--umbra-radius-control` (4px) |
+| `--umbra-context-block-secondary-font` | `400 var(--umbra-density-label-size) / 1.231 var(--umbra-font-family-body)` |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -925,6 +957,7 @@ The two-line status of a `TopBar`, with a short value in a chip, usually the tim
 | `style` | `CSSProperties` |  |
 | `id` | `string` | The `id` of the root element. |
 | `href` | `string` | Makes the block a link. |
+| `variant` | `"plain" \| "filled"` | `filled` sets the block on a surface of its own, a little lighter or darker than the bar it is on, whatever the brand colour. |
 | `disabled` | `boolean` |  |
 | `onPress` | `(() => void)` | Makes the block a button. |
 
@@ -952,8 +985,10 @@ A table of rows and columns that fills its slot and scrolls inside it: sorting, 
 | `--umbra-table-change-neutral` | `var(--umbra-change-neutral, var(--umbra-color-base-text-primary))` |
 | `--umbra-table-change-up` | `var(--umbra-change-up, var(--umbra-color-semantic-success))` |
 | `--umbra-table-color` | `--umbra-color-base-text-primary` (#f5f3f8) |
+| `--umbra-table-column-menu-width` | `280px` |
 | `--umbra-table-control-size` | `calc(var(--row-h) - 2px)` |
 | `--umbra-table-detail-bg` | `color-mix(in oklab, #000 var(--umbra-state-press-darken), var(--surface))` |
+| `--umbra-table-drop-color` | `--umbra-color-focus-ring` (#ffb3f5) |
 | `--umbra-table-edge-padding-x` | `--umbra-density-card-padding` (16px at the default density) |
 | `--umbra-table-focus-offset` | `calc(-1 * var(--umbra-state-focus-ring-width))` |
 | `--umbra-table-font` | `--umbra-font-table-cell` |
@@ -969,6 +1004,7 @@ A table of rows and columns that fills its slot and scrolls inside it: sorting, 
 | `--umbra-table-highlight-marker` | `--umbra-color-interaction-text` (#f77bf0) |
 | `--umbra-table-hover-bg` | `color-mix(in oklab, var(--umbra-color-base-text-primary) 8%, var(--bg))` |
 | `--umbra-table-pin-border-color` | `--umbra-color-base-border-strong` (#47395e) |
+| `--umbra-table-resize-color` | `--umbra-color-focus-ring` (#ffb3f5) |
 | `--umbra-table-row-bg` | `var(--umbra-scroll-fade-color, var(--scroll-fade-color, var(--umbra-context-card-tint)))` |
 | `--umbra-table-row-height` | `--umbra-density-table-row` (26px at the default density) |
 | `--umbra-table-selected-bg` | `color-mix(in oklab, var(--umbra-color-interaction-tint) 32%, var(--surface))` |
@@ -1015,6 +1051,36 @@ A table of rows and columns that fills its slot and scrolls inside it: sorting, 
 | `showDetailsLabel` | `string` | Accessible names of that control. |
 | `hideDetailsLabel` | `string` |  |
 | `hiddenColumnsLabel` | `((count: number) => string)` | Accessible name of the mark in the header that says columns are hidden ("+3"), from their number. The mark is shown while columns are hidden and rows cannot show them (no `expandableHidden`). |
+| `columnState` | `ColumnState` | Controlled: what the end user did to the columns (order, shown or hidden, widths, pins). Plain JSON: save it where you like and hand it back. Keep it stable between renders. |
+| `defaultColumnState` | `ColumnState` | The state the table starts from, and the one "Reset" returns to (in the controlled case too). Default: none. |
+| `onColumnStateChange` | `((state: DataTableColumnState) => void)` |  |
+| `columnMenu` | `boolean \| "auto"` | The end user's column controls: a columns button at the end of the header row, and a menu on every column header. `auto` (default) shows the button only while a column is not shown; `true` always; `false` removes the button and the menus. |
+| `resizableColumns` | `boolean` | A handle on the edge of every column header resizes the column. Default `true`. |
+| `reorderableColumns` | `boolean` | The end user can move columns, from the column menu and from a header's menu. Default `true`. |
+| `columnsLabel` | `string` | Name of the columns button while every column is shown, title of the column menu, and its row in a header's menu. |
+| `showAllColumnsLabel` | `string` |  |
+| `resetColumnsLabel` | `string` |  |
+| `searchColumnsLabel` | `string` |  |
+| `noColumnsLabel` | `string` | Shown in the column menu when the search matches no column. |
+| `noRoomLabel` | `string` | Beside a column the table hid for lack of width. |
+| `moveColumnLabel` | `string` | Accessible name of a column's handle in the column menu; the column's label is added. |
+| `moveUpLabel` | `string` |  |
+| `moveDownLabel` | `string` |  |
+| `moveLeftLabel` | `string` |  |
+| `moveRightLabel` | `string` |  |
+| `pinStartLabel` | `string` |  |
+| `pinEndLabel` | `string` |  |
+| `unpinLabel` | `string` |  |
+| `hideColumnLabel` | `string` |  |
+| `sortAscendingLabel` | `string` |  |
+| `sortDescendingLabel` | `string` |  |
+| `clearSortLabel` | `string` |  |
+| `resizeColumnLabel` | `string` | The row of a header's menu, and (with the column's label) the accessible name of its resize handle. |
+| `autosizeColumnLabel` | `string` |  |
+| `resetWidthLabel` | `string` |  |
+| `columnOptionsLabel` | `string` | Accessible name of a header's "more" button and of its menu; the column's label is added. |
+| `columnMovedLabel` | `((label: string, position: number, count: number) => string)` | What assistive technology hears after a column is moved. |
+| `columnWidthLabel` | `((label: string, width: number) => string)` | What assistive technology hears after a column is resized, with its width in pixels. |
 | `skeletonRows` | `number` | Number of skeleton rows shown while `loading`. |
 | `height` | `number \| "content" \| "fill"` | `fill` (default) takes the height of the parent, and falls back to the content's height in a parent that has none (flowing content, a popover, a modal body, an accordion panel). `content` is always as tall as the content, and shows every row (no virtualisation). A number is a height in pixels. |
 | `loadingMore` | `boolean` | Shows a skeleton row after the last row while more rows load. |
@@ -1038,9 +1104,9 @@ A table of rows and columns that fills its slot and scrolls inside it: sorting, 
 | `retryLabel` | `string` | Label of the retry button. |
 | `id` | `string` | The `id` of the root element. |
 
-**Parts**: `header`, `headerCell`, `sortIndicator`, `hiddenIndicator`, `row`, `cell`, `groupHeader`, `detail`, `footer`, `skeleton`, `empty`, `error`.
+**Parts**: `header`, `headerCell`, `sortIndicator`, `hiddenIndicator`, `columnMenu`, `columnMenuItem`, `headerMenu`, `resizeHandle`, `row`, `cell`, `groupHeader`, `detail`, `footer`, `skeleton`, `empty`, `error`.
 
-**Blocks**: `DataTable.Root`, `DataTable.Header`, `DataTable.HeaderCell`, `DataTable.SortIndicator`, `DataTable.Body`, `DataTable.Row`, `DataTable.Cell`, `DataTable.GroupRow`, `DataTable.Footer`.
+**Blocks**: `DataTable.Root`, `DataTable.Header`, `DataTable.HeaderCell`, `DataTable.SortIndicator`, `DataTable.Body`, `DataTable.Row`, `DataTable.Cell`, `DataTable.GroupRow`, `DataTable.Footer`, `DataTable.ResizeHandle`, `DataTable.ColumnMenu`.
 
 ## DateChip
 
@@ -1497,6 +1563,7 @@ A grid of cells coloured by value: two categories against each other, or points 
 
 | Prop | Type | Purpose |
 |---|---|---|
+| `columns` | `string[]` | The names of the columns. |
 | `parts` | `see Parts` | Replace or hide named pieces. |
 | `aria-label` | `string` | Accessible name of the chart. Required unless `aria-labelledby` is set. |
 | `className` | `string` |  |
@@ -1508,7 +1575,6 @@ A grid of cells coloured by value: two categories against each other, or points 
 | `hiddenIds` | `readonly string[]` | Ids of the series that are switched off (controlled). |
 | `defaultHiddenIds` | `readonly string[]` |  |
 | `onHiddenChange` | `((hiddenIds: string[]) => void)` |  |
-| `columns` | `string[]` | The names of the columns. |
 | `rows` | `string[]` | The names of the rows, from the top down. |
 | `thresholds` | `ThresholdList` | Colours cells by the band of their value in place of the scale: an ascending list of `{ from, tone?, color?, label? }`, or plain numbers as boundaries on the value ramp. The band's `label` joins the value in the tooltip and for screen readers, and names the band in the legend. |
 | `lowerIsBetter` | `boolean` | For a scale where low is good: mirrors the colours over the steps or bands. The labels stay. |
@@ -1521,7 +1587,7 @@ A grid of cells coloured by value: two categories against each other, or points 
 | `onRetry` | `(() => void)` | Adds a retry button to the error state. |
 | `retryLabel` | `string` | Label of the retry button. |
 | `aria-labelledby` | `string` | Id of the element that names the chart, for example a card title. |
-| `valueDomain` | `[number, number]` | The range of the colour scale. Defaults to the lowest and highest value. |
+| `valueDomain` | `[number, number]` | The range of the colour scale. Defaults to round numbers at or beyond the lowest and the highest value. |
 | `xTitle` | `string` |  |
 | `yTitle` | `string` |  |
 | `legend` | `string \| number \| bigint \| boolean \| ReactElement<unknown, string \| JSXElementConstructor<any>> \| Iterable<ReactNode> \| ReactPortal \| Promise<string \| number \| bigint \| boolean \| ReactPortal \| ReactElement<unknown, string \| JSXElementConstructor<any>> \| Iterable<ReactNode> \| null \| undefined> \| null` | The legend: `true` or a placement shows the built-in one, `false` hides it, and a node replaces it. By default it is shown below the chart when there is more than one series. |
@@ -1722,6 +1788,7 @@ A group of labels with their values, in rows, columns or a grid.
 | `children` | `ReactNode` | The rows as `KeyValue` elements. |
 | `skeletonRows` | `number` | Number of skeleton rows. |
 | `parts` | `see Parts` | Replace or hide named pieces. `item` receives the props of each row built from `items`. |
+| `columns` | `number` | Most columns of the `grid` layout. Fewer are used when the list is narrow. |
 | `aria-label` | `string` | Names the list for assistive technology. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
@@ -1733,7 +1800,6 @@ A group of labels with their values, in rows, columns or a grid.
 | `increasedLabel` | `string` | What a screen reader hears with the sign of a value that rose or fell. |
 | `decreasedLabel` | `string` |  |
 | `layout` | `"columns" \| "rows" \| "grid"` | `rows`: one row per item, sharing one label column. `columns`: side by side. `grid`: in `columns` columns. |
-| `columns` | `number` | Most columns of the `grid` layout. Fewer are used when the list is narrow. |
 | `striped` | `boolean` | Shades every other row (`rows` layout). |
 | `dividers` | `boolean` | Draws a line between items (`rows` and `columns` layouts). |
 | `labelWidth` | `string \| number` | Width of the shared label column in the `rows` layout: pixels or any CSS length. Default: as wide as the longest label, at most 60%. |
@@ -2210,6 +2276,40 @@ A list of actions or links that opens from a control. One tab stop; arrow keys, 
 
 **Blocks**: `Menu.Item`, `Menu.Section`, `Menu.Separator`, `Menu.Sub`, `Menu.Context`.
 
+## MeterList
+
+A group of meters in aligned columns: every label in one column, every bar in the next, every value in the last. Takes any of the four meters as children.
+
+**Tokens**: each with its default.
+
+| Token | Default |
+|---|---|
+| `--umbra-meter-list-bar-min-width` | `calc(2 * var(--umbra-space-8))` |
+| `--umbra-meter-list-column-gap` | `--umbra-space-3` (8px) |
+| `--umbra-meter-list-gap` | `--umbra-space-3` (8px) |
+| `--umbra-meter-list-label-fg` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-meter-list-skeleton-height` | `6px` |
+
+| Prop | Type | Purpose |
+|---|---|---|
+| `skeletonRows` | `number` | Number of skeleton rows. |
+| `parts` | `see Parts` | Replace or hide named pieces. |
+| `children` | `ReactNode` | The meters: `ProgressBar`, `LevelMeter`, `PieIndicator` and `DivergingMeter`, in any mix. |
+| `aria-label` | `string` | Names the group for assistive technology. |
+| `className` | `string` |  |
+| `style` | `CSSProperties` |  |
+| `id` | `string` | The `id` of the root element. |
+| `labelWidth` | `string \| number` | Width of the shared label column: pixels, or any CSS track size (`"40%"`, `"12rem"`, `"fit-content(50%)"`). Default: as wide as the longest label, as far as the bars keep their minimum. |
+| `loading` | `boolean` | Shows skeletons in the final layout and marks the component busy. |
+| `empty` | `ReactNode \| DataStateContent` | Shown when there is no data: text, a node, or `{ title, description, icon, action }`. Defaults to a short English text. |
+| `error` | `ReactNode \| DataStateContent` | Shown in place of the data when set: text, a node, `{ title, description, icon, action }`, or `true` for a default text. |
+| `onRetry` | `(() => void)` | Adds a retry button to the error state. |
+| `retryLabel` | `string` | Label of the retry button. |
+
+**Parts**: `skeleton`, `empty`, `error`.
+
+**Blocks**: `MeterList.Root`.
+
 ## Modal
 
 A panel over a dimmed page, for a focused task. Focus stays inside it and the page behind is inert until it closes. Its body scrolls inside; the page never does.
@@ -2353,7 +2453,8 @@ A small disc of wedges that fills with a value: a level gauge for table cells, r
 | `--umbra-pie-indicator-gap` | `--umbra-space-2` (4px) |
 | `--umbra-pie-indicator-size` | `16px`; `12px`; `24px` |
 | `--umbra-pie-indicator-track` | `--umbra-color-base-surface3` (#261b38) |
-| `--umbra-pie-indicator-track-border` | `--umbra-color-base-border-control` (#7a6e91) |
+| `--umbra-pie-indicator-track-border` | `--umbra-color-base-text-muted` (#948da2) |
+| `--umbra-pie-indicator-track-border-width` | `1.5px` |
 | `--umbra-pie-indicator-wedge-gap` | `0.16` |
 
 | Prop | Type | Purpose |
@@ -3780,7 +3881,14 @@ Previous and next around one value, with a row of segments for the position. It 
 
 | Token | Default |
 |---|---|
+| `--umbra-field-description-color` | `--umbra-color-base-text-secondary` (#b3adbf) |
+| `--umbra-field-error-color` | `--umbra-color-semantic-danger` (#f0455a) |
+| `--umbra-field-marker-color` | `--umbra-color-base-text-secondary` (#b3adbf) |
 | `--umbra-focus-color` | `--umbra-color-focus-ring` (#ffb3f5) |
+| `--umbra-option-group-gap` | `--umbra-space-3` (8px) |
+| `--umbra-option-group-inline-gap` | `--umbra-space-6` (20px) |
+| `--umbra-option-group-min-option-width` | `12em` |
+| `--umbra-option-group-text-gap` | `--umbra-space-2` (4px) |
 | `--umbra-stepper-button-fg` | `--umbra-color-base-text-secondary` (#b3adbf) |
 | `--umbra-stepper-height` | `--umbra-density-control-height` (36px at the default density) |
 | `--umbra-stepper-indicator-gap` | `3px` |
@@ -4363,7 +4471,7 @@ Side navigation for a modal, a settings screen or one column of a page.
 | `--umbra-vertical-nav-rail-below` | `160px` |
 | `--umbra-vertical-nav-rail-width` | `calc(var(--row) + 2 * var(--pad))` |
 | `--umbra-vertical-nav-row-height` | `--umbra-density-control-height` (36px at the default density) |
-| `--umbra-vertical-nav-width` | `240px` |
+| `--umbra-vertical-nav-width` | `100%` or `240px` |
 
 | Prop | Type | Purpose |
 |---|---|---|
@@ -4474,8 +4582,8 @@ A packed board of collapsible cards of different heights. It scrolls inside itse
 | `height` | `FillHeight` | `fill` (default) takes the slot and scrolls inside; `content` is as tall as the widgets; or pixels. |
 | `collapsedIds` | `string[]` | Controlled: the ids of the collapsed widgets. |
 | `defaultCollapsedIds` | `string[]` |  |
-| `aria-label` | `string` | Accessible name of the list of widgets. |
 | `columns` | `number` | A fixed number of columns. Wins over `minColumnWidth`. |
+| `aria-label` | `string` | Accessible name of the list of widgets. |
 | `minColumnWidth` | `number` | The board has as many columns as fit at this width or more, in pixels. |
 | `collapseAllLabel` | `string` |  |
 | `expandAllLabel` | `string` |  |

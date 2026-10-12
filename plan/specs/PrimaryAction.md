@@ -39,7 +39,7 @@ States: hover and pressed (the gradient darkens by one and two steps, so the tex
 
 ### 1. Tokens
 
-`--umbra-primary-action-bg` (start of the gradient, defaults to `color.fixed.primary`), `--umbra-primary-action-bg-end` (`color.fixed.primaryEnd`), `--umbra-primary-action-fg`, `--umbra-primary-action-min-width` (180px), `--umbra-primary-action-min-height` (the control height), `--umbra-primary-action-padding-x`, `--umbra-primary-action-radius` (0), `--umbra-primary-action-caret-width`.
+`--umbra-primary-action-bg` (start of the gradient, defaults to `color.action`), `--umbra-primary-action-bg-end` (`color.action.end`), `--umbra-primary-action-fg`, `--umbra-primary-action-min-width` (180px), `--umbra-primary-action-min-height` (the control height), `--umbra-primary-action-padding-x`, `--umbra-primary-action-radius` (0), `--umbra-primary-action-caret-width`.
 
 ### 2. Props
 

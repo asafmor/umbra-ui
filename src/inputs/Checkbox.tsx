@@ -1,7 +1,8 @@
-import { createContext, useContext, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { Checkbox as AriaCheckbox, CheckboxGroup as AriaCheckboxGroup } from 'react-aria-components';
 import { RawIcon } from '../provider/icons';
 import { cx, renderPart, type Part } from '../utils/parts';
+import { useActionKind } from '../internal/contexts';
 import styles from './Checkbox.module.css';
 import {
   GroupDescribedBy,
@@ -16,7 +17,7 @@ import {
   useTextSlots,
   type BlockProps,
 } from './fieldParts';
-import { FieldContext, noField, useFieldControl } from './useField';
+import { FieldContext, noField, ReportValidation, useFieldControl, useReport } from './useField';
 import { defined } from '../utils/defined';
 import { rootRender } from '../utils/passThrough';
 
@@ -81,8 +82,29 @@ function Root({
     labelledBy: slots.labelledBy,
     describedBy: [...slots.describedBy, useContext(GroupDescribedBy)],
   });
+  // The browser's message for a required box left unchecked when the form is submitted: the field
+  // around the checkbox shows it. React Aria marks the box invalid but does not hand the message on.
+  const input = useRef<HTMLInputElement>(null);
+  const [message, setMessage] = useState<string | null>(null);
+  useReport(message);
+  useEffect(() => {
+    const el = input.current;
+    if (!el) return;
+    const found = () => setMessage(el.validationMessage);
+    const changed = () => el.validity.valid && setMessage(null);
+    const reset = () => setMessage(null);
+    el.addEventListener('invalid', found);
+    el.addEventListener('change', changed);
+    el.form?.addEventListener('reset', reset);
+    return () => {
+      el.removeEventListener('invalid', found);
+      el.removeEventListener('change', changed);
+      el.form?.removeEventListener('reset', reset);
+    };
+  }, []);
   return (
     <AriaCheckbox
+      inputRef={input}
       {...rootRender('label', rest)}
       {...defined({ slot })}
       data-umbra="checkbox"
@@ -167,6 +189,7 @@ export interface CheckboxProps extends Omit<CheckboxRootProps, 'children'> {
 
 /** A box that is checked or not: one yes-or-no choice, or one of several in a `CheckboxGroup`. */
 export function Checkbox({ children, description, error, parts, ...root }: CheckboxProps) {
+  useActionKind('stays');
   return (
     <Root {...root} invalid={root.invalid || error != null}>
       {renderPart(parts?.box, {}, (p) => (
@@ -247,7 +270,9 @@ function GroupRoot({
       {...defined({ className: cx(groupClass, className), style, value, defaultValue, onChange })}
       isDisabled={control.disabled}
       {...defined({ isReadOnly: readOnly })}
-      isInvalid={control.invalid}
+      // Only when it is set: a `false` would tell React Aria that the app decides, and silence the
+      // control's own validation (required, on submit).
+      {...defined({ isInvalid: control.invalid || undefined })}
       isRequired={control.required}
       {...defined({
         name,
@@ -257,6 +282,7 @@ function GroupRoot({
         'aria-describedby': control.describedBy,
       })}
     >
+      <ReportValidation />
       <TextSlotsProvider
         value={{ ...slots, marker: required && <Marker kind="required">{requiredLabel}</Marker> }}
       >

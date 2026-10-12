@@ -86,7 +86,7 @@ The 23 components were built by six agents that did not see each other's work. T
 | `bandColour.ts` | Beside the threshold resolver. | It turns a band into a CSS colour for the two inputs that paint with an inline style; the meters paint by `data-tone` in CSS. One user group, no copy. |
 | Direction | `time/grid.ts` and `HorizontalScroller` read the computed direction of their element. | As `table/grid.ts` does: what is drawn, which is the rule. |
 | `Heatmap`, `Scatter` | Shrink order. | Already the order of the four charts, from the same code; both specs say so. |
-| `Slider`, `Stepper`, `ColorScaleEditor` | No `loading`. | Inputs (`plan/interaction.md`). |
+| `Slider`, `Stepper`, `ColorScaleEditor` | No `loading`. | Confirmed in the fix pass of review 1: no tier 1 input that holds a plain value has one (`TextField`, `Checkbox`, `Radio`, `Toggle`); `loading` is for a control that itself waits (`plan/interaction.md`). |
 | `EntitySwitcher` | Steppers follow the picker's order, not the order of `items`. | One order for both, now stated in the spec. |
 | `WidgetBoard` | No animated change of column. | Layout changes are instant during a resize, by rule. |
 | `WidgetBoard` header, `Comparison` | No "more" menu. | Neither has a row of the app's actions. |
@@ -96,11 +96,13 @@ The 23 components were built by six agents that did not see each other's work. T
 
 | Subject | What is open | Why |
 |---|---|---|
-| Actions that overflow | A marked control inside a component of the app arrives in the menu. `Stepper` and `Slider` draw nothing there; the other marked controls (`Select`, `TextField`, `SearchField`, `Toggle`, `Checkbox`, `SegmentedFilter`, `StarRating`, `ColorScaleEditor`, `EntitySwitcher`) are not guarded, and an unmarked component with an icon or a styled element (a `Tag`) still breaks the menu. | The row cannot see into a component. A full fix renders the kept controls from a context, in every control. |
+| Actions that overflow | Fixed (2026-10-11, review 3, F1). Only what can be a row of a menu moves into it; a control inside a component of the app, a `Tag`, a plain element and text stay in the row. Left: a component of the app that renders a button together with something that is no action is left out of the menu, with a development warning (the app's mistake; it cannot be drawn as a row). | Decision 07, "Controls among actions that overflow". |
+| `List` | A `ListItem` placed directly in a `List` (instead of `List.Item`) fails with an error from React when it holds an SVG. No development warning. | Tier 1; found while writing the stories. |
+| `SummaryTile` | In a `size="content"` slot it is a few pixels tall. | Found in the story; a fixed height works around it. Not looked into. |
 | `Planner` | The side column's content is mounted again when the column collapses or opens. | It needs the content moved as `Card` does. The hidden items of a day were the second half of this row: since the fix pass of review 1 the "+N" is a button that opens them in a popover, each calling `onAction(id)`, reached from the grid with F2 and Enter. Slot placement (T-7) is fixed too. |
 | `PieIndicator` | The root is a `div`. | React Aria's meter. |
-| `StarRating` | Half-step pointer targets under 24px. | See its spec. |
-| `ColorScaleEditor` | Its rows scroll with the browser's scrollbar. | See its spec. |
+| `StarRating` | Fixed (review 1): a press chooses the whole star, a 24px target; a half is a drag along the row, or the arrow keys. | Its spec. |
+| `ColorScaleEditor` | Fixed (review 1): the rows scroll in a `ScrollArea`. | Its spec. |
 | `WeekStrip` | No shrink by height. | The card scrolls; which line matters is the app's. |
 | `HorizontalScroller` | The fade is a mask, not a part. | It is not an element; `fade` and its token cover it. |
 | Not examined | `EntitySwitcher`'s caret at icon-only, the `Planner`'s first scroll in tab mode. | No fault showed in the compositions; not looked at one by one. |
@@ -116,7 +118,7 @@ An independent reviewer (with two sub-reviewers) checked the 12 components again
 | S-1 | SequenceDots | "Maximum update depth exceeded" and the tree unmounts when about 50 or more marks must be dropped (55 items in 100px is fine, 60 crashes; also a resize from 2000px to 100px with 100 items) | `<div style={{width:100}}><SequenceDots items={60 items} /></div>` | fixed: the number of marks to drop is counted from the measured widths in one step (`advance` of `useShrinkLevel`), not one mark per render; tested with 60, 500 and 5,000 items and resizes both ways |
 | T-1 | Planner | "Next month" or "Previous month" disables itself under the focus at `maxMonth` or `minMonth`; focus lands on `<body>` | Story `time-planner--plain`: focus "Next month", Enter | fixed: the button that disables itself hands the focus to the other of the two (`leaveDisabled`, `src/internal/focus.ts`) |
 | T-2 | WeekStrip, Planner | Focus in a grid cell while the component swaps to its error or empty state: focus goes to `<body>` | `<WeekStrip today="2026-10-14" onDayAction onRetry error={flag} />`, Tab, ArrowRight, set `flag`; same for Planner with `error`, and `empty` | fixed: the grid moves the focus to the first control of the state (Retry), or to the state itself, and back to the cell when the grid returns (`src/time/grid.ts`). `DataTable` keeps its header in such a change, and its grid already took the focus back |
-| I-1 | Slider | Turning `readOnly` on for an uncontrolled slider discards the user's value (100 goes back to `defaultValue` 30; after `readOnly` off it is 0), with "changed from uncontrolled to controlled" | `<Slider defaultValue={30} readOnly={ro} />`, focus thumb, End, toggle `ro` on, Home, toggle off | open |
+| I-1 | Slider | Turning `readOnly` on for an uncontrolled slider discards the user's value (100 goes back to `defaultValue` 30; after `readOnly` off it is 0), with "changed from uncontrolled to controlled" | `<Slider defaultValue={30} readOnly={ro} />`, focus thumb, End, toggle `ro` on, Home, toggle off | fixed: the slider always gives React Aria the value, and holds an uncontrolled one itself |
 
 ### Major
 
@@ -133,10 +135,10 @@ An independent reviewer (with two sub-reviewers) checked the 12 components again
 | M-4 | MediaCard | Loading does not hold the final layout in a content-sized place: compact 90px grows to 142px, hero 309 to 333, pair shrinks 82 to 74 | `loading` true then false, 320px wide | fixed: with the content's props, each piece is laid out unseen under a placeholder of its size; measured per variant |
 | C-1 | Comparison | `variant="strip"` while loading draws the 5-row table skeleton (188px, then 36px); in a 120px slot it overflows by 68px | `<Comparison variant="strip" loading />` | fixed: a loading strip is the strip, with the two sides and placeholders for the values |
 | C-2 | Comparison | A strip with a `summary` and `rows={[]}` shows "Nothing to compare" instead of the strip | `variant="strip" rows={[]} summary={{values:[1,2]}}` | fixed: a strip with a `summary` is not empty without rows |
-| I-2 | Slider | The output never truncates, so a band label eats the track: with "100 · Very high" the track is 51px in a 200px slot, 0px at 130px, and the root overflows by 3px | Thresholds with labels "Low" / "Very high", `defaultValue={100}` | open |
-| I-3 | Slider | Dragging across a band whose label has another length makes the value jump (1px moves give 61…69, 70, then 96) | Same thresholds, `defaultValue={60}`, 260px slot | open |
-| I-4 | Stepper | Native form reset does not reset it (a Slider in the same form resets) | Uncontrolled `Stepper name defaultValue={3}` in a form, ArrowUp, reset | open |
-| I-5 | ColorScaleEditor | An unsorted list without `min` is collapsed: `[{from:60},{from:0},{from:30}]` becomes 60, 61, 62 | That `defaultValue`, no `min` | open |
+| I-2 | Slider | The output never truncates, so a band label eats the track: with "100 · Very high" the track is 51px in a 200px slot, 0px at 130px, and the root overflows by 3px | Thresholds with labels "Low" / "Very high", `defaultValue={100}` | fixed: the output is cut with an ellipsis and a tooltip; the track keeps 48px |
+| I-3 | Slider | Dragging across a band whose label has another length makes the value jump (1px moves give 61…69, 70, then 96) | Same thresholds, `defaultValue={60}`, 260px slot | fixed: the output keeps the width of its longest text, so the track does not change size in a drag |
+| I-4 | Stepper | Native form reset does not reset it (a Slider in the same form resets) | Uncontrolled `Stepper name defaultValue={3}` in a form, ArrowUp, reset | fixed: one hook for a control that is not native (`src/inputs/formValue.tsx`); `forms.spec.ts` |
+| I-5 | ColorScaleEditor | An unsorted list without `min` is collapsed: `[{from:60},{from:0},{from:30}]` becomes 60, 61, 62 | That `defaultValue`, no `min` | fixed: without `min` the bottom is the lowest `from` (`bottomOf`, unit test) |
 
 ### Minor
 
@@ -163,24 +165,25 @@ An independent reviewer (with two sub-reviewers) checked the 12 components again
 | T-13 | Time | An invalid `today`, `month` or `date` throws, while an invalid item date is dropped silently | fixed: one rule (`validDate`): a warning in development and a fallback, never a throw; the table is in the Planner spec, "Dates" |
 | T-14 | Time | The two Shrinking stories are clipped at 1024x600 | fixed: the strips wrap side by side, the two planners give way together |
 | T-15 | Time | Steps fire at 132/68/60/52px, not 128/64/56/48; `hiddenItemsLabel` and `moreLabel` are missing from the props tables of the specs | fixed: the spec was wrong (it gave the width of a day; a container query measures the room inside it, 4px less). The specs now state the room and the new steps of T-3; both props are in the tables |
-| I-6 | SplitButton, Menu | Duplicate item ids unmount the tree when the menu opens | open |
-| I-7 | Stepper | `required` does not block submit | open |
-| I-8 | StarRating, Slider | A `FormField` label press focuses nothing | open |
-| I-9 | SplitButton | Drops `id` | open |
-| I-10 | StarRating | Without `name` it submits under a generated key | open |
-| I-11 | StarRating | The skeleton omits the value text | open |
-| I-12 | ColorScaleEditor | Its six `--umbra-color-scale-editor-*` tokens are missing from `docs/customisation-tables.md` | open |
-| I-13 | Stepper | Shows a clamped value but submits the raw one | open |
-| I-14 | Slider | The scrubber thumb target is 20px wide | open |
-| I-15 | Slider | Duplicate marks log a key error | open |
-| I-16 | SplitButton | `onPress` receives a press event | open |
-| I-17 | ColorScaleEditor | At 180px the colour select shows only its caret | open |
+| I-6 | SplitButton, Menu | Duplicate item ids unmount the tree when the menu opens | fixed: a repeated id gets a key of its own and a development warning (`src/internal/distinctIds.ts`) in `Menu`, `Select`, `SearchField`, `List`, `Tabs`, `SegmentedFilter` |
+| I-7 | Stepper | `required` does not block submit | fixed: the browser validates the stepper; the field shows its message. Also `TextField`, `SearchField`, `Checkbox`, `CheckboxGroup`, `RadioGroup`, which showed no message |
+| I-8 | StarRating, Slider | A `FormField` label press focuses nothing | fixed: the field label gives the focus to the tab stop of a group (`fieldParts.tsx`); also `RadioGroup`, `CheckboxGroup`, `ColorScaleEditor` |
+| I-9 | SplitButton | Drops `id` | fixed: the field id no longer replaces the given one with nothing |
+| I-10 | StarRating | Without `name` it submits under a generated key | fixed: the generated name is taken out of what the form sends; also `RadioGroup` |
+| I-11 | StarRating | The skeleton omits the value text | fixed: the blocks draw their placeholders, the value text keeps its room |
+| I-12 | ColorScaleEditor | Its six `--umbra-color-scale-editor-*` tokens are missing from `docs/customisation-tables.md` | fixed: the generator took `--umbra-color-…` of a component for a global colour token |
+| I-13 | Stepper | Shows a clamped value but submits the raw one | fixed: what is sent is what is shown |
+| I-14 | Slider | The scrubber thumb target is 20px wide | fixed: a 24px target around the 6px bar |
+| I-15 | Slider | Duplicate marks log a key error | fixed: marks are keyed by position |
+| I-16 | SplitButton | `onPress` receives a press event | fixed, in `Button` too: the press event no longer reaches `onPress`. Still open in other groups: `MediaCard`, `ScheduleSlot` and `ContextBlock` hand `onPress` to a native `onClick` |
+| I-17 | ColorScaleEditor | At 180px the colour select shows only its caret | fixed: the colour choice keeps 64px, the boundary field gives way first |
 | X-1 | ScheduleSlot spec | "fixture chip" is a sport term in a spec | fixed: reworded |
 
 ### Test gaps named by the review
 
 No test for more than about 50 marks in SequenceDots; none presses Previous/Next up to a month limit, swaps state with focus in the grid, or pages from an outside day; no "nothing moves" measurement for loading in any of the 12, and no strip-loading case; MediaCard has no focus tooltip test, no long title on a button card, and widths are checked only at 300/210/150px; Comparison's strip width steps (320, 260) are untested; shrink tests in the time and inputs files sample fixed widths only (no sweep or boundary); inputs have no native reset, `required` or `readOnly` toggling tests.
 
+Inputs, closed in the fix pass: native reset, `required`, label press, a missing `name` and `disabled` for every named input (`tests/visual/forms.spec.ts`); `readOnly` toggling, a drag of one pixel at a time and a sweep of the slot width for `Slider` (`inputs-tier2.spec.ts`, "review 1").
 Data group, closed in the fix pass (`tests/visual/data-tier2.spec.ts`, "review 1", on the story `Integration/Data cases`): 60, 500 and 5,000 marks and resizes both ways; "nothing moves" for 12 cases of SequenceDots, 5 of MediaCard and 4 of Comparison, the loading strip among them; the focus tooltip and the long title of a button card; the width steps of MediaCard and of the strip to the pixel, both ways.
 
 ### Verified correct
@@ -197,10 +200,10 @@ An independent reviewer (with three sub-reviewers) checked 11 components, the pl
 |---|---|---|---|---|
 | X-1 | `Card` popover, `Popover.Content` | A layout-collapsed card inside a `Modal`: pressing its header closes the whole modal, and each collapsed card already shows an empty 2px dialog. A stand-alone `Popover.Content` reads the modal's `OverlayTriggerStateContext` (`src/overlays/Popover.tsx`) and takes the modal's open state as its own: a plain `Popover.Content anchorRef open={false}` in a modal closes the modal on mount. Stray dialogs inside a `Popover` too | A `Stack` with a height in a modal, cards that collapse; a stand-alone `Popover.Content` in a modal | open |
 | OP-1 | `Planner` | The same as T-1 of review 1 | `pages-planning--planning`: focus "Next month", Enter | open |
-| MC-1 | `Heatmap` | An `Infinity` value (or `steps={NaN}`) throws and unmounts the tree | `values:[[Infinity,1],[2,3]]` | open |
-| MC-6 | `Heatmap`, `Scatter`, `LineChart` (shared `Frame`) | Focus drops to `<body>` when the plot has focus and the chart switches to `loading` or `error` | Focus the plot, set `loading` | open |
-| SL-2 | `EntitySwitcher` | Picker open with focus on a row; the app sets `loading` or shortens `items`: focus goes to `<body>` with the picker still open | 3 items, ArrowDown twice, `loading: true` | open |
-| SL-7 | `HorizontalScroller` | A `next` or `previous` given as a function part loses focus to `<body>` when the end is reached (the story's "Own buttons" row) | Press the custom "next" to the end | open |
+| MC-1 | `Heatmap` | An `Infinity` value (or `steps={NaN}`) throws and unmounts the tree | `values:[[Infinity,1],[2,3]]` | fixed: a value that is not finite is no value, a bad `steps` is the default (plan/decisions/03-charts.md, "Invalid input") |
+| MC-6 | `Heatmap`, `Scatter`, `LineChart` (shared `Frame`) | Focus drops to `<body>` when the plot has focus and the chart switches to `loading` or `error` | Focus the plot, set `loading` | fixed: the element that holds the plot's focus stays through loading and error, in the shared frame; tested on all seven charts |
+| SL-2 | `EntitySwitcher` | Picker open with focus on a row; the app sets `loading` or shortens `items`: focus goes to `<body>` with the picker still open | 3 items, ArrowDown twice, `loading: true` | fixed: focus goes to the replacing row, the current row, the field or the picker |
+| SL-7 | `HorizontalScroller` | A `next` or `previous` given as a function part loses focus to `<body>` when the end is reached (the story's "Own buttons" row) | Press the custom "next" to the end | fixed: `holdFocus`, for any button, the app's own included |
 | X-2 | `ActionsOverflow` | If the menu chunk fails to load, the "more" button toggles `aria-expanded` and shows nothing: no error, no fallback, the actions are unreachable; a retry happens only on every second press | `route.abort()` on `Menu-*.js`, `layout-card-on-demand--fits-until-the-window-shrinks` at 700px | open |
 
 ### Major
@@ -208,18 +211,18 @@ An independent reviewer (with three sub-reviewers) checked 11 components, the pl
 | Id | Component | Finding | Reproduce | Status |
 |---|---|---|---|---|
 | X-3 | Rows of actions with `staysInRow` controls | A 380px card with a `SearchField`, a `Select` and two buttons: the title shrinks to 0px, the select is cut, and the "more" button is clipped 56px outside the card; the search field never narrows; with seven kept controls a `Checkbox` label wraps one letter per line | Harness | open |
-| SL-3 | `ContextBlock` in `TopBar` | With `live` and no `time`, the chip arrives after the bar measured and the bar never steps: a fresh load at 880px keeps both lines and the nav is cut; a 1px resize corrects it | Fresh load at 880px | open |
+| SL-3 | `ContextBlock` in `TopBar` | With `live` and no `time`, the chip arrives after the bar measured and the bar never steps: a fresh load at 880px keeps both lines and the nav is cut; a 1px resize corrects it | Fresh load at 880px | fixed: the bar watches its slots and starts again when one grows |
 | OP-2 | `Spotlight` and the shortcut registry | During a non-interactive tour, registry shortcuts still run; a modal they open lands under the dim with focus inside it | `pages-analysis--analysis`: Shift+T, then `?` | open |
 | OP-3 | Shortcut registry | `?` and every bare-key shortcut do nothing while focus is on a checkbox or a range input: `isTypingTarget` counts any `INPUT` | Focus a checkbox, press `?` | open |
-| MC-2 | `PieIndicator` | `layout="block"` with `showValue` never shows the value at any width; the baseline shows it missing | `meters-pieindicator--variants` | open |
-| MC-3 | `Heatmap` | With `thresholds`, a value below the first `from` is not drawn and is no keyboard stop | 6 values, 4 cells | open |
-| MC-4 | `Scatter`, `Heatmap` (`points`) | One `NaN` coordinate blanks the chart | One NaN point | open |
-| MC-5 | `Sparkline` | The last point is never coloured by its band: the `.marker` class fill beats the `fill` attribute | `thresholds` on a line | open |
-| MC-7 | `Scatter` | A small point under a larger bubble of a later series cannot be hovered | Two series at (5,5), sizes 1 and 100 | open |
-| SL-1 | `WidgetBoard` | Firefox: a board taller than about 10,000px loses its tail (120 widgets end at "Widget 50", 69 overlap); Chromium is fine | 120 widgets in Firefox | open |
-| SL-4 | `WidgetBoard` / content-sized `Card` | A caret collapse ends with one painted frame of the full-height card before the collapsed state (87 → 226 → 70px) | `layout-widgetboard--default`, press a caret | open |
-| SL-5 | `HorizontalScroller` | ArrowRight on a `Select` trigger inside an item moves to the next item and also changes the select's value | An item holding a `Select` | open |
-| SL-6 | `HorizontalScroller` | `--umbra-horizontal-scroller-button-size` does nothing | Set 51px, 36px drawn | open |
+| MC-2 | `PieIndicator` | `layout="block"` with `showValue` never shows the value at any width; the baseline shows it missing | `meters-pieindicator--variants` | fixed: the value has its own line there and is measured against it |
+| MC-3 | `Heatmap` | With `thresholds`, a value below the first `from` is not drawn and is no keyboard stop | 6 values, 4 cells | fixed: drawn in the low colour, in no band, a keyboard stop |
+| MC-4 | `Scatter`, `Heatmap` (`points`) | One `NaN` coordinate blanks the chart | One NaN point | fixed: the point is left out and does not stretch an axis |
+| MC-5 | `Sparkline` | The last point is never coloured by its band: the `.marker` class fill beats the `fill` attribute | `thresholds` on a line | fixed: the colour is a style, which the class no longer beats |
+| MC-7 | `Scatter` | A small point under a larger bubble of a later series cannot be hovered | Two series at (5,5), sizes 1 and 100 | fixed: one draw order across the series, largest first |
+| SL-1 | `WidgetBoard` | Firefox: a board taller than about 10,000px loses its tail (120 widgets end at "Widget 50", 69 overlap); Chromium is fine | 120 widgets in Firefox | fixed: the script places the items, the grid has no rows; any height |
+| SL-4 | `WidgetBoard` / content-sized `Card` | A caret collapse ends with one painted frame of the full-height card before the collapsed state (87 → 226 → 70px) | `layout-widgetboard--default`, press a caret | fixed: the body goes in the frame the animation ends (as O-1) |
+| SL-5 | `HorizontalScroller` | ArrowRight on a `Select` trigger inside an item moves to the next item and also changes the select's value | An item holding a `Select` | fixed: a `Select` trigger keeps its arrow keys |
+| SL-6 | `HorizontalScroller` | `--umbra-horizontal-scroller-button-size` does nothing | Set 51px, 36px drawn | fixed: the token sizes the buttons |
 
 ### Minor
 
@@ -227,8 +230,8 @@ An independent reviewer (with three sub-reviewers) checked 11 components, the pl
 |---|---|---|---|
 | X-4 | `ActionsOverflow` | A press kept while the chunk loads cannot be taken back: Escape, Tab away or a press elsewhere, and the menu still opens on arrival and takes the focus | open |
 | X-5 | Root attributes | `SplitButton` drops `id` and `aria-describedby`; `ColorScaleEditor` drops `aria-describedby`; every chart drops `aria-describedby` in all data states | open |
-| X-6 | `ContextBlock` | A fixed `time` rendered on a server in another time zone gives a hydration mismatch; the spec should name `timeFormat.timeZone` | open |
-| X-7 | `thresholds.spec.ts` | Covers no tier 2 meter: a mutation of `PieIndicator` or `DivergingMeter` bands passes this file | open |
+| X-6 | `ContextBlock` | A fixed `time` rendered on a server in another time zone gives a hydration mismatch; the spec should name `timeFormat.timeZone` | fixed: without a time zone the time is written in the browser; same markup on both sides |
+| X-7 | `thresholds.spec.ts` | Covers no tier 2 meter: a mutation of `PieIndicator` or `DivergingMeter` bands passes this file | fixed: a tier 2 story of the one list, and a test of the bands, colours and labels of `PieIndicator`, `DivergingMeter`, `Sparkline` and `Heatmap` |
 | X-8 | `Card` popover | The app unmounts a collapsed card while its popover has focus: focus on `<body>` | open |
 | X-9 | `ActionsOverflow` | Menu open, row widened, Escape: focus goes to the first control of the row, not to an action that came back (matches the stated rule; noted) | open |
 | OP-4 | Analysis page | The fifth star of the "Rating" column is clipped in every row at 1920x1080 | open |
@@ -239,29 +242,29 @@ An independent reviewer (with three sub-reviewers) checked 11 components, the pl
 | OP-9 | `ShortcutsSheet` | The root carries `data-umbra="modal"`; nothing carries `shortcuts-sheet` | open |
 | OP-10 | `Spotlight` | `--umbra-spotlight-z-index` works but is missing from the generated table | open |
 | OP-11 | `ShortcutsSheet` | "arrowup" finds nothing; only "↑" does | open |
-| MC-8 | `sparklineColumn` | A `NaN` in a run breaks the sort | open |
-| MC-9 | Charts in a `Modal` | With a sibling in the body, `height="fill"` gives 348px instead of 240 and the body scrolls | open |
-| MC-10 | `Heatmap` | The cell edge measures 2.3 to 3.3:1 on fractional pixels, against the 4.1:1 the spec states | open |
-| MC-11 | `PieIndicator` | The edge of an empty 16px disc is under 3:1 (2.78 at zero, 2.31 with no value); the two states look alike | open |
-| MC-12 | `Scatter` | Points outside a narrowed domain are drawn over the tick labels; with `axes={false}` an edge point is cut in half | open |
-| MC-13 | `Heatmap` | Duplicate row or column names collapse onto one cell, silently | open |
-| MC-14 | `DivergingMeter` | `value={0.3} origin={0.1}` shows and speaks "+0.19999999999999998" | open |
-| MC-15 | Both meters | For one pixel of width the label is cut while the value still shows | open |
-| MC-16 | `Scatter`, `Heatmap` | 5,000 marks: 104 to 138ms per resize; Scatter with `labels` 357 to 458ms per resize and 143ms per arrow key | open |
-| MC-17 | Docs | The `valueDomain` doc says lowest and highest, the code rounds; `--umbra-sparkline-width` is missing from the spec's token list | open |
-| SL-8 | `EntitySwitcher` | With a disabled current entity the steppers lose their place | open |
-| SL-9 | `EntitySwitcher` | No search field, opened while loading: when rows arrive focus stays on the dialog and arrows do nothing | open |
-| SL-10 | `EntitySwitcher` | With text in the search, the first Escape only clears it (the spec says Escape closes) | open |
-| SL-11 | `EntitySwitcher` | `--umbra-entity-switcher-picker-width` on an ancestor has no effect (the picker is in the provider root) | open |
-| SL-12 | `EntitySwitcher` | An ungrouped entity after grouped ones reads as part of the last group | open |
-| SL-13 | `ContextBlock` | The generated table says "Tokens: none of its own"; all 11 exist and work | open |
-| SL-14 | `ContextBlock` | The weight in the two font tokens is ignored | open |
-| SL-15 | `ContextBlock` | A plain block's hidden lines are in a hover-only tooltip: not reachable by keyboard | open |
-| SL-16 | `WidgetBoard` | With `span` there are holes and widgets 6 and 7 sit above 5 | open |
-| SL-17 | `WidgetBoard` | "Collapse all" drops ids the board does not know | open |
-| SL-18 | `WidgetBoard` | 400 widgets: worst frame 68ms on a caret, 159ms on "expand all" | open |
-| SL-19 | `HorizontalScroller` | Arrow keys stop at an item whose first control is a `Toggle` | open |
-| SL-20 | Story | `shell-contextblock--shrink` scrolls its frame sideways by 8 to 16px at 1024x600 | open |
+| MC-8 | `sparklineColumn` | A `NaN` in a run breaks the sort | fixed: the last finite value |
+| MC-9 | Charts in a `Modal` | With a sibling in the body, `height="fill"` gives 348px instead of 240 and the body scrolls | fixed: a modal body that holds a filling chart is a column (`Modal.module.css`); charts only |
+| MC-10 | `Heatmap` | The cell edge measures 2.3 to 3.3:1 on fractional pixels, against the 4.1:1 the spec states | fixed: cells on whole pixels; each edge measured at 3:1 or more on the four tints |
+| MC-11 | `PieIndicator` | The edge of an empty 16px disc is under 3:1 (2.78 at zero, 2.31 with no value); the two states look alike | fixed: a 1.5px edge in the muted text colour (3:1 or more as drawn); no value is a hollow dashed ring with a dash |
+| MC-12 | `Scatter` | Points outside a narrowed domain are drawn over the tick labels; with `axes={false}` an edge point is cut in half | fixed: points outside a set domain are left out; without axes the scales stop a point short of the edge |
+| MC-13 | `Heatmap` | Duplicate row or column names collapse onto one cell, silently | fixed: both are drawn, the later one as "A (2)", with a warning |
+| MC-14 | `DivergingMeter` | `value={0.3} origin={0.1}` shows and speaks "+0.19999999999999998" | fixed: rounded to 12 significant digits |
+| MC-15 | Both meters | For one pixel of width the label is cut while the value still shows | fixed: the label's own text is the measure |
+| MC-16 | `Scatter`, `Heatmap` | 5,000 marks: 104 to 138ms per resize; Scatter with `labels` 357 to 458ms per resize and 143ms per arrow key | fixed: a key builds nothing again (a frame, was 143ms); labels are measured once and collisions use a grid. Open: a resize of 5,000 marks is still about 100 to 150ms, the cost of drawing 5,000 SVG nodes |
+| MC-17 | Docs | The `valueDomain` doc says lowest and highest, the code rounds; `--umbra-sparkline-width` is missing from the spec's token list | fixed: the doc comment and the spec |
+| SL-8 | `EntitySwitcher` | With a disabled current entity the steppers lose their place | fixed: the steppers go to the neighbours of the current entity |
+| SL-9 | `EntitySwitcher` | No search field, opened while loading: when rows arrive focus stays on the dialog and arrows do nothing | fixed: the current row takes the focus when the rows arrive |
+| SL-10 | `EntitySwitcher` | With text in the search, the first Escape only clears it (the spec says Escape closes) | fixed in the spec: the first Escape empties the field, the `SearchField` rule; code unchanged |
+| SL-11 | `EntitySwitcher` | `--umbra-entity-switcher-picker-width` on an ancestor has no effect (the picker is in the provider root) | fixed for every popover: the overlay takes the tokens of its anchor (decision 07) |
+| SL-12 | `EntitySwitcher` | An ungrouped entity after grouped ones reads as part of the last group | fixed: a line sets them apart |
+| SL-13 | `ContextBlock` | The generated table says "Tokens: none of its own"; all 11 exist and work | fixed: the generator lists them |
+| SL-14 | `ContextBlock` | The weight in the two font tokens is ignored | fixed: the font tokens are taken whole |
+| SL-15 | `ContextBlock` | A plain block's hidden lines are in a hover-only tooltip: not reachable by keyboard | fixed: a tab stop while a bar hides a line |
+| SL-16 | `WidgetBoard` | With `span` there are holes and widgets 6 and 7 sit above 5 | fixed: no widget above an earlier one of its column; the room above a spanning widget stays empty, by design |
+| SL-17 | `WidgetBoard` | "Collapse all" drops ids the board does not know | fixed: unknown ids are kept |
+| SL-18 | `WidgetBoard` | 400 widgets: worst frame 68ms on a caret, 159ms on "expand all" | fixed: one read pass a frame, only changed places written, observers kept; rendering 400 cards in React remains |
+| SL-19 | `HorizontalScroller` | Arrow keys stop at an item whose first control is a `Toggle` | fixed: a checkbox or switch does not stop the arrow keys |
+| SL-20 | Story | `shell-contextblock--shrink` scrolls its frame sideways by 8 to 16px at 1024x600 | fixed: the story's bars are no wider than the frame |
 
 ### Verified correct
 
@@ -273,15 +276,15 @@ Found by the owner while using the Storybook. Each is a requirement of the fix p
 
 | Id | Where | Finding | Status |
 |---|---|---|---|
-| O-1 | `WidgetBoard` (analysis page) | Collapsing a card is not smooth: it flickers before closing (the same as SL-4) | open |
-| O-2 | `DataTable` (table page) | When the width cannot show every column, the user cannot choose which columns to show or hide, nor resize or reorder them. **Changes the decision "no end-user column editing"**: the table gets a column menu (show, hide, reorder, resize, reset), controlled by the app so it can save the choice | open |
-| O-3 | Table page, "Views" card (`VerticalNav`) | The items hug the left and leave the right of the card empty: they should fill the width | open |
+| O-1 | `WidgetBoard` (analysis page) | Collapsing a card is not smooth: it flickers before closing (the same as SL-4) | fixed: the body goes in the frame the animation ends; cards keep their column while one moves |
+| O-2 | `DataTable` (table page) | When the width cannot show every column, the user cannot choose which columns to show or hide, nor resize or reorder them. **Changes the decision "no end-user column editing"**: the table gets a column menu (show, hide, reorder, resize, reset), controlled by the app so it can save the choice | fixed 2026-10-11: columns button and menu, header menus, resize handles, `columnState` (`plan/specs/DataTable.md`, "Resolved") |
+| O-3 | Table page, "Views" card (`VerticalNav`) | The items hug the left and leave the right of the card empty: they should fill the width | fixed: the nav fills its container; 240px only as a column of the page |
 | O-4 | Selected and highlighted rows | The left edge stripe is unwanted on: the selected item of a `VerticalNav`, the highlighted row of the command palette, the selected option of an open `Select` or `Menu`. It stays on list items of the inbox kind and on table rows. The second cue that is not colour must remain (a check, a weight change) | fixed: no stripe on menu-like and nav-like rows; highlight is a surface step, not the selected fill (`decisions/08-theming.md`) |
 | O-5 | Inbox page, favourite button (`IconButton` toggle) | A pressed star is an outline star in an outlined box: it should be a filled, coloured star, and a pointer press should not leave a focus ring | open |
 | O-6 | Theming | Changing the brand colour changes little: everything stays purple and magenta. Brand and context should visibly drive the look. **Changes the decision "violet (selected) and magenta (primary action) are fixed"**: they become defaults derived from the brand, still overridable as tokens | fixed: `interaction` and `action` inputs, a palette derived from the brand, neutrals from the context (`decisions/08-theming.md`) |
-| O-7 | `LevelMeter` rows (list and detail page) | Each meter starts right after its label, so the meters do not line up: labels need their own column and the meters theirs | open |
+| O-7 | `LevelMeter` rows (list and detail page) | Each meter starts right after its label, so the meters do not line up: labels need their own column and the meters theirs | fixed: `MeterList` (plan/specs/MeterList.md), used on the detail screen and in the dashboard example |
 | O-8 | Table page | The `ActionBar` of the selection is hidden under the table's summary row | open |
-| O-9 | `ContextBlock` | An optional background, slightly lighter or darker than the bar it sits in, as in the source | open |
+| O-9 | `ContextBlock` | An optional background, slightly lighter or darker than the bar it sits in, as in the source | fixed: `variant="filled"`, from the brand; `plain` stays the default |
 | O-10 | Theming | One global setting for how opaque card backgrounds are over the app background | fixed: `surfaceOpacity` / `--umbra-surface-opacity` (`decisions/08-theming.md`) |
 
 ## Review 3: the package, the checks, the docs, the examples, the open items (2026-10-11)
@@ -290,8 +293,8 @@ An independent reviewer re-proved each open item of Milestone 1 and checked the 
 
 | Id | Severity | Area | Finding | Status |
 |---|---|---|---|---|
-| F1 | major | `Card` actions | A `Tag` among a card's `actions` white-screens the app when the header overflows and "more" is pressed; an app component wrapping a `Select` vanishes from row and menu; no guide says what `actions` may hold | open |
-| F2 | major | Types | `ColorScaleToneLabels` is a `Partial<Record<…>>`, so `toneLabels={{ accent: cond ? 'A' : undefined }}` fails under `exactOptionalPropertyTypes`: the only failure across 89 components and 5,034 optional members | open |
+| F1 | major | `Card` actions | A `Tag` among a card's `actions` white-screens the app when the header overflows and "more" is pressed; an app component wrapping a `Select` vanishes from row and menu; no guide says what `actions` may hold | fixed: only what can be a row moves into the menu; everything else stays in the row; decision 07 and `plan/specs/Card.md` say what `actions` may hold |
+| F2 | major | Types | `ColorScaleToneLabels` is a `Partial<Record<…>>`, so `toneLabels={{ accent: cond ? 'A' : undefined }}` fails under `exactOptionalPropertyTypes`: the only failure across 89 components and 5,034 optional members | fixed: a mapped type whose members accept `undefined` |
 | F3 | major | Storybook on Pages | The published site holds the Milestone 1 state (354 stories): no tier 2 component and no new page, while README and `docs/browser-checks.md` send readers there | open |
 | F4 | major | Tests | `playwright.examples.config.ts` sets `retries: process.env.CI ? 2 : 0` | open |
 | F5 | minor | Check | `check-optional-props.mjs` misses `Partial<…>`, optional tuple members and class properties; the consumer check in `check:package` covers tier 1 components only | open |
@@ -303,7 +306,7 @@ An independent reviewer re-proved each open item of Milestone 1 and checked the 
 | F11 | minor | Docs | `SequenceDots` is in no guide or recipe; `Comparison`, `SplitButton`, `ScheduleSlot` and `DateChip` have no sample | open |
 | F12 | minor | Docs | Not told to users: `StarRating step={0.5}` pointer targets are 12 to 16px; `renderWeek` content loses its state when the Planner's side column collapses | open |
 | F13 | minor | Docs | README and "Server rendering" say to import from a `'use client'` file; "Debugging" says a Server Component can import directly (the second is true, checked in a Next.js 16.4 app) | open |
-| F14 | minor | Lint | One ESLint warning (`src/overlays/Spotlight.tsx`), and `eslint .` has no `--max-warnings 0` | open |
+| F14 | minor | Lint | One ESLint warning (`src/overlays/Spotlight.tsx`), and `eslint .` has no `--max-warnings 0` | fixed: the dependency is given; `eslint . --max-warnings 0` |
 | F15 | minor | Example | `examples/advanced` `#/clients` at 1024 wide: the fifth star of "Rating" is cut by 8px | open |
 | F16 | minor | Shortcut | `Alt+ArrowLeft` does nothing while focus is on a `PrimaryNav` link | open |
 | F17 | minor | Changelog | The rehearsed changelog reads as a diff against unreleased states ("`backLabel` is now `previousLabel`" for a new component; "was 75"); `rtl-and-maps.md` credits a Safari fallback that was removed | open |

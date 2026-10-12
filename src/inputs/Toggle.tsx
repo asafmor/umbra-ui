@@ -3,6 +3,7 @@ import { Switch as AriaSwitch } from 'react-aria-components';
 import { RawIcon } from '../provider/icons';
 import { cx, renderPart, type Part } from '../utils/parts';
 import { SlotDescription, SlotLabel, TextSlotsProvider, useTextSlots, type BlockProps } from './fieldParts';
+import { useActionKind } from '../internal/contexts';
 import styles from './Toggle.module.css';
 import { useFieldControl } from './useField';
 import { defined } from '../utils/defined';
@@ -118,6 +119,7 @@ export interface ToggleProps extends Omit<ToggleRootProps, 'children'> {
 
 /** A switch for a setting that takes effect at once: on or off. */
 export function Toggle({ children, description, parts, ...root }: ToggleProps) {
+  useActionKind('stays');
   return (
     <Root {...root}>
       {renderPart(parts?.track, {}, (p) => (

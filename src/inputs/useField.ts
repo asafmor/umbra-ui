@@ -1,4 +1,5 @@
-import { createContext, useContext, useLayoutEffect } from 'react';
+import { createContext, useContext, useEffect, useLayoutEffect, type RefObject } from 'react';
+import { FieldErrorContext } from 'react-aria-components';
 
 /**
  * Internal: what a `FormField` tells the control inside it. Outside a field every id is `undefined`
@@ -65,6 +66,42 @@ export function useFieldControl(own: {
     required: !!own.required || field.required,
     disabled: !!own.disabled || field.disabled,
   };
+}
+
+/**
+ * Internal: hands the control's own validation message (the browser's, for a required control left
+ * empty when the form is submitted) to the field around it, which shows it as its error. Returns false
+ * when there is no field to take it: the control then carries the message itself.
+ */
+export function useReport(message: string | null) {
+  const report = useField().report;
+  useEffect(() => {
+    report?.(message);
+    return () => report?.(null);
+  }, [report, message]);
+  return !!report;
+}
+
+/** Internal: for a control React Aria validates. Rendered inside it, it reports what React Aria found. */
+export function ReportValidation() {
+  const validation = useContext(FieldErrorContext);
+  useReport(validation?.isInvalid ? (validation.validationErrors[0] ?? null) : null);
+  return null;
+}
+
+/**
+ * Internal: a group of radios without a `name` sends nothing. React Aria gives its radios a generated
+ * name, which they need to be one group for the browser; that entry is taken out of what the form sends.
+ */
+export function useUnnamedGroup(group: RefObject<HTMLElement | null>, name: string | undefined) {
+  useEffect(() => {
+    const input = name ? null : group.current?.querySelector('input');
+    const form = input?.form;
+    if (!input || !form) return;
+    const drop = (event: FormDataEvent) => event.formData.delete(input.name);
+    form.addEventListener('formdata', drop);
+    return () => form.removeEventListener('formdata', drop);
+  }, [group, name]);
 }
 
 /** Internal: tells a Root that an optional block is rendered, for as long as it is. */

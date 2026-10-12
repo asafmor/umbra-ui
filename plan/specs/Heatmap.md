@@ -58,7 +58,7 @@ States: loading, empty, error (with `onRetry`), every step switched off (`allHid
 | `bins` | number or `[columns, rows]` | 8 | |
 | `xDomain`, `yDomain` | `[number, number]` | the range of the points | |
 | `steps` | number | 5 | |
-| `valueDomain` | `[number, number]` | round numbers around the values | |
+| `valueDomain` | `[number, number]` | round numbers around the values | The ends of the colour scale. By default they are round numbers at or beyond the lowest and the highest value, so the steps start at round numbers |
 | `thresholds`, `lowerIsBetter` | the shared shape | — | |
 | `axes` | boolean | `true` | |
 | `xTitle`, `yTitle` | string | — | |
@@ -100,10 +100,19 @@ At every size the row and column names thin out to what fits, and names wider th
 
 None.
 
+Resolved 2026-10-11 (fix pass of review 2, plan/reviews/milestone-2.md):
+
+- **Invalid input** follows the one rule of plan/decisions/03-charts.md ("Invalid input"): a value that is not a finite number is no value (the cell is left out; it threw for `Infinity`), a `steps` or `bins` that is not a number is the default, a point without a position or with such a `value` adds nothing, and a second row or column of one name is drawn as "A (2)" instead of on top of the first (MC-1, MC-4, MC-13).
+- **A value below the first band of `thresholds`** is in no band: it is drawn in the scale's low colour at the smallest size, carries no `data-band`, and is a point like any other (it was not drawn, and no keyboard stop). The legend switches bands; such a cell belongs to none and stays (MC-3).
+- **The cells are drawn on whole pixels** (`shape-rendering: crispEdges`): their edge has its 4.1:1 as drawn, measured per edge on the four tints (MC-10).
+- **Focus is never lost** (the shared frame, all seven charts): the element that holds the focus of the plot stays in the page when the app shows the skeleton or an error in place of the marks, as no tab stop, and the arrow keys work again when the data is back (MC-6). **`aria-describedby`** given by the app is kept, before the chart's own summary (X-5).
+- **5,000 cells**: the model is built when the props, the size or the font change, not for a hover or a key (MC-16). What is left of a resize (about 100ms for 5,000 cells) is drawing 5,000 SVG nodes.
+- **`valueDomain`**: the default is round numbers at or beyond the lowest and highest value (the doc comment said the lowest and highest) (MC-17).
+
 Resolved 2026-10-11:
 
 - **No new token for the scale.** The value ramp is five meanings (grey, orange, yellow, green, teal), not a sequence, so it does not suit. The scale is one hue mixed in oklab between two existing tokens: `--umbra-color-base-surface3` (low) and `--umbra-color-series-1` (high), at 15%, 36%, 58%, 79% and 100% for five steps; both ends are component tokens.
-- **Contrast, measured on the four tints** (violet, teal, green, slate; the card differs by at most 0.03). Step against the card: 1.5, 2.0, 3.0, 4.3, 6.2 to 1. Neighbouring steps: 1.4 to 1.5 to 1. Neither can reach 3:1 with five steps of one hue on a dark card, which is why colour is not the only cue: every cell has an edge in the control border colour (4.1:1 against the card), so the lowest step can be told from no cell, and the value is printed or shown by size. Printed text is the primary text colour with a halo in the surface colour (18:1 against its halo; without it the text would be 2.9:1 on the highest step).
+- **Contrast, measured on the four tints** (violet, teal, green, slate; the card differs by at most 0.03). Step against the card: 1.5, 2.0, 3.0, 4.3, 6.2 to 1. Neighbouring steps: 1.4 to 1.5 to 1. Neither can reach 3:1 with five steps of one hue on a dark card, which is why colour is not the only cue: every cell has an edge in the control border colour (4.1:1 against the card, as drawn: the cells are drawn on whole pixels, `shape-rendering: crispEdges`, because a blurred hairline measured 2.3 to 3.3:1; a test measures each edge on the four tints), so the lowest step can be told from no cell, and the value is printed or shown by size. Printed text is the primary text colour with a halo in the surface colour (18:1 against its halo; without it the text would be 2.9:1 on the highest step).
 - The second cue is the printed value, then size; no patterns: five patterns in cells of 20px cannot be told apart.
 - The steps of the scale are the chart's "series": the legend lists them, `hiddenIds` switches them, hovering one dims the rest. A row is not a series.
 - The scale's ends are rounded (`niceDomain`), so the steps start at round numbers and the legend's names are short.

@@ -22,6 +22,7 @@ import {
   Legend,
   LevelMeter,
   List,
+  MeterList,
   numberColumn,
   Page,
   PrimaryAction,
@@ -390,25 +391,26 @@ export function App() {
                   />
                 </Card>
                 <Card title="Stock cover" tone="neutral" size={1.2}>
-                  <Stack gap={3} overflow="keep">
-                    {regions.filter((region) => shown(region.id)).length === 0
-                      ? 'Every region is switched off in the legend.'
-                      : regions
-                          .filter((region) => shown(region.id))
-                          .map((region, i) => (
-                            <Slot key={region.id} size="content">
-                              <ProgressBar
-                                label={region.label}
-                                layout="inline"
-                                kind="meter"
-                                value={[82, 34, 58, 71][i % 4]}
-                                thresholds
-                                showValue
-                                loading={loading}
-                              />
-                            </Slot>
-                          ))}
-                  </Stack>
+                  {/* One column of labels, one of bars, one of values: the bars start in one line. */}
+                  <MeterList
+                    aria-label="Stock cover by region"
+                    loading={loading}
+                    skeletonRows={regions.filter((region) => shown(region.id)).length}
+                    empty="Every region is switched off in the legend."
+                  >
+                    {regions
+                      .filter((region) => shown(region.id))
+                      .map((region, i) => (
+                        <ProgressBar
+                          key={region.id}
+                          label={region.label}
+                          kind="meter"
+                          value={[82, 34, 58, 71][i % 4]}
+                          thresholds
+                          showValue
+                        />
+                      ))}
+                  </MeterList>
                 </Card>
               </Stack>
             </Columns>

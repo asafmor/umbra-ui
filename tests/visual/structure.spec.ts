@@ -962,3 +962,59 @@ test.describe('VerticalNav', () => {
     await expect(composed).toHaveAttribute('data-collapsed', 'user');
   });
 });
+
+// O-3 of the owner's feedback (plan/reviews/milestone-2.md): the items fill the width of what holds the nav.
+test.describe('VerticalNav fills its container', () => {
+  /** How far each item of the nav is from the two sides of `outer`, and where its badge ends. */
+  const sides = async (nav: Locator, outer: Locator) =>
+    nav.evaluate(
+      (el, holder) => {
+        const frame = (holder as Element).getBoundingClientRect();
+        return [...el.querySelectorAll<HTMLElement>('[data-nav-focus]')].map((link) => {
+          const r = link.getBoundingClientRect();
+          const badge = link.querySelector('[data-part="badge"]')?.getBoundingClientRect();
+          const end = parseFloat(getComputedStyle(link).paddingInlineEnd);
+          return {
+            start: r.left - frame.left,
+            end: frame.right - r.right,
+            badge: badge ? r.right - end - badge.right : null,
+          };
+        });
+      },
+      await outer.elementHandle(),
+    );
+
+  test('in a card: the items, their hover area and the selected fill span the card, and a badge is at the end', async ({
+    page,
+  }) => {
+    await open(page, 'pages-table--table', 1920, 1080);
+    const card = page.getByRole('region', { name: 'Views', exact: true });
+    const nav = card.getByRole('navigation', { name: 'Views' });
+    const items = await sides(nav, card);
+    expect(items.length).toBeGreaterThan(2);
+    for (const item of items) {
+      expect(item.start).toBeLessThan(16);
+      expect(item.end).toBeLessThan(16);
+      expect(Math.abs(item.start - item.end)).toBeLessThan(2);
+      if (item.badge !== null) expect(Math.abs(item.badge)).toBeLessThan(1);
+    }
+    expect(items.some((item) => item.badge !== null)).toBe(true);
+  });
+
+  test('in the side of a modal it fills the column; as a column of the page it keeps its own width', async ({
+    page,
+  }) => {
+    await open(page, 'overlays-modal--with-nav');
+    const nav = page.getByRole('navigation', { name: 'Sections' });
+    // The column has its own padding: the nav takes all the room inside it, and its items all of the nav.
+    const room = await nav.locator('xpath=..').evaluate((el) => {
+      const css = getComputedStyle(el);
+      return el.clientWidth - parseFloat(css.paddingLeft) - parseFloat(css.paddingRight);
+    });
+    expect(Math.abs((await box(nav)).width - room)).toBeLessThan(1);
+    for (const item of await sides(nav, nav)) expect(Math.abs(item.start - item.end)).toBeLessThan(1);
+
+    await open(page, 'shell-verticalnav--default');
+    expect((await box(page.getByRole('navigation', { name: 'Section navigation' }))).width).toBe(240);
+  });
+});

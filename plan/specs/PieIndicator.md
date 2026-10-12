@@ -38,7 +38,7 @@ Every part carries `data-part` with its name; inside the disc, `track` and `fill
 | `layout` | `inline` (default), `block` | Inline: disc, label, value on one line. Block: the disc above them |
 | `tone` | `default`, the six tones, `ramp-1` to `ramp-5` | A matching threshold wins |
 
-States: no value (`data-empty`: empty disc with a dashed edge, `emptyLabel` as the text), out of range (`data-out-of-range`: the disc clamps, the text keeps the real value), loading, changed (`highlightChanges`), value hidden (`data-value-hidden`).
+States: no value (`data-empty`: a hollow dashed ring with a dash in it, where zero is a filled disc cut into its wedges, `emptyLabel` as the text), out of range (`data-out-of-range`: the disc clamps, the text keeps the real value), loading, changed (`highlightChanges`), value hidden (`data-value-hidden`).
 
 ## Customisation
 
@@ -50,7 +50,7 @@ States: no value (`data-empty`: empty disc with a dashed edge, `emptyLabel` as t
 
 | Prop | Type | Default | Notes |
 |---|---|---|---|
-| `value` | number or `null` | — | `null`, `undefined` or `NaN`: no value |
+| `value` | number or `null` | — | `null`, `undefined`, or a number that is not finite: no value |
 | `min`, `max` | number | 0, 100 | |
 | `tone` | `MeterTone` | `default` | |
 | `thresholds` | `true` or `ThresholdList` | — | The shared shape. `true`: thirds, danger, warning, success. The band's `label` joins the value text |
@@ -94,13 +94,22 @@ The disc never shrinks. Measured with `useShrinkLevel` and the meters' shared ch
 
 None.
 
+Resolved 2026-10-11 (fix pass of review 2, plan/reviews/milestone-2.md):
+
+- **Invalid input** follows the one rule of plan/decisions/03-charts.md ("Invalid input"): a value that is not a finite number is no value.
+- **`layout="block"` shows its value** (MC-2): the value has a line of its own there, so it hides only when it does not fit that line. It was measured as if beside the label, and never showed.
+- **The edge of the empty disc has 3:1 as drawn** (MC-11): 1.5px in the muted text colour (`--umbra-pie-indicator-track-border`, `--umbra-pie-indicator-track-border-width`). A hairline in the border colour measured 2.78:1 at zero and 2.31:1 dashed, on every tint, because a hairline on a 16px circle is blurred. A test measures the drawn pixels on the four tints.
+- **No value does not look like zero, without colour** (MC-11): zero is a filled disc cut into its wedges; no value is a hollow ring, dashed, with a dash in it (`data-part="none"`), like the dash of the value text.
+- **The value never shows beside a cut label** (MC-15): for one pixel of width the sum of the rounded widths fitted while the label was already cut. The label's own text is now the measure (`src/meters/fit.ts`).
+- **In a `MeterList`** the indicator takes the list's columns (label, disc, value) and leaves hiding the value to the list. A cut label shows its text in a tooltip (plan/specs/MeterList.md).
+
 Resolved 2026-10-11:
 
 - The wedges are one sector under a mask of spokes, not `segments` separate shapes: the gaps are even from the centre to the edge at any size, and the continuous variant is the same drawing without the mask. No `d3`: the meters are in the main entry.
 - A value above the minimum lights at least one wedge, so "a little" never looks like "nothing"; otherwise the number of wedges is rounded.
 - The default tone is the accent pink of the library, not green: green means "good", which only thresholds can know. The evidence's "amount and hue" is `thresholds`; `thresholds={true}` gives thirds, as on `ProgressBar`.
 - The cue that is not colour is the filled amount itself, with the band's label in the text; a 16px wedge is too small for a pattern.
-- No value: the track's edge is dashed, so an empty disc is not read as zero.
+- No value: a hollow dashed ring with a dash in it, so it is not read as zero (a filled disc cut into wedges).
 - `layout` defaults to `inline` (the two other meters default to `block`): the indicator is a glyph beside text.
 - The root is a `div` (React Aria's meter), so it cannot sit inside a `<p>`: a line of text that holds one is a `div`. It is `inline-flex` and aligns to the middle of the line. Compromise, recorded: no `span` root.
 - Fuller option taken: the continuous variant, `segments`, three sizes, a block layout, `highlightChanges`.

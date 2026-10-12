@@ -16,6 +16,7 @@ import {
   KeyValueList,
   LevelMeter,
   List,
+  MeterList,
   Menu,
   Modal,
   Page,
@@ -191,11 +192,11 @@ function Summary({ m }: { m: Message }) {
           >
             Overall score <ValuePill value={m.score} showLevel />
           </div>
-          <div style={{ display: 'grid', gap: 'var(--umbra-space-3)' }}>
+          <MeterList aria-label="Scores by attribute">
             {attributes.map((name, i) => (
               <LevelMeter key={name} label={name} value={m.levels[i]!} min={1} max={5} steps={5} showValue />
             ))}
-          </div>
+          </MeterList>
         </div>
       </div>
     </div>

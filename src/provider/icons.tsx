@@ -10,8 +10,10 @@ import {
   CircleAlert,
   CircleCheck,
   CircleMinus,
+  Columns3,
   Ellipsis,
   ExternalLink,
+  GripVertical,
   History,
   Info,
   Lightbulb,
@@ -23,6 +25,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Pencil,
+  Pin,
   Search,
   Star,
   TriangleAlert,
@@ -71,6 +74,10 @@ export const defaultIcons = {
   panelOpen: <PanelLeftOpen />,
   // One shape for a full and an empty star of `StarRating`: the full one is filled.
   star: <Star />,
+  // The column controls of `DataTable`.
+  columns: <Columns3 />,
+  dragHandle: <GripVertical />,
+  pin: <Pin />,
 } satisfies Record<string, ReactNode>;
 
 export type IconName = keyof typeof defaultIcons;

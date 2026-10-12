@@ -84,6 +84,7 @@
   padding-inline: var(--umbra-space-2);
   pointer-events: none;
   --focus-offset: 2px;
+  --icon-button-size: var(--umbra-horizontal-scroller-button-size, var(--umbra-density-control-height));
 }
 
 .button[data-part='previous'] {
@@ -96,8 +97,6 @@
 
 .button > * {
   pointer-events: auto;
-  width: var(--umbra-horizontal-scroller-button-size, var(--umbra-density-control-height));
-  height: var(--umbra-horizontal-scroller-button-size, var(--umbra-density-control-height));
   box-shadow: var(--umbra-elevation-overlay);
 }
 

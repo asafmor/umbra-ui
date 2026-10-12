@@ -1,5 +1,5 @@
 import { createContext, useContext, useRef, type CSSProperties, type ReactNode } from 'react';
-import { Label as AriaLabel, Meter as AriaMeter } from 'react-aria-components';
+import { Meter as AriaMeter } from 'react-aria-components';
 import { Skeleton } from '../basics/Skeleton';
 import { useHoverTip } from '../internal/TruncatedText';
 import { useShrinkLevel } from '../internal/useShrinkLevel';
@@ -11,7 +11,9 @@ import {
 } from '../internal/ChangeHighlight';
 import { cx, renderPart, type Part } from '../utils/parts';
 import { defined } from '../utils/defined';
+import { valueOrNull } from '../utils/finite';
 import { resolveThreshold, type ThresholdList } from '../utils/thresholds';
+import { MeterLabel, notOnCutLabel, useInMeterList } from './label';
 import styles from './DivergingMeter.module.css';
 import { tooNarrow } from './fit';
 import { describe, outOfRange, toFraction, type MeterTone } from './scale';
@@ -104,7 +106,7 @@ function Root({
   thresholds,
   lowerIsBetter = false,
   size = 'default',
-  layout = 'block',
+  layout: layoutProp = 'block',
   originTick = true,
   formatValue,
   loading = false,
@@ -117,22 +119,27 @@ function Root({
   ...rest
 }: DivergingMeterRootProps) {
   const ref = useRef<HTMLDivElement>(null);
-  const hideValue = useShrinkLevel(ref, 1, undefined, { overflowing: tooNarrow }) === 1;
+  // In a `MeterList` the list sets the columns and hides the values of all its rows together.
+  const inList = useInMeterList();
+  const layout = inList ? 'inline' : layoutProp;
+  const hideValue = useShrinkLevel(ref, inList ? 0 : 1, undefined, { overflowing: tooNarrow }) === 1;
 
   const range = max > min;
   const origin = originProp ?? (min <= 0 && max >= 0 ? 0 : (min + max) / 2);
-  const missing = valueProp === undefined || valueProp === null || Number.isNaN(valueProp);
-  const value = missing ? origin : valueProp;
+  const given = valueOrNull(valueProp, 'DivergingMeter');
+  const missing = given === null;
+  const value = given ?? origin;
   const direction: DivergingMeterDirection =
     value > origin ? 'positive' : value < origin ? 'negative' : 'neutral';
 
   const band = missing ? undefined : resolveThreshold(value, thresholds, { lowerIsBetter });
   const side = (direction === 'negative') !== lowerIsBetter ? negativeTone : tone;
+  // Without the noise of binary fractions: 0.3 − 0.1 reads 0.2, not 0.19999999999999998.
   // The sign is the cue of the direction in the text; the minus is the real one, not a hyphen.
   const delta = value - origin;
   const formatted = formatValue
     ? formatValue(value, { min, max, origin })
-    : `${delta > 0 ? '+' : delta < 0 ? '−' : ''}${Math.abs(delta)}`;
+    : `${delta > 0 ? '+' : delta < 0 ? '−' : ''}${+Math.abs(delta).toPrecision(12)}`;
   const valueText = missing ? emptyLabel : band?.label ? `${formatted} · ${band.label}` : formatted;
   const spoken = describe(missing ? noValueLabel : formatted, band?.label);
 
@@ -163,7 +170,7 @@ function Root({
   };
   const content = <Context.Provider value={context}>{children}</Context.Provider>;
   // The exact value, for a bar that is too small to show it or shows none.
-  const tip = useHoverTip(ref, tooltip && !loading ? spoken : null);
+  const tip = useHoverTip(ref, tooltip && !loading ? spoken : null, notOnCutLabel);
 
   if (loading) {
     return (
@@ -201,12 +208,10 @@ function Root({
 
 /** The name of the meter. Truncates when the meter is narrow. */
 function Label({ children, className, style }: BlockProps) {
-  const props = { 'data-part': 'label', className: cx(styles.label, className), style };
-  // While loading the root is not a meter, so there is nothing to label.
-  return useMeter().loading ? (
-    <span {...props}>{children}</span>
-  ) : (
-    <AriaLabel {...props}>{children}</AriaLabel>
+  return (
+    <MeterLabel loading={useMeter().loading} className={cx(styles.label, className)} style={style}>
+      {children}
+    </MeterLabel>
   );
 }
 

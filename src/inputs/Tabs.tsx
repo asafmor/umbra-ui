@@ -15,6 +15,7 @@ import {
 import { ButtonBase } from '../basics/Button';
 import { rowKeys, useDirection } from '../internal/direction';
 import { LayoutProvider, useSlot, type SlotProps } from '../layout/useSlot';
+import { distinctIds } from '../internal/distinctIds';
 import { Menu } from '../overlays/Menu';
 import { Icon, IconSlot } from '../provider/icons';
 import { cx, renderPart, type Part } from '../utils/parts';
@@ -530,6 +531,8 @@ export function Tabs({
   const wanted = value === undefined ? own : value;
   const active = (items.find((i) => i.id === wanted) ?? items.find((i) => !i.disabled))?.id ?? null;
   const { list, tab, panel, indicator, ...tabParts } = parts ?? {};
+  const tabKey = distinctIds('Tabs').scope();
+  const panelKey = distinctIds('Tabs').scope();
   return (
     <Root
       {...root}
@@ -547,7 +550,7 @@ export function Tabs({
           moreLabel,
           parts: { indicator },
           children: items.map(({ id, label: text, icon, count, disabled, closable }) => (
-            <Fragment key={id}>
+            <Fragment key={tabKey(id)}>
               {renderPart(
                 tab,
                 { id, icon, count, disabled, closable, parts: tabParts, children: text },
@@ -565,7 +568,7 @@ export function Tabs({
       {items.map(
         (item) =>
           item.content !== undefined && (
-            <Fragment key={item.id}>
+            <Fragment key={panelKey(item.id)}>
               {renderPart(panel, { id: item.id, children: item.content }, (p) => (
                 <Panel {...p} />
               ))}

@@ -35,17 +35,32 @@
   height: var(--size);
 }
 
-/* The unfilled scale. Its fill is close to the card's, so its edge is a line with 3:1. */
+/*
+ * The unfilled scale. Its fill is close to the card's, so its edge is a line with 3:1 as it is drawn: on
+ * a disc of 12 to 24px a hairline in the border colour is blurred to under 3:1, so the edge is wider
+ * than a hairline and in the muted text colour (measured on the four tints, tests/visual).
+ */
 .track {
   fill: var(--umbra-pie-indicator-track, var(--umbra-color-base-surface3));
-  stroke: var(--umbra-pie-indicator-track-border, var(--umbra-color-base-border-control));
-  stroke-width: var(--umbra-border-width);
+  stroke: var(--umbra-pie-indicator-track-border, var(--umbra-color-base-text-muted));
+  stroke-width: var(--umbra-pie-indicator-track-border-width, 1.5px);
   vector-effect: non-scaling-stroke;
 }
 
-/* No value: a dashed edge, so an empty disc is not read as zero. */
+/*
+ * No value is not zero, and the two differ without colour: zero is a filled disc cut into its wedges, no
+ * value is a hollow dashed ring with a dash in it, like the dash of the value text.
+ */
 .root[data-empty] .track {
-  stroke-dasharray: 2 2;
+  fill: none;
+  stroke-dasharray: 3 2;
+}
+
+.none {
+  stroke: var(--umbra-pie-indicator-track-border, var(--umbra-color-base-text-muted));
+  stroke-width: var(--umbra-pie-indicator-track-border-width, 1.5px);
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
 }
 
 .fill {

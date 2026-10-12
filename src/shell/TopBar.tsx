@@ -80,6 +80,10 @@ function Root({ brand, moreLabel = 'More actions', className, style, children, .
       current < CONTEXT_STEPS + 3 ||
       navExhausted.current ||
       !nav.current?.querySelector('[data-overflow-watch]'),
+    // What a slot holds may arrive or grow after the bar has measured, without the bar rendering again
+    // (the chip of a `live` clock): the slots are watched too, so the bar then starts again. Not the
+    // nav: it takes the room that is left, so its width changes with every step.
+    watch: (bar) => [...bar.children].filter((slot) => slot !== nav.current),
   });
   // The bar's own level, as `data-shrink` shows it: the block's steps come before it.
   const level = Math.max(0, taken - CONTEXT_STEPS);

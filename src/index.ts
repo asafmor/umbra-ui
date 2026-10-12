@@ -293,11 +293,15 @@ export type {
   DataTableCellProps,
   DataTableColumn,
   DataTableColumnGroup,
+  DataTableColumnMenuItem,
+  DataTableColumnMenuProps,
+  DataTableColumnState,
   DataTableColumnWidth,
   DataTableGroup,
   DataTableGroupRowProps,
   DataTableHeaderCellProps,
   DataTablePin,
+  DataTableResizeHandleProps,
   DataTableProps,
   DataTableRootProps,
   DataTableRowAccent,
@@ -499,6 +503,8 @@ export type {
   DivergingMeterScale,
   DivergingMeterDirection,
 } from './meters/DivergingMeter';
+export { MeterList } from './meters/MeterList';
+export type { MeterListProps, MeterListRootProps } from './meters/MeterList';
 export { ContextBlock } from './shell/ContextBlock';
 export type { ContextBlockProps, ContextBlockRootProps, ContextBlockChipProps } from './shell/ContextBlock';
 export { EntitySwitcher } from './shell/EntitySwitcher';

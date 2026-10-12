@@ -48,8 +48,10 @@ export function levelFor(
   return Math.max(below(width, widths), below(height, heights));
 }
 
-/** A value domain widened to round numbers. `zero` makes it include 0. */
-export function niceDomain(values: readonly number[], zero = false, count = 5): [number, number] {
+/** A value domain widened to round numbers. `zero` makes it include 0. Values that are not finite do not count. */
+export function niceDomain(all: readonly number[], zero = false, count = 5): [number, number] {
+  // A value that is not finite is no value: it must not stretch the domain to NaN or Infinity.
+  const values = all.filter(Number.isFinite);
   let min = Math.min(...values);
   let max = Math.max(...values);
   if (!values.length) [min, max] = [0, 1];

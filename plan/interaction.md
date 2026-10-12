@@ -44,6 +44,16 @@ Character: **crisp and minimal**. Short fades and small slides only; no sweeps, 
 - **Empty**: title and explanation, replaceable. **Error**: announced (`role="alert"`), with a retry button when `onRetry` is given.
 - **Focus is never lost in a swap.** When an empty or error state that holds the focus goes away (after Retry, or when data arrives), the focus moves to the first tab stop of the component, or to the component itself when it has none.
 
+## Forms (decided 2026-10-11, review 1 of Milestone 2)
+
+Every input that takes `name` behaves in a native `<form>` as a native control does, whether React Aria draws it or the library does. One test holds them all to it (`tests/visual/forms.spec.ts`, stories `Integration/Forms`); a new input is added there.
+
+- **Value**: sent under `name`, as it is shown. Without `name`, without a value, or disabled, nothing is sent.
+- **Reset**: a native reset brings the starting value back.
+- **Label**: a press on the `FormField` label gives the control the focus: the control itself, or the tab stop of a group.
+- **Required**: left empty, it holds the form back; the first such control takes the focus, and each shows the browser's message as its field's error (`useReport` in `src/inputs/useField.ts`), until it has a value. An `invalid` set by the app is never overruled by this.
+- A control that is not native and not React Aria's (`Stepper`, `ColorScaleEditor`) gets all of it from one hook (`src/inputs/formValue.tsx`).
+
 ## Live updates
 
 - A changed value can flash softly once: green for up, red for down, neutral otherwise. The direction is also shown without colour (a `TrendArrow` or sign) where it matters.

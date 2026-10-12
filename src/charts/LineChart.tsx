@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { useLocale } from 'react-aria-components';
 import { Skeleton } from '../basics/Skeleton';
+import { isValue, uniqueIds, valueOrNull } from '../utils/finite';
 import styles from './Chart.module.css';
 import {
   Annotations,
@@ -103,7 +104,7 @@ const pointSize = 3.5;
 const clamp = (v: number, min: number, max: number) => Math.min(Math.max(v, min), max);
 
 function Root({
-  series,
+  series: seriesProp,
   categories,
   yLevels,
   yDomain,
@@ -118,6 +119,13 @@ function Root({
   ...common
 }: LineChartRootProps) {
   const { locale } = useLocale();
+  // Invalid input (plan/decisions/03-charts.md): a second series of one id is left out, a number that is
+  // not finite is a missing value, and a point whose x is not a position is not drawn.
+  const series = uniqueIds(seriesProp, 'LineChart').map((s) => ({
+    ...s,
+    data: s.data.map((p) => (typeof p.y === 'number' ? { ...p, y: valueOrNull(p.y, 'LineChart') } : p)),
+  }));
+  const placed = (x: LineX) => typeof x === 'string' || isValue(+x);
   const format = common.formatValue ?? numberFormat(locale, { maximumFractionDigits: 2 });
   const first = series.find((s) => s.data.length)?.data[0]?.x;
   const kind = first instanceof Date ? 'time' : typeof first === 'number' ? 'number' : 'category';
@@ -140,7 +148,8 @@ function Root({
   // Every x of every series, in axis order: the columns of the table and the category axis.
   const seen = new Map<string, LineX>();
   if (kind === 'category') for (const c of categories ?? []) seen.set(c, c);
-  for (const s of series) for (const p of s.data) if (!seen.has(xKey(p.x))) seen.set(xKey(p.x), p.x);
+  for (const s of series)
+    for (const p of s.data) if (placed(p.x) && !seen.has(xKey(p.x))) seen.set(xKey(p.x), p.x);
   const xs = [...seen.values()];
   if (kind !== 'category') xs.sort((a, b) => +a - +b);
   const names = xs.map(String);
@@ -226,7 +235,7 @@ function Root({
     const dense = (right - left) / most < 14;
     const built = shown.map((s) => {
       const pixels = s.data.map((p) => {
-        const y = p.y == null ? NaN : yAt(p.y);
+        const y = p.y == null || !placed(p.x) ? NaN : yAt(p.y);
         return [xAt(p.x), Number.isFinite(y) ? y : null] as const;
       });
       const drawn = s.data.flatMap((p, i): DrawnPoint[] => {

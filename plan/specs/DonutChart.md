@@ -119,6 +119,10 @@ The caption also hides whenever there is under 72px of room inside the ring. Cen
 
 None.
 
+Resolved 2026-10-11 (fix pass of review 2, plan/reviews/milestone-2.md):
+
+- **Invalid input, focus and `aria-describedby`.** A value that is not a finite number is a missing value and a second segment of one id is left out, with a warning in development (plan/decisions/03-charts.md, "Invalid input"). The focus of the plot is kept when the app shows the skeleton or an error in its place (the shared frame). An `aria-describedby` given by the app is kept, before the chart's own summary. A single `value` that is not finite gives the empty state; a segment with such a value is left out.
+
 Resolved 2026-10-11 (Milestone 2, one `thresholds` shape):
 
 - A threshold is the shared `Threshold` (it was `{ from, tone }`): a `tone`, a free `color` or neither (the ring keeps its `tone`), and a `label`. `DonutTone` is `default` plus every tone a threshold can have.

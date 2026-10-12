@@ -111,6 +111,7 @@ Clustered from the four inventory files in `plan/inventory/` (40 screenshots).
 | LevelMeter | tick strip with marker; range variant (40) | 3, 6, 10, 23, 37–40 | 1 |
 | PieIndicator | small wedge-disc gauge | 7, 15, 39 | 2 |
 | DivergingMeter | ImpactMeter: fills left or right of centre | 22 | 2 |
+| MeterList | a group of meters in aligned columns: labels, bars, values (the owner's O-7) | 3, 6, 10, 37–40 | 2 |
 | Sparkline | in-cell mini bars / line | 17, table cells | 2 |
 | DonutChart | KPI ring | 7, 8 | 1 |
 | RadarChart | | 1, 3, 29 | 1 |
@@ -140,6 +141,7 @@ Pitch, FormationView, PlayerToken, KitIcon, ShirtNumberIcon, OppositionSummary, 
 - **Theme, changed 2026-10-11** (owner's O-6, O-10, O-4; `decisions/08-theming.md`): violet and magenta are no longer fixed. The provider and `UmbraScope` take four colours: `brand`, `context`, and the new optional `interaction` (selected, checked, accent, links) and `action` (the primary action). A brand alone re-skins the app: interaction, action and context are derived from it unless set, in OKLCH, with contrast guaranteed for any input; the context also sets the hue of surfaces, borders and dim text. With no colour prop the look is unchanged. Every derived colour is a token, and a token set by hand wins. The semantic colours, the value ramp and the series palette do not follow the brand. `surfaceOpacity` sets how opaque card surfaces are. The edge stripe marks selected rows of data only (list items, table rows), not menu-like or nav-like rows.
 - **Density**: three levels, set on the provider.
 - **DataTable**: sorting, rich cells, row highlight, columns auto-hide by priority. No end-user column editing or saved views.
+- **DataTable, end-user columns** (2026-10-11, owner's finding O-2; changes the line above): the end user can show, hide, reorder, pin and resize columns. Saving the choice is the app's: the table is controlled (`columnState`) and ships no storage. Named saved views stay out of scope.
 - **Charts, first release**: radar, line, bar, donut. Heatmap and scatter later.
 - **Layout**: see `layout.md`.
 - **Interaction**: see `interaction.md` (crisp motion, skeleton loading, opt-in change highlight, full keyboard navigation, command palette, shortcut registry).

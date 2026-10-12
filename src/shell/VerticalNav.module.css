@@ -5,7 +5,8 @@
   --rail-below: var(--umbra-vertical-nav-rail-below, 160px);
 
   flex: 0 1 auto;
-  width: var(--umbra-vertical-nav-width, 240px);
+  /* In a card, a modal or any other box the nav fills the width, so its items span it. */
+  width: var(--umbra-vertical-nav-width, 100%);
   max-width: 100%;
   min-width: 0;
   min-height: 0;
@@ -15,8 +16,17 @@
   font: var(--umbra-font-body);
 }
 
+/*
+ * Beside other content in a row it has a width of its own: in a `Columns` (known without the script,
+ * so on a page a server rendered too), and in a flex row of the app's own (`data-in-row`).
+ */
+[data-umbra='columns'] > .root,
+.root.root[data-in-row] {
+  width: var(--umbra-vertical-nav-width, 240px);
+}
+
 /* With a weight, the slot decides the width. */
-.root:not([data-size='content']) {
+.root.root.root:not([data-size='content']) {
   flex: 1 1 0;
   width: auto;
 }
@@ -25,7 +35,7 @@
   display: none;
 }
 
-.root[data-collapsed='user'] {
+.root.root.root[data-collapsed='user'] {
   flex: 0 0 auto;
   width: var(--umbra-vertical-nav-rail-width, calc(var(--row) + 2 * var(--pad)));
 }
