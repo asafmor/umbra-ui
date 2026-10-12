@@ -12,7 +12,7 @@ export interface ColumnSize {
   flex: number;
   /** Higher stays longer. `always` never hides. */
   priority: number | 'always';
-  /** A utility column (checkbox, disclosure): it takes no spare width. */
+  /** A utility column (checkbox, disclosure) or one the user gave a width: it takes no spare width while another column can. */
   utility?: boolean | undefined;
 }
 
@@ -131,11 +131,102 @@ export function fitColumns(columns: ColumnSize[], available: number | null, rese
   const target =
     available === null ? total : Math.max(total, Math.floor(available - (hidden.length ? reserve : 0)));
   if (target > total && visible.length) {
-    const widest = visible.reduce((a, b) => (widths[b.id]! > widths[a.id]! ? b : a));
+    const takers = visible.some((c) => !c.utility) ? visible.filter((c) => !c.utility) : visible;
+    const widest = takers.reduce((a, b) => (widths[b.id]! > widths[a.id]! ? b : a));
     widths[widest.id]! += target - total;
     total = target;
   }
   return { hidden, widths, total };
+}
+
+/** What the end user did to the columns. Plain JSON; a missing entry means "as the app defined it". */
+export interface ColumnState {
+  /** Column ids in the user's order. Columns it does not list keep their place after the one before them in the definitions. */
+  order?: string[] | undefined;
+  /** `true`: the user asked for the column, so it is never hidden for lack of room. `false`: hidden at any width. */
+  visibility?: Record<string, boolean> | undefined;
+  /** Widths in the pixels of a column's `width` (written for the default density). */
+  widths?: Record<string, number> | undefined;
+  pins?: Record<string, 'start' | 'end' | 'none'> | undefined;
+}
+
+/** `ids` in the user's order: unknown ids of `order` are dropped, and ids it does not list follow their neighbour. */
+export function orderColumns(ids: string[], order: string[] | undefined): string[] {
+  const result = [...new Set(order)].filter((id) => ids.includes(id));
+  const known = new Set(result);
+  ids.forEach((id, index) => {
+    if (!known.has(id)) result.splice(index ? result.indexOf(ids[index - 1]!) + 1 : 0, 0, id);
+  });
+  return result;
+}
+
+/** What `applyColumnState` reads of a column. */
+export interface StatefulColumn {
+  id: string;
+  pin?: 'start' | 'end' | undefined;
+  width?: unknown;
+  priority?: number | 'always' | undefined;
+  hideable?: boolean | undefined;
+  minWidth?: number | undefined;
+  maxWidth?: number | undefined;
+}
+
+export const MIN_COLUMN_WIDTH = 48;
+export const MAX_COLUMN_WIDTH = 800;
+export const clampWidth = (column: StatefulColumn, width: number) =>
+  Math.round(
+    Math.max(column.minWidth ?? MIN_COLUMN_WIDTH, Math.min(column.maxWidth ?? MAX_COLUMN_WIDTH, width)),
+  );
+
+/**
+ * The columns as the user arranged them, in the order they are drawn (pinned to the start, the rest,
+ * pinned to the end), with the user's pin and width in place of the definition's. A column the user
+ * asked for never hides for lack of room (`priority: 'always'`). `hidden` are the ones the user hid.
+ * A column nothing was done to is the very object the app gave.
+ */
+export function applyColumnState<Column extends StatefulColumn>(
+  columns: Column[],
+  state: ColumnState,
+): { columns: Column[]; hidden: string[] } {
+  const byId = new Map(columns.map((column) => [column.id, column]));
+  const ordered = orderColumns([...byId.keys()], state.order).map((id) => {
+    const column = byId.get(id)!;
+    const pin = state.pins?.[id];
+    const width = state.widths?.[id];
+    if (pin === undefined && width === undefined && state.visibility?.[id] !== true) return column;
+    return {
+      ...column,
+      ...(pin !== undefined && { pin: pin === 'none' ? undefined : pin }),
+      ...(width !== undefined && { width: clampWidth(column, width) }),
+      ...(state.visibility?.[id] === true && { priority: 'always' as const }),
+    };
+  });
+  return {
+    columns: (['start', undefined, 'end'] as const).flatMap((pin) => ordered.filter((c) => c.pin === pin)),
+    hidden: ordered
+      .filter((c) => state.visibility?.[c.id] === false && c.hideable !== false)
+      .map((c) => c.id),
+  };
+}
+
+/**
+ * `ids` with `id` at position `to`, kept among the ids of its own group (its pin edge): a move past
+ * the group's end stops there. The same array when nothing moves.
+ */
+export function moveColumn(
+  ids: string[],
+  id: string,
+  to: number,
+  group: (id: string) => unknown = () => 0,
+): string[] {
+  const from = ids.indexOf(id);
+  if (from < 0) return ids;
+  const mine = ids.flatMap((other, index) => (group(other) === group(id) ? [index] : []));
+  const target = Math.max(mine[0]!, Math.min(mine[mine.length - 1]!, to));
+  if (target === from) return ids;
+  const next = ids.filter((other) => other !== id);
+  next.splice(target, 0, id);
+  return next;
 }
 
 /** The top of every item, plus the total height as the last entry. */

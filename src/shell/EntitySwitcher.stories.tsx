@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Building2 } from 'lucide-react';
-import { useState, type CSSProperties } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import { EntityIcon } from '../data/EntityIcon';
 import { Log, pages, sections } from '../stories/placeholders';
 import { EntitySwitcher, type EntitySwitcherItem, type EntitySwitcherProps } from './EntitySwitcher';
@@ -255,4 +255,54 @@ export const PartsAndBlocks: Story = {
       </EntitySwitcher.Root>
     </div>
   ),
+};
+
+const changing: EntitySwitcherItem[] = [
+  { id: 'a', label: 'Region A', group: 'North' },
+  { id: 'b', label: 'Region B', group: 'North', disabled: true },
+  { id: 'c', label: 'Region C', group: 'North' },
+  { id: 'd', label: 'Region D', group: 'South' },
+  { id: 'e', label: 'Everywhere' },
+];
+
+/**
+ * A list that changes while the picker is open, as when an app loads it again: the focus stays in the
+ * picker. The current entity of the first switcher is disabled (the steppers still go to its
+ * neighbours), and the last entity has no group, so a line sets it apart from the group above. The
+ * list is changed from outside the page, so that the picker stays open: dispatch `story:loading` or
+ * `story:shorten` on `window`.
+ */
+export const ChangingList: Story = {
+  render: function Render() {
+    const [loading, setLoading] = useState(false);
+    const [short, setShort] = useState(false);
+    useEffect(() => {
+      const load = () => setLoading((now) => !now);
+      const shorten = () => setShort((now) => !now);
+      window.addEventListener('story:loading', load);
+      window.addEventListener('story:shorten', shorten);
+      return () => {
+        window.removeEventListener('story:loading', load);
+        window.removeEventListener('story:shorten', shorten);
+      };
+    }, []);
+    const items = short ? changing.slice(0, 1) : changing;
+    return (
+      <div style={{ display: 'grid', gap: 16, height: 400, alignContent: 'start' }}>
+        <div style={{ display: 'flex', gap: 320 }}>
+          <EntitySwitcher items={items} loading={loading} defaultValue="b" aria-label="With search" />
+          <EntitySwitcher
+            items={items}
+            loading={loading}
+            defaultValue="a"
+            searchable={false}
+            aria-label="Without search"
+          />
+        </div>
+        <Log>
+          Loading: {String(loading)} · short list: {String(short)}
+        </Log>
+      </div>
+    );
+  },
 };

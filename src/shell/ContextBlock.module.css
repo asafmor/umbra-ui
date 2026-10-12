@@ -15,8 +15,9 @@
   margin: 0;
   padding: var(--umbra-space-2) var(--umbra-space-3);
   border: 0;
-  border-radius: var(--umbra-radius-control);
-  background: none;
+  border-radius: var(--umbra-context-block-radius, var(--umbra-radius-control));
+  --bg: transparent;
+  background: var(--bg);
   color: inherit;
   font: inherit;
   text-align: end;
@@ -29,16 +30,33 @@
   padding: 0;
 }
 
+/*
+ * `filled`: a surface of its own, a step away from the bar. The provider works the colour out from the
+ * brand (`--umbra-color-brand-inset`): towards the text colour, so lighter on a dark bar and darker on a
+ * light one, unless the text would lose its contrast there, and then the other way.
+ */
+.root[data-variant='filled'] > .control {
+  padding: var(--umbra-context-block-padding-y, var(--umbra-space-2))
+    var(--umbra-context-block-padding-x, var(--umbra-space-4));
+  --bg: var(
+    --umbra-context-block-bg,
+    var(
+      --umbra-color-brand-inset,
+      color-mix(in srgb, var(--umbra-color-brand), var(--umbra-color-on-brand, #fff) 14%)
+    )
+  );
+}
+
 .root[data-interactive] > .control {
   cursor: pointer;
 }
 
 .root[data-interactive] > .control:hover {
-  background: var(--umbra-context-block-hover-bg, color-mix(in oklab, currentColor 12%, transparent));
+  background: var(--umbra-context-block-hover-bg, color-mix(in oklab, currentColor 12%, var(--bg)));
 }
 
 .root[data-interactive] > .control:active {
-  background: color-mix(in oklab, currentColor 20%, transparent);
+  background: color-mix(in oklab, currentColor 20%, var(--bg));
 }
 
 .root[data-disabled] > .control {
@@ -60,14 +78,19 @@
 }
 
 .primary {
-  font: var(--umbra-context-block-primary-font, var(--umbra-font-label));
-  font-weight: 700;
+  /* The label font, bold. Written out, so that a font token is taken whole, its weight included. */
+  font: var(
+    --umbra-context-block-primary-font,
+    700 var(--umbra-density-label-size) / 1.231 var(--umbra-font-family-body)
+  );
 }
 
 /* Quieter by weight, not by opacity: the bar's contrast holds for both lines. */
 .secondary {
-  font: var(--umbra-context-block-secondary-font, var(--umbra-font-label));
-  font-weight: 400;
+  font: var(
+    --umbra-context-block-secondary-font,
+    400 var(--umbra-density-label-size) / 1.231 var(--umbra-font-family-body)
+  );
 }
 
 .chip {
@@ -77,8 +100,10 @@
   border: var(--umbra-border-width) solid var(--umbra-context-block-chip-border, currentColor);
   border-radius: var(--umbra-context-block-chip-radius, var(--umbra-radius-control));
   background: var(--umbra-context-block-chip-bg, transparent);
-  font: var(--umbra-context-block-chip-font, var(--umbra-font-label));
-  font-weight: 700;
+  font: var(
+    --umbra-context-block-chip-font,
+    700 var(--umbra-density-label-size) / 1.231 var(--umbra-font-family-body)
+  );
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }

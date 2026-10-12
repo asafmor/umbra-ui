@@ -1,5 +1,5 @@
 import { createContext, useContext, useId, useRef, type CSSProperties, type ReactNode } from 'react';
-import { Label as AriaLabel, Meter as AriaMeter } from 'react-aria-components';
+import { Meter as AriaMeter } from 'react-aria-components';
 import { Skeleton } from '../basics/Skeleton';
 import { useHoverTip } from '../internal/TruncatedText';
 import { useShrinkLevel } from '../internal/useShrinkLevel';
@@ -11,8 +11,10 @@ import {
 } from '../internal/ChangeHighlight';
 import { cx, renderPart, type Part } from '../utils/parts';
 import { defined } from '../utils/defined';
+import { valueOrNull } from '../utils/finite';
 import { resolveThreshold, type ThresholdList } from '../utils/thresholds';
 import { tooNarrow } from './fit';
+import { MeterLabel, notOnCutLabel, useInMeterList } from './label';
 import styles from './PieIndicator.module.css';
 import { describe, outOfRange, thirdsThresholds, toFraction, type MeterTone } from './scale';
 import tones from './tone.module.css';
@@ -30,6 +32,8 @@ interface PieContext {
   fraction: number;
   /** Number of wedges; 0 for a continuous disc. */
   segments: number;
+  /** There is no value: the disc is a dashed ring with a dash in it, not the empty disc of zero. */
+  missing: boolean;
   tone: MeterTone;
   color?: string | undefined;
   valueText: ReactNode;
@@ -87,7 +91,7 @@ export interface PieIndicatorRootProps extends BlockProps, RootAttributes {
   'aria-label'?: string | undefined;
 }
 
-const narrow = (root: HTMLElement) => tooNarrow(root, 'disc');
+const narrow = (root: HTMLElement) => tooNarrow(root, 'disc', root.dataset.layout === 'block');
 
 function Root({
   children,
@@ -98,7 +102,7 @@ function Root({
   thresholds,
   lowerIsBetter,
   size = 'default',
-  layout = 'inline',
+  layout: layoutProp = 'inline',
   segments = 8,
   variant = 'segmented',
   formatValue,
@@ -112,12 +116,16 @@ function Root({
   ...rest
 }: PieIndicatorRootProps) {
   const ref = useRef<HTMLDivElement>(null);
-  const hideValue = useShrinkLevel(ref, 1, undefined, { overflowing: narrow }) === 1;
+  // In a `MeterList` the list sets the columns and hides the values of all its rows together.
+  const inList = useInMeterList();
+  const layout = inList ? 'inline' : layoutProp;
+  const hideValue = useShrinkLevel(ref, inList ? 0 : 1, undefined, { overflowing: narrow }) === 1;
 
   const range = max > min ? max - min : 0;
   // No value is not zero: the disc is drawn empty with a dashed edge, and the text says so.
-  const missing = valueProp === undefined || valueProp === null || Number.isNaN(valueProp);
-  const value = missing ? min : valueProp;
+  const given = valueOrNull(valueProp, 'PieIndicator');
+  const missing = given === null;
+  const value = given ?? min;
   const percent = range ? ((value - min) / range) * 100 : 0;
   const formatted = formatValue ? formatValue(value, { min, max, percent }) : `${Math.round(percent)}%`;
 
@@ -151,6 +159,7 @@ function Root({
   const context: PieContext = {
     fraction,
     segments: count,
+    missing,
     tone: band?.tone ?? tone,
     color: band?.color,
     valueText,
@@ -159,7 +168,7 @@ function Root({
   };
   const content = <Context.Provider value={context}>{children}</Context.Provider>;
   // The exact value, which a few wedges only approximate.
-  const tip = useHoverTip(ref, tooltip && !loading ? spoken : null);
+  const tip = useHoverTip(ref, tooltip && !loading ? spoken : null, notOnCutLabel);
 
   if (loading) {
     return (
@@ -219,7 +228,9 @@ function Disc({ skeleton, className, style }: PieIndicatorDiscProps) {
       </span>
     );
   }
-  const { fraction, segments } = pie;
+  const { fraction, missing } = pie;
+  // Zero is a whole disc cut into its wedges, all unlit. No value has no wedges to show.
+  const segments = missing ? 0 : pie.segments;
   return (
     <svg
       data-part="disc"
@@ -244,6 +255,7 @@ function Disc({ skeleton, className, style }: PieIndicatorDiscProps) {
       )}
       <g mask={segments > 1 ? `url(#${id})` : undefined}>
         <circle data-part="track" r="1" className={styles.track} />
+        {missing && <line data-part="none" x1="-0.42" x2="0.42" className={styles.none} />}
         {fraction > 0 && (
           <g
             data-part="fill"
@@ -261,9 +273,11 @@ function Disc({ skeleton, className, style }: PieIndicatorDiscProps) {
 
 /** The name of the indicator. Truncates when the row is narrow. */
 function Label({ children, className, style }: BlockProps) {
-  const props = { 'data-part': 'label', className: cx(styles.label, className), style };
-  // While loading the root is not a meter, so there is nothing to label.
-  return usePie().loading ? <span {...props}>{children}</span> : <AriaLabel {...props}>{children}</AriaLabel>;
+  return (
+    <MeterLabel loading={usePie().loading} className={cx(styles.label, className)} style={style}>
+      {children}
+    </MeterLabel>
+  );
 }
 
 export type PieIndicatorValueProps = BlockProps & ChangeHighlightProps;

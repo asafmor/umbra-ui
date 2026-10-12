@@ -116,10 +116,15 @@ function Root({
   const byUser = collapsed ?? innerCollapsed;
   // Narrower than the token width, the nav becomes a rail by itself, when every item has an icon to show.
   const [narrow, setNarrow] = useState(false);
+  // Beside other content in a row (a `Columns`, or a flex row of the app's own) the nav has a width of
+  // its own. Anywhere else (a card, the side of a modal, a column) it fills the width, so its items do.
+  const [inRow, setInRow] = useState(false);
   useLayoutEffect(() => {
     const element = ref.current;
     if (!element) return;
     const measure = () => {
+      const parent = element.parentElement && getComputedStyle(element.parentElement);
+      setInRow(!!parent && parent.display.endsWith('flex') && !parent.flexDirection.startsWith('column'));
       const below = parseFloat(getComputedStyle(element).getPropertyValue('--rail-below')) || 0;
       const everyIcon = !element.querySelector('[data-nav-focus]:not(:has([data-part="icon"]))');
       setNarrow(everyIcon && element.offsetWidth < below);
@@ -164,6 +169,7 @@ function Root({
       aria-label={ariaLabel}
       data-umbra="vertical-nav"
       data-collapsed={rail ?? undefined}
+      data-in-row={inRow || undefined}
       className={cx(styles.root, className)}
       style={{ ...props.style, ...(rail === 'user' && { flexGrow: 0 }), ...style }}
     >

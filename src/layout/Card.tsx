@@ -202,10 +202,15 @@ function Root({
     let animation: Animation | undefined;
     let stopped = false;
     const done = () => {
-      delete element.dataset.resizing;
       if (stopped) return;
-      setClosing(false);
-      setFrom(null);
+      // Rendered here, not when React next gets to it: the animation has let go of the height, and a
+      // content-sized card with its body still in it would be drawn at its full height for one frame.
+      flushSync(() => {
+        setClosing(false);
+        setFrom(null);
+      });
+      animation?.cancel();
+      delete element.dataset.resizing;
     };
     // After the parent Stack has applied its rules again for the new state, and before the browser paints.
     queueMicrotask(() => {
@@ -213,12 +218,14 @@ function Root({
       const duration = resizeDuration(element);
       const end = userCollapsed ? heightWithoutBody(element) : element.getBoundingClientRect().height;
       // Nothing to animate (reduced motion): the body goes in this same frame, not one render later.
-      if (!duration || Math.abs(end - start) < 1) return flushSync(done);
+      if (!duration || Math.abs(end - start) < 1) return done();
       const css = getComputedStyle(element);
       // While it moves, the card's height is the animated one, not its share of the stack.
       element.dataset.resizing = '';
       animation = element.animate([{ height: `${start}px` }, { height: `${end}px` }], {
         duration,
+        // Held at the end height until `done` has taken the body out, should the event come a frame late.
+        fill: 'forwards',
         easing:
           css.getPropertyValue(`--umbra-motion-easing-${userCollapsed ? 'exit' : 'enter'}`).trim() || 'ease',
       });

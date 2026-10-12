@@ -1,6 +1,8 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { expectFocusKept, openStory, pressKeys } from './helpers';
+import { expectFocusKept, openStory, pressKeys, settle } from './helpers';
 import { expectChangeHighlights } from './live';
+import { contrast, pixels } from './pixels';
+import { contextPresets } from '../../src/styles/tokens.generated';
 
 // Tier 2 meters and charts: PieIndicator, DivergingMeter, Sparkline, Heatmap and Scatter. What a still
 // image cannot show: values for assistive technology, keyboard, tooltips, legends, the data states and
@@ -142,8 +144,11 @@ test.describe('PieIndicator', () => {
     const narrow = page.locator('[data-width="90"]').getByRole('meter');
     await expect(narrow).toHaveAttribute('aria-valuetext', '62%');
     await expect(narrow).toHaveAttribute('data-value-hidden', 'true');
-    await narrow.hover();
+    await part(narrow, 'disc').hover();
     await expect(page.getByRole('tooltip')).toHaveText('62%');
+    // Over the cut label the tooltip is the label's whole text.
+    await part(narrow, 'label').hover();
+    await expect(page.getByRole('tooltip')).toHaveText('Knowledge of the region');
   });
 
   test('sizes for cells and text, and the disc mirrors with the page but fills clockwise', async ({
@@ -1068,7 +1073,8 @@ test.describe('Scatter', () => {
     const chart = tile(page, 'controlled');
     await expect(chart.getByRole('option')).toHaveCount(7);
     await chart.getByRole('button', { name: 'South' }).hover();
-    await expect(chart.locator('g[data-series="north"]')).toHaveAttribute('data-dim', 'true');
+    // Every point of the other series fades (a point is its own group, so the largest are drawn first).
+    await expect(chart.locator('g[data-series="north"][data-dim]')).toHaveCount(4);
     await chart.getByRole('button', { name: 'South' }).click();
     await expect(page.getByText('Hidden: south.')).toBeVisible();
     await expect(chart.getByRole('option')).toHaveCount(4);
@@ -1078,7 +1084,7 @@ test.describe('Scatter', () => {
     const other = tile(page, 'uncontrolled');
     await expect(other.locator('g[data-series="c"]')).toHaveCount(0);
     await other.getByRole('button', { name: 'Group C' }).press('Enter');
-    await expect(other.locator('g[data-series="c"]')).toHaveCount(1);
+    await expect(other.locator('g[data-series="c"]')).not.toHaveCount(0);
     // Shape and colour: the marks of a series and its legend marker share the shape.
     for (const [id, name, shape] of [
       ['a', 'Group A', 'dot'],
@@ -1281,5 +1287,668 @@ test.describe('Scatter', () => {
     await marks(scatter).focus();
     await pressKeys(page, 'ArrowRight', 'ArrowRight');
     expect(await current(scatter)).toMatch(/Run 2/);
+  });
+});
+
+// Review 2 of Milestone 2 (plan/reviews/milestone-2.md): one test or more per finding, each failing
+// without its fix. The stories are `Charts/Edge cases`.
+test.describe('Review 2', () => {
+  const EDGE = 'charts-edge-cases--';
+  const options = (page: Page, id: string) => tile(page, id).getByRole('option');
+  const names = (page: Page, id: string) =>
+    options(page, id).evaluateAll((els) => els.map((el) => el.getAttribute('aria-label')));
+
+  test('MC-1, MC-4, MC-13: invalid input is never a crash or a blank chart; the bad value is no value', async ({
+    page,
+  }) => {
+    const errors: string[] = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    await openChart(page, `${EDGE}invalid-input`);
+    // Every chart is drawn: none is empty, and none has taken the page down.
+    await expect(page.locator('figure')).toHaveCount(7);
+    await expect(page.locator('figure[data-state]')).toHaveCount(0);
+    // NaN, Infinity and null are left out, and so is the second series of one id.
+    expect(await names(page, 'line')).toEqual(['Orders, Jan: 10', 'Orders, May: 30', 'Orders, Jul: 20']);
+    expect(await names(page, 'bar')).toEqual(['Orders, Jan: 10', 'Orders, May: 30', 'Orders, Jul: 20']);
+    expect(await names(page, 'donut')).toEqual(['Region 1: 30 (38%)', 'Region 4: 50 (63%)']);
+    expect(await names(page, 'radar')).toEqual(['Orders, Jan: 4', 'Orders, May: 3']);
+    expect(await names(page, 'scatter')).toEqual(['Group 1: 1, 1', 'Group 1: 5, 5']);
+    expect((await names(page, 'binned')).length).toBe(2);
+    // Two rows and two columns of one name are all drawn, each cell in its own place.
+    expect(await names(page, 'heatmap')).toEqual([
+      'A, y: 1',
+      'A, y (2): 2',
+      'A (2), x: 2',
+      'A (2), y (2): 3',
+      'B, y: 4',
+    ]);
+    const places = await options(page, 'heatmap').evaluateAll((els) =>
+      els.map((el) => {
+        const r = el.getBoundingClientRect();
+        return `${Math.round(r.x)},${Math.round(r.y)}`;
+      }),
+    );
+    expect(new Set(places).size).toBe(5);
+    // The lines and shapes hold no NaN.
+    expect(
+      await page
+        .locator('figure svg')
+        .evaluateAll((svgs) => svgs.filter((s) => /NaN|Infinity/.test(s.innerHTML)).length),
+    ).toBe(0);
+
+    const small = page.locator('[data-tile="small"]');
+    await expect(small.getByRole('img')).toHaveAttribute(
+      'aria-label',
+      '3 values, first 10, last 20, lowest 10, highest 30, rising',
+    );
+    const meters = small.locator('[role="meter"], [role="progressbar"]');
+    await expect(meters).toHaveCount(5);
+    for (const m of await meters.all()) {
+      await expect(m).toHaveAttribute('aria-valuetext', 'No value');
+      await expect(m).toHaveAttribute('data-empty', 'true');
+      await expect(part(m, 'value')).toHaveText('—');
+    }
+    // The keyboard still walks what is drawn.
+    await marks(tile(page, 'heatmap')).focus();
+    await pressKeys(page, 'ArrowRight', 'ArrowRight', 'ArrowDown');
+    expect(await current(tile(page, 'heatmap'))).toBe('A (2), y (2): 3');
+    expect(errors).toEqual([]);
+  });
+
+  const set = async (page: Page, state: string) => {
+    await page.evaluate((s) => document.querySelector<HTMLElement>(`[data-set="${s}"]`)!.click(), state);
+    await settle(page);
+  };
+  const focusIn = (chart: Locator) => chart.evaluate((el) => el.contains(document.activeElement));
+
+  for (const id of ['line', 'bar', 'donut', 'radar', 'heatmap', 'scatter']) {
+    test(`MC-6: ${id}: focus stays in the chart when the app changes its state`, async ({ page }) => {
+      await openChart(page, `${EDGE}state-change`);
+      const chart = tile(page, id);
+      await marks(chart).focus();
+      await pressKeys(page, 'ArrowRight');
+      expect(await current(chart)).not.toBeNull();
+      for (const state of ['loading', 'error', 'loading', 'data']) {
+        await set(page, state);
+        expect(await chart.getAttribute('data-state')).toBe(state === 'data' ? null : state);
+        await expectFocusKept(page);
+        expect(await focusIn(chart)).toBe(true);
+      }
+      // Back on the data, the arrow keys work again without another Tab.
+      await expect(marks(chart)).toBeFocused();
+      await pressKeys(page, 'ArrowRight');
+      expect(await current(chart)).not.toBeNull();
+    });
+  }
+
+  test('MC-6: an interactive Sparkline keeps the focus through loading', async ({ page }) => {
+    await openChart(page, `${EDGE}state-change`);
+    const spark = page.locator('[data-tile="sparkline"] [data-umbra="sparkline"]');
+    await spark.focus();
+    await pressKeys(page, 'ArrowLeft');
+    for (const state of ['loading', 'data']) {
+      await set(page, state);
+      expect(await spark.getAttribute('aria-busy')).toBe(state === 'loading' ? 'true' : null);
+      await expectFocusKept(page);
+      await expect(spark).toBeFocused();
+    }
+    await pressKeys(page, 'Home');
+    await expect(page.getByRole('tooltip')).toHaveText('3');
+  });
+
+  test('X-5: a chart keeps the aria-describedby it is given, beside its own summary, in every state', async ({
+    page,
+  }) => {
+    await openChart(page, `${EDGE}state-change`);
+    for (const state of ['data', 'loading', 'error']) {
+      await set(page, state);
+      for (const id of ['line', 'bar', 'donut', 'radar', 'heatmap', 'scatter']) {
+        const described = ((await tile(page, id).getAttribute('aria-describedby')) ?? '').split(' ');
+        expect(described, `${id} ${state}`).toContain('edge-note');
+        // In the data state the chart's own summary is there too.
+        if (state === 'data') expect(described.length, id).toBe(2);
+      }
+      await expect(page.locator('[data-tile="sparkline"] [data-umbra="sparkline"]')).toHaveAttribute(
+        'aria-describedby',
+        'edge-note',
+      );
+    }
+  });
+
+  test('MC-2: a PieIndicator with the disc above shows its value', async ({ page }) => {
+    await openStory(page, 'meters-pieindicator--variants');
+    const block = (name: string) =>
+      page.locator('[data-umbra="pie-indicator"][data-layout="block"]', { hasText: name });
+    for (const name of ['Coverage', 'Quality']) {
+      await expect(block(name)).toHaveCount(1);
+      await expect(part(block(name), 'value')).toBeVisible();
+      expect(await block(name).getAttribute('data-value-hidden')).toBeNull();
+    }
+    await expect(part(block('Coverage'), 'value')).toHaveText('75%');
+  });
+
+  test('MC-3: a Heatmap value below the first band is drawn, and is a keyboard stop', async ({ page }) => {
+    await openChart(page, `${EDGE}scale-edges`);
+    expect(await names(page, 'below')).toEqual([
+      'A, x: 2',
+      'A, y: 12 · Busy',
+      'A, z: 25 · Full',
+      'B, x: 5',
+      'B, y: 15 · Busy',
+      'B, z: 40 · Full',
+    ]);
+    const chart = tile(page, 'below');
+    await marks(chart).focus();
+    await pressKeys(page, 'ArrowRight');
+    expect(await current(chart)).toBe('A, x: 2');
+    // It is in no band: it carries none.
+    expect(await chart.getByRole('option', { name: 'A, x: 2' }).getAttribute('data-band')).toBeNull();
+  });
+
+  test('MC-5: the last point of a Sparkline line takes the colour of its band', async ({ page }) => {
+    await openStory(page, 'charts-sparkline--variants');
+    const fill = (sample: string) =>
+      page
+        .locator(`[data-sample="${sample}"] [data-part="lastPoint"]`)
+        .evaluate((el) => getComputedStyle(el).fill);
+    const plain = await fill('Last point');
+    const banded = await fill('Last point by threshold');
+    expect(banded).not.toBe(plain);
+  });
+
+  test('MC-7: a small point under a larger bubble of a later series can be hovered', async ({ page }) => {
+    await openChart(page, `${EDGE}scale-edges`);
+    const chart = tile(page, 'under');
+    const small = await box(
+      chart
+        .getByRole('option', { name: /Small point/ })
+        .locator('circle')
+        .first(),
+    );
+    const centre = { x: small.x + small.width / 2, y: small.y + small.height / 2 };
+    await page.mouse.move(centre.x, centre.y);
+    await expect(tooltip(chart)).toContainText('Small');
+    // The bubble around it is still reached, outside the small point's target.
+    await page.mouse.move(centre.x + 18, centre.y);
+    await expect(tooltip(chart)).toContainText('Large');
+  });
+
+  test('MC-12: Scatter points outside the domains are not drawn; without axes none is cut by the edge', async ({
+    page,
+  }) => {
+    await openChart(page, `${EDGE}scale-edges`);
+    expect(await names(page, 'outside')).toEqual(['Group 1: 2, 2', 'Group 1: 3, 3', 'Group 1: 4, 4']);
+    const edge = tile(page, 'edge');
+    await expect(edge.getByRole('option')).toHaveCount(7);
+    const svg = await box(edge.locator('svg').first());
+    for (const point of await edge.locator('[data-part="point"] > g').all()) {
+      const b = await box(point);
+      expect(b.x).toBeGreaterThanOrEqual(svg.x);
+      expect(b.y).toBeGreaterThanOrEqual(svg.y);
+      expect(b.x + b.width).toBeLessThanOrEqual(svg.x + svg.width);
+      expect(b.y + b.height).toBeLessThanOrEqual(svg.y + svg.height);
+    }
+  });
+
+  test('MC-14: a DivergingMeter shows a difference without the noise of binary fractions', async ({
+    page,
+  }) => {
+    await openChart(page, `${EDGE}scale-edges`);
+    const m = meter(page, 'Fraction');
+    await expect(part(m, 'value')).toHaveText('+0.2');
+    await expect(m).toHaveAttribute('aria-valuetext', '+0.2');
+  });
+
+  for (const [story, selector, from, to] of [
+    ['meters-pieindicator--shrink', '[data-width="240"]', 240, 150],
+    ['meters-divergingmeter--shrink', '[data-width="320"]:has([data-layout="block"])', 320, 160],
+    ['meters-divergingmeter--shrink', '[data-width="320"]:has([data-layout="inline"])', 320, 180],
+  ] as const) {
+    test(`MC-15: ${story} ${selector}: the value is never shown beside a cut label, at any width`, async ({
+      page,
+    }) => {
+      await openStory(page, story);
+      await page.evaluate(() => document.fonts.ready);
+      const holder = page.locator(selector).first();
+      const wrong: number[] = [];
+      let hidden = 0;
+      for (let px = from; px >= to; px -= 1) {
+        await holder.evaluate((el, w) => ((el as HTMLElement).style.width = `${w}px`), px);
+        await settle(page);
+        const state = await holder.evaluate((el) => {
+          const label = el.querySelector<HTMLElement>('[data-part="label"]')!;
+          const range = document.createRange();
+          range.selectNodeContents(label);
+          return {
+            value: !!el.querySelector('[data-part="value"]'),
+            cut: range.getBoundingClientRect().width > label.getBoundingClientRect().width + 0.01,
+          };
+        });
+        if (state.value && state.cut) wrong.push(px);
+        if (!state.value) hidden += 1;
+      }
+      expect(wrong).toEqual([]);
+      // The sweep crossed the step: the value did hide.
+      expect(hidden).toBeGreaterThan(0);
+    });
+  }
+
+  test('MC-9: a chart that fills, beside other content in a modal body, takes its content height', async ({
+    page,
+  }) => {
+    await openChart(page, `${EDGE}in-modal`);
+    const dialog = page.getByRole('dialog');
+    expect((await box(part(dialog.locator('figure'), 'plot'))).height).toBe(240);
+    const viewport = dialog.locator('[data-part="viewport"]');
+    expect(await viewport.evaluate((el) => el.scrollHeight - el.clientHeight)).toBe(0);
+  });
+});
+
+// Review 2, what is measured: contrast as it is drawn, on the four tints, and the cost of 5,000 marks.
+test.describe('Review 2: measured', () => {
+  /**
+   * The strongest contrast a pixel of each box has against the surface beside it: what the eye has to
+   * tell the mark from its background, blur of the edges included. One screenshot for all the boxes.
+   */
+  const strongest = async (page: Page, marks: Locator) => {
+    const boxes = await marks.evaluateAll((els) =>
+      els.map((el) => {
+        const r = el.getBoundingClientRect();
+        return { x: r.x, y: r.y, width: r.width, height: r.height };
+      }),
+    );
+    const points: [number, number][] = [];
+    const spans: [number, number][] = [];
+    for (const b of boxes) {
+      const from = points.length;
+      // The surface: three pixels before the box, at its middle.
+      points.push([b.x - 3, b.y + b.height / 2]);
+      const [x1, y1] = [Math.floor(b.x) - 1, Math.floor(b.y) - 1];
+      const [x2, y2] = [Math.ceil(b.x + b.width) + 1, Math.ceil(b.y + b.height) + 1];
+      for (let x = x1; x < x2; x++) for (let y = y1; y < y2; y++) points.push([x + 0.5, y + 0.5]);
+      spans.push([from, points.length]);
+    }
+    const colours = await pixels(page, points);
+    return spans.map(([from, to]) =>
+      Math.max(...colours.slice(from + 1, to).map((c) => contrast(c, colours[from]!))),
+    );
+  };
+
+  for (const context of contextPresets) {
+    test(`MC-10: the edge of a Heatmap cell has 3:1 against the card as it is drawn (${context})`, async ({
+      page,
+    }) => {
+      await openStory(page, 'charts-heatmap--variants', { context });
+      await page.evaluate(() => document.fonts.ready);
+      // Marks of every size, so their edges start at every fraction of a pixel; the lowest step has
+      // the fill nearest to the card's, so its edge is what shows it.
+      const cells = page.locator('[data-tile="sizes"] [data-series="step-0"] [data-part="cell"]');
+      expect(await cells.count()).toBeGreaterThan(5);
+      // Each of the four edges, where it is weakest: across the edge at the middle of the side.
+      const boxes = await cells.evaluateAll((els) => els.map((el) => el.getBoundingClientRect().toJSON()));
+      const across = [-2, -1, 0, 1, 2];
+      const points = boxes.flatMap((b): [number, number][] => [
+        [b.x - 4, b.y + b.height / 2],
+        ...across.map((d): [number, number] => [b.x + d, b.y + b.height / 2]),
+        ...across.map((d): [number, number] => [b.right + d, b.y + b.height / 2]),
+        ...across.map((d): [number, number] => [b.x + b.width / 2, b.y + d]),
+        ...across.map((d): [number, number] => [b.x + b.width / 2, b.bottom + d]),
+      ]);
+      const colours = await pixels(page, points);
+      const found = boxes.flatMap((_, i) => {
+        const of = colours.slice(i * 21, i * 21 + 21);
+        return [0, 1, 2, 3].map((side) =>
+          Math.max(...of.slice(1 + side * 5, 6 + side * 5).map((c) => contrast(c, of[0]!))),
+        );
+      });
+      expect(Math.min(...found), `${found.map((c) => c.toFixed(2))}`).toBeGreaterThanOrEqual(3);
+    });
+
+    test(`MC-11: the edge of an empty PieIndicator has 3:1, at zero and with no value (${context})`, async ({
+      page,
+    }) => {
+      await openStory(page, 'meters-pieindicator--edge-values', { context });
+      await page.evaluate(() => document.fonts.ready);
+      const discs = page
+        .locator('[data-umbra="pie-indicator"]')
+        .filter({ hasText: /Zero|Under|Not measured|Not rated/ })
+        .locator('[data-part="disc"]');
+      await expect(discs).toHaveCount(4);
+      const found = await strongest(page, discs);
+      expect(Math.min(...found), `${found.map((c) => c.toFixed(2))}`).toBeGreaterThanOrEqual(3);
+    });
+  }
+
+  test('MC-11: zero and no value differ without colour: wedges against a dashed ring with a dash', async ({
+    page,
+  }) => {
+    await openStory(page, 'meters-pieindicator--edge-values');
+    const zero = part(meter(page, 'Zero'), 'disc');
+    const none = part(meter(page, 'Not measured'), 'disc');
+    // Zero: a filled disc cut into its eight wedges. No value: a hollow ring, dashed, with a dash in it.
+    await expect(zero.locator('mask line')).toHaveCount(8);
+    await expect(part(zero, 'none')).toHaveCount(0);
+    await expect(none.locator('mask')).toHaveCount(0);
+    await expect(part(none, 'none')).toHaveCount(1);
+    const look = (disc: Locator) =>
+      part(disc, 'track').evaluate((el) => {
+        const style = getComputedStyle(el);
+        return { fill: style.fill, dash: style.strokeDasharray };
+      });
+    expect(await look(zero)).toMatchObject({ dash: 'none' });
+    expect(await look(none)).toEqual({ fill: 'none', dash: '3px, 2px' });
+    // As drawn: the dash is in the middle of the ring that has no value, and nothing is in the other's.
+    const [a, b] = [await box(zero), await box(none)];
+    const [beside, inZero, inNone] = await pixels(page, [
+      [a.x - 3, a.y + a.height / 2],
+      [a.x + a.width / 2 - 2, a.y + a.height / 2 - 0.5],
+      [b.x + b.width / 2 - 2, b.y + b.height / 2 - 0.5],
+    ]);
+    expect(contrast(inNone!, beside!)).toBeGreaterThanOrEqual(3);
+    expect(contrast(inZero!, beside!)).toBeLessThan(1.5);
+  });
+
+  test('MC-16: 5,000 marks: a resize measures no label again, and a key builds nothing again', async ({
+    page,
+  }) => {
+    test.slow();
+    await openChart(page, 'charts-edge-cases--many-marks');
+    await page.getByRole('button', { name: 'Draw 5,000 marks each' }).click();
+    for (const id of ['scatter', 'heatmap'])
+      await expect(tile(page, id).getByRole('option')).toHaveCount(5000);
+    // What the work is made of, counted: labels measured in the page, and values formatted.
+    await page.evaluate(() => {
+      const counts = ((window as unknown as { counts: Record<string, number> }).counts = {
+        measured: 0,
+        formatted: 0,
+      });
+      const text = SVGTextContentElement.prototype;
+      const length = text.getComputedTextLength;
+      text.getComputedTextLength = function () {
+        counts.measured!++;
+        return length.call(this);
+      };
+      const format = Object.getOwnPropertyDescriptor(Intl.NumberFormat.prototype, 'format')!;
+      Object.defineProperty(Intl.NumberFormat.prototype, 'format', {
+        get() {
+          const real = format.get!.call(this) as (value: number) => string;
+          return (value: number) => {
+            counts.formatted!++;
+            return real(value);
+          };
+        },
+      });
+    });
+    const counts = () =>
+      page.evaluate(() => {
+        const w = window as unknown as { counts: Record<string, number> };
+        const now = { ...w.counts };
+        w.counts.measured = w.counts.formatted = 0;
+        return now;
+      });
+    /** Milliseconds until the frame after the one that did the work; at most two frames of it are waiting. */
+    const timed = (run: string, id: string) =>
+      page.evaluate(
+        async ([run, id]) => {
+          const el = document.querySelector<HTMLElement>(`[data-tile="${id}"]`)!;
+          const start = performance.now();
+          if (run === 'resize') el.style.width = `${el.offsetWidth - 7}px`;
+          else
+            document.activeElement!.dispatchEvent(
+              new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }),
+            );
+          await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
+          return performance.now() - start;
+        },
+        [run, id] as const,
+      );
+    for (const id of ['scatter', 'heatmap']) {
+      const chart = tile(page, id);
+      // The first resize may measure labels of new ticks; from then on everything is known.
+      await timed('resize', id);
+      await counts();
+      const resizes = [await timed('resize', id), await timed('resize', id), await timed('resize', id)];
+      const resized = await counts();
+      // Each resize builds the chart once (it formats its values), and measures next to nothing: the
+      // 5,000 names of the points were measured once. They were measured again on every resize.
+      expect(resized.formatted, id).toBeGreaterThan(0);
+      expect(resized.measured, id).toBeLessThan(100);
+
+      await marks(chart).focus();
+      await timed('key', id);
+      await counts();
+      const keys = [await timed('key', id), await timed('key', id), await timed('key', id)];
+      expect(await current(chart), id).not.toBeNull();
+      // A key moves the ring: the chart is not built again, so no value is formatted. It was, 5,000 times.
+      expect((await counts()).formatted, id).toBe(0);
+      // No clock: the suite runs on loaded machines, where a time is no measure. Counted work is.
+      // (Measured alone: a key about a frame, where it took 143ms; a labelled resize about 100 to
+      // 150ms, where it took 357 to 458ms.)
+      expect(resizes.length + keys.length).toBe(6);
+    }
+  });
+});
+
+// MeterList (the owner's O-7): the labels in one column, the bars in the next, the values in the last.
+test.describe('MeterList', () => {
+  const list = (page: Page, name: string) => page.getByRole('group', { name, exact: true });
+  /** Where each row's label, bar and value start and end, rounded. */
+  const columns = (rows: Locator) =>
+    rows.evaluateAll((els) =>
+      els.map((row) => {
+        const edge = (selector: string) => {
+          const el = row.querySelector(`:scope > ${selector}`);
+          if (!el) return null;
+          const r = el.getBoundingClientRect();
+          return [Math.round(r.left), Math.round(r.right)];
+        };
+        return {
+          label: edge('[data-part="label"]'),
+          bar: edge(':is([data-part="track"], [data-part="strip"], [data-part="disc"], [data-part="bar"])'),
+          value: edge('[data-part="value"]'),
+        };
+      }),
+    );
+  const one = (values: (number | undefined)[]) => new Set(values).size === 1;
+
+  test('any of the four meters share a column of labels, one of bars and one of values', async ({ page }) => {
+    await openStory(page, 'meters-meterlist--variants');
+    for (const name of ['Skills', 'Figures', 'Figures, half']) {
+      const group = list(page, name);
+      const rows = await columns(group.locator('> [data-umbra]'));
+      expect(rows.length).toBe(4);
+      // Labels start together, bars start together, values end together.
+      expect(one(rows.map((r) => r.label?.[0])), name).toBe(true);
+      expect(one(rows.map((r) => r.bar?.[0])), name).toBe(true);
+      expect(one(rows.map((r) => r.value?.[1])), name).toBe(true);
+      // The bars start after the longest label.
+      expect(rows[0]!.bar![0]!).toBeGreaterThan(Math.max(...rows.map((r) => r.label![1]!)));
+    }
+    // The four kinds are in one list, each still what it is for assistive technology.
+    const mixed = list(page, 'Figures');
+    await expect(mixed.locator('> [data-umbra]')).toHaveCount(4);
+    expect(
+      await mixed
+        .locator('> [data-umbra]')
+        .evaluateAll((els) => els.map((el) => el.getAttribute('data-umbra'))),
+    ).toEqual(['progress-bar', 'level-meter', 'pie-indicator', 'diverging-meter']);
+    await expect(mixed.getByRole('progressbar', { name: 'Budget used' })).toHaveAttribute(
+      'aria-valuetext',
+      '62%',
+    );
+    await expect(mixed.getByRole('meter', { name: 'Coverage of the region' })).toHaveAttribute(
+      'aria-valuetext',
+      '75%',
+    );
+    // A bar or strip takes the whole of its column; a meter in a list is laid out on one line.
+    const bars = await columns(mixed.locator('> [data-umbra]'));
+    expect(bars[0]!.bar![1]).toBe(bars[1]!.bar![1]);
+    expect(bars[0]!.bar![1]).toBe(bars[3]!.bar![1]);
+    await expect(mixed.locator('[data-umbra="progress-bar"]')).toHaveAttribute('data-layout', 'inline');
+
+    // Without values there is no third column: the bars reach the end of the list.
+    const plain = list(page, 'Progress');
+    const end = (await box(plain)).x + (await box(plain)).width;
+    for (const row of await columns(plain.locator('> [data-umbra]')))
+      expect(row.bar![1]).toBe(Math.round(end));
+
+    // A row of its own may load, or have no value: it keeps its columns.
+    const states = await columns(list(page, 'States of rows').locator('> [data-umbra]'));
+    expect(one(states.map((r) => r.label?.[0]))).toBe(true);
+    expect(one(states.map((r) => r.value?.[1]))).toBe(true);
+  });
+
+  test('`labelWidth` sets the label column; a cut label shows its text in a tooltip', async ({ page }) => {
+    await openStory(page, 'meters-meterlist--variants');
+    const narrow = list(page, 'Skills, narrow labels');
+    const rows = await columns(narrow.locator('> [data-umbra]'));
+    for (const row of rows) expect(row.label![1]! - row.label![0]!).toBe(96);
+    expect(one(rows.map((r) => r.bar?.[0]))).toBe(true);
+    const label = part(narrow.getByRole('meter', { name: 'Knowledge of the region' }), 'label');
+    expect(await label.evaluate((el) => el.scrollWidth > el.clientWidth)).toBe(true);
+    await label.hover();
+    await expect(page.getByRole('tooltip')).toHaveText('Knowledge of the region');
+    // A label that fits has none of its own: the tooltip is the meter's exact value.
+    await page.mouse.move(0, 0);
+    await expect(page.getByRole('tooltip')).toHaveCount(0);
+    await part(narrow.getByRole('meter', { name: 'Care' }), 'label').hover();
+    await expect(page.getByRole('tooltip')).toHaveText('5');
+    // A percentage, or any track size.
+    const half = list(page, 'Figures, half');
+    const first = (await columns(half.locator('> [data-umbra]')))[0]!;
+    const width = (await box(half)).width;
+    expect(Math.abs(first.label![1]! - first.label![0]! - width / 2)).toBeLessThanOrEqual(1);
+  });
+
+  test('as the list narrows the values hide, then each label moves above its bar', async ({ page }) => {
+    await openStory(page, 'meters-meterlist--shrink');
+    const at = async (px: number) => {
+      const group = page.locator(`[data-width="${px}"] [data-umbra="meter-list"]`);
+      const rows = group.locator('> [data-umbra]');
+      const first = rows.first();
+      const [label, bar] = [await box(part(first, 'label')), await box(part(first, 'track'))];
+      return {
+        shrink: await group.getAttribute('data-shrink'),
+        values: await group.locator('[data-part="value"]:visible').count(),
+        above: label.y + label.height <= bar.y + 1,
+        cut: await group
+          .locator('[data-part="label"]')
+          .evaluateAll((els) => els.filter((el) => el.scrollWidth > el.clientWidth).length),
+        inside: await group.evaluate((el) => el.scrollWidth <= el.clientWidth),
+      };
+    };
+    expect(await at(320)).toEqual({ shrink: null, values: 4, above: false, cut: 0, inside: true });
+    expect(await at(230)).toEqual({ shrink: '1', values: 0, above: false, cut: 0, inside: true });
+    expect(await at(160)).toEqual({ shrink: '2', values: 0, above: true, cut: 0, inside: true });
+    // With a `labelWidth` a cut label is the app's choice: only the values give way.
+    expect(await at(200)).toEqual({ shrink: '1', values: 0, above: false, cut: 1, inside: true });
+
+    // The hidden value is still read, and on the tooltip.
+    const hidden = page.locator('[data-width="230"]').getByRole('progressbar', { name: 'Budget used' });
+    await expect(hidden).toHaveAttribute('aria-valuetext', '62%');
+    await part(hidden, 'track').hover();
+    await expect(page.getByRole('tooltip')).toHaveText('62%');
+
+    // The step is a function of the width: the same on the way down, on the way up, and afresh.
+    const holder = page.locator('[data-width="320"]');
+    const sweep: Record<number, string | null> = {};
+    const level = () => holder.locator('[data-umbra="meter-list"]').getAttribute('data-shrink');
+    for (let px = 320; px >= 140; px -= 6) {
+      await holder.evaluate((el, w) => ((el as HTMLElement).style.width = `${w}px`), px);
+      await settle(page);
+      sweep[px] = await level();
+    }
+    expect(Object.values(sweep)).toContain('1');
+    expect(sweep[140]).toBe('2');
+    for (let px = 140; px <= 320; px += 6) {
+      await holder.evaluate((el, w) => ((el as HTMLElement).style.width = `${w}px`), px);
+      await settle(page);
+      expect(await level(), `${px}px on the way up`).toBe(sweep[px]);
+    }
+    // Each step comes once, in order.
+    const order = Object.keys(sweep)
+      .map(Number)
+      .sort((a, b) => b - a)
+      .map((px) => Number(sweep[px] ?? 0));
+    expect(order).toEqual([...order].sort((a, b) => a - b));
+  });
+
+  test('loading shows skeleton rows in the three columns; empty and error take the list’s place', async ({
+    page,
+  }) => {
+    await openStory(page, 'meters-meterlist--states');
+    const loading = list(page, 'Loading');
+    await expect(loading).toHaveAttribute('aria-busy', 'true');
+    await expect(loading).toHaveAttribute('data-state', 'loading');
+    await expect(loading.getByRole('meter')).toHaveCount(0);
+    const rows = await columns(loading.locator('> [data-part="skeleton"]'));
+    expect(rows.length).toBe(3);
+    expect(one(rows.map((r) => r.bar?.[0]))).toBe(true);
+    expect(one(rows.map((r) => r.value?.[1]))).toBe(true);
+    expect(rows[0]!.bar![0]!).toBeGreaterThan(Math.max(...rows.map((r) => r.label![1]!)));
+
+    await expect(list(page, 'Empty')).toHaveAttribute('data-state', 'empty');
+    await expect(list(page, 'Empty')).toContainText('Nothing measured yet');
+    const failed = list(page, 'Failed');
+    await expect(failed.getByRole('alert')).toContainText('Retries: 0.');
+    await expect(failed.getByRole('meter')).toHaveCount(0);
+    await failed.getByRole('button', { name: 'Try again' }).focus();
+    await pressKeys(page, 'Enter');
+    await expect(failed.getByRole('alert')).toContainText('Retries: 1.');
+  });
+
+  test('right to left: the labels are on the right, the values on the left', async ({ page }) => {
+    await openStory(page, 'meters-meterlist--right-to-left');
+    const rows = await columns(list(page, 'Figures').locator('> [data-umbra]'));
+    expect(one(rows.map((r) => r.label?.[1]))).toBe(true);
+    expect(one(rows.map((r) => r.bar?.[1]))).toBe(true);
+    expect(one(rows.map((r) => r.value?.[0]))).toBe(true);
+    for (const row of rows) {
+      expect(row.label![0]!).toBeGreaterThan(row.bar![1]!);
+      expect(row.value![1]!).toBeLessThan(row.bar![0]!);
+    }
+  });
+
+  test('tokens, parts and the root block', async ({ page }) => {
+    await openStory(page, 'meters-meterlist--customised');
+    const tokens = list(page, 'Tokens');
+    const style = await tokens.evaluate((el) => {
+      const s = getComputedStyle(el);
+      return { row: s.rowGap, column: s.columnGap };
+    });
+    expect(style).toEqual({ row: '4px', column: '24px' });
+    const label = part(tokens.getByRole('progressbar'), 'label');
+    const primary = await page.evaluate(() => {
+      const probe = document.body.appendChild(document.createElement('i'));
+      probe.style.color = 'var(--umbra-color-base-text-primary)';
+      const colour = getComputedStyle(probe).color;
+      probe.remove();
+      return colour;
+    });
+    expect(await label.evaluate((el) => getComputedStyle(el).color)).toBe(primary);
+    // The shortest bar is 120px here, so in this panel the values give way to it.
+    expect((await box(part(tokens.getByRole('progressbar'), 'track'))).width).toBeGreaterThanOrEqual(120);
+
+    await expect(list(page, 'Skeleton node')).toHaveText('Loading the figures…');
+    await expect(list(page, 'Skeleton null').locator('*')).toHaveCount(0);
+    await expect(list(page, 'Skeleton function')).toHaveText('4 rows on their way');
+    await expect(list(page, 'Empty part')).toHaveText('No figures.');
+    await expect(list(page, 'Error part').locator('[data-own="error"]').getByRole('alert')).toContainText(
+      'Not loaded',
+    );
+    const byHand = list(page, 'By hand');
+    await expect(byHand).toHaveClass(/own/);
+    expect(await byHand.evaluate((el) => el.style.opacity)).toBe('0.9');
+    await expect(byHand.getByRole('meter')).toHaveCount(4);
+  });
+
+  test('on the detail screen the strips of the scores start in one line (O-7)', async ({ page }) => {
+    await openStory(page, 'pages-list-and-detail--list-and-detail', { width: 1920, height: 1080 });
+    const scores = list(page, 'Scores by attribute');
+    const rows = await columns(scores.locator('> [data-umbra="level-meter"]'));
+    expect(rows.length).toBe(5);
+    expect(one(rows.map((r) => r.bar?.[0]))).toBe(true);
+    expect(one(rows.map((r) => r.bar?.[1]))).toBe(true);
+    expect(one(rows.map((r) => r.label?.[0]))).toBe(true);
   });
 });

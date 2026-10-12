@@ -1,0 +1,5 @@
+---
+'umbra-ui': patch
+---
+
+`SequenceDots` no longer crashes with 50 or more marks to drop: any number of items settles at once. Its accent marks are lighter (new token `--umbra-sequence-dots-accent-color`), a text tooltip is the description of a pressable mark and part of the default summary, and its placeholder is the size of the marks. `MediaCard` and `SummaryTile` are as tall as their content in a column without a height. `MediaCard`: a title on a button card is held to `titleLines`, the title tooltip stays on keyboard focus, loading keeps the card's size when the content props are given, new `loadingLabel`, new token `--umbra-media-card-focus-band`, `MediaCardActionsProps` is exported. `Comparison`: a loading strip is a strip, a strip with a summary and no rows is shown, long values end in an ellipsis with a tooltip, and the second side is `data-part="side"` with `data-side="opposite"`. A `ListItem` placed directly in a `List` is left out with a development warning instead of an error.

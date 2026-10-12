@@ -53,7 +53,7 @@ States: hover and pressed (buttons), focus (value), disabled, read-only, invalid
 | `formatValue` | `(value: number) => string` | `String` | Numeric mode |
 | `showIndicator` | boolean | 2 to 12 positions | |
 | `disabled`, `readOnly`, `invalid`, `required` | boolean | `false` | Also from the `FormField` |
-| `name` | string | — | A hidden input: the id or the number |
+| `name` | string | — | The id or the number is sent, as it is shown; no value sends nothing |
 | `size` | see above | `default` | |
 | `previousLabel`, `nextLabel`, `emptyLabel` | string | "Previous", "Next", "—" | |
 | `aria-label`, `id` | string | — | |
@@ -99,3 +99,4 @@ Resolved 2026-10-11 (under the owner's delegation):
 - **No `loading` state**: it is an input; a field that waits for its options is `disabled` by the form.
 - **A press on a `FormField` label focuses the value** (integration pass, 2026-10-11): a `<label>` only activates native controls, so the field label gives the focus itself to a control that is not one (`src/inputs/fieldParts.tsx`).
 - **Among actions that overflow it stays in the row** (integration pass, 2026-10-11): it cannot be a row of a menu (`staysInRow`); inside a component of the app, where the row cannot see it, it draws nothing in the menu.
+- **In a form it behaves as a native control** (review 1 of Milestone 2, I-4, I-7, I-13, 2026-10-11; `tests/visual/forms.spec.ts`). An input nobody sees or reaches carries the value (`src/inputs/formValue.tsx`), in place of a hidden input, which the browser neither validates nor resets: a native reset brings the starting value back (and calls `onChange` with it); `required` without a value holds the form back, gives the spin button the focus when it is the first invalid control, and the field shows the browser's message (alone, the stepper carries it as its description); what is sent is what is shown, so a number outside the scale is sent held inside it and an id that is no option sends nothing.

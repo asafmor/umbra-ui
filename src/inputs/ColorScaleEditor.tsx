@@ -14,6 +14,7 @@ import {
 } from 'react-aria-components';
 import { Button } from '../basics/Button';
 import { IconButton } from '../basics/IconButton';
+import { ScrollArea } from '../layout/ScrollArea';
 import { focusableIn } from '../internal/focus';
 import { bandPattern, toFraction } from '../meters/scale';
 import { RawIcon } from '../provider/icons';
@@ -21,8 +22,19 @@ import { defined } from '../utils/defined';
 import { cx, renderPart, type Part } from '../utils/parts';
 import type { Threshold, ThresholdTone } from '../utils/thresholds';
 import { bandColour } from './bandColour';
+import { useActionKind } from '../internal/contexts';
 import styles from './ColorScaleEditor.module.css';
-import { addStop, boundsOf, moveStop, normalizeStops, removeStop, sameStops, type Scale } from './colorScale';
+import {
+  addStop,
+  bottomOf,
+  boundsOf,
+  moveStop,
+  normalizeStops,
+  removeStop,
+  sameStops,
+  type Scale,
+} from './colorScale';
+import { useFormValue } from './formValue';
 import { Select, type SelectEntry } from './Select';
 import { TextField } from './TextField';
 import { FieldContext, noField, useFieldControl } from './useField';
@@ -35,9 +47,9 @@ export interface ColorScaleChange {
 }
 
 /** The names of the colour choices: the tones a threshold can have, a free colour, and none. */
-export type ColorScaleToneLabels = Partial<Record<ThresholdTone | 'custom' | 'default', string>>;
+export type ColorScaleToneLabels = { [K in ThresholdTone | 'custom' | 'default']?: string | undefined };
 
-const toneNames: Required<ColorScaleToneLabels> = {
+const toneNames: Record<keyof ColorScaleToneLabels, string> = {
   'ramp-1': 'Ramp 1 (lowest)',
   'ramp-2': 'Ramp 2',
   'ramp-3': 'Ramp 3',
@@ -62,7 +74,7 @@ interface Shared {
   stops: Threshold[];
   scale: Scale;
   format: (value: number) => string;
-  names: Required<ColorScaleToneLabels>;
+  names: Record<keyof ColorScaleToneLabels, string>;
   disabled: boolean;
   labels: {
     stop: string;
@@ -182,10 +194,12 @@ function Root({
     // The app's own description, beside the one a `FormField` around it gives.
     describedBy: [(rest as { 'aria-describedby'?: string | undefined })['aria-describedby']],
   });
-  const [own, setOwn] = useState(defaultValue ?? []);
+  // The starting value, which a native reset of the form goes back to.
+  const [initial] = useState(defaultValue ?? []);
+  const [own, setOwn] = useState(initial);
   const [spoken, setSpoken] = useState('');
   const given = value ?? own;
-  const scale: Scale = { min: min ?? given[0]?.from ?? 0, max, step };
+  const scale: Scale = { min: min ?? bottomOf(given), max, step };
   const stops = normalizeStops(given, scale);
 
   // Focus is never lost: a button that removes its own row, or disables itself, hands the focus on.
@@ -208,11 +222,18 @@ function Root({
     onChange?.(next);
   };
   const tell = (event: ColorScaleChange) => setSpoken(formatAnnouncement(event));
+  const form = useFormValue({
+    name,
+    value: JSON.stringify(stops),
+    disabled: control.disabled,
+    onReset: () => change(normalizeStops(initial, scale)),
+    control: () => root.current && focusableIn(root.current)[0],
+  });
   const shared: Shared = {
     stops,
     scale,
     format: formatValue,
-    names: { ...toneNames, ...toneLabels },
+    names: { ...toneNames, ...defined(toneLabels ?? {}) },
     disabled: control.disabled,
     labels: {
       stop: stopLabel,
@@ -273,7 +294,8 @@ function Root({
       <FieldContext value={noField}>
         <Context value={shared}>{children}</Context>
       </FieldContext>
-      {name && <input type="hidden" name={name} value={JSON.stringify(stops)} disabled={control.disabled} />}
+      {/* The preview alone is a picture: it sends nothing. */}
+      {!readOnly && form.input}
       <span role="status" className={styles.spoken}>
         {spoken}
       </span>
@@ -503,11 +525,13 @@ function Stop({ index }: { index: number }) {
 function Stops({ className, style }: ColorScaleBlockProps) {
   const editor = useEditor('Stops');
   return (
-    <div data-part="stops" className={cx(styles.stops, className)} style={style}>
-      {editor.stops.map((_, index) => (
-        <Stop key={index} index={index} />
-      ))}
-    </div>
+    <ScrollArea data-part="stops" className={cx(styles.stops, className)} style={style}>
+      <div className={styles.rows}>
+        {editor.stops.map((_, index) => (
+          <Stop key={index} index={index} />
+        ))}
+      </div>
+    </ScrollArea>
   );
 }
 
@@ -545,6 +569,7 @@ export interface ColorScaleEditorProps extends Omit<ColorScaleEditorRootProps, '
  * `LevelMeter`, `BarChart` and `DonutChart` take. With `readOnly` it is the preview row alone.
  */
 export function ColorScaleEditor({ parts, ...root }: ColorScaleEditorProps) {
+  useActionKind('stays');
   return (
     <Root {...root}>
       {renderPart(parts?.preview, {}, (p) => (

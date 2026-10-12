@@ -1,3 +1,4 @@
+import { usePopoverRef } from '../overlays/popoverRef';
 import {
   Children,
   createContext,
@@ -35,19 +36,15 @@ import { TruncatedText } from '../internal/TruncatedText';
 import { useShrinkLevel } from '../internal/useShrinkLevel';
 import { CheckMark } from '../overlays/Menu';
 import menuStyles from '../overlays/Menu.module.css';
-import {
-  toAriaPlacement,
-  useFlipWhenCut,
-  useOpenState,
-  useOverlayLayer,
-  type OverlayPlacement,
-} from '../overlays/shared';
+import { toAriaPlacement, useOpenState, useOverlayLayer, type OverlayPlacement } from '../overlays/shared';
 import { BareIcon, Icon, IconSlot } from '../provider/icons';
 import { useScopeAttributes } from '../provider/UmbraProvider';
 import { cx, renderPart, type Part } from '../utils/parts';
 import type { BlockProps } from './fieldParts';
+import { distinctIds } from '../internal/distinctIds';
+import { useActionKind } from '../internal/contexts';
 import styles from './Select.module.css';
-import { useField, useFieldControl } from './useField';
+import { useFieldControl, useReport } from './useField';
 import { defined } from '../utils/defined';
 import { rootRender } from '../utils/passThrough';
 
@@ -243,19 +240,42 @@ function Root({
   // around the select shows it as its error; alone, the select carries it as its description.
   const [message, setMessage] = useState<string | null>(null);
   const messageId = useId();
-  const report = useField().report;
-  useEffect(() => {
-    report?.(message);
-    return () => report?.(null);
-  }, [report, message]);
+  const inField = useReport(message);
   const [isOpen, setOpen] = useOpenState(open, defaultOpen, onOpenChange);
   const [own, setOwn] = useState(multiple ? (defaultValues ?? []) : defaultValue ? [defaultValue] : []);
   const current = multiple ? (values ?? own) : value !== undefined ? (value ? [value] : []) : own;
   const blocks = split(children);
-  const entries = options ?? blocks.entries;
+  // Two options with one id: each is drawn, under a key of its own, and choosing either gives the id.
+  const ids = distinctIds('Select');
+  const key = ids.scope();
+  const keyed = <T extends { id: string }>(option: T): T => {
+    const id = key(option.id);
+    return id === option.id ? option : { ...option, id };
+  };
+  const entries = (options ?? blocks.entries).map((entry) =>
+    'id' in entry ? keyed(entry) : { ...entry, options: entry.options.map(keyed) },
+  );
   const all = entries.flatMap((entry) => ('id' in entry ? [entry] : entry.options));
   const selected = all.filter((option) => current.includes(option.id));
   const box = useRef<HTMLDivElement>(null);
+  // A native reset of the form: React Aria brings the starting value back, and then the browser resets
+  // the `<select>` that carries the value to its first option, so the form would send nothing. The
+  // options are set again from the value, once the browser is done.
+  const latest = useRef(current);
+  useLayoutEffect(() => {
+    latest.current = current;
+  });
+  useEffect(() => {
+    const carrier = box.current?.querySelector('select');
+    const form = carrier?.form;
+    if (!carrier || !form) return;
+    const sync = () =>
+      setTimeout(() => {
+        for (const option of carrier.options) option.selected = latest.current.includes(option.value);
+      });
+    form.addEventListener('reset', sync);
+    return () => form.removeEventListener('reset', sync);
+  }, []);
   const [width, setWidth] = useState(0);
   const shown = isOpen && !readOnly;
   useLayoutEffect(() => {
@@ -267,11 +287,12 @@ function Root({
     setSearchText(text);
     onSearchChange?.(text);
   };
-  const change = (ids: string[]) => {
+  const change = (keys: string[]) => {
     if (readOnly) return;
-    setOwn(ids);
-    if (multiple) onValuesChange?.(ids);
-    else onChange?.(ids[0] ?? '');
+    const next = [...new Set(keys.map(ids.idOf))];
+    setOwn(next);
+    if (multiple) onValuesChange?.(next);
+    else onChange?.(next[0] ?? '');
   };
   // In a cell the chosen option's colour fills the trigger; its label is the cue that is not colour.
   const first = selected[0];
@@ -313,10 +334,10 @@ function Root({
         'aria-label': ariaLabel,
         'aria-labelledby': control.labelledBy,
         'aria-describedby':
-          [control.describedBy, message && !report && messageId].filter(Boolean).join(' ') || undefined,
+          [control.describedBy, message && !inField && messageId].filter(Boolean).join(' ') || undefined,
       })}
     >
-      {message && !report && (
+      {message && !inField && (
         <span id={messageId} hidden>
           {message}
         </span>
@@ -578,7 +599,7 @@ function Popover({
   const select = useSelect();
   const scope = useScopeAttributes();
   const layer = useOverlayLayer('popover');
-  const flipWhenCut = useFlipWhenCut(maxHeight);
+  const flipWhenCut = usePopoverRef(maxHeight);
   const searching = searchable && select.search.trim() !== '';
   const matches = (option: SelectOption | undefined, text: string) =>
     !option || !text.trim() || filter(option, text);
@@ -781,6 +802,7 @@ export function Select({
   children,
   ...root
 }: SelectProps) {
+  useActionKind('stays');
   const popover: SelectPopoverProps = {
     searchable,
     searchPlaceholder,

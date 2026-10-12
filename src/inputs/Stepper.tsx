@@ -8,11 +8,12 @@ import {
   type ReactNode,
 } from 'react';
 import { Button as AriaButton } from 'react-aria-components';
-import { useInOverflowMenu } from '../internal/contexts';
+import { useActionKind, useInOverflowMenu } from '../internal/contexts';
 import { rowKeys, useDirection } from '../internal/direction';
 import { Icon } from '../provider/icons';
 import { defined } from '../utils/defined';
 import { cx, renderPart, type Part } from '../utils/parts';
+import { useFormValue } from './formValue';
 import styles from './Stepper.module.css';
 import { useFieldControl } from './useField';
 import { passThrough } from '../utils/passThrough';
@@ -126,10 +127,12 @@ function Root<T extends string | number = string | number>({
   ...rest
 }: StepperRootProps<T>) {
   const valueId = useId();
-  const [own, setOwn] = useState<T | null>(defaultValue ?? null);
+  // The starting value, which a native reset of the form goes back to.
+  const [initial] = useState<T | null>(defaultValue ?? null);
+  const [own, setOwn] = useState(initial);
   const [spoken, setSpoken] = useState('');
   const value = valueProp === undefined ? own : valueProp;
-  const control = useFieldControl({ id, invalid, required, disabled });
+  const field = useFieldControl({ id, invalid, required, disabled });
 
   // Both modes are a walk over positions 0 to count - 1.
   const count = options ? options.length : Math.max(1, Math.floor((max - min) / step + 1e-9) + 1);
@@ -146,6 +149,25 @@ function Root<T extends string | number = string | number>({
       : options
         ? options.findIndex((option) => option.id === value)
         : Math.min(count - 1, Math.max(0, Math.round(((value as number) - min) / step)));
+  // In a form: what is sent is what is shown (a value outside the scale is held inside it, one that is
+  // not an option is no value), a required stepper without a value holds the form back, and a native
+  // reset brings the starting value back.
+  const form = useFormValue({
+    name,
+    value: index < 0 ? '' : String(valueAt(index)),
+    required: field.required,
+    disabled: field.disabled,
+    onReset: () => {
+      setOwn(initial);
+      if (initial !== null && initial !== value) onChange?.(initial);
+    },
+    control: () => document.getElementById(field.id ?? valueId),
+  });
+  const control = {
+    ...field,
+    invalid: field.invalid || form.invalid,
+    describedBy: [field.describedBy, form.describedBy].filter(Boolean).join(' ') || undefined,
+  };
   const locked = control.disabled || readOnly || count === 0;
   const target = (move: Move) => {
     const page = Math.max(1, Math.round(count / 10));
@@ -195,9 +217,7 @@ function Root<T extends string | number = string | number>({
       style={style}
     >
       <Context value={shared}>{children}</Context>
-      {name && value !== null && (
-        <input type="hidden" name={name} value={value} disabled={control.disabled} />
-      )}
+      {form.input}
       {/* Heard after a press of Previous or Next, which does not move the focus to the value. */}
       <span role="status" className={styles.spoken}>
         {spoken}
@@ -337,6 +357,7 @@ export interface StepperProps<T extends string | number = string | number> exten
  * of options (`options`), or through numbers (`min`, `max`, `step`).
  */
 export function Stepper<T extends string | number = string | number>({ parts, ...root }: StepperProps<T>) {
+  useActionKind('stays');
   if (useInOverflowMenu()) return null;
   return (
     <Root {...root}>

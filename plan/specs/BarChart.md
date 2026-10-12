@@ -116,6 +116,10 @@ Bars share the plot evenly and get narrower with it. In a horizontal chart the c
 
 None.
 
+Resolved 2026-10-11 (fix pass of review 2, plan/reviews/milestone-2.md):
+
+- **Invalid input, focus and `aria-describedby`.** A value that is not a finite number is a missing value and a second series of one id is left out, with a warning in development (plan/decisions/03-charts.md, "Invalid input"). The focus of the plot is kept when the app shows the skeleton or an error in its place (the shared frame). An `aria-describedby` given by the app is kept, before the chart's own summary.
+
 Resolved 2026-10-11 (Milestone 2, one `thresholds` shape):
 
 - A threshold is the shared `Threshold` (it was `{ from, color, marker? }` with a required colour): a `tone` or a free `color`; a band with neither keeps the colour of its series and still has its own fill. `BarThreshold` extends it with the one extra this chart needs, the optional `marker` (the fill).

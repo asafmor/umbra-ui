@@ -3,6 +3,7 @@ import {
   useContext,
   useEffect,
   useId,
+  useLayoutEffect,
   useRef,
   useState,
   type CSSProperties,
@@ -10,7 +11,8 @@ import {
 } from 'react';
 import { Skeleton } from '../basics/Skeleton';
 import { SearchField } from '../inputs/SearchField';
-import { ForceCollapseContext } from '../internal/contexts';
+import { ForceCollapseContext, useActionKind } from '../internal/contexts';
+import { holdFocus } from '../internal/focus';
 import { useHoverTip } from '../internal/TruncatedText';
 import { isOverflowing, useShrinkLevel } from '../internal/useShrinkLevel';
 import { Popover } from '../overlays/Popover';
@@ -189,14 +191,18 @@ function Root({
   const groups = [...new Set(items.map((item) => item.group))];
   const ordered = groups.flatMap((group) => items.filter((item) => item.group === group));
   const enabled = ordered.filter((item) => !item.disabled);
-  const at = enabled.findIndex((item) => item.id === id);
-  const canStep = enabled.length > 1 || (enabled.length === 1 && at < 0);
-  const around = (step: 1 | -1) =>
-    at < 0
-      ? step > 0
-        ? enabled[0]
-        : undefined
-      : (enabled[at + step] ?? (wrap && canStep ? enabled.at(step > 0 ? 0 : -1) : undefined));
+  // The place of the current entity in the list, disabled or not: the steppers go to its neighbours.
+  const at = ordered.findIndex((item) => item.id === id);
+  const canStep = enabled.length > 1 || (enabled.length === 1 && enabled[0]!.id !== id);
+  const around = (step: 1 | -1) => {
+    if (at < 0) return step > 0 ? enabled[0] : undefined;
+    const [before, after] = [ordered.slice(0, at), ordered.slice(at + 1)];
+    const onwards =
+      step > 0
+        ? [...after, ...(wrap ? before : [])]
+        : [...before.reverse(), ...(wrap ? after.reverse() : [])];
+    return onwards.find((item) => !item.disabled);
+  };
 
   const root = useRef<HTMLDivElement>(null);
   // A container that has run out of room (a `SubNav` at its last step, a `TopBar` at its) asks for the icon only.
@@ -362,6 +368,26 @@ function PickerContent() {
   const wrapper = useRef<HTMLDivElement>(null);
   const baseId = useId();
 
+  // Focus is never lost. The app may load the list again or shorten it while the picker is open, and
+  // the row the user is on goes: the focus then moves to the row that replaced it, the current row,
+  // the search field, or the picker itself while there is nothing else. And when the picker opened
+  // with nothing to focus (no field, rows still loading), the rows take the focus as they arrive.
+  const start = () => {
+    const el = wrapper.current;
+    return (
+      el?.querySelector<HTMLElement>('input') ??
+      el?.querySelector<HTMLElement>('[data-part="row"][tabindex="0"]') ??
+      el?.closest<HTMLElement>('[role="dialog"]')
+    );
+  };
+  // eslint-disable-next-line react-hooks/refs -- on purpose: what has the focus just before the commit
+  const refocus = holdFocus(wrapper.current, start);
+  useLayoutEffect(() => {
+    refocus();
+    const dialog = wrapper.current?.closest<HTMLElement>('[role="dialog"]');
+    if (dialog && document.activeElement === dialog) start()?.focus({ preventScroll: true });
+  });
+
   useEffect(() => {
     const el = wrapper.current;
     if (!el) return;
@@ -479,7 +505,12 @@ function PickerContent() {
             </div>
           ) : (
             groups.map((group, i) => (
-              <div key={group ?? ''} className={styles.group}>
+              <div
+                key={group ?? ''}
+                // Entities without a group, listed after a group, are set apart from it by a line.
+                data-ungrouped={(group === undefined && i > 0) || undefined}
+                className={styles.group}
+              >
                 {group !== undefined && (
                   <div id={`${baseId}-${i}`} data-part="group" className={styles.groupLabel}>
                     {group}
@@ -511,6 +542,7 @@ export type EntitySwitcherProps = Omit<EntitySwitcherRootProps, 'children'>;
 
 /** The current entity of a header, with steps to its siblings and a searchable picker. */
 export function EntitySwitcher(props: EntitySwitcherProps) {
+  useActionKind('stays');
   const start = props.stepperPosition === 'start';
   return (
     <Root {...props}>

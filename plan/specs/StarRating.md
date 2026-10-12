@@ -81,7 +81,7 @@ States: hover (previews the value under the pointer), focus, disabled, invalid, 
 
 - **Display**: `role="img"` named by `formatValue` ("3.5 of 5"); an `aria-label` goes before it ("Quality: 7 of 10"), and so does the label of a `FormField`. Not a tab stop. Without a value it shows `emptyLabel` and is named `noValueLabel`.
 - **Input**: a radio group (React Aria), one radio per step, named by `formatValue`. One tab stop; the arrow keys move and choose, following what is drawn in right to left. With `clearable`, "No rating" is the choice before the first star, and a press on the chosen star clears too.
-- A choice is never under 24px wide or tall, in any size (the stars are spaced out to that). Exception: with `step={0.5}` a choice is half a star, 12 to 16px wide; the keyboard reaches every half.
+- A pointer target is never under 24px wide or tall, in any size (the stars are spaced out to that). With `step={0.5}` the target is still the whole star, and a press on it chooses the whole star; a half is chosen by dragging along the row (the stars follow the pointer in half steps, and the value is taken where the pointer is let go), or with the arrow keys.
 - The cue that is not colour: a full star is filled, an empty one is an outline. The outline has at least 3:1 against the page and the three surfaces on every tint (tested).
 - Right to left: the first star is at the right and a partial star fills from the right (logical properties only).
 - Invalid: the outlines take the danger colour; the message and its icon are the `FormField`'s.
@@ -99,5 +99,6 @@ Resolved 2026-10-11 (under the owner's delegation):
 - **Half steps are a prop of input mode only** (`step`); display mode draws any fraction, not only halves.
 - **Hover previews** the value under the pointer; the value changes on press.
 - **Full colour**: the warning colour (amber), no new token.
-- **Half-step targets are smaller than 24px** (see above): recorded as a known limit rather than doubling the size of every star.
-- **Half-step targets stay smaller than 24px** (integration pass, 2026-10-11): the whole star is a 24px target of the radio for its full value, and the half is reached with the arrow keys; WCAG 2.2 target size allows it (the full-star target is the equivalent control). Among actions that overflow the rating stays in the row (`staysInRow`).
+- **Half steps by pointer are a drag, not a press** (review 1 of Milestone 2, 2026-10-11; replaces the two earlier notes that left half targets at 12 to 16px). Decided by what serves a pointer user: two targets of half a star are too small to hit on a touch screen and fail WCAG 2.5.8; stars 48px apart would be no rating to look at. So a star is one target (24px or more) for its whole value, and a half is reached as on a slider, by a drag along the row, which a finger does well. Hovering previews the whole star a press would choose.
+- **Loading keeps the room of the value text** (review 1, I-11): the blocks draw their own placeholders, so `showValue` while loading is as wide as it will be.
+- **In a form it is a native radio group** (review 1, I-8, I-10; `tests/visual/forms.spec.ts`): a press on the field's label gives the chosen star the focus; without `name` it sends nothing (React Aria's generated name is taken out of what the form sends); `required` and left empty it holds the form back and the field shows the browser's message.

@@ -158,3 +158,17 @@ export const RightToLeft: Story = {
   ),
   globals: { direction: 'rtl' },
 };
+
+/** Loading holds the final layout: the stars and the value's text keep their room. */
+export const Loading: Story = {
+  render: () => (
+    <div style={{ ...column, justifyItems: 'start' }}>
+      {(['small', 'default', 'large'] as const).map((size) => (
+        <div key={size} data-size-row={size} style={{ display: 'flex', gap: 24 }}>
+          <StarRating readOnly loading size={size} value={3.5} showValue />
+          <StarRating readOnly size={size} value={3.5} showValue />
+        </div>
+      ))}
+    </div>
+  ),
+};

@@ -183,7 +183,12 @@ export function App() {
 - Navigation items are `{ id, label, href?, icon?, items?, disabled? }`. `items` makes a dropdown.
 - `history` adds back and forward buttons. `commandPalette` adds the search trigger; `Mod+K` opens it.
 - `context` is the status at the end of the bar. `ContextBlock` gives it two lines and a chip: `live`
-  makes the chip a clock, `time` shows one moment, `chip` any short value.
+  makes the chip a clock, `time` shows one moment, `chip` any short value. `variant="filled"` sets it
+  on a surface of its own, a step lighter or darker than the bar, whatever the brand. The time is
+  written in the viewer's time zone unless `timeFormat` names one (`{ timeZone: 'UTC' }`). On a page
+  rendered on a server, give it one if the time must be in the first paint: without it the chip keeps
+  its place and the time is written once the page runs in the browser, because a server does not know
+  the viewer's zone.
 - `start` of the `SubNav` is the place for an `EntitySwitcher`: the thing the whole page is about, with
   steps to the one before and after it and a picker with a search.
 - A mounted `ShortcutsSheet` lists every shortcut that has a label, and `?` opens it

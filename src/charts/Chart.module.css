@@ -78,6 +78,10 @@
   outline-offset: calc(-1 * var(--umbra-state-focus-ring-width));
 }
 
+.marks[data-idle] {
+  pointer-events: none;
+}
+
 .marks[data-has-active],
 .marks:focus:not(:focus-visible) {
   outline: none;
@@ -250,6 +254,8 @@
   stroke: var(--umbra-heatmap-cell-border, var(--umbra-color-base-border-control));
   stroke-width: var(--umbra-heatmap-cell-border-width, var(--umbra-border-width));
   rx: var(--umbra-heatmap-cell-radius, 2px);
+  /* On whole pixels: a cell starts and ends anywhere, and a blurred hairline has half the contrast. */
+  shape-rendering: crispEdges;
 }
 
 /* Over a backdrop the cells let it show through. */

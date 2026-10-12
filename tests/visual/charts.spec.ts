@@ -348,13 +348,14 @@ test.describe('Chart accessibility and states', () => {
     await expect(tile(page, 'skeleton-node').locator('[data-umbra="skeleton"]')).toHaveCount(0);
     await expect(has(tile(page, 'skeleton-null'), 'skeleton').locator('*')).toHaveCount(0);
     await expect(has(tile(page, 'empty-node'), 'plot')).toHaveText('Nothing to draw yet.');
-    await expect(has(tile(page, 'empty-null'), 'plot').locator('*')).toHaveCount(0);
+    // Nothing but the element that holds the focus of the plot through a change of state.
+    await expect(has(tile(page, 'empty-null'), 'plot').locator('*:not([data-idle])')).toHaveCount(0);
     // A function receives the default state as `children`.
     await expect(tile(page, 'empty-function').locator('[data-part="empty"] [data-part="title"]')).toHaveText(
       'No orders',
     );
     await expect(tile(page, 'error-node').getByRole('alert')).toHaveText('Could not load the orders.');
-    await expect(has(tile(page, 'error-null'), 'plot').locator('*')).toHaveCount(0);
+    await expect(has(tile(page, 'error-null'), 'plot').locator('*:not([data-idle])')).toHaveCount(0);
     const error = tile(page, 'error-function').getByRole('alert');
     await expect(error).toContainText('Orders did not load');
     await expect(error.getByRole('button', { name: 'Load again' })).toBeVisible();

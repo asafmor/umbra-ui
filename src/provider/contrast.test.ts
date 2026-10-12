@@ -1,5 +1,5 @@
 import { describe, expect, it, test } from 'vitest';
-import { contrastRatio, focusColourOn, mutedTextOn, parseColour, textColourOn } from './contrast';
+import { contrastRatio, focusColourOn, insetOn, mutedTextOn, parseColour, textColourOn } from './contrast';
 
 test('parses hex and rgb colours', () => {
   expect(parseColour('#fff')).toEqual([255, 255, 255]);
@@ -37,5 +37,39 @@ describe('colours derived from the brand', () => {
   it('replaces the focus ring where it would not show', () => {
     expect(focusColourOn('#2a2f8f', '#ffb3f5', '#ffffff')).toBe('#ffb3f5');
     expect(focusColourOn('#e8e4f0', '#ffb3f5', '#0b0612')).toBe('#0b0612');
+  });
+});
+
+describe('insetOn', () => {
+  const ratio = (a: string, b: string) => contrastRatio(parseColour(a)!, parseColour(b)!);
+
+  it('is a step away from the bar on every brand, and never costs the text its contrast', () => {
+    for (const brand of [
+      '#2a2f8f',
+      '#1d4ed8',
+      '#22262e',
+      '#e8e4f0',
+      '#0f766e',
+      '#777777',
+      '#000000',
+      '#ffffff',
+    ]) {
+      const on = textColourOn(brand)!.colour;
+      const inset = insetOn(brand, on)!;
+      expect(inset).not.toBe(brand);
+      expect(ratio(inset, on) >= Math.min(4.5, ratio(brand, on))).toBe(true);
+    }
+  });
+
+  it('goes towards the text where there is room, and away from it where there is not', () => {
+    // Lighter on a dark bar, darker on a light one.
+    expect(ratio(insetOn('#22262e', '#ffffff')!, '#ffffff')).toBeLessThan(ratio('#22262e', '#ffffff'));
+    expect(ratio(insetOn('#e8e4f0', '#0b0612')!, '#0b0612')).toBeLessThan(ratio('#e8e4f0', '#0b0612'));
+    // A mid-tone bar has no contrast to give: the surface adds some.
+    expect(ratio(insetOn('#777777', '#0b0612')!, '#0b0612')).toBeGreaterThan(ratio('#777777', '#0b0612'));
+  });
+
+  it('is null for a colour it cannot read', () => {
+    expect(insetOn('rebeccapurple', '#fff')).toBeNull();
   });
 });

@@ -125,7 +125,8 @@ function Action({
       disabled={off}
       text={typeof children === 'string' ? children : undefined}
       shortcut={shortcut}
-      onPress={onPress}
+      // The button's press comes with an event; the app's callback takes none (decision 07).
+      onPress={onPress && (() => onPress())}
       className={cx(styles.action, className)}
     >
       {loading ? (
@@ -301,6 +302,8 @@ export function SplitButton({
   );
 }
 
+/** Among actions that overflow, a row of the "more" menu and a submenu after it (`ActionsOverflow`). */
+SplitButton.overflowsToMenu = true;
 SplitButton.Root = Root;
 SplitButton.Action = Action;
 SplitButton.Menu = SplitMenu;

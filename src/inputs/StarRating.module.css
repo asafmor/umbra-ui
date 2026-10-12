@@ -104,6 +104,24 @@
   inset: 0;
 }
 
+/*
+ * Half steps: the pointer target is the whole star (24px or more), and a press on it chooses the whole
+ * star. The half before it keeps its own box for its focus ring, and takes no pointer: a half is chosen
+ * by dragging along the row, or with the arrow keys.
+ */
+.root[data-step='half'] .choice[data-half] {
+  pointer-events: none;
+}
+
+.root[data-step='half'] .choice:not([data-half]) > .target {
+  inset-inline-start: -100%;
+}
+
+/* A drag along the row is the rating's; a drag across it still scrolls the page on a touch screen. */
+.root[data-step='half'] .stars {
+  touch-action: pan-y;
+}
+
 /* "No rating" has no star of its own: its focus ring goes around the whole row. */
 .clear {
   position: absolute;
@@ -145,12 +163,29 @@
   white-space: nowrap;
 }
 
+/* Loading: the value's text is not shown, and a placeholder lies over the room it keeps. */
+.pending {
+  position: relative;
+}
+
+.pending > span {
+  visibility: hidden;
+}
+
+.pending > [data-umbra='skeleton'] {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: 50%;
+  translate: 0 -50%;
+}
+
 .missing {
   color: var(--umbra-color-base-text-muted);
 }
 
 .skeleton {
   display: block;
+  flex: none;
   inline-size: calc(var(--stars) * var(--cell));
   block-size: var(--row);
 }

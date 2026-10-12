@@ -96,6 +96,14 @@ At every size the tick labels thin out to what fits, and the largest bubble is a
 
 None.
 
+Resolved 2026-10-11 (fix pass of review 2, plan/reviews/milestone-2.md):
+
+- **Invalid input** follows the one rule of plan/decisions/03-charts.md ("Invalid input"): a point whose `x` or `y` is not a finite number is not drawn and does not stretch an axis (one `NaN` blanked the chart), a `size` that is not one makes a plain point, and a second series of one id is left out (MC-4).
+- **One draw order for all the series**: every point is its own group, the largest first, so a small point under a larger bubble of a later series is on top, for the eye and for the pointer. `data-series` and `data-dim` are on each point's group (MC-7).
+- **A point outside an `xDomain` or `yDomain` the app set is not drawn** (it lay on the tick labels), as a `Heatmap` leaves out points outside its domains. **Without axes** the scales stop short of the plot's edge by the size of a point, so one on the end of a domain is whole (MC-12).
+- **5,000 points with `labels`** (MC-16): the names are measured once (the cache of widths holds 50,000, it was emptied at 5,000 and so on every resize); a label is compared only with what is near it (a grid of 48px squares, in the same order as before, so the same labels are drawn); and the model is kept through a hover or a key. A key now costs a frame (it built the chart again: 143ms). A resize is about 100 to 150ms, which is drawing 5,000 SVG nodes.
+- **Focus and `aria-describedby`**: as on every chart (MC-6, X-5; see `Heatmap`).
+
 Resolved 2026-10-11:
 
 - The marker of a series is the charts' point shape (`dot`, `square`, `diamond`, `triangle`, `src/charts/internal/cues.tsx`), as on `LineChart`, with a legend glyph drawn from the same shape. The legend's own marker kinds (`src/internal/SeriesMarker.tsx`: line, dashed, stripes, dots) are swatches for lines and fills and say nothing about a point.

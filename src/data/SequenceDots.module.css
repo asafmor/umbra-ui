@@ -5,9 +5,15 @@
   /* The root clips, so the focus rings of its buttons are drawn inwards. */
   --focus-offset: var(--umbra-sequence-dots-focus-offset, calc(-1 * var(--umbra-state-focus-ring-width)));
 
+  /* The room one mark takes, and the room between two: the placeholder is counted from the same. */
+  --gap: var(--umbra-sequence-dots-gap, var(--umbra-space-2));
+  --mark-width: var(--size);
+  --mark-height: var(--size);
+  --target: var(--umbra-sequence-dots-target-size, 1.5rem);
+
   display: inline-flex;
   align-items: center;
-  gap: var(--umbra-sequence-dots-gap, var(--umbra-space-2));
+  gap: var(--gap);
   min-width: 0;
   max-width: 100%;
   overflow: hidden;
@@ -18,7 +24,7 @@
   --size: var(--umbra-sequence-dots-size, 0.5rem);
   --bar-height: var(--umbra-sequence-dots-bar-height, 0.75rem);
   --bar-width: var(--umbra-sequence-dots-bar-width, 0.25rem);
-  gap: var(--umbra-sequence-dots-gap, var(--umbra-space-1));
+  --gap: var(--umbra-sequence-dots-gap, var(--umbra-space-1));
 }
 
 .root[data-size='lg'] {
@@ -28,8 +34,11 @@
 }
 
 .root[data-variant='bars'] {
+  --gap: var(--umbra-sequence-dots-gap, var(--umbra-space-1));
+  --mark-width: var(--bar-width);
+  --mark-height: var(--bar-height);
+
   align-items: flex-end;
-  gap: var(--umbra-sequence-dots-gap, var(--umbra-space-1));
 }
 
 .mark {
@@ -41,6 +50,15 @@
   border: 0;
   background: none;
   color: var(--tone);
+}
+
+/* The fixed violet is 2.6:1 on a card. A mark is a drawing that carries data, so it takes the lighter
+   violet of a selected row's stripe, which keeps 3:1 on every tint. */
+.root .mark[data-tone='accent'] {
+  --tone: var(
+    --umbra-sequence-dots-accent-color,
+    color-mix(in oklab, var(--umbra-color-fixed-selected), #fff 35%)
+  );
 }
 
 .root[data-variant='bars'] .mark {
@@ -97,15 +115,15 @@
 
 /* A mark that can be pressed is a target of 24px, whatever the size of its drawing. */
 button.mark {
-  min-width: var(--umbra-sequence-dots-target-size, 1.5rem);
-  min-height: var(--umbra-sequence-dots-target-size, 1.5rem);
+  min-width: var(--target);
+  min-height: var(--target);
   border-radius: var(--umbra-radius-control);
   cursor: pointer;
   transition: background-color var(--umbra-motion-duration-fast);
 }
 
 .root[data-interactive] {
-  gap: 0;
+  --gap: 0px;
 }
 
 .root[data-interactive][data-variant='bars'] .mark {
@@ -114,7 +132,7 @@ button.mark {
 
 .root[data-interactive][data-variant='bars'] .bar {
   align-self: flex-end;
-  margin-block-end: calc((var(--umbra-sequence-dots-target-size, 1.5rem) - var(--bar-height)) / 2);
+  margin-block-end: calc((var(--target) - var(--bar-height)) / 2);
   max-height: var(--bar-height);
   height: max(2px, calc(var(--fraction) * var(--bar-height)));
 }
@@ -131,15 +149,22 @@ button.mark[data-disabled] {
   cursor: default;
 }
 
+/* As wide and as tall as the marks it stands in for, so nothing moves when they arrive. */
 .skeleton {
+  flex: none;
   display: block;
-  width: calc(var(--count) * (var(--size) + var(--umbra-space-2)) - var(--umbra-space-2));
-  height: var(--size);
+  width: calc(var(--count) * (var(--mark-width) + var(--gap)) - var(--gap));
+  height: var(--mark-height);
 }
 
-.root[data-variant='bars'] .skeleton {
-  width: calc(var(--count) * (var(--bar-width) + var(--umbra-space-1)) - var(--umbra-space-1));
-  height: var(--bar-height);
+.root[data-interactive] .skeleton {
+  width: calc(var(--count) * max(var(--target), var(--mark-width)));
+  height: max(var(--target), var(--mark-height));
+}
+
+/* The placeholder is the size of small marks: the block's own minimum would make it taller. */
+.skeleton > * {
+  min-height: 0;
 }
 
 .empty {

@@ -2,6 +2,7 @@ import {
   Children,
   cloneElement,
   createContext,
+  Fragment,
   isValidElement,
   useContext,
   useEffect,
@@ -16,7 +17,9 @@ import {
 import { GridList, GridListHeader, GridListItem, GridListSection } from 'react-aria-components';
 import { Skeleton } from '../basics/Skeleton';
 import { Checkbox, CheckboxSlotContext } from '../inputs/Checkbox';
+import { RowsOnlyContext } from '../internal/contexts';
 import { dataState, type DataStateProps } from '../internal/dataState';
+import { distinctIds } from '../internal/distinctIds';
 import { heightProps } from '../internal/height';
 import { ScrollArea } from '../layout/ScrollArea';
 import { cx, renderPart, type Part } from '../utils/parts';
@@ -213,6 +216,25 @@ function Root({
     }),
     [itemVariant, itemSize, onAction, stickyHeaders],
   );
+  // Two rows with one id: each is drawn, under a key of its own, and what is reported is the id the
+  // app gave (`distinctIds`). Seen for the rows given as `List.Item`, in fragments and groups too; a row
+  // inside a component of the app cannot be seen from here.
+  const original = new Map<ListId, ListId>();
+  const rowKey = distinctIds('List').scope();
+  const distinct = (nodes: ReactNode): ReactNode =>
+    Children.map(nodes, (child) => {
+      if (!isValidElement<{ id?: ListId | undefined; children?: ReactNode | undefined }>(child)) return child;
+      if (child.type === Fragment || child.type === Group)
+        return cloneElement(child, {}, distinct(child.props.children));
+      const { id } = child.props;
+      if (child.type !== Item || id === undefined) return child;
+      const key = rowKey(String(id));
+      if (key === String(id)) return child;
+      original.set(key, id);
+      return cloneElement(child, { id: key });
+    });
+  const rows = distinct(children);
+  const idOf = (key: ListId) => original.get(key) ?? key;
   const skeleton = (index: number, meta = true) => (
     <ListItem
       variant={itemVariant}
@@ -250,14 +272,15 @@ function Root({
             if (press.current.used) return;
             press.current.used = true;
           }
-          const next = selection === 'all' ? [...keys.current] : ([...selection] as ListId[]);
+          const all = selection === 'all' ? [...keys.current] : ([...selection] as ListId[]);
+          const next = [...new Set(all.map(idOf))];
           setReported(selection === 'all' ? null : (selection as Set<ListId>));
           setOwnSelection(next);
           onSelectionChange?.(next);
         }}
-        {...defined({ onAction, className: styles.grid })}
+        {...defined({ onAction: onAction && ((key: ListId) => onAction(idOf(key))), className: styles.grid })}
       >
-        {children}
+        <RowsOnlyContext value>{rows}</RowsOnlyContext>
       </GridList>
       {loadingMore &&
         renderPart(parts?.loadingMore, { label: loadingMoreLabel }, (p) => (
@@ -353,26 +376,28 @@ function Item({ id, textValue, href, onPress, disabled, children, ...item }: Lis
             <Checkbox size="small" disabled={isDisabled} />
           </CheckboxSlotContext>
         );
-        if (typeof children === 'function') return children({ ...state, selectionControl });
+        const content = typeof children === 'function' ? children({ ...state, selectionControl }) : children;
         return (
-          children ?? (
-            <ListItem
-              variant={list.itemVariant}
-              size={list.itemSize}
-              {...item}
-              {...state}
-              leading={
-                selectionControl ? (
-                  <>
-                    {selectionControl}
-                    {item.leading}
-                  </>
-                ) : (
-                  item.leading
-                )
-              }
-            />
-          )
+          <RowsOnlyContext value={false}>
+            {content ?? (
+              <ListItem
+                variant={list.itemVariant}
+                size={list.itemSize}
+                {...item}
+                {...state}
+                leading={
+                  selectionControl ? (
+                    <>
+                      {selectionControl}
+                      {item.leading}
+                    </>
+                  ) : (
+                    item.leading
+                  )
+                }
+              />
+            )}
+          </RowsOnlyContext>
         );
       }}
     </GridListItem>
@@ -408,26 +433,28 @@ function Group({ children, header, ...props }: ListGroupProps) {
         {...defined({ className: styles.groupRow })}
         data-sticky={(props.sticky ?? list.stickyHeaders) || undefined}
       >
-        {header ?? (
-          <GroupHeader
-            {...props}
-            sticky={false}
-            collapsed={collapsed}
-            onCollapsedChange={(next) => {
-              // When the focused row is hidden by the collapse, React Aria moves the focus to another
-              // row. The focus stays on the control that was pressed.
-              const pressed = document.activeElement as HTMLElement | null;
-              const grid = pressed?.closest(HEADER)?.closest('[role="grid"]');
-              if (pressed && grid) {
-                const back = () => pressed.isConnected && pressed.focus({ preventScroll: true });
-                grid.addEventListener('focusin', back, { once: true });
-                setTimeout(() => grid.removeEventListener('focusin', back), 100);
-              }
-              setUncontrolled(next);
-              props.onCollapsedChange?.(next);
-            }}
-          />
-        )}
+        <RowsOnlyContext value={false}>
+          {header ?? (
+            <GroupHeader
+              {...props}
+              sticky={false}
+              collapsed={collapsed}
+              onCollapsedChange={(next) => {
+                // When the focused row is hidden by the collapse, React Aria moves the focus to another
+                // row. The focus stays on the control that was pressed.
+                const pressed = document.activeElement as HTMLElement | null;
+                const grid = pressed?.closest(HEADER)?.closest('[role="grid"]');
+                if (pressed && grid) {
+                  const back = () => pressed.isConnected && pressed.focus({ preventScroll: true });
+                  grid.addEventListener('focusin', back, { once: true });
+                  setTimeout(() => grid.removeEventListener('focusin', back), 100);
+                }
+                setUncontrolled(next);
+                props.onCollapsedChange?.(next);
+              }}
+            />
+          )}
+        </RowsOnlyContext>
       </GridListHeader>
       {!collapsed && children}
     </GridListSection>

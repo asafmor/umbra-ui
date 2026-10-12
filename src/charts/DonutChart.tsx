@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { useLocale } from 'react-aria-components';
+import { uniqueIds, valueOrNull } from '../utils/finite';
 import { Skeleton } from '../basics/Skeleton';
 import { renderPart, type Part } from '../utils/parts';
 import styles from './Chart.module.css';
@@ -84,9 +85,9 @@ export interface DonutChartRootProps extends ChartCommonProps {
 }
 
 function Root({
-  value,
+  value: valueProp,
   max = 100,
-  data,
+  data: dataProp,
   thickness,
   startAngle = 0,
   sweep = 360,
@@ -101,6 +102,11 @@ function Root({
   ...common
 }: DonutChartRootProps) {
   const { locale } = useLocale();
+  // Invalid input (plan/decisions/03-charts.md): a value that is not a finite number is no value, so the
+  // single form is empty and a segment is left out, as is a second segment of one id.
+  const value = valueOrNull(valueProp, 'DonutChart') ?? undefined;
+  const data =
+    dataProp && uniqueIds(dataProp, 'DonutChart').filter((d) => valueOrNull(d.value, 'DonutChart') !== null);
   const single = !data;
   const format = common.formatValue ?? numberFormat(locale, { maximumFractionDigits: 2 });
   const percent = numberFormat(locale, { style: 'percent', maximumFractionDigits: 0 });

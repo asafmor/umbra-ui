@@ -19,7 +19,7 @@ type Story = StoryObj<typeof meta>;
 // Widgets of different heights: the number of rows each one shows.
 const sizes = [5, 9, 3, 7, 4, 6, 8, 2, 5, 4, 7, 3];
 const widgets = (count = sizes.length, spans: Record<number, number> = {}) =>
-  sizes.slice(0, count).map((rows, i) => (
+  Array.from({ length: count }, (_, i) => sizes[i % sizes.length]!).map((rows, i) => (
     <WidgetBoard.Widget key={i} id={`widget-${i + 1}`} title={`Widget ${i + 1}`} span={spans[i]}>
       <Rows count={rows} />
     </WidgetBoard.Widget>
@@ -180,3 +180,30 @@ export const PartsAndBlocks: Story = {
       </Columns>,
     ),
 };
+
+/**
+ * Many widgets: the board is as tall as they need, whatever that is, and scrolls inside. The number is
+ * an argument of the story (`&args=count:400` in the address), for a look at a very tall board.
+ */
+export const Many: StoryObj<{ count: number }> = {
+  args: { count: 36 },
+  render: ({ count }) => frame(<ManyBoard count={count} />),
+};
+
+/** The state holds the id of a widget that is not on the board: "Collapse all" and "Expand all" keep it. */
+function ManyBoard({ count }: { count: number }) {
+  const [collapsed, setCollapsed] = useState<string[]>(['removed-widget']);
+  return (
+    <Stack>
+      <WidgetBoard collapsedIds={collapsed} onCollapsedChange={setCollapsed}>
+        {widgets(count)}
+      </WidgetBoard>
+      <Stack size="content">
+        <Log>
+          Collapsed: {collapsed.length} ({collapsed.slice(0, 3).join(', ')}
+          {collapsed.length > 3 && ', and more'})
+        </Log>
+      </Stack>
+    </Stack>
+  );
+}

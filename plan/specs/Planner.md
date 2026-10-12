@@ -28,7 +28,8 @@ A month grid in a large card: a month list with previous, next and "Today" above
 | `week` | one week: its lines and its side cell | |
 | `weekAside` | the side cell of a week: what `renderWeek` returns | shown with `renderWeek` |
 | `row`, `dayCell`, `day`, `slotCell`, `slot`, `placeholder`, `skeleton` | as in `WeekStrip` | |
-| `weekEmpty` | the one line of a week without items | "Nothing planned" |
+| `weekEmpty` | the one line of a week without items | "Nothing planned"; `null` leaves the week its headers alone, with no row |
+| `hiddenItems` | the "+N" of a day with more items than slots | as in `WeekStrip` |
 | `state` | the empty or error state, in place of the weeks | |
 
 ## Variants and states
@@ -69,6 +70,8 @@ States: `loading` (the days are known, so they are drawn; the slots are placehol
 | `loading`, `empty`, `error`, `onRetry`, `retryLabel` | as everywhere | | `src/internal/dataState.tsx` |
 | `weekdayFormat`, `slotSize`, `slotDisplay` | see above | | |
 | `monthLabel`, `previousLabel`, `nextLabel`, `todayLabel`, `weekLabel`, `emptyWeekLabel`, `freeLabel` | string | "Month", "Previous month", "Next month", "Today", "Week", "Nothing planned", "Free" | The built-in texts |
+| `moreLabel` | string | "More actions" | Names the menu the toolbar's `actions` move into when they do not fit |
+| `hiddenItemsLabel` | `(count) => string` | "2 more" | Names the "+N" of a full day, before the names of its items |
 | `aria-label` | string | — | Names the grid, before the month: "Schedule, October 2026" |
 
 ### 3. Parts
@@ -87,11 +90,12 @@ The side column is the `renderWeek` prop and not a part: it has no default conte
 |---|---|---|
 | 1 | weeks taller than the planner | the weeks scroll inside; the toolbar and the weekday names stay |
 | 2 | label wider than its slot | the label ends in an ellipsis |
-| 3 | day 128px or narrower, then 44px | weekday names: long, short, narrow |
-| 4 | day 64px or narrower | slots show their icon only; a month beside a day number goes ("Sep 27" becomes "27") |
+| 3 | room inside a day 128px or less, then 48px | weekday names: long, short, narrow |
+| 4 | room inside a day 64px or less | slots show their icon only; a month beside a day number goes ("Sep 27" becomes "27") |
+| 4a | a date and its "+N" do not fit side by side | the "+N" goes under the date |
 | 5 | the days would be narrower than 40px beside the side column (grid narrower than `weekAsideWidth` + 280px) | the side column collapses to a button per week that opens the week's content in a `Popover`. The slots are then icon only whatever their width |
 
-Steps 2 to 4 are container queries on each day. Step 5 changes what is rendered, so it is measured (a `ResizeObserver` on the grid, applied before the paint); it is a function of the grid's width alone, so a resize and a fresh load at a width agree. The page never scrolls, and the grid is never wider than the planner.
+The room inside a day is its width less the gap between days (`--umbra-planner-day-gap`, 4px by default): what a container query measures. Steps 2 to 4 are container queries on each day. Step 5 changes what is rendered, so it is measured (a `ResizeObserver` on the grid, applied before the paint); it is a function of the grid's width alone, so a resize and a fresh load at a width agree. The page never scrolls, and the grid is never wider than the planner.
 
 Limit: when the side column collapses or opens, its content is mounted again, so state kept inside what `renderWeek` returns (not in the app) is lost on that resize.
 
@@ -103,7 +107,8 @@ Limit: when the side column collapses or opens, its content is mounted again, so
 
 - A week is a `rowgroup` of `1 + slotsPerDay` rows: the row of day headers, then one row per slot. Every header and every slot is its own `gridcell`, so "down" from a day is its first slot.
 - The weekday names are the `columnheader`s. A slot's cell is described by the header of its day (`aria-describedby`), since the weekday alone does not say the date.
-- The side cell of a week is its `rowheader`, named "Week, Oct 11 – 17", spanning the week's rows.
+- The side cell of a week is its `rowheader`, named "Week, Oct 11 – 17", spanning the week's rows (`aria-rowspan`).
+- With the side column the grid has eight columns (`aria-colcount`), and every header and cell says its own (`aria-colindex`: 1 the side column, 2 to 8 the days). Only the first row of a week holds the side cell, so without that a slot of a Monday was read under "Sunday". Without a side column the cells are in order and say nothing. `Planner.Row` takes `sideColumn` for a grid drawn by hand.
 - The line of an empty week is one cell spanning the seven days. It is not a stop.
 - Today's header has `aria-current="date"`; headers have `aria-selected` where days can be chosen.
 - The month's name is in a polite live region, so a change is said when the focus is on a button that did not change.
@@ -120,8 +125,9 @@ One tab stop in the grid: the selected day if it is in the month, else today, el
 | Arrows up and down | The line above or below; from a day's header, the last slot of the same weekday a week earlier. A week without slots is one stop |
 | `Home` / `End` | The first and last day of the week |
 | `Ctrl+Home` / `Ctrl+End` | The first day of the month; the last line of its last day |
-| `PageUp` / `PageDown` | The same day of the previous or next month (its last day when it has no such day). With `Shift`, a year |
+| `PageUp` / `PageDown` | The same day of the previous or next month (its last day when it has no such day). With `Shift`, a year. From a day of the month before or after the one shown: a page towards its own month shows that month and keeps the day (one key never moves the view two months); a page the other way goes to the same day of the month shown |
 | `Enter` / `Space` | Activates the cell: `onAction(id)` for an item; for a header or a free slot, selects the day and calls `onDayAction(date)` |
+| `F2` on a header with "+N" | Moves to the "+N", which `Enter` opens: the list of the day's hidden items, each activated as a slot is. `Escape` returns to the header. On a header that cannot be pressed, `Enter` opens it directly |
 | `Enter` / `F2` on a side cell | Moves into its controls; `Tab` stays among them; `Escape` returns to the cell. A side cell with one control (the collapsed button) presses it |
 
 A move to a day that is not shown changes the month, within `minMonth` and `maxMonth`, and the focus lands on that day once it is drawn. The focused cell is scrolled into view inside the planner only, clear of the weekday names.
@@ -131,8 +137,8 @@ These are the rules of `DataTable`'s grid (`plan/specs/DataTable.md`, "Interacti
 ### Other
 
 - "Today" is never disabled: on today's month it scrolls today into view. A button that disabled itself when pressed would drop the focus.
-- Previous and next are disabled at `minMonth` and `maxMonth`.
-- Loading sets `aria-busy`. The error state is an alert; when Retry brings the weeks back the focus goes to the planner's first tab stop.
+- Previous and next are disabled at `minMonth` and `maxMonth`. The one that disables itself under the focus hands the focus to the other (`leaveDisabled` in `src/internal/focus.ts`).
+- Loading sets `aria-busy`. The error state is an alert. When the weeks give way to the empty or error state under the focus, the focus goes to the first control of the state (Retry), or to the state itself; when the weeks come back, to the cell the user was on.
 - A popover opened from a collapsed side cell closes when the weeks scroll, as every anchored overlay does.
 
 ### Dates
@@ -144,6 +150,19 @@ One model for the four time components, in `src/time/dates.ts`, unit-tested:
 - Text is `Intl.DateTimeFormat` with the provider's locale, formatted in UTC from a UTC instant. Nothing goes through a local-time `Date`, so a clock change cannot move a day (tested in five zones, including ones where a local midnight does not exist).
 - The first day of the week is the locale's (`startOfWeek`); `weekStartsOn` overrides it.
 - The dates are Gregorian and so is the text, whatever calendar the locale prefers; digits and names are the locale's.
+- **A date or a month that is not one** (`'2026-02-30'`, `'soon'`) is never an error on the screen and never a wrong date. One rule, `validDate` in `dates.ts`: development builds warn once per value, and the component falls back:
+
+| Given | Fallback |
+|---|---|
+| `today` | the current day |
+| `month`, `defaultMonth` | the month of `today` (navigation still works) |
+| `minMonth`, `maxMonth` | no limit |
+| `date`, `startDate` of a `WeekStrip` | as if not given: the week of `today` |
+| `selectedDate`, `defaultSelectedDate` | no day chosen |
+| the `date` of an item | the item is left out |
+| the `date` of a `DateChip` or a cell, the `week` of a row | nothing is drawn |
+
+A whole day given as a month (`'2026-10-11'`) is taken as its month.
 
 ## Open questions
 
@@ -165,7 +184,10 @@ Resolved 2026-10-11 (under the owner's delegation; decision 11 of `plan/reviews/
 - **The planner opens with the day that holds the tab stop in view**, and "Today" brings today into view.
 - **Rows use `display: contents`** so that a week is one CSS grid and the side cell can span its rows. Chrome keeps the role of such an element (the tests read the rows by role). Firefox and Safari are not tested automatically: that their minimum versions keep it too is to be confirmed in the manual browser check before a release; the fallback, should one not, is `subgrid` rows with the side cell placed by the week.
 - **The toolbar's `actions` move into a "more" menu when they do not fit** (integration pass, 2026-10-11): `moreLabel` on the toolbar and the planner. The list of months gives way first, down to 6rem, then the actions move, so the app's buttons keep their labels.
-- **A day with more items than `slotsPerDay` says so** (integration pass, 2026-10-11; they were dropped with no sign): "+N" beside its date (`hiddenItems`), named by `hiddenItemsLabel(count)` ("2 more") and the items it stands for, which a pointer reads in its tooltip and a screen reader hears with the day. Weaker than it could be: no popover that lists them as controls, so they cannot be activated from the planner.
+- **A day with more items than `slotsPerDay` says so** (integration pass, 2026-10-11; they were dropped with no sign): "+N" beside its date (`hiddenItems`), named by `hiddenItemsLabel(count)` ("2 more") and the items it stands for, which a pointer reads in its tooltip and a screen reader hears with the day. Since the fix pass of review 1 the "+N" is a button that opens them in a popover, where each calls `onAction(id)` (`plan/specs/WeekStrip.md`).
 - **Works in the popover of a layout-collapsed card** (integration pass, 2026-10-11): the keyboard grid and every control did nothing there (`plan/layout.md`, "Mechanism"). Still open: the side column's content is mounted again when the column collapses or opens.
+
+Resolved in the fix pass of review 1 (2026-10-11): the focus at a month limit (T-1) and in a change of state (T-2), paging from a day of another month (T-4), the columns beside the side column (T-6), `weekEmpty: null` (T-12), dates that are not dates (T-13), the props tables (T-15), and the list of hidden items. Still open: the side column's content is mounted again when the column collapses or opens.
+
 - **The month opens on today's week whatever the planner's first sizes are** (review 2, OP-6, 2026-10-11). The day was scrolled into view once, before the side column collapsed, the stack gave the card its height or the columns became tabs. It is kept in view through every resize until the user scrolls or moves in the weeks; from then on the place is theirs.
 - **What brings a week into view stops clear of the weekday names** (review 2, OP-7, 2026-10-11): the scrolling element has a `scroll-padding-top` of their height, which the browser's `scrollIntoView` honours (a `Spotlight` on a week uses it).

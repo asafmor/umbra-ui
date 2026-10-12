@@ -59,6 +59,7 @@ import { Stack } from '../layout/Stack';
 import { WidgetBoard } from '../layout/WidgetBoard';
 import { DivergingMeter } from '../meters/DivergingMeter';
 import { LevelMeter } from '../meters/LevelMeter';
+import { MeterList } from '../meters/MeterList';
 import { PieIndicator } from '../meters/PieIndicator';
 import { ProgressBar } from '../meters/ProgressBar';
 import { ActionBar } from '../overlays/ActionBar';
@@ -295,6 +296,11 @@ function Everything() {
                 <PieIndicator {...t('PieIndicator')} value={50} label="Share" />
                 <Box width={160}>
                   <DivergingMeter {...t('DivergingMeter')} value={20} label="Change" />
+                </Box>
+                <Box width={160}>
+                  <MeterList {...t('MeterList')}>
+                    <ProgressBar value={40} label="Row" />
+                  </MeterList>
                 </Box>
 
                 <Checkbox {...t('Checkbox')}>Checkbox</Checkbox>

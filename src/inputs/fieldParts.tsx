@@ -1,4 +1,5 @@
 import { createContext, useContext, useId, useState, type CSSProperties, type ReactNode } from 'react';
+import { focusableIn } from '../internal/focus';
 import { IconSlot, RawIcon } from '../provider/icons';
 import { cx } from '../utils/parts';
 import styles from './fieldParts.module.css';
@@ -104,12 +105,16 @@ export function SlotLabel({ className, style, children }: BlockProps) {
     <label
       {...props}
       htmlFor={slots.htmlFor}
-      // A `<label>` only activates a native control. A control that is not one (the value of a
-      // `Stepper`, a spin button) takes the focus here, as a press on the label of an input gives it.
+      // A `<label>` only activates a native control. A control that is not one takes the focus here, as
+      // a press on the label of an input gives it: the element itself (the value of a `Stepper`, a spin
+      // button), or, for a group (radios, a `Slider`, a `StarRating`), its tab stop: the chosen option,
+      // or else the first control in it.
       onClick={(event) => {
         const control = document.getElementById(slots.htmlFor!);
-        if (!event.defaultPrevented && control && !control.matches('button, input, select, textarea'))
-          control.focus();
+        if (event.defaultPrevented || !control || control.matches('button, input, select, textarea')) return;
+        if (control.tabIndex >= 0) return control.focus();
+        const inside = focusableIn(control).filter((el) => el.tabIndex >= 0);
+        (inside.find((el) => el.matches('input:checked')) ?? inside[0])?.focus();
       }}
     >
       {content}

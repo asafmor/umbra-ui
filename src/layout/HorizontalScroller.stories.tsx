@@ -2,6 +2,8 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState, type CSSProperties, type ReactNode } from 'react';
 import { Button } from '../basics/Button';
 import { SummaryTile } from '../data/SummaryTile';
+import { Select } from '../inputs/Select';
+import { Toggle } from '../inputs/Toggle';
 import { AppShell } from '../shell/AppShell';
 import { Log, Rows } from '../stories/placeholders';
 import { Card } from './Card';
@@ -169,4 +171,37 @@ export const PartsAndBlocks: Story = {
       </HorizontalScroller.Root>
     </div>
   ),
+};
+
+const units = ['Days', 'Weeks', 'Months'].map((label) => ({ id: label.toLowerCase(), label }));
+
+/**
+ * Items that hold other controls. The arrow keys move between items from a button or a toggle; a
+ * control that uses those keys itself (a `Select`, a field) keeps them, and `Tab` moves on from it.
+ */
+export const Controls: Story = {
+  render: function Render() {
+    const [unit, setUnit] = useState('weeks');
+    const [live, setLive] = useState(false);
+    const cell: CSSProperties = { display: 'grid', alignContent: 'center', padding: 12 };
+    return frame(
+      <HorizontalScroller itemWidth={220} aria-label="Controls">
+        <Button>First</Button>
+        <div style={cell}>
+          <Select aria-label="Unit" options={units} value={unit} onChange={(id) => setUnit(id ?? 'weeks')} />
+        </div>
+        <div style={cell}>
+          <Toggle checked={live} onChange={setLive}>
+            Live
+          </Toggle>
+        </div>
+        <Button>Last</Button>
+      </HorizontalScroller>,
+      <Stack size="content">
+        <Log>
+          Unit: {unit} · live: {String(live)}
+        </Log>
+      </Stack>,
+    );
+  },
 };

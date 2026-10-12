@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from 'react';
 import { flushSync } from 'react-dom';
-import { Label as AriaLabel, Meter as AriaMeter } from 'react-aria-components';
+import { Meter as AriaMeter } from 'react-aria-components';
 import { Skeleton } from '../basics/Skeleton';
 import { useHoverTip } from '../internal/TruncatedText';
 import { useShrinkLevel } from '../internal/useShrinkLevel';
@@ -19,6 +19,7 @@ import {
   type ChangeHighlightProps,
 } from '../internal/ChangeHighlight';
 import { cx, renderPart, type Part } from '../utils/parts';
+import { MeterLabel, notOnCutLabel, useInMeterList } from './label';
 import styles from './LevelMeter.module.css';
 import { resolveThreshold, type ThresholdList } from '../utils/thresholds';
 import {
@@ -31,6 +32,7 @@ import {
   type MeterTone,
 } from './scale';
 import { defined } from '../utils/defined';
+import { valueOrNull } from '../utils/finite';
 import { passThrough, rootRender, type RootAttributes } from '../utils/passThrough';
 
 /** One step of a named scale. */
@@ -134,7 +136,7 @@ function Root({
   thresholds,
   lowerIsBetter,
   tone = 'default',
-  orientation = 'horizontal',
+  orientation: orientationProp = 'horizontal',
   size = 'default',
   boxed = true,
   formatValue,
@@ -148,6 +150,8 @@ function Root({
   ...rest
 }: LevelMeterRootProps) {
   const ref = useRef<HTMLDivElement>(null);
+  // A row of a `MeterList` is horizontal: its strip is in the list's column of bars.
+  const orientation = useInMeterList() ? 'horizontal' : orientationProp;
   const vertical = orientation === 'vertical';
 
   // The shrink level restarts when the element gets wider. A vertical meter restarts on its height.
@@ -167,7 +171,7 @@ function Root({
   const max = levels ? Math.max(1, levels.length - 1) : maxProp;
   /** A value as a number on the scale; `undefined` when it is missing or names no level. */
   const position = (v: LevelMeterValue | null | undefined) => {
-    if (typeof v !== 'string') return v === undefined || v === null || Number.isNaN(v) ? undefined : v;
+    if (typeof v !== 'string') return valueOrNull(v, 'LevelMeter') ?? undefined;
     const index = levels?.findIndex((l) => l.id === v) ?? -1;
     return index < 0 ? undefined : index;
   };
@@ -235,7 +239,7 @@ function Root({
   };
   const content = <Context.Provider value={context}>{children}</Context.Provider>;
   // The exact value, range and comparison, which the ticks only approximate.
-  const tip = useHoverTip(ref, tooltip && !loading ? spoken : null);
+  const tip = useHoverTip(ref, tooltip && !loading ? spoken : null, notOnCutLabel);
 
   if (loading) {
     return (
@@ -274,11 +278,10 @@ function Root({
 
 /** The name of the meter. Truncates once the ticks have thinned as far as they go. */
 function Label({ children, className, style }: BlockProps) {
-  const props = { 'data-part': 'label', className: cx(styles.label, className), style };
-  return useMeter().loading ? (
-    <span {...props}>{children}</span>
-  ) : (
-    <AriaLabel {...props}>{children}</AriaLabel>
+  return (
+    <MeterLabel loading={useMeter().loading} className={cx(styles.label, className)} style={style}>
+      {children}
+    </MeterLabel>
   );
 }
 

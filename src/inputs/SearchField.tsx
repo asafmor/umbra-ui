@@ -26,11 +26,14 @@ import menuStyles from '../overlays/Menu.module.css';
 import { BareIcon, Icon, IconSlot } from '../provider/icons';
 import { formatKeys, isTypingTarget, matchesKeys } from '../provider/shortcuts';
 import { useScopeAttributes, useShortcut, useUmbra } from '../provider/UmbraProvider';
-import { useFlipWhenCut, useOverlayLayer } from '../overlays/shared';
+import { usePopoverRef } from '../overlays/popoverRef';
+import { useOverlayLayer } from '../overlays/shared';
 import { cx, renderPart, type Part } from '../utils/parts';
 import type { BlockProps } from './fieldParts';
+import { useActionKind } from '../internal/contexts';
 import styles from './SearchField.module.css';
-import { useFieldControl } from './useField';
+import { distinctIds } from '../internal/distinctIds';
+import { ReportValidation, useFieldControl } from './useField';
 import { defined } from '../utils/defined';
 import { passThrough } from '../utils/passThrough';
 
@@ -248,14 +251,15 @@ function Root({
   // has no rows, so it has none until the text changes again.
   const [picked, setPicked] = useState<string | null>(null);
   const chosen = picked === shown;
+  const key = distinctIds('SearchField').scope();
   const all: Row[] = [
     ...(shown === '' ? (recent ?? []) : []).map((entry) => ({
-      key: `recent:${entry}`,
+      key: key(`recent:${entry}`),
       text: entry,
       recent: true,
     })),
     ...(suggestions ?? []).map((suggestion) => ({
-      key: suggestion.id,
+      key: key(suggestion.id),
       text: suggestion.textValue ?? (typeof suggestion.label === 'string' ? suggestion.label : suggestion.id),
       recent: false,
       suggestion,
@@ -310,7 +314,8 @@ function Root({
     className: styles.box,
     isDisabled: control.disabled,
     isReadOnly: readOnly,
-    isInvalid: control.invalid,
+    // Only when it is set: a `false` would silence the field's own validation (required, on submit).
+    isInvalid: control.invalid || undefined,
     isRequired: control.required,
     name,
     'aria-label': control.labelledBy ? undefined : label,
@@ -391,10 +396,12 @@ function Root({
           defaultFilter={() => true}
           formValue="text"
         >
+          <ReportValidation />
           {content}
         </AriaComboBox>
       ) : (
         <AriaSearchField ref={boxRef} {...defined(field)} value={shown} onChange={(next) => change(next)}>
+          <ReportValidation />
           {content}
         </AriaSearchField>
       )}
@@ -533,7 +540,7 @@ function Suggestions({
   const field = useSearchField();
   const scope = useScopeAttributes();
   const layer = useOverlayLayer('popover');
-  const flipWhenCut = useFlipWhenCut(maxHeight);
+  const flipWhenCut = usePopoverRef(maxHeight, field.boxRef);
   if (!field.hasList) return null;
   // Rows without a section come first; each section keeps the place of its first row.
   const groups = new Map<string, Row[]>();
@@ -692,6 +699,7 @@ export function SearchField({
   parts,
   ...root
 }: SearchFieldProps) {
+  useActionKind('stays');
   return (
     <Root {...root}>
       {renderPart(parts?.icon, {}, (p) => (

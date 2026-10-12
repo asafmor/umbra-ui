@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { useLocale } from 'react-aria-components';
+import { isValue, uniqueIds, valueOrNull } from '../utils/finite';
 import { Skeleton } from '../basics/Skeleton';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './Chart.module.css';
@@ -96,7 +97,7 @@ const overlap = (a: number[], b: number[]) =>
   a[0]! < b[2]! && b[0]! < a[2]! && a[1]! < b[3]! && b[1]! < a[3]!;
 
 function Root({
-  series,
+  series: seriesProp,
   xDomain,
   yDomain,
   sizeDomain,
@@ -112,6 +113,17 @@ function Root({
   ...common
 }: ScatterRootProps) {
   const { locale } = useLocale();
+  // Invalid input (plan/decisions/03-charts.md): one series per id; a point whose x or y is not a finite
+  // number is not drawn, and a size that is not one makes a plain point.
+  const series = uniqueIds(seriesProp, 'Scatter').map((s) => ({
+    ...s,
+    data: s.data.map((p) => ({
+      ...p,
+      y: valueOrNull(p.y, 'Scatter') ?? NaN,
+      size: valueOrNull(p.size, 'Scatter') ?? undefined,
+    })),
+  }));
+  const valid = (p: ScatterPoint) => isValue(+p.x) && isValue(p.y);
   const number = numberFormat(locale, { maximumFractionDigits: 2 });
   const format = common.formatValue ?? number;
   const dated = series.find((s) => s.data.length)?.data[0]?.x instanceof Date;
@@ -141,7 +153,7 @@ function Root({
   const build = ({ width, height, fontSize, measure, level, hidden }: BuildInput): ScatterModel => {
     const shown = all.filter((s) => !hidden.includes(s.id));
     const axes = showAxes && level < 4;
-    const data = (shown.length ? shown : all).flatMap((s) => s.data);
+    const data = (shown.length ? shown : all).flatMap((s) => s.data.filter(valid));
     const noted = (axis: 'x' | 'y') =>
       (annotations ?? [])
         .filter((a) => (a.axis ?? 'y') === axis)
@@ -160,7 +172,13 @@ function Root({
     let m = margins(0);
     const top = m.top;
     const bottom = Math.max(height - m.bottom, top + 1);
-    const y = linear(yDomain ?? niceDomain([...data.map((p) => p.y), ...noted('y')]), [bottom, top]);
+    // Without axes the plot reaches the edge of the chart: the scales stop short of it by the size of a
+    // point, so one on the end of a domain is not cut in half.
+    const inset = axes ? 0 : (sized ? clamp(Math.min(width, height) / 9, 6, 24) : pointSize) + 2;
+    const y = linear(yDomain ?? niceDomain([...data.map((p) => p.y), ...noted('y')]), [
+      bottom - inset,
+      top + inset,
+    ]);
     const yAll: AxisTick[] = y
       .ticks(clamp(Math.floor((bottom - top) / (fontSize * 3)), 2, 8))
       .map((v) => ({ at: y(v), label: format(v) }));
@@ -179,13 +197,16 @@ function Root({
         new Date(Math.max(...times)),
       ];
       // A little room at both ends, so the first and last points are not cut by the plot's edge.
-      const scale = time(ends, [left + pointSize + 2, right - pointSize - 2]);
+      const scale = time(ends, [
+        left + Math.max(inset, pointSize + 2),
+        right - Math.max(inset, pointSize + 2),
+      ]);
       xAt = (x) => scale(x as Date);
       xAll = scale.ticks(count).map((v) => ({ at: scale(v), label: xText(v) }));
     } else {
       const scale = linear(
         (xDomain as [number, number] | undefined) ?? niceDomain([...data.map((p) => +p.x), ...noted('x')]),
-        [left, right],
+        [left + inset, right - inset],
       );
       xAt = (x) => scale(+x);
       xAll = scale.ticks(count).map((v) => ({ at: scale(v), label: xText(v) }));
@@ -194,6 +215,9 @@ function Root({
     // The area of a bubble follows its size, so its radius follows the square root.
     const sizes = sizeDomain ?? [0, Math.max(...all.flatMap((s) => s.data.map((p) => p.size ?? 0)), 0)];
     const largest = clamp(Math.min(right - left, bottom - top) / 9, 6, 24);
+    // A point outside a domain the app narrowed is not drawn: it would lie on the tick labels.
+    const inPlot = (p: { x: number; y: number }) =>
+      p.x >= left - 0.5 && p.x <= right + 0.5 && p.y >= top - 0.5 && p.y <= bottom + 0.5;
     const radius = (size: number | undefined) =>
       size == null || !(sizes[1] > sizes[0])
         ? pointSize
@@ -221,7 +245,7 @@ function Root({
             point: { seriesId: s.id, seriesLabel: s.label, index: i, x: p.x, value: p.y },
           };
         })
-        .filter((p) => Number.isFinite(p.x) && Number.isFinite(p.y))
+        .filter((p) => Number.isFinite(p.x) && Number.isFinite(p.y) && inPlot(p))
         // The arrow keys move along the x axis.
         .sort((a, b) => a.x - b.x),
     }));
@@ -231,7 +255,27 @@ function Root({
     const labels: ScatterModel['labels'] = [];
     if (common.labels && level < 2) {
       const drawn = built.flatMap((s) => s.points);
-      const taken = drawn.map((p) => [p.x - p.r, p.y - p.r, p.x + p.r, p.y + p.r]);
+      // What is taken, by the squares of a grid it touches: a label is only compared with what is near
+      // it. Comparing every label with every point took hundreds of milliseconds for 5,000 points.
+      const cell = 48;
+      const taken = new Map<number, (readonly [number[], number])[]>();
+      const cells = (b: number[]) => {
+        const keys: number[] = [];
+        for (let cx = Math.floor(b[0]! / cell); cx <= Math.floor(b[2]! / cell); cx++)
+          for (let cy = Math.floor(b[1]! / cell); cy <= Math.floor(b[3]! / cell); cy++)
+            keys.push(cx * 100003 + cy);
+        return keys;
+      };
+      const take = (b: number[], owner: number) => {
+        for (const key of cells(b)) {
+          const list = taken.get(key);
+          if (list) list.push([b, owner]);
+          else taken.set(key, [[b, owner]]);
+        }
+      };
+      const free = (b: number[], owner: number) =>
+        !cells(b).some((key) => taken.get(key)?.some(([t, j]) => j !== owner && overlap(b, t)));
+      drawn.forEach((p, i) => take([p.x - p.r, p.y - p.r, p.x + p.r, p.y + p.r], i));
       const half = fontSize * 0.65;
       drawn.forEach((p, i) => {
         const text = series.find((s) => s.id === p.point.seriesId)?.data[p.point.index]?.label;
@@ -243,9 +287,10 @@ function Root({
           start + w <= right ? ([start, p.y - half, start + w, p.y + half] as number[]) : null,
           end - w >= left ? [end - w, p.y - half, end, p.y + half] : null,
         ];
-        const side = boxes.findIndex((box) => box && !taken.some((t, j) => j !== i && overlap(box, t)));
+        const side = boxes.findIndex((box) => box && free(box, i));
         if (side < 0) return;
-        taken.push(boxes[side]!);
+        // A label belongs to no point: every later label is compared with it.
+        take(boxes[side]!, -1);
         labels.push({ x: side ? end : start, y: p.y, anchor: side ? 'end' : 'start', text });
       });
     }
@@ -303,14 +348,14 @@ function Root({
       table={{
         columns: [xTitle ?? 'x', yTitle ?? 'y', ...(sized ? [sizeLabel] : [])],
         rows: all.flatMap((s) =>
-          s.data.map((p) => ({
+          s.data.filter(valid).map((p) => ({
             label: p.label ? `${s.label}, ${p.label}` : s.label,
             cells: [xText(p.x), format(p.y), ...(sized ? [p.size == null ? '' : sizeText(p.size)] : [])],
           })),
         ),
       }}
       summary={all.map((s) => s.label).join(', ') + (xTitle && yTitle ? `: ${xTitle}, ${yTitle}` : '')}
-      isEmpty={!series.some((s) => s.data.length)}
+      isEmpty={!series.some((s) => s.data.some(valid))}
       skeleton={<Skeleton shape="block" />}
       widths={[360, 280, 220, 150]}
       heights={[240, 190, 150, 100]}
@@ -324,26 +369,32 @@ function Root({
   );
 }
 
-/** The points of each series: its shape in its colour. The largest bubbles are drawn first, so none hides a smaller one. */
+/**
+ * The points: each in the shape and colour of its series. The largest bubbles are drawn first, across
+ * all the series, so none hides a smaller point from the eye or from the pointer.
+ */
 function Points() {
   const frame = useFrame<ScatterModel>();
   return (
     <g data-part="series">
-      {frame.model.series.map((s) => (
-        <g key={s.id} className={styles.series} style={{ color: s.color }} {...seriesProps(frame, s.id)}>
-          {[...s.points]
-            .sort((a, b) => b.r - a.r)
-            .map((p) => (
-              <g key={p.key} {...frame.pointProps(p)}>
-                {/* At least 24px across: the smallest target a pointer can be asked to hit. */}
-                <circle className={styles.hit} cx={p.x} cy={p.y} r={Math.max(12, p.r)} />
-                <g className={cx(styles.point, p.bubble && styles.bubble)}>
-                  <PointShape shape={s.shape} x={p.x} y={p.y} size={p.r} />
-                </g>
-              </g>
-            ))}
-        </g>
-      ))}
+      {frame.model.series
+        .flatMap((s) => s.points.map((p) => ({ s, p })))
+        .sort((a, b) => b.p.r - a.p.r)
+        .map(({ s, p }) => (
+          <g
+            key={p.key}
+            className={styles.series}
+            style={{ color: s.color }}
+            {...seriesProps(frame, s.id)}
+            {...frame.pointProps(p)}
+          >
+            {/* At least 24px across: the smallest target a pointer can be asked to hit. */}
+            <circle className={styles.hit} cx={p.x} cy={p.y} r={Math.max(12, p.r)} />
+            <g className={cx(styles.point, p.bubble && styles.bubble)}>
+              <PointShape shape={s.shape} x={p.x} y={p.y} size={p.r} />
+            </g>
+          </g>
+        ))}
     </g>
   );
 }

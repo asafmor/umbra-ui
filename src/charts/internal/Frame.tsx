@@ -6,6 +6,7 @@ import {
   useEffect,
   useId,
   useLayoutEffect,
+  useMemo,
   useReducer,
   useRef,
   useState,
@@ -303,7 +304,13 @@ export function Frame<M extends FrameModel>({
 
   const drawn = !state && plot.width > 0 && plot.height > 0;
   const measure = measurer(plot.font, plot.fontSize);
-  const model = drawn ? build({ ...plot, measure, level, hidden }) : null;
+  // Built again when the chart's props, its size or its font change, and not for a point that is hovered
+  // or reached with a key: those only change this component's own state, so `build` is the same function.
+  const model = useMemo(
+    () => (drawn ? build({ ...plot, measure, level, hidden }) : null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `measure` follows the font, which is listed
+    [build, drawn, plot, level, hidden],
+  );
   const rows = model?.rows.filter((row) => row.length) ?? [];
   const all = rows.flat();
   const active = (activeKey && all.find((p) => p.key === activeKey.key)) || null;
@@ -427,6 +434,10 @@ export function Frame<M extends FrameModel>({
   // No summary of data that is not there (it read "0: ").
   const summaryText = description ?? (isEmpty ? '' : summary);
   const descriptionId = summaryText ? `${uid}-description` : undefined;
+  // What the app says describes the chart comes first; the chart's own summary is added to it.
+  const describedBy =
+    [(rest as Record<string, unknown>)['aria-describedby'], descriptionId].filter(Boolean).join(' ') ||
+    undefined;
 
   return (
     <figure
@@ -440,7 +451,7 @@ export function Frame<M extends FrameModel>({
       data-height={heightProps(height)['data-height']}
       aria-label={label}
       aria-labelledby={labelledBy}
-      aria-describedby={descriptionId}
+      aria-describedby={describedBy}
       aria-busy={state === 'loading' || undefined}
       className={cx(styles.root, className)}
       style={{ ...heightProps(height).style, ...style }}
@@ -463,19 +474,25 @@ export function Frame<M extends FrameModel>({
             { children: <div className={styles.state}>{stateNode}</div> },
             (p) => p.children,
           )}
-        {model && (
-          <div
-            className={styles.marks}
-            // A list of points only when there are points: an empty listbox is not a valid tab stop.
-            role={all.length ? 'listbox' : undefined}
-            aria-label={all.length ? pointsLabel : undefined}
-            aria-activedescendant={active ? `${uid}-${active.key}` : undefined}
-            tabIndex={all.length ? 0 : undefined}
-            data-has-active={keyboard || undefined}
-            onKeyDown={onKeyDown}
-            onBlur={() => setActive(null)}
-            onPointerLeave={() => setActive((a) => (a?.keyboard ? a : null))}
-          >
+        {/*
+          Always in the page, so the focus it holds is kept when the app shows the skeleton or an error in
+          place of the marks, and the arrow keys work again when the data is back ("focus is never lost").
+          Without marks it is no tab stop, and lets the pointer through to the state drawn under it.
+        */}
+        <div
+          className={styles.marks}
+          // A list of points only when there are points: an empty listbox is not a valid tab stop.
+          role={all.length ? 'listbox' : undefined}
+          aria-label={all.length ? pointsLabel : undefined}
+          aria-activedescendant={active ? `${uid}-${active.key}` : undefined}
+          tabIndex={all.length ? 0 : -1}
+          data-has-active={keyboard || undefined}
+          data-idle={model ? undefined : ''}
+          onKeyDown={onKeyDown}
+          onBlur={() => setActive(null)}
+          onPointerLeave={() => setActive((a) => (a?.keyboard ? a : null))}
+        >
+          {model && (
             <svg width={plot.width} height={plot.height} role="presentation" className={styles.svg}>
               <FrameContext
                 value={
@@ -488,8 +505,8 @@ export function Frame<M extends FrameModel>({
               </FrameContext>
               {active && <Ring point={active} keyboard={keyboard} />}
             </svg>
-          </div>
-        )}
+          )}
+        </div>
         {tooltipNode != null && tooltipNode !== false && place && (
           <div
             ref={tooltipRef}

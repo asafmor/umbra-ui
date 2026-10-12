@@ -12,6 +12,7 @@
 //   `data-line` (0 is the day's header, 1 and up its slots);
 // - the side cell of a week: `data-week` and `data-col="aside"`.
 import { useLayoutEffect, useRef } from 'react';
+import { focusableIn, focusLost } from '../internal/focus';
 import { CELL, SIMPLE_WIDGET, TABBABLE, useCellListeners, widgetsOf } from '../internal/gridCells';
 import { addDays, type IsoDate } from './dates';
 
@@ -30,8 +31,9 @@ export interface DateGridOptions {
    */
   onLeave?: ((target: GridTarget) => boolean) | undefined;
   /**
-   * PageUp and PageDown (with Shift: a year). The grid changes its month and returns the day the focus
-   * goes to once that month is rendered, or nothing when it stays.
+   * PageUp and PageDown (with Shift: a year). Returns the day the focus goes to, or nothing when it
+   * stays: at once when that day is shown and of the month shown, else once the month the grid changed
+   * to is rendered.
    */
   onPage?: ((date: IsoDate, months: number) => IsoDate | undefined) | undefined;
 }
@@ -50,6 +52,8 @@ function reveal(cell: HTMLElement) {
 /** The grid behaviour of one element: roving tab stop, arrow keys, and focus that is not lost. */
 export function useDateGrid<E extends HTMLElement>(options: DateGridOptions = {}) {
   const root = useRef<E>(null);
+  /** What is drawn in place of the grid while there is none: its empty or error state. */
+  const stand = useRef<HTMLDivElement>(null);
   const latest = useRef(options);
   /** The active cell: a day and a line, or the side cell of a week. */
   const active = useRef<{ date?: IsoDate | undefined; line: number; week?: string | undefined } | null>(null);
@@ -108,7 +112,16 @@ export function useDateGrid<E extends HTMLElement>(options: DateGridOptions = {}
   useLayoutEffect(() => {
     latest.current = options;
     const el = root.current;
-    if (!el) return;
+    if (!el) {
+      // The grid gave way to its empty or error state under the focus: the focus goes to the first
+      // control of that state (Retry), or to the state itself. `hasFocus` stays, so the grid takes the
+      // focus back to the cell the user was on when it returns.
+      const state = stand.current;
+      if (state && hasFocus.current && focusLost()) {
+        (focusableIn(state).find((control) => control.tabIndex >= 0) ?? state).focus({ preventScroll: true });
+      }
+      return;
+    }
     for (const widget of el.querySelectorAll<HTMLElement>(TABBABLE)) {
       if (!widget.matches(CELL)) widget.tabIndex = -1;
     }
@@ -121,7 +134,8 @@ export function useDateGrid<E extends HTMLElement>(options: DateGridOptions = {}
     }
     const cell = activeCell();
     setTabStop(cell);
-    const lost = !document.activeElement || document.activeElement === document.body;
+    // Lost, or left on the grid's own element, which held it as the empty or error state.
+    const lost = focusLost() || document.activeElement === el;
     if (hasFocus.current && cell && lost) cell.focus({ preventScroll: true });
   });
 
@@ -205,9 +219,15 @@ export function useDateGrid<E extends HTMLElement>(options: DateGridOptions = {}
       case 'PageUp':
       case 'PageDown': {
         const months = (event.key === 'PageUp' ? -1 : 1) * (event.shiftKey ? 12 : 1);
-        // The grid changes its month; the focus lands on the day once that month is rendered.
         const to = date && latest.current.onPage?.(date, months);
-        if (to) pending.current = { date: to, line };
+        if (to) {
+          const target = { date: to, line };
+          const shown = find(target);
+          // A day of the month shown: nothing is rendered again, so the focus moves now. Any other day
+          // means the grid changed its month, and the focus lands once that month is rendered.
+          if (shown && !shown.dataset.outside) focusCell(shown);
+          else pending.current = target;
+        }
         return done();
       }
       case 'Tab':
@@ -219,10 +239,13 @@ export function useDateGrid<E extends HTMLElement>(options: DateGridOptions = {}
       case ' ': {
         if (target !== cell) return;
         const widgets = widgetsOf(cell);
-        if (event.key === 'F2' || widgets.length > 1) {
+        // A cell that is pressed itself (a day, an item) keeps Enter and Space for that: a control
+        // inside it (the mark of its hidden items) is entered with F2.
+        const pressed = cell.hasAttribute('data-action');
+        if (event.key === 'F2' || (widgets.length > 1 && !pressed)) {
           if (event.key === ' ' || !widgets[0]) return;
           widgets[0].focus();
-        } else if (widgets[0]) {
+        } else if (widgets[0] && !pressed) {
           // The one control of a cell is pressed from the cell. It takes the focus first: what it opens
           // (the popover of a collapsed side cell) then closes back to it, as after a press on it.
           // Without scrolling: an anchored overlay closes when what is around its anchor scrolls.
@@ -259,5 +282,5 @@ export function useDateGrid<E extends HTMLElement>(options: DateGridOptions = {}
     reveal(cell);
   };
 
-  return [root, { onKeyDown, onFocus, onBlur }, show] as const;
+  return [root, { onKeyDown, onFocus, onBlur }, show, stand] as const;
 }

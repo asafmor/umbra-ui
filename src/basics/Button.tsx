@@ -4,7 +4,7 @@ import {
   Link as AriaLink,
   ProgressBar as AriaProgressBar,
 } from 'react-aria-components';
-import { ForceCollapseContext, OverflowMenuContext } from '../internal/contexts';
+import { ForceCollapseContext, OverflowMenuContext, useActionKind } from '../internal/contexts';
 import { useShrinkLevel } from '../internal/useShrinkLevel';
 import { Tooltip } from '../overlays/Tooltip';
 import { Icon, IconSlot } from '../provider/icons';
@@ -81,6 +81,7 @@ export function ButtonBase({
   children,
   ...rest
 }: BaseProps) {
+  useActionKind('row');
   const row = useContext(OverflowMenuContext);
   if (row) {
     return row({
@@ -245,7 +246,8 @@ export function Button({
       tooltip={collapsed ? children : null}
       shortcut={shortcut}
       pressed={pressed}
-      onPress={press}
+      // React Aria's press comes with an event; the app's callback takes none (decision 07).
+      onPress={press && (() => press())}
     >
       {rest.loading
         ? renderPart(parts?.spinner, {}, () => <Spinner label={loadingLabel} />)
@@ -260,3 +262,6 @@ export function Button({
     </ButtonBase>
   );
 }
+
+/** A row of the "more" menu among actions that overflow (`ActionsOverflow`). */
+Button.overflowsToMenu = true;

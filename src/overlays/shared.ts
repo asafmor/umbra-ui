@@ -138,3 +138,33 @@ export function useOverlayLayer(layer: 'popover' | 'tooltip' | 'spotlight'): {
     'data-react-aria-top-layer': layer === 'popover' ? undefined : 'true',
   };
 }
+
+/**
+ * Writes on `overlay` the `--umbra-*` properties that reach `from` and not the overlay. An overlay is
+ * rendered in a portal, outside the element it was opened from, so a token the app set on an ancestor of
+ * that element (in a stylesheet or a `style`) would not reach it: `--umbra-menu-bg` on a toolbar would
+ * colour nothing. What a scope sets (`UmbraScope`, a `TopBar`) the overlay has already, and is not written.
+ *
+ * Read once, when the overlay opens.
+ * ponytail: a token that changes while the overlay is open is not followed; observe the anchor's
+ * ancestors if an app needs that.
+ */
+export function carryTokens(from: Element, overlay: HTMLElement) {
+  const there = getComputedStyle(from);
+  const here = getComputedStyle(overlay);
+  const names = new Set<string>();
+  // Browsers list custom properties in one of the two: Chromium in the style map, Firefox in the declaration.
+  const map = (
+    from as Element & { computedStyleMap?: (() => Iterable<[string, unknown]>) | undefined }
+  ).computedStyleMap?.();
+  if (map) for (const [name] of map) names.add(name);
+  for (let i = 0; i < there.length; i++) names.add(there.item(i));
+  const carried: [string, string][] = [];
+  for (const name of names) {
+    // `--umbra-slot-min-height` is a layout child's own (plan/decisions/07-customisation.md).
+    if (!name.startsWith('--umbra-') || name === '--umbra-slot-min-height') continue;
+    const value = there.getPropertyValue(name);
+    if (value !== here.getPropertyValue(name)) carried.push([name, value]);
+  }
+  for (const [name, value] of carried) overlay.style.setProperty(name, value);
+}
