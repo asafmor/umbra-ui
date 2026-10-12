@@ -14,27 +14,30 @@ export const exampleUrl = (name: ExampleName) => `http://localhost:${first + exa
 const dev = { prebundled: first + 3, excluded: first + 4 } as const;
 export const devUrl = (mode: keyof typeof dev) => `http://localhost:${dev[mode]}/`;
 
+// reuseExistingServer is false: when a port is taken, the run stops and says so. Reusing whatever
+// answers there would test another checkout's build, or another program.
 export default defineConfig({
   testDir: 'tests/examples',
   fullyParallel: true,
-  retries: process.env.CI ? 2 : 0,
+  // No retries, here or in CI: a test that passes on a second try is a flaky test.
+  retries: 0,
   reporter: [['list']],
   use: { browserName: 'chromium' },
   webServer: [
     ...examples.map((name) => ({
       command: `npx vite preview --outDir examples/${name}/dist --port ${first + examples.indexOf(name)} --strictPort`,
       url: exampleUrl(name),
-      reuseExistingServer: true,
+      reuseExistingServer: false,
     })),
     {
       command: `npx vite examples/basic --port ${dev.prebundled} --strictPort`,
       url: devUrl('prebundled'),
-      reuseExistingServer: true,
+      reuseExistingServer: false,
     },
     {
       command: `npx vite examples/basic --config tests/examples/vite.maps.config.ts --port ${dev.excluded} --strictPort`,
       url: devUrl('excluded'),
-      reuseExistingServer: true,
+      reuseExistingServer: false,
     },
   ],
 });
