@@ -482,6 +482,7 @@ Triggers an action. Text, with an optional icon.
 | `--umbra-button-neutral-border` | `--umbra-color-base-border-control` (#7a6e91) |
 | `--umbra-button-neutral-fg` | `--umbra-color-base-text-primary` (#f5f3f8) |
 | `--umbra-button-padding-x` | `--umbra-space-4` (12px) |
+| `--umbra-button-pressed-color` | `--umbra-color-fixed-accent-text` (#f77bf0) |
 | `--umbra-button-primary-bg` | `--umbra-color-fixed-primary` (#db1065) |
 | `--umbra-button-primary-border` | `transparent` |
 | `--umbra-button-primary-fg` | `--umbra-color-fixed-on-primary` (#ffffff) |
@@ -505,6 +506,8 @@ Triggers an action. Text, with an optional icon.
 | `collapseTo` | `"icon"` | With an icon set, hides the label when the button does not fit; the label becomes its tooltip and name. |
 | `type` | `"button" \| "submit" \| "reset"` |  |
 | `onPress` | `(() => void)` |  |
+| `pressed` | `boolean` | Makes it a toggle. While `true` it takes the accent colour, an outline, and its icons are drawn filled. |
+| `onPressedChange` | `((pressed: boolean) => void)` |  |
 | `parts` | `see Parts` | Replace or hide named pieces. |
 | `className` | `string` |  |
 | `style` | `CSSProperties` |  |
@@ -531,7 +534,6 @@ The container for one unit of content on a page. Fills the slot its parent gives
 | `--umbra-card-padding` | `--umbra-density-card-padding` (16px at the default density) |
 | `--umbra-card-radius` | `--umbra-radius-card` (8px) |
 | `--umbra-card-title-font` | `--umbra-font-card-title` |
-| `--umbra-card-title-min-width` | `4rem` |
 | `--umbra-focus-color` | `--umbra-color-fixed-focus-ring` (#ffb3f5) |
 
 | Prop | Type | Purpose |
@@ -1646,8 +1648,9 @@ A button that shows only an icon. Inside an overflow menu it becomes a menu item
 | `label` (required) | `string` | Required. The accessible name and the tooltip text. |
 | `variant` | `ButtonVariant` |  |
 | `shape` | `"square" \| "circle"` |  |
-| `pressed` | `boolean` | Makes it a toggle (for example a star). |
+| `pressed` | `boolean` | Makes it a toggle (for example a star). While `true` the icon takes the accent colour and is drawn filled; a `ghost` toggle has no outline. |
 | `onPressedChange` | `((pressed: boolean) => void)` |  |
+| `pressedIcon` | `ReactNode` | The icon while `pressed`, in place of `icon` drawn filled: for an icon that is not one closed shape, or a set that has its own filled glyphs. |
 | `badge` | `number \| true` | A count, or `true` for a dot, at the corner. |
 | `tooltip` | `ReactNode` | Shows `label` on hover and focus. A node replaces the text. |
 | `shortcut` | `string` | Id of a shortcut in the provider's list: binds the key and shows the hint in the tooltip. |

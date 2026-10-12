@@ -36,6 +36,14 @@ const load = () =>
 /** For the host's actions container once its row has taken its last step: see the stylesheet. */
 export const wrapsKept = styles.wrap;
 
+/** True when a control among `nodes` stays in the row (`staysInRow`): the row may then need more lines. */
+export const keepsControls = (nodes: ReactNode): boolean =>
+  Children.toArray(nodes).some((child) =>
+    isValidElement<{ children?: ReactNode | undefined }>(child) && child.type === Fragment
+      ? keepsControls(child.props.children)
+      : staysInRow(child),
+  );
+
 /**
  * Internal: a "more" button that opens `children` as a menu, for actions that no longer fit in a row.
  * Each `Button` and `IconButton` among them renders as a menu item, and each `Menu` as a submenu. A
@@ -265,11 +273,21 @@ function Fallback({
     const onFocusOut = (event: FocusEvent) => {
       if (event.relatedTarget && !inside(event.relatedTarget)) latest.current();
     };
+    // On the window, as the key is caught: before the tooltip of the action that has the focus takes
+    // Escape for itself, and before the modal or popover the row is in does.
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape' || !inside(event.target)) return;
+      event.preventDefault();
+      event.stopPropagation();
+      latest.current();
+    };
+    window.addEventListener('keydown', onKeyDown, true);
     document.addEventListener('pointerdown', onPointerDown, true);
     el.addEventListener('focusout', onFocusOut);
     button.addEventListener('focusout', onFocusOut);
     window.addEventListener('resize', place);
     return () => {
+      window.removeEventListener('keydown', onKeyDown, true);
       document.removeEventListener('pointerdown', onPointerDown, true);
       el.removeEventListener('focusout', onFocusOut);
       button.removeEventListener('focusout', onFocusOut);
@@ -287,14 +305,6 @@ function Fallback({
       aria-label={label}
       data-part="moreList"
       className={styles.list}
-      // On the way down: a button of React Aria keeps its keys to itself.
-      onKeyDownCapture={(event) => {
-        if (event.key !== 'Escape') return;
-        // The modal or popover the row is in must not take the key for itself.
-        event.preventDefault();
-        event.stopPropagation();
-        onClose();
-      }}
     >
       {/* An action closes the list once it has run, as a row of the menu does. */}
       {Children.map(children, (child) =>

@@ -16,7 +16,7 @@ import { createPortal, flushSync } from 'react-dom';
 import { focusNear } from '../internal/focus';
 import { ButtonBase } from '../basics/Button';
 import { Skeleton } from '../basics/Skeleton';
-import { ActionsOverflow, wrapsKept } from '../internal/ActionsOverflow';
+import { ActionsOverflow, keepsControls, wrapsKept } from '../internal/ActionsOverflow';
 import { OverlayContainerContext } from '../internal/contexts';
 import { dataState, isContent, type DataStateProps } from '../internal/dataState';
 import { useNarrow } from '../internal/useNarrow';
@@ -473,6 +473,8 @@ function Header({
       data-part="header"
       data-header-style={headerStyle ?? card.headerStyle}
       data-truncate={level === steps.length || undefined}
+      // The last step, with actions: what stays of them may take a line of its own (`wrapsKept`).
+      data-wrap={(gone('actions') && level === steps.length && keepsControls(actions)) || undefined}
       className={cx(styles.header, className)}
       style={{
         // Text on a custom band is light or dark, whichever contrasts more with it.
