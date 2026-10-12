@@ -406,7 +406,7 @@
 .row[data-selected] {
   --bg: var(
     --umbra-table-selected-bg,
-    color-mix(in oklab, var(--umbra-color-interaction) 32%, var(--surface))
+    color-mix(in oklab, var(--umbra-color-interaction-tint) 32%, var(--surface))
   );
 }
 

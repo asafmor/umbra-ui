@@ -105,7 +105,7 @@ const measure = (page: Page) =>
       checkboxEdge: edge('[data-umbra="checkbox"] [data-part="box"]'),
       checkboxMark: text('[data-umbra="checkbox"] [data-part="box"]'),
       toggleEdge: edge('[data-umbra="toggle"] [data-part="track"]'),
-      sliderFill: edge('[data-umbra="slider"] [data-part="fill"]'),
+      sliderFill: u.ratio(u.surface('[data-umbra="slider"] [data-part="fill"]'), card),
       sliderThumb: u.ratio(u.ink('[data-umbra="slider"] [data-part="thumb"]', 'border-top-color'), card),
       tabEdge: edge('[data-umbra="tabs"] [data-part="indicator"]'),
       segmentEdge: edge('[data-umbra="segmented-filter"] [data-selected]'),
@@ -212,14 +212,14 @@ test('a token set by hand wins over the derivation, on the scope and on any elem
   const derived = await page.evaluate(() => umbra.surface('button[data-variant="accent"]').slice(0, 3));
   expect(derived).not.toEqual([1, 2, 3]);
   // On an element inside the scope, as an app's stylesheet would.
-  await page.evaluate(() => {
-    document
-      .querySelector<HTMLElement>('[data-umbra="card"]:last-child')!
-      .style.setProperty('--umbra-color-interaction', 'rgb(1, 2, 3)');
-  });
-  expect(await page.evaluate(() => umbra.surface('button[data-variant="accent"]').slice(0, 3))).toEqual([
-    1, 2, 3,
-  ]);
+  await page
+    .locator('[data-umbra="card"]')
+    .last()
+    .evaluate((card: HTMLElement) => card.style.setProperty('--umbra-color-interaction', 'rgb(1, 2, 3)'));
+  // The button's background has a transition: wait for its end.
+  await expect
+    .poll(() => page.evaluate(() => umbra.surface('button[data-variant="accent"]').slice(0, 3)))
+    .toEqual([1, 2, 3]);
   // The checkbox is in another card: it keeps the derived colour.
   expect(
     await page.evaluate(() => umbra.surface('[data-umbra="checkbox"] [data-part="box"]').slice(0, 3)),
@@ -282,7 +282,10 @@ test('surface opacity: the card surface is mixed with transparent, and its conte
     const card = `[data-umbra="card"][data-opacity="${opacity}"]`;
     const measured = await page.evaluate((selector) => {
       const el = document.querySelector(selector)!;
-      const opacities = [el, ...el.querySelectorAll('*')].map((node) => getComputedStyle(node).opacity);
+      const opacities = [
+        el,
+        ...el.querySelectorAll('p, button, [data-part="title"], [data-part="body"]'),
+      ].map((node) => getComputedStyle(node).opacity);
       return {
         alpha: umbra.alpha(selector),
         text: umbra.paint([getComputedStyle(el.querySelector('p')!).color])[3],

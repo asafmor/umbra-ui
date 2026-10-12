@@ -19,6 +19,7 @@ const base = [
   ['color-interaction', t.color.interaction.default],
   ['color-on-interaction', t.color.interaction.on],
   ['color-interaction-text', t.color.interaction.text],
+  ['color-interaction-tint', t.color.interaction.tint],
   ['color-action', t.color.action.default],
   ['color-action-end', t.color.action.end],
   ['color-on-action', t.color.action.on],

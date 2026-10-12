@@ -67,7 +67,7 @@ test('an input that cannot be read is skipped', () => {
 test('the default brand gives the default hues back', () => {
   const p = derivePalette({ brand: d.brand }, d);
   // Lighter only by what 3:1 against the surface asks (the default violet has 2.65:1).
-  expect(distance(rgb(p['color-interaction']!), rgb(d.interaction))).toBeLessThan(0.04);
+  expect(distance(rgb(p['color-interaction']!), rgb(d.interaction))).toBeLessThan(0.05);
   expect(distance(rgb(p['color-action']!), rgb(d.action))).toBeLessThan(0.03);
   expect(distance(rgb(p['color-interaction-text']!), rgb(d.interactionText))).toBeLessThan(0.03);
   expect(p['color-focus-ring']).toBe(d.focusRing);
@@ -85,6 +85,7 @@ describe.each(matrix)('brand %s', (brand) => {
         'color-on-interaction',
         'color-interaction-text',
         'color-focus-ring',
+        'color-interaction-tint',
         'color-action',
         'color-on-action',
         'color-action-end',
@@ -100,6 +101,13 @@ describe.each(matrix)('brand %s', (brand) => {
   it('keeps interaction text readable on every surface it is drawn on', () => {
     for (const name of ['color-base-surface1', 'color-base-surface2', 'color-base-surface3']) {
       expect(ratio(p['color-interaction-text']!, p[name]!)).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  it('keeps dimmer text readable on a selected row of data, pointed at or not', () => {
+    const row = mixLab(rgb(p['color-base-surface2']!), rgb(p['color-interaction-tint']!), 0.32);
+    for (const under of [row, mixLab(row, [255, 255, 255], 0.08)]) {
+      expect(contrastRatio(rgb(p['color-base-text-secondary']!), under)).toBeGreaterThanOrEqual(4.5);
     }
   });
 
@@ -137,6 +145,13 @@ describe.each(matrix)('interaction and action %s, as the app gives them', (colou
     expect(distance(rgb(p['color-focus-ring']!), rgb(p['color-interaction']!))).toBeGreaterThanOrEqual(0.1);
   });
 
+  it('keeps dimmer text readable on a selected row of data', () => {
+    const row = mixLab(rgb(d.neutrals['color-base-surface2']), rgb(p['color-interaction-tint']!), 0.32);
+    expect(
+      contrastRatio(rgb(d.neutrals['color-base-text-secondary']), mixLab(row, [255, 255, 255], 0.08)),
+    ).toBeGreaterThanOrEqual(4.5);
+  });
+
   it('keeps the hue the app asked for', () => {
     const [asked, got] = [toLch(rgb(colour)), toLch(rgb(p['color-interaction']!))];
     if (asked.c < 0.04 || got.c < 0.04) return;
@@ -150,9 +165,17 @@ describe.each(matrix)('interaction and action %s, as the app gives them', (colou
 });
 
 test('a fill that already holds is used as it is', () => {
-  for (const colour of ['#7a2be0', '#fda400', '#f2f2f2']) {
+  for (const colour of ['#8a3ff0', '#fda400', '#f2f2f2']) {
     expect(derivePalette({ interaction: colour }, d)['color-interaction']).toBe(colour);
   }
+});
+
+test('a dark fill is its own row tint; a light one is darkened for it', () => {
+  expect(derivePalette({ interaction: '#8a3ff0' }, d)['color-interaction-tint']).toBe('#8a3ff0');
+  const light = derivePalette({ interaction: '#f5c400' }, d);
+  expect(luminance(rgb(light['color-interaction-tint']!))).toBeLessThan(
+    luminance(rgb(light['color-interaction']!)),
+  );
 });
 
 test('the focus ring leaves pink when the selected fill is pink', () => {

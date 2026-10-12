@@ -296,7 +296,7 @@
 .option[data-selected] {
   --selected-bg: var(
     --umbra-select-option-selected-bg,
-    color-mix(in oklab, var(--umbra-color-interaction) 28%, transparent)
+    color-mix(in oklab, var(--umbra-color-interaction-tint) 28%, transparent)
   );
 
   background: var(--selected-bg);

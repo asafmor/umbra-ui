@@ -137,6 +137,10 @@ const greyChroma = 0.03;
 /** Half the width, in degrees of hue, of the zone a derived colour keeps clear around a semantic one. */
 const avoidZone = 22;
 const black: Rgb = [0, 0, 0];
+/** The contrast a fill has against the bare surface. */
+const edge = 3.2;
+/** The share of the interaction colour in the fill of a selected row of data. */
+const rowTint = 0.32;
 
 function rgbOf(colour: string): Rgb {
   const rgb = parseColour(colour);
@@ -154,7 +158,8 @@ export function safeFill(input: Rgb, d: PaletteDefaults): { fill: Rgb; on: Rgb }
   const surface = rgbOf(d.surface);
   const texts = [[255, 255, 255] as Rgb, rgbOf(d.textDark)];
   const check = (fill: Rgb) => {
-    if (contrastRatio(fill, surface) < 3) return null;
+    // A little over 3:1 against the bare surface, so that 3:1 holds on a card, whose tint is lighter.
+    if (contrastRatio(fill, surface) < edge) return null;
     const pressed = mixLab(fill, black, d.pressMix);
     const on = texts.find((t) => contrastRatio(t, fill) >= 4.5 && contrastRatio(t, pressed) >= 4.5);
     return on ? { fill, on } : null;
@@ -162,7 +167,7 @@ export function safeFill(input: Rgb, d: PaletteDefaults): { fill: Rgb; on: Rgb }
   const y = Math.max(luminance(input), 0.001);
   // Too dark to show on the surface: lighter. Too light for white text and too dark for dark text:
   // darker, to where white text holds, which keeps more of the colour than a pastel would.
-  const direction = contrastRatio(input, surface) < 3 ? 1 : -1;
+  const direction = contrastRatio(input, surface) < edge ? 1 : -1;
   for (let step = 0; step < 200; step++) {
     const found = check(step ? withLuminance(lch, y * 1.02 ** (direction * step)) : input);
     if (found) return found;
@@ -227,6 +232,21 @@ export function deriveNeutrals(context: string, d: PaletteDefaults): Record<stri
   );
 }
 
+/**
+ * The colour mixed into a selected row of data, which keeps its dimmer text: the fill itself, or the
+ * fill darkened until secondary text holds 4.5:1 on the row, pointed at or not. Only a light fill moves.
+ */
+function rowTintOf(fill: Rgb, neutrals: Record<string, string | undefined>, d: PaletteDefaults): Rgb {
+  const lch = toLch(fill);
+  const under = rgbOf(neutrals['color-base-surface2'] ?? d.surface);
+  const text = rgbOf(neutrals['color-base-text-secondary'] ?? d.textPrimary);
+  const holds = (tint: Rgb) =>
+    contrastRatio(text, mixLab(mixLab(under, tint, rowTint), [255, 255, 255], 0.08)) >= 4.6;
+  let tint = fill;
+  for (let y = luminance(fill); !holds(tint) && y > 0.01; y /= 1.05) tint = withLuminance(lch, y);
+  return tint;
+}
+
 /** The focus ring: the default pink, or the text colour when the selected fill is too close to pink. */
 function focusRing(fill: Rgb, d: PaletteDefaults): string {
   const [ring, text] = [rgbOf(d.focusRing), rgbOf(d.textPrimary)];
@@ -263,6 +283,7 @@ export function derivePalette(inputs: PaletteInputs, d: PaletteDefaults): Record
     const text = turned(toLch(fill), d.interaction, d.interactionText, []);
     out['color-interaction-text'] = toHex(withLuminance(text, luminance(rgbOf(d.interactionText))));
     out['color-focus-ring'] = focusRing(fill, d);
+    out['color-interaction-tint'] = toHex(rowTintOf(fill, { ...d.neutrals, ...out }, d));
   }
 
   // Action: the app's colour, else the default magenta turned with the brand. It keeps clear of no hue:

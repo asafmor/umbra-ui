@@ -208,11 +208,11 @@ const menu = [
  */
 export const Playground: Story = {
   argTypes: {
-    brand: { control: 'color' },
-    context: { control: 'color' },
-    interaction: { control: 'color' },
-    action: { control: 'color' },
-    surfaceOpacity: { control: { type: 'range', min: 0, max: 1, step: 0.05 } },
+    brand: { control: 'color', type: 'string' },
+    context: { control: 'color', type: 'string' },
+    interaction: { control: 'color', type: 'string' },
+    action: { control: 'color', type: 'string' },
+    surfaceOpacity: { control: { type: 'range', min: 0, max: 1, step: 0.05 }, type: 'number' },
   },
   render: (args) => (
     <UmbraScope {...args}>
