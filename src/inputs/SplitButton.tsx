@@ -52,7 +52,9 @@ function Root({
   ...rest
 }: SplitButtonRootProps) {
   const inMenu = useContext(OverflowMenuContext);
-  const control = useFieldControl({ disabled });
+  // The app's own `id` and description, beside what a `FormField` around it gives.
+  const given = rest as { id?: string | undefined; 'aria-describedby'?: string | undefined };
+  const control = useFieldControl({ disabled, id: given.id, describedBy: [given['aria-describedby']] });
   const content = <Context value={{ variant, size, disabled: control.disabled }}>{children}</Context>;
   // In an overflow menu the action is a row and the menu a submenu row after it.
   if (inMenu) return content;
