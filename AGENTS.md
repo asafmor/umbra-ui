@@ -10,7 +10,7 @@ The design is **inspired by** 40 screenshots of a game UI in `screenshots/`. It 
 
 ## Current state
 
-**Phase: Milestone 2 (tier 2): the 23 components and `MeterList` are built and integrated, the full-page stories, guides and examples are done, and three independent reviews are in (`plan/reviews/milestone-2.md`). The fix pass of the reviews is in progress: the status column of each review says what is fixed and what is open. Nothing is published: the first release, `0.1.0`, is rehearsed (`docs/releasing.md`) and happens only when the owner decides the library is ready for production.** Update this section whenever the phase or the next step changes.
+**Phase: Milestone 2 (tier 2) is built, reviewed and fixed (`plan/reviews/milestone-2.md`): the 23 components and `MeterList`, the full-page stories, guides and examples, three independent reviews, the owner's feedback from Storybook (column management in `DataTable`, the theming rework of `plan/decisions/08-theming.md`) and the fix pass. What stays open is under "Open after Milestone 2" in that file. Nothing is published: the first release, `0.1.0`, is rehearsed (`docs/releasing.md`) and happens only when the owner decides the library is ready for production.** Update this section whenever the phase or the next step changes.
 
 | Step | Status | Artifact |
 |---|---|---|
@@ -61,12 +61,12 @@ The owner approved the plan and delegated the open questions (`plan/reviews/mile
 | Six groups, 23 components: time, data, inputs, meters and charts, shell and layout, overlays | done |
 | Integration pass: names, shared internals, compositions across groups, the groups' weak spots | done; what stays open is in `plan/reviews/milestone-2.md` |
 | Full-page stories (planning, analysis), guides (recipes 14 to 21), the `dashboard` and `advanced` examples | done |
-| Owner's feedback from Storybook (O-1 to O-10) | partly fixed; the rest is open in `plan/reviews/milestone-2.md` |
+| Owner's feedback from Storybook (O-1 to O-10) | done: every row is fixed; O-5's focus ring was not reproduced |
 | Three independent reviews: time, data and inputs; meters, charts, shell, layout and overlays; the package, the checks, the docs and the examples | done |
-| Fix pass of the reviews, one branch per group, and `MeterList` (O-7) | in progress: the status columns of `plan/reviews/milestone-2.md` |
+| Fix pass of the reviews, one branch per group, `MeterList` (O-7), `DataTable` column management (O-2), theming (O-4, O-6, O-10) | done; the full suite passes on the merged result |
 | Storybook on GitHub Pages with the Milestone 2 state (review 3, F3) | to do (orchestrator) |
 
-**Next step**: finish the fix pass: every row of the three reviews and of the owner's feedback in `plan/reviews/milestone-2.md` is `fixed` or `open` with its reason; then the full suite on `main`, and the Storybook site published again. What the integration pass left open is in the same file ("Integration pass", "Open"). No release is planned; never publish without the owner's explicit go-ahead. A batch is built from `plan/prompts/component-brief.md`, one agent per group in its own git worktree with its own `UMBRA_TEST_PORT`, merged into `main` after the full suite passes.
+**Next step**: the owner's look at the result in Storybook. Then the items under "Open after Milestone 2" in `plan/reviews/milestone-2.md`, and the manual Firefox and Safari checklist (`docs/browser-checks.md`) before any release. No release is planned; never publish without the owner's explicit go-ahead. A batch is built from `plan/prompts/component-brief.md`, one agent per group in its own git worktree with its own `UMBRA_TEST_PORT`, merged into `main` after the full suite passes. Run one full browser suite at a time on a machine: several at once time out.
 
 ### Known issues
 

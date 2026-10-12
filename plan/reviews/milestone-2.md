@@ -353,3 +353,31 @@ Not verified: a complete local browser run under load (CI on `9f0ad6f` is green)
 Not done: `Planner` on demand (decision 05, "Sizes on 2026-10-12"). Left open: after `Tab` out of a picker that was open from the start, a second `Tab` left the focus on `<body>` in one probe (story `Shell/EntitySwitcher`, "Picker states"); seen, not investigated.
 
 Seen on `main` at `50e2ddb` (the merge of the table's column controls), not caused by this branch and not fixed here: `tests/visual/modal-overlays.spec.ts` fails, 8 of 8. In the story `Overlays/Layers`, "Data in modal", the modal that is open from the start is removed about 30 ms after it mounts (it holds a `DataTable`). The same 8 fail in a clean checkout of `50e2ddb`; they passed on this branch before that merge.
+
+## Fix pass (2026-10-11 and 2026-10-12)
+
+Nine agents fixed the findings, each with a test that fails without the fix where a test is possible: the three groups of review 1, the three of review 2, review 3's checks and docs, the `DataTable` column management (O-2) and the theming rework (O-4, O-6, O-10). Every row above carries its status. On the merged result: lint with no warnings, typecheck, 573 unit tests, build, the package and release checks, 43 example tests and 8,868 browser tests pass; 3,111 baseline images, 157 MB.
+
+### Open after Milestone 2
+
+| Item | Detail | For |
+|---|---|---|
+| Storybook on Pages | Deployed by `gh workflow run docs.yml --ref main` after CI is green on the final commit (review 3, F3) | orchestrator, at the end |
+| Rows with kept controls in `TopBar`, a `MediaCard` footer and the `Planner` toolbar | A control that stays in the row and does not fit is still clipped there (X-3); wrapping squeezed the planner's month list | next milestone |
+| The overflow fallback inside app components | When the menu code cannot be loaded, the plain list does not close after an action wrapped in an app's own component is pressed (X-2) | next milestone |
+| The favourite star's focus ring (O-5) | Not reproduced: after a pointer press the outline was already none. What was seen is believed to be the pressed state's coloured border, now gone | owner to confirm in Storybook |
+| `ContextBlock` default | `variant="filled"` exists and the page stories use it; `plain` stays the default | owner |
+| Theming, warm brands | A red brand derives an orange selection and an olive primary button; `action={brand}` makes the button the brand's colour. Whether `action` should default to the brand hue is a design call | owner |
+| Theming, derived context | A brand-derived context is turned 22° from the brand (a green brand gives a teal page); an explicit ancestor `context` beats a nested scope's brand; setting `--umbra-context` by hand moves the tints but not the neutrals | owner |
+| Surface opacity | At low opacity, sticky headers and scroll fades inside a card show as opaque bands, and hover and press steps of tiles are opaque | next milestone |
+| `DataTable` columns | No reorder by dragging a header in the table itself (the list and the menus do it); a very wide user column can itself be the one that hides; the last column's handle is 12px; not tested inside a `Modal` or with `loading`, `empty`, `error` | next milestone |
+| `Planner` | The side column's content remounts when it collapses or opens; the first load with no items and no `slotsPerDay` cannot know its lines; 107 KB gzip as a single import because its month `Select` is drawn at first paint | next milestone |
+| `WidgetBoard` | The room above a spanning widget in its shorter column stays empty; with 400 widgets a caret takes 80 to 130ms and the first press loads a font face in one long frame | next milestone |
+| `TopBar` | A slot that shrinks does not restart the bar until it next grows or renders (SL-3) | next milestone |
+| `Scatter` | A resize of 5,000 marks takes 100 to 150ms (MC-16) | next milestone |
+| `SequenceDots` | Draws every item once before counting: give a sequence of thousands a `max` | documented |
+| Tooltips | A hover tooltip closes when an ancestor really scrolls to bring the focused control into view; tooltips take scope tokens only | next milestone |
+| Focus | After `Tab` out of a default-open picker, a second `Tab` left focus on `<body>` in one probe; not investigated | next milestone |
+| Firefox 153 and 154 | The browser's own scrollbars show in `ScrollArea` and `Menu` (`plan/decisions/06-docs-and-testing.md`) | owner |
+| esbuild with `splitting: true` | Any single import loads about 66 KB first; fixing it needs sub-path entries, a public change | owner |
+| Not verified by anyone | A real screen reader, Safari, Firefox beyond one manual check of `WidgetBoard`, touch, a registry install | before a release (`docs/browser-checks.md`) |
