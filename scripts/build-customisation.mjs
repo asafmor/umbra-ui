@@ -89,7 +89,7 @@ for (const file of ['src/styles/tokens.css', 'src/styles/index.css'])
     if (!globals.has(name)) globals.set(name, value.trim());
 // Global tokens that happen to be read with a fallback are not component tokens.
 const isGlobal = (name) =>
-  globals.has(name) || /^--umbra-(color|density|font|space|size|context)-/.test(name);
+  globals.has(name) || /^--umbra-(color|density|font|space|size|context(?!-block))-/.test(name);
 
 /** `var(--name, fallback)` when the whole expression is one `var()`; the fallback may be missing. */
 function oneVar(expression) {

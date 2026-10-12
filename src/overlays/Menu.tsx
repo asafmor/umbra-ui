@@ -1,3 +1,4 @@
+import { usePopoverRef } from './popoverRef';
 import {
   Children,
   Fragment,
@@ -32,13 +33,7 @@ import { warn } from '../utils/dev';
 import type { LinkRenderProps } from '../utils/link';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './Menu.module.css';
-import {
-  toAriaPlacement,
-  useFlipWhenCut,
-  useOpenState,
-  useOverlayLayer,
-  type OverlayPlacement,
-} from './shared';
+import { toAriaPlacement, useOpenState, useOverlayLayer, type OverlayPlacement } from './shared';
 import { defined } from '../utils/defined';
 import { passThrough, rootRender, withoutPassThrough, type RootAttributes } from '../utils/passThrough';
 
@@ -356,7 +351,7 @@ function Surface({
 }: Omit<PanelProps, 'entries' | 'shared' | 'aria-label'> & { children: ReactNode }) {
   const scope = useScopeAttributes();
   const layer = useOverlayLayer('popover');
-  const flipWhenCut = useFlipWhenCut(maxHeight);
+  const flipWhenCut = usePopoverRef(maxHeight, anchorRef);
   const root = useRootMenuState(!!open, onOpenChange);
   const popover = (
     <AriaPopover

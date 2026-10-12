@@ -194,24 +194,27 @@ export const Parts: Story = {
 /** The same nav composed by hand from the blocks. */
 export const Blocks: Story = {
   render: () => (
-    <VerticalNav.Root aria-label="Composed" value="display" defaultExpandedIds={['people']}>
-      <VerticalNav.Header>{title}</VerticalNav.Header>
-      <VerticalNav.List>
-        <VerticalNav.Item id="general" icon={<Settings />}>
-          General
-        </VerticalNav.Item>
-        <VerticalNav.Item id="display" icon={<Monitor />}>
-          Display
-        </VerticalNav.Item>
-        <VerticalNav.Section label="More">
-          <VerticalNav.Group id="people" label="People" icon={<Users />}>
-            <VerticalNav.Item id="teams">Teams</VerticalNav.Item>
-          </VerticalNav.Group>
-        </VerticalNav.Section>
-      </VerticalNav.List>
-      <VerticalNav.Footer>{version}</VerticalNav.Footer>
-      <VerticalNav.Toggle />
-    </VerticalNav.Root>
+    // In a box of its own the nav fills the width: the box is as wide as the nav is beside a page.
+    <div style={{ width: 240, height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <VerticalNav.Root aria-label="Composed" value="display" defaultExpandedIds={['people']}>
+        <VerticalNav.Header>{title}</VerticalNav.Header>
+        <VerticalNav.List>
+          <VerticalNav.Item id="general" icon={<Settings />}>
+            General
+          </VerticalNav.Item>
+          <VerticalNav.Item id="display" icon={<Monitor />}>
+            Display
+          </VerticalNav.Item>
+          <VerticalNav.Section label="More">
+            <VerticalNav.Group id="people" label="People" icon={<Users />}>
+              <VerticalNav.Item id="teams">Teams</VerticalNav.Item>
+            </VerticalNav.Group>
+          </VerticalNav.Section>
+        </VerticalNav.List>
+        <VerticalNav.Footer>{version}</VerticalNav.Footer>
+        <VerticalNav.Toggle />
+      </VerticalNav.Root>
+    </div>
   ),
 };
 

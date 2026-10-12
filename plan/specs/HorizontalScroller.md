@@ -97,3 +97,9 @@ Resolved 2026-10-11 (under the owner's delegation):
 - **Reuses `ScrollArea`** with `axis="horizontal"` for the thumb, `onReachEnd`, the focusable viewport and the knowledge of which edge has more.
 - **The fade is a mask, not a colour.** The `ScrollArea`'s fade is a gradient of the card's background, which is right inside a card. A row sits on the page's gradient, a card or a brand band, and no one colour fits them all, so the items themselves fade to transparent (`mask-image`). It is therefore not a part: `fade={false}` turns it off.
 - **A new layout context**: the items are the row's, so a `Stack` around the row neither counts nor collapses them.
+
+Changed 2026-10-11 (fix pass of review 2):
+
+- **A control that uses the arrow keys keeps them** (SL-5): the trigger of a `Select` is one (it changes the value), besides fields, sliders, tabs and radios. `Tab` moves on from it. **A checkbox or a `Toggle` does not use them** (SL-19), so the arrow keys move on from it to the next item.
+- **A button that goes hands the focus on, whatever the button is** (SL-7): the default one or the app's own through `parts`. It goes to the other button, else to the first control of the row, else to the row (`holdFocus`, `src/internal/focus.ts`).
+- **`--umbra-horizontal-scroller-button-size`** sizes the two buttons (SL-6): it had no effect.

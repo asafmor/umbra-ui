@@ -327,7 +327,7 @@ export const ContentSized: Story = {
   render: () => (
     <Columns style={{ height: '100%' }}>
       <Stack>
-        <Card title="Hugs its content" size="content">
+        <Card title="Hugs its content" size="content" collapsible>
           <Rows count={3} />
         </Card>
         <Card aria-label="Note" size="content">

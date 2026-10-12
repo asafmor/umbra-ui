@@ -33,36 +33,40 @@
   overflow-y: scroll;
 }
 
-/*
- * Rows of one pixel: each item spans its measured height plus the gap (set from the script), and the
- * dense placement puts it in the first free place from the top. Hence no row gap, and the last gap is
- * taken back below.
- */
-.clip {
-  display: flow-root;
-  overflow-y: clip;
+/* Measures the width the board has: the grid's own height is set by the script, so it is not watched. */
+.ruler {
+  height: 0;
 }
 
+/*
+ * The grid gives the columns. Each item is positioned inside the columns the script gives it
+ * (`grid-column`), at the top it gives it, and the script sets the grid's height.
+ */
 .grid {
   --gap: var(--umbra-widget-board-gap, var(--umbra-density-gap));
+  position: relative;
   display: grid;
   grid-template-columns: repeat(
     auto-fill,
     minmax(min(100%, var(--umbra-widget-board-min-column-width, var(--min-column-width, 280px))), 1fr)
   );
-  grid-auto-rows: 1px;
-  grid-auto-flow: dense;
-  column-gap: var(--gap);
+  gap: var(--gap);
   align-items: start;
-  margin-block-end: calc(-1 * var(--gap));
 }
 
 .grid[data-columns] {
   grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
 }
 
+/* Before the script has run (a page rendered on a server): row by row, one column each. */
 .item {
   min-width: 0;
+}
+
+.grid[data-packed] > .item {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
 }
 
 .skeleton {

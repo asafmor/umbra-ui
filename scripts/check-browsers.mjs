@@ -344,7 +344,13 @@ const js = [
     [145, 104, 18.4],
     /\bfocusVisible\s*:/,
   ],
-  ['Element.computedStyleMap', 'api.Element.computedStyleMap', [66, no, 16.4], /computedStyleMap/],
+  [
+    'Element.computedStyleMap',
+    'api.Element.computedStyleMap',
+    [66, no, 16.4],
+    /computedStyleMap/,
+    'carryTokens (overlays/shared.ts) only, called when it exists: Chromium lists custom properties there and not in getComputedStyle. Firefox lists them in getComputedStyle, which is read as well.',
+  ],
   [
     'constructable stylesheets',
     'api.Document.adoptedStyleSheets',

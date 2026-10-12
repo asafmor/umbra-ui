@@ -75,10 +75,10 @@ The number of columns is a function of the board's width alone: the room for the
 ## Interaction and accessibility
 
 - The grid is a list (`role="list"`, named by `aria-label`) and each cell a list item, so a screen reader hears how many widgets there are. Each card stays a region named by its title.
-- **Order.** The items are in the page in source order, and that is the tab and reading order. Each is placed in the first free place from the top, leftmost first ("shortest column"): the first row reads left to right in source order, and further down a card sits where there is room. So the order on screen is close to the source order, never the reverse of it, and no card is moved in the page.
+- **Order.** The items are in the page in source order, and that is the tab and reading order. Each is placed where its top is highest, leftmost first ("shortest column"): the first row reads left to right in source order, and further down a card sits where there is room. A widget that spans columns starts under everything already in the columns it covers. Nothing is ever placed above a widget that came before it in the same column, so every column reads in source order; the room left above a spanning widget, in the shorter of its columns, stays empty (the cards keep the height of their content, so nothing is stretched into it).
 - The caret of each card is the `Card`'s own: a button with `aria-expanded`.
-- "Collapse all" becomes "Expand all" when every widget is collapsed. It is one button whose name changes, and it keeps the focus.
-- **Motion.** A collapse or expand by a caret animates that card's height (the `Card`'s own animation, 180ms), and the cards under it follow frame by frame. A card that changes column does so at once. "Collapse all", a resize, a change of `collapsedIds` by the app and everything under reduced motion are instant.
+- "Collapse all" becomes "Expand all" when every widget is collapsed. It is one button whose name changes, and it keeps the focus. Ids in `collapsedIds` that belong to no widget of the board (one that is not mounted now) are kept by both.
+- **Motion.** A collapse or expand by a caret animates that card's height (the `Card`'s own animation, 180ms), and the cards under it follow frame by frame. While it moves every card keeps its column. If the new heights ask for another packing, the cards that change place do so at once, in one step, when the animation has ended: never in between, where a card would hop back and forth as the columns pass each other. "Collapse all", a resize, a change of `collapsedIds` by the app and everything under reduced motion are instant.
 - Loading sets `aria-busy` and shows skeleton cards in the grid.
 - The board starts a new layout context: a `Stack` around it does not count or collapse its cards.
 - When the content has no focusable element the scroll area is a tab stop (the `ScrollArea` rule).
@@ -90,9 +90,16 @@ None.
 Resolved 2026-10-11 (under the owner's delegation):
 
 - **It scrolls inside itself; no drag to reorder** (Milestone 2, decision 10).
-- **Placement by a CSS grid with dense packing, not CSS columns.** CSS columns keep the page order but read down each column, re-balance every column when one card collapses, and cannot span. A grid of 1px rows, where each item spans its measured height, gives the "shortest column" placement with the items untouched in the page, and `span` for free. The cost: heights are measured (one `ResizeObserver`), and the placement is not strictly row by row.
+- **Placement by a CSS grid with dense packing, not CSS columns.** CSS columns keep the page order but read down each column, re-balance every column when one card collapses, and cannot span. A grid of 1px rows, where each item spans its measured height, gives the "shortest column" placement with the items untouched in the page, and `span` for free. The cost: heights are measured (one `ResizeObserver`), and the placement is not strictly row by row. **Replaced 2026-10-11, below.**
 - **`span`** is the fuller option and is in.
 - **Both `minColumnWidth` and `columns`.**
 - **Widgets are identified by `id`** on `WidgetBoard.Widget`; the board's state is `collapsedIds` with `onCollapsedChange` (decision 07).
 - **No animated change of column**: only the vertical movement is animated, by the pressed card's own height animation. Recorded as weaker than a full animated reflow.
 - **No animated change of column stays** (integration pass, 2026-10-11): a change of the number of columns comes from a resize, and layout changes are instant while the window is resized (`plan/interaction.md`). Not a weakness by that rule.
+
+Changed 2026-10-11 (fix pass of review 2):
+
+- **The script places the items; the grid only gives the columns** (SL-1). A grid of 1px rows has one row per pixel of height, and a browser stops at a few thousand rows (Firefox at 10,000): a board taller than that lost its tail there. Now the CSS grid still decides the number and the width of the columns, and each item is positioned inside its columns (`position: absolute` with `grid-column`, which makes those columns its containing block) at a top the script works out (`src/layout/packBoard.ts`, unit-tested). The grid has no rows, so a board of any height works; the items stay in source order in the page. Before the script has run (a page rendered on a server) the items flow row by row.
+- **With `span`** (SL-16): the dense grid put later widgets into holes above an earlier one. The rule is now the one under "Order": a column never shows a later widget above an earlier one.
+- **Cost** (SL-18): one pass per frame. The spans are written, every height is read in one layout, and only the places that changed are written, as plain properties (a custom property is inherited: a new value would have every element inside the card styled again, which made a frame of seconds with 400 widgets). The observers stay across renders; before, every render observed every card again. What a caret still costs with 400 widgets is React rendering the cards when the app's state changes. The width is watched on a ruler element, because the grid's own height is set by the script.
+- **A card that changes column** does so in one step when the pressed card has come to rest (see "Motion").
