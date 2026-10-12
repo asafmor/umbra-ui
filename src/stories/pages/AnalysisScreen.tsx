@@ -221,7 +221,8 @@ export function AnalysisScreen() {
         id: 'rating',
         header: 'Rating',
         accessor: 'rating',
-        width: 92,
+        // Five small stars (75px) and the padding of a last cell at the spacious density.
+        width: 108,
         priority: 0,
         cell: (s) => <StarRating readOnly size="small" value={s.rating} aria-label="Rating" />,
       },

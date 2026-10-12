@@ -275,3 +275,4 @@ Resolved 2026-10-10:
 - **`wrap` only**; there is no separate `truncate` option (truncation is the default).
 - **Not a layout child** (no `size` or `priority` of its own): it goes in a `Card` with `padding="none"`, or any element with a height.
 - **The visual tests run with hidden scrollbars**, which take no room; two tests run with scrollbars shown (2026-10-11).
+- **The table is its own stacking context** (owner's O-8, 2026-10-11): its sticky header, summary row and pinned cells are layered among themselves only. Before, their `z-index` counted in the card around the table, and the summary row covered a floating `ActionBar`.

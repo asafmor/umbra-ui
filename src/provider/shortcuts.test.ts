@@ -8,6 +8,7 @@ import {
   ownedShortcut,
   resolveShortcuts,
   shortcutForEvent,
+  takesText,
   unreportedConflicts,
 } from './shortcuts';
 
@@ -139,4 +140,48 @@ test('a list of shortcuts holds the labelled ones that own their keys, with grou
   expect(listed.map((s) => s.id).sort()).toEqual(['app.find', 'b', 'lib.sheet']);
   expect(listed.find((s) => s.id === 'lib.sheet')).toMatchObject({ keys: 'Mod+/', reserved: true });
   expect(listed.find((s) => s.id === 'app.find')).toMatchObject({ reserved: false, group: 'Search' });
+});
+
+// Every type of the HTML standard: a bare-key shortcut is held back only where a key types something.
+test('a bare key is typing only in a control that takes text', () => {
+  const types = {
+    text: true,
+    search: true,
+    url: true,
+    tel: true,
+    email: true,
+    password: true,
+    number: true,
+    date: true,
+    'datetime-local': true,
+    month: true,
+    week: true,
+    time: true,
+    checkbox: false,
+    radio: false,
+    range: false,
+    color: false,
+    file: false,
+    button: false,
+    submit: false,
+    reset: false,
+    image: false,
+    hidden: false,
+  };
+  for (const [type, typing] of Object.entries(types))
+    expect(takesText({ tagName: 'INPUT', type }), type).toBe(typing);
+  // No type, an empty one and an unknown one are text fields to the browser; the case does not matter.
+  for (const type of [undefined, null, '', 'unknown'])
+    expect(takesText({ tagName: 'INPUT', type })).toBe(true);
+  expect(takesText({ tagName: 'input', type: 'CHECKBOX' })).toBe(false);
+  expect(takesText({ tagName: 'TEXTAREA' })).toBe(true);
+  expect(takesText({ tagName: 'SELECT' })).toBe(true);
+  for (const tagName of ['BUTTON', 'A', 'DIV', 'TD']) expect(takesText({ tagName })).toBe(false);
+  expect(takesText({ tagName: 'DIV', editable: true })).toBe(true);
+  for (const role of ['textbox', 'searchbox', 'combobox', 'spinbutton'])
+    expect(takesText({ tagName: 'DIV', role }), role).toBe(true);
+  for (const role of ['button', 'checkbox', 'slider', 'switch', 'radio', 'menuitem', 'gridcell'])
+    expect(takesText({ tagName: 'DIV', role }), role).toBe(false);
+  // A role says what the element is, whatever its tag.
+  expect(takesText({ tagName: 'BUTTON', role: 'combobox' })).toBe(true);
 });

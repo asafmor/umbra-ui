@@ -75,7 +75,7 @@ States: hover (previews the value under the pointer), focus, disabled, invalid, 
 | Step | Trigger | Result |
 |---|---|---|
 | 1 | The row and the value text do not fit | `value` hides (`useShrinkLevel`) |
-| 2 | The stars alone do not fit | The row is cut at its end; stars keep their size. The name still says the value. |
+| 2 | The stars alone do not fit | A display (`readOnly`) draws its compact form: one full star and the value as a number (`data-compact`), as a narrow table cell needs (review 2, OP-4, 2026-10-11). An input keeps its stars, each being a choice: the row is cut at its end. The name still says the value. |
 
 ## Interaction and accessibility
 

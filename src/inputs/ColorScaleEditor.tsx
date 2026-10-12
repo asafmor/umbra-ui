@@ -187,7 +187,13 @@ function Root({
   ...rest
 }: ColorScaleEditorRootProps) {
   const root = useRef<HTMLDivElement>(null);
-  const control = useFieldControl({ id, invalid, disabled });
+  const control = useFieldControl({
+    id,
+    invalid,
+    disabled,
+    // The app's own description, beside the one a `FormField` around it gives.
+    describedBy: [(rest as { 'aria-describedby'?: string | undefined })['aria-describedby']],
+  });
   // The starting value, which a native reset of the form goes back to.
   const [initial] = useState(defaultValue ?? []);
   const [own, setOwn] = useState(initial);

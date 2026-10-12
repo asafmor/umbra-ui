@@ -189,7 +189,7 @@ test.describe('StarRating', () => {
     }
   });
 
-  test('as it narrows the value text hides first, then the row is cut and the name stays', async ({
+  test('as it narrows the value text hides first, then a display is one star and the number, and the name stays', async ({
     page,
   }) => {
     await open(page, 'inputs-starrating--shrink');
@@ -205,7 +205,10 @@ test.describe('StarRating', () => {
     }
     await inside(at(page, 60), rating(60));
     await expect(rating(60)).toHaveAccessibleName('3.5 of 5');
-    await expect(rating(60).locator('[data-part="star"]')).toHaveCount(5);
+    // Review 2, OP-4: a display too narrow for its row is one star and the value, not a row cut at its end.
+    await expect(rating(60)).toHaveAttribute('data-compact', '');
+    await expect(rating(60).locator('[data-part="star"]')).toHaveCount(1);
+    await expect(rating(60).locator('[data-part="value"]')).toHaveText('3.5');
   });
 
   test('right to left: the first star is at the right, a partial star fills from the right', async ({

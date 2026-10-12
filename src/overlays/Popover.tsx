@@ -64,11 +64,18 @@ export interface PopoverRootProps extends OpenProps {
   children?: ReactNode | undefined;
 }
 
+/**
+ * True between a `Popover.Root` and its `Popover.Content`. React Aria's own contexts cannot say it: a
+ * `Modal` and every other dialog trigger fill the same ones, so a content without a root that sat in
+ * a modal took the modal's open state for its own, and closed the modal when it closed.
+ */
+const UnderRootContext = createContext(false);
+
 function Root({ open, defaultOpen, onOpenChange, children }: PopoverRootProps) {
   const [isOpen, setOpen] = useOpenState(open, defaultOpen, onOpenChange);
   return (
     <DialogTrigger isOpen={isOpen} onOpenChange={setOpen}>
-      {children}
+      <UnderRootContext value={true}>{children}</UnderRootContext>
     </DialogTrigger>
   );
 }
@@ -127,9 +134,13 @@ function Content({
 }: PopoverContentProps) {
   const scope = useScopeAttributes();
   const layer = useOverlayLayer('popover');
-  // Under a `Popover.Root` the state is the root's; alone (with `anchorRef`) the content keeps its own.
-  const root = useContext(OverlayTriggerStateContext);
-  const fromTrigger = useSlottedContext(AriaPopoverContext);
+  // Under a `Popover.Root` the state is the root's; alone (with `anchorRef`) the content keeps its own,
+  // and takes nothing from a dialog trigger around it that is not its root (a modal, another popover).
+  const underRoot = useContext(UnderRootContext);
+  const ambient = useContext(OverlayTriggerStateContext);
+  const ambientTrigger = useSlottedContext(AriaPopoverContext);
+  const root = underRoot ? ambient : null;
+  const fromTrigger = underRoot ? ambientTrigger : null;
   const [ownOpen, setOwnOpen] = useOpenState(open, defaultOpen, onOpenChange);
   const isOpen = root ? root.isOpen : ownOpen;
   const setOpen = root ? root.setOpen : setOwnOpen;
@@ -203,8 +214,13 @@ function Content({
       timer = window.setTimeout(() => latest.current.setOpen(false));
     };
     // Escape with focus in the panel is handled by the panel. This is for focus elsewhere on the page.
+    // With the focus in another overlay (the popover of a collapsed card inside this one), the key is
+    // that overlay's: one Escape closes one layer.
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && !event.defaultPrevented && !covered()) latest.current.setOpen(false);
+      if (event.key !== 'Escape' || event.defaultPrevented || covered()) return;
+      const holder = event.target instanceof Element ? event.target.closest('[data-umbra-overlay]') : null;
+      if (holder && holder !== panel.current) return;
+      latest.current.setOpen(false);
     };
     // The panel is rendered at the end of the page, but in the tab order it sits right after its
     // trigger: Shift+Tab from its start goes to the trigger, Tab from its end to what follows the
@@ -308,9 +324,12 @@ function Content({
         </OverlayArrow>
       )}
       <PopoverContext value={popover}>
-        <div className={styles.frame}>
-          {typeof children === 'function' ? children(popover.close) : children}
-        </div>
+        {/* What is inside is under no root: a content without one in here is alone. */}
+        <UnderRootContext value={false}>
+          <div className={styles.frame}>
+            {typeof children === 'function' ? children(popover.close) : children}
+          </div>
+        </UnderRootContext>
       </PopoverContext>
     </AriaPopover>
   );

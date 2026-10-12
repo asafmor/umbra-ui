@@ -187,6 +187,13 @@ for (const { id, name, tabs, action } of pages) {
       await expect(card(page, target[1]!)).toHaveCount(0);
       await page.getByRole('button', { name: 'Forward', exact: true }).click();
       await expect(card(page, target[1]!)).toBeVisible();
+      // F16 of review 3: the history keys work from a link of the navigation too. There the arrow
+      // keys alone move between the links, and took the key with Alt as well.
+      await page.getByRole('navigation', { name: 'Main' }).locator('a, button').first().focus();
+      await pressKeys(page, 'Alt+ArrowLeft');
+      await expect(card(page, target[1]!)).toHaveCount(0);
+      await pressKeys(page, 'Alt+ArrowRight');
+      await expect(card(page, target[1]!)).toBeVisible();
       expect(problems.get(page)).toEqual([]);
     });
   });
@@ -815,5 +822,144 @@ test.describe('Analysis', () => {
     await page.keyboard.press('Control+e');
     await expect(bar).toContainText('Exported All regions as PDF');
     expect(problems.get(page)).toEqual([]);
+  });
+});
+
+// The findings of review 2 on the two tier 2 pages (plan/reviews/milestone-2.md, OP-4 to OP-7).
+test.describe('Review 2 on the pages', () => {
+  for (const density of densities) {
+    test(`analysis, ${density}: every star of the Rating column is inside its cell (OP-4)`, async ({
+      page,
+    }) => {
+      await open(page, analysis.id, 1920, 1080, density);
+      const ratings = page.locator('[data-col="rating"] [data-umbra="star-rating"]');
+      await expect(ratings.first()).toBeVisible();
+      const cut = await ratings.evaluateAll((all) =>
+        all
+          .map((el) => {
+            const cell = el.closest('td')!;
+            const style = getComputedStyle(cell);
+            const inner = cell.getBoundingClientRect().right - parseFloat(style.paddingRight);
+            const stars = [...el.querySelectorAll('[data-part="star"]')];
+            return {
+              stars: stars.length,
+              compact: el.hasAttribute('data-compact'),
+              over: Math.round(Math.max(...stars.map((star) => star.getBoundingClientRect().right)) - inner),
+              clipped: el.scrollWidth > el.clientWidth + 1,
+            };
+          })
+          .filter((r) => r.stars !== 5 || r.compact || r.over > 0 || r.clipped),
+      );
+      expect(cut).toEqual([]);
+      expect(await ratings.count()).toBe(12);
+    });
+  }
+
+  test('a rating in a cell too narrow for its stars is one star and the number, not a cut row (OP-4)', async ({
+    page,
+  }) => {
+    await open(page, analysis.id, 1920, 1080);
+    const rating = page.locator('[data-col="rating"] [data-umbra="star-rating"]').first();
+    const name = await rating.getAttribute('aria-label');
+    await rating.evaluate((el) => (el.closest('td')!.style.maxWidth = el.style.maxWidth = '40px'));
+    await expect(rating).toHaveAttribute('data-compact', '');
+    await expect(rating.locator('[data-part="star"]')).toHaveCount(1);
+    await expect(rating.locator('[data-part="value"]')).toHaveText(/^\d(\.5)?$/);
+    expect(await rating.evaluate((el) => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
+    await expect(rating).toHaveAttribute('aria-label', name!);
+  });
+
+  test('the labels of reference lines are drawn above the bars and lines, with an outline (OP-5)', async ({
+    page,
+  }) => {
+    await open(page, analysis.id, 1920, 1080);
+    const labels = page.locator('[data-part="annotationLabels"] text');
+    await expect(labels.first()).toBeVisible();
+    const drawn = await labels.evaluateAll((all) =>
+      all.map((label) => {
+        const picture = (label as SVGElement).ownerSVGElement!;
+        const marks = picture.querySelectorAll(
+          '[data-part="bars"], [data-part="series"], [data-part="lines"]',
+        );
+        const style = getComputedStyle(label);
+        return {
+          text: label.textContent,
+          // Later in the picture is on top.
+          above: [...marks].every(
+            (mark) => !!(mark.compareDocumentPosition(label) & Node.DOCUMENT_POSITION_FOLLOWING),
+          ),
+          marks: marks.length > 0,
+          halo: style.paintOrder.startsWith('stroke') && style.stroke !== 'none',
+        };
+      }),
+    );
+    expect(drawn.length).toBeGreaterThan(1);
+    for (const label of drawn) expect(label).toMatchObject({ above: true, marks: true, halo: true });
+    expect(drawn.map((label) => label.text)).toContain('Target');
+  });
+
+  const planner = (page: Page) => page.locator('[data-umbra="planner"]');
+  /** How far today's week is from the visible part of the month: 0 when it is all in view. */
+  const todayOutOfView = (page: Page) =>
+    planner(page).evaluate((el) => {
+      const view = el.querySelector('[data-part="grid"]')!.closest('[data-part="viewport"]')!;
+      const top = el.querySelector('[data-part="weekdays"]')!.getBoundingClientRect().bottom;
+      const bottom = view.getBoundingClientRect().bottom;
+      const day = el.querySelector('[aria-current="date"]')!.getBoundingClientRect();
+      return Math.round(Math.max(0, top - day.top, day.top + 24 - bottom));
+    });
+
+  for (const [width, height, density] of [
+    [900, 560, 'spacious'],
+    [900, 560, 'default'],
+    [1024, 600, 'spacious'],
+    [1280, 720, 'default'],
+  ] as const) {
+    test(`planning ${width}x${height} ${density}: the month opens on today's week (OP-6)`, async ({
+      page,
+    }) => {
+      await open(page, planning.id, width, height, density);
+      await expect(planner(page).locator('[aria-current="date"]')).toBeAttached();
+      await settle(page);
+      expect(await todayOutOfView(page)).toBe(0);
+      // And stays there through a resize, until the user scrolls.
+      await page.setViewportSize({ width: width + 60, height: height + 40 });
+      await settle(page);
+      expect(await todayOutOfView(page)).toBe(0);
+      const view = planner(page)
+        .locator('[data-part="grid"]')
+        .locator('xpath=ancestor::*[@data-part="viewport"][1]');
+      await view.hover();
+      await page.mouse.wheel(0, -2000);
+      // The wheel is delivered after this call returns.
+      await expect.poll(() => view.evaluate((el) => el.scrollTop)).toBe(0);
+      await page.setViewportSize({ width, height });
+      await settle(page);
+      expect(await view.evaluate((el) => el.scrollTop)).toBe(0);
+    });
+  }
+
+  test('the tour lights a week clear of the weekday names (OP-7)', async ({ page }) => {
+    await open(page, planning.id);
+    await page.keyboard.press('Shift+T');
+    const callout = page.locator('[data-umbra="spotlight"] [role="dialog"]');
+    await callout.getByRole('button', { name: 'Next' }).click();
+    await expect(callout).toHaveAccessibleName('Settings of a week');
+    await settle(page);
+    const gap = await page.evaluate(() => {
+      const ring = document
+        .querySelector('[data-umbra="spotlight"] [data-part="ring"]')!
+        .getBoundingClientRect();
+      const names = document
+        .querySelector('[data-umbra="planner"] [data-part="weekdays"]')!
+        .getBoundingClientRect();
+      const target = document
+        .querySelector('[data-umbra="planner"] [data-part="weekAside"]')!
+        .getBoundingClientRect();
+      return { ring: Math.round(ring.top - names.bottom), target: Math.round(target.top - names.bottom) };
+    });
+    // The target starts at or below the names; the ring is 4px outside the target.
+    expect(gap.target).toBeGreaterThanOrEqual(0);
+    expect(gap.ring).toBeGreaterThanOrEqual(-5);
   });
 });

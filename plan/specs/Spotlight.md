@@ -39,7 +39,7 @@ Screenshot 25: one card of a two-column screen is lit, with a 2px outline with r
 | interactive | `interactive`: the target can be used; what it opens is above the dim |
 | persistent | `dismissable={false}`: only the callout's buttons close it |
 
-State for CSS: `data-interactive` on the root, `data-placement` and `data-dismissable` on the callout. The document element carries `data-umbra-spotlight` while one is open.
+State for CSS: `data-interactive` on the root, `data-placement` and `data-dismissable` on the callout. The document element carries `data-umbra-spotlight` while one is open: `locked`, or `interactive` when the target can be used.
 
 ## Customisation
 
@@ -122,3 +122,6 @@ Weaker than it could be:
 - **The target is followed every frame** (integration pass, 2026-10-11): one rectangle is read per frame while the spotlight is open, so a target that an app moves with no resize, scroll or transition is followed at once. It was followed at the next of those events.
 - **With no room at either side the callout goes below the target, or above** (integration pass, 2026-10-11), where one of the two has the room; it covered part of the target. Where none has, it stays over the target's edge, inside the window.
 - **A target that is not in the page is said in development** (integration pass, 2026-10-11): one warning per target. Not covered by a browser test: the built Storybook is a production build.
+- **While a spotlight is not `interactive`, no shortcut of the registry runs** (review 2, OP-2, decided 2026-10-11): nothing but the callout can be used, and a key is a way of using the page. The spotlight's own keys are not in the registry (Escape, the buttons of a tour), so they work. With `interactive` the shortcuts run as usual.
+- **A modal that opens while a spotlight shows takes its place: the spotlight closes** (review 2, OP-2, decided 2026-10-11). The modal would lie under the dim with the focus in it. It may be opened by the target, by a shortcut or by the app; the rule is the same, also when the spotlight is not `dismissable`. A modal the target is in is not one: the spotlight is rendered into that. Stacking the modal above the dim was rejected: the spotlight would then point at something the modal has made inert. Popovers, menus and tooltips are lifted above the dim as before, and the command palette is a layer above the spotlight.
+- **A tour whose targets are all missing reports its steps, then that it closed, and nothing after** (review 2, OP-8): the target of the first step was looked for once more after the tour had closed.

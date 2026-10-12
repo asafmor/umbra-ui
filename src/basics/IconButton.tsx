@@ -14,9 +14,17 @@ export interface IconButtonProps extends RootAttributes {
   label: string;
   variant?: ButtonVariant | undefined;
   shape?: 'square' | 'circle' | undefined;
-  /** Makes it a toggle (for example a star). */
+  /**
+   * Makes it a toggle (for example a star). While `true` the icon takes the accent colour and is drawn
+   * filled; a `ghost` toggle has no outline.
+   */
   pressed?: boolean | undefined;
   onPressedChange?: ((pressed: boolean) => void) | undefined;
+  /**
+   * The icon while `pressed`, in place of `icon` drawn filled: for an icon that is not one closed
+   * shape, or a set that has its own filled glyphs.
+   */
+  pressedIcon?: ReactNode | undefined;
   /** A count, or `true` for a dot, at the corner. */
   badge?: number | true | undefined;
   /** Shows `label` on hover and focus. A node replaces the text. */
@@ -49,6 +57,7 @@ export function IconButton({
   shape = 'square',
   pressed,
   onPressedChange,
+  pressedIcon,
   badge,
   tooltip = true,
   shortcut,
@@ -83,7 +92,12 @@ export function IconButton({
       {rest.loading ? (
         <Spinner label={loadingLabel} />
       ) : (
-        renderPart(parts?.icon, { children: icon }, (p) => <IconSlot part="icon">{p.children}</IconSlot>)
+        renderPart(parts?.icon, { children: pressed && pressedIcon ? pressedIcon : icon }, (p) => (
+          // The app's own pressed icon is drawn as it is.
+          <IconSlot part="icon" filled={pressed && !pressedIcon}>
+            {p.children}
+          </IconSlot>
+        ))
       )}
       {inMenu && <span className={styles.label}>{label}</span>}
       {badge !== undefined &&

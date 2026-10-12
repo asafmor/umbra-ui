@@ -1,5 +1,5 @@
 import { createElement, useRef, type CSSProperties, type ReactNode } from 'react';
-import { ActionsOverflow } from '../internal/ActionsOverflow';
+import { ActionsOverflow, keepsControls, wrapsKept } from '../internal/ActionsOverflow';
 import { useShrinkLevel } from '../internal/useShrinkLevel';
 import type { LinkRenderProps } from '../utils/link';
 import { cx, renderPart, type Part } from '../utils/parts';
@@ -71,6 +71,7 @@ export function SectionTitle({
       data-umbra="section-title"
       data-variant={look}
       data-shrunk={shrunk || !actions || undefined}
+      data-wrap={(shrunk && keepsControls(actions)) || undefined}
       className={cx(styles.root, className)}
       style={style}
     >
@@ -85,7 +86,7 @@ export function SectionTitle({
         ))}
       {actions &&
         renderPart(parts?.actions, { children: actions }, (p) => (
-          <div data-part="actions" className={styles.actions}>
+          <div data-part="actions" className={cx(styles.actions, wrapsKept)}>
             <ActionsOverflow shrunk={shrunk} label={moreLabel}>
               {p.children}
             </ActionsOverflow>

@@ -1,7 +1,7 @@
 import { createElement, useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { ButtonBase } from '../basics/Button';
 import { useShrinkLevel } from '../internal/useShrinkLevel';
-import { ActionsOverflow } from '../internal/ActionsOverflow';
+import { ActionsOverflow, keepsControls, wrapsKept } from '../internal/ActionsOverflow';
 import { Icon, IconSlot } from '../provider/icons';
 import { cx, renderPart, type Part } from '../utils/parts';
 import styles from './GroupHeader.module.css';
@@ -88,7 +88,7 @@ function Meta({ className, style, children }: BlockProps) {
 
 function Actions({ className, style, children }: BlockProps) {
   return (
-    <div data-part="actions" className={cx(styles.actions, className)} style={style}>
+    <div data-part="actions" className={cx(styles.actions, wrapsKept, className)} style={style}>
       {children}
     </div>
   );
@@ -190,7 +190,14 @@ export function GroupHeader({
   const inMenu = !!actions && level_ === steps;
   const name = typeof title === 'string' ? ` ${title}` : '';
   return (
-    <Root {...root} ref={ref} collapsed={collapsed} truncate={level_ === steps}>
+    <Root
+      {...root}
+      // The last step, with actions: what stays of them may shrink and wrap (`wrapsKept`).
+      {...(inMenu && keepsControls(actions) && { 'data-wrap': '' })}
+      ref={ref}
+      collapsed={collapsed}
+      truncate={level_ === steps}
+    >
       {collapsible &&
         renderPart(
           parts?.toggle,

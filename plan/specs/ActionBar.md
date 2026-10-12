@@ -110,3 +110,4 @@ Resolved 2026-10-10:
 Resolved 2026-10-11 (review 2):
 
 - A floating bar that closes while the focus is in it ("Clear selection") gives the focus back to the control it came from, or to the first control beside the bar (F18).
+- **A floating bar is above the table under it** (owner's O-8, 2026-10-11): the summary row of a `DataTable` covered it. The fault was the table's (see its spec); the composition (`DataTable` then a floating `ActionBar` in a card with `padding="none"`) is right as it is. `tests/visual/review2-crosscutting.spec.ts` hit-tests every button of the bar at three sizes and three densities, with and without a summary row.

@@ -502,7 +502,7 @@ test.describe('BarChart', () => {
     // By sign: negative bars are striped as well as red.
     const sign = tile(page, 'sign');
     await expect(sign.locator('[data-pattern="stripes"]')).toHaveCount(2);
-    await expect(sign.locator('[data-part="annotations"] [data-kind="line"]')).toContainText('Target');
+    await expect(sign.locator('[data-part="annotationLabels"] [data-kind="line"]')).toContainText('Target');
     // By threshold: each step has its own fill.
     const steps = tile(page, 'thresholds');
     await expect(steps.locator('[data-pattern="stripes"]')).toHaveCount(2);

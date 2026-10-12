@@ -355,7 +355,16 @@ function Everything() {
                   />
                 </Box>
                 <StarRating {...t('StarRating')} aria-label="Rating" defaultValue={3} />
-                <SplitButton {...t('SplitButton')} items={[{ id: 'm1', label: 'Other' }]} menuLabel="More">
+                <span id="root-described" hidden>
+                  A description the app gives
+                </span>
+                <SplitButton
+                  {...t('SplitButton')}
+                  id="root-id-split-button"
+                  aria-describedby="root-described"
+                  items={[{ id: 'm1', label: 'Other' }]}
+                  menuLabel="More"
+                >
                   Save
                 </SplitButton>
                 <Box width={180}>
@@ -365,6 +374,7 @@ function Everything() {
                 <Box width={420}>
                   <ColorScaleEditor
                     {...t('ColorScaleEditor')}
+                    aria-describedby="root-described"
                     aria-label="Scale"
                     defaultValue={[
                       { from: 0, tone: 'danger' },

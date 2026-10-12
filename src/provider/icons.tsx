@@ -126,9 +126,18 @@ export function BareIcon({ name }: { name: IconName }) {
 }
 
 /** Internal: wraps an icon node supplied by the app so it gets the same size as built-in icons. */
-export function IconSlot({ children, part }: { children: ReactNode; part?: string | undefined }) {
+export function IconSlot({
+  children,
+  part,
+  filled,
+}: {
+  children: ReactNode;
+  part?: string | undefined;
+  /** The icon of a toggle that is on: its shape is drawn filled (`Button.module.css`). */
+  filled?: boolean | undefined;
+}) {
   return (
-    <span className={styles.icon} data-part={part} aria-hidden="true">
+    <span className={styles.icon} data-part={part} data-filled={filled || undefined} aria-hidden="true">
       {children}
     </span>
   );

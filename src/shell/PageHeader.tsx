@@ -8,7 +8,7 @@ import {
   type RefObject,
 } from 'react';
 import { ButtonBase } from '../basics/Button';
-import { ActionsOverflow } from '../internal/ActionsOverflow';
+import { ActionsOverflow, wrapsKept } from '../internal/ActionsOverflow';
 import { useShrinkLevel } from '../internal/useShrinkLevel';
 import { textColourOn } from '../provider/contrast';
 import { Tooltip } from '../overlays/Tooltip';
@@ -298,7 +298,7 @@ export interface PageHeaderActionsProps extends BlockProps {
 function Actions({ moreLabel = 'More actions', className, style, children }: PageHeaderActionsProps) {
   const header = useHeader();
   return (
-    <div data-part="actions" className={cx(styles.actions, className)} style={style}>
+    <div data-part="actions" className={cx(styles.actions, wrapsKept, className)} style={style}>
       <ActionsOverflow shrunk={header.taken('actions')} label={moreLabel}>
         {children}
       </ActionsOverflow>

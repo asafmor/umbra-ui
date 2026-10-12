@@ -188,3 +188,6 @@ Resolved 2026-10-11 (under the owner's delegation; decision 11 of `plan/reviews/
 - **Works in the popover of a layout-collapsed card** (integration pass, 2026-10-11): the keyboard grid and every control did nothing there (`plan/layout.md`, "Mechanism"). Still open: the side column's content is mounted again when the column collapses or opens.
 
 Resolved in the fix pass of review 1 (2026-10-11): the focus at a month limit (T-1) and in a change of state (T-2), paging from a day of another month (T-4), the columns beside the side column (T-6), `weekEmpty: null` (T-12), dates that are not dates (T-13), the props tables (T-15), and the list of hidden items. Still open: the side column's content is mounted again when the column collapses or opens.
+
+- **The month opens on today's week whatever the planner's first sizes are** (review 2, OP-6, 2026-10-11). The day was scrolled into view once, before the side column collapsed, the stack gave the card its height or the columns became tabs. It is kept in view through every resize until the user scrolls or moves in the weeks; from then on the place is theirs.
+- **What brings a week into view stops clear of the weekday names** (review 2, OP-7, 2026-10-11): the scrolling element has a `scroll-padding-top` of their height, which the browser's `scrollIntoView` honours (a `Spotlight` on a week uses it).

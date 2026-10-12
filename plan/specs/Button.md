@@ -42,7 +42,7 @@ States: hover, pressed, focus, disabled, loading. Height follows the density lev
 
 ### 1. Tokens
 
-`--umbra-button-height`, `--umbra-button-radius`, `--umbra-button-padding-x`, and per variant `--umbra-button-<variant>-bg` / `-fg` / `-border`.
+`--umbra-button-height`, `--umbra-button-radius`, `--umbra-button-padding-x`, `--umbra-button-pressed-color` (a toggle that is on; the accent text colour), and per variant `--umbra-button-<variant>-bg` / `-fg` / `-border`.
 
 A filled button (`primary`, `accent`) gives a badge inside it a ring in its text colour through the private `--badge-ring`; `--umbra-badge-ring` set by the app on any ancestor wins.
 
@@ -58,6 +58,7 @@ A filled button (`primary`, `accent`) gives a badge inside it a ring in its text
 | `loadingLabel` | string | "Loading" | What a screen reader hears while loading |
 | `disabled` | boolean | `false` | |
 | `href` | string | — | Renders a link that looks like a button |
+| `pressed` / `onPressedChange` | boolean / function | — | Makes it a toggle (`aria-pressed`). While `true`: the accent colour (`ghost`, `neutral`), an outline, and its icons drawn filled; see `plan/specs/IconButton.md` |
 | `shortcut` | shortcut id | — | Binds the key, and shows the key hint in its `Tooltip` (or at the end of its row in an overflow menu) |
 | `fullWidth` | boolean | `false` | |
 | `collapseTo` | `icon` | — | Hides the label when space is short (see below) |
@@ -90,3 +91,4 @@ None.
 Resolved 2026-10-11 (review 2):
 
 - `size="small"` is never under 24px high (WCAG 2.5.8); at the compact density it was 20px (F31).
+- **A text button can be a toggle** (owner's O-5, 2026-10-11): `pressed` and `onPressedChange`, as on `IconButton`. A pressed text button keeps its outline (it may have no icon to fill), takes the accent colour and fills its icons.

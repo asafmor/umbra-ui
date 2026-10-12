@@ -38,6 +38,8 @@ interface Shared {
   icon: ReactNode;
   emptyIcon: ReactNode;
   valueHidden: boolean;
+  /** A display too narrow for its row of stars: one star and the value as a number. */
+  compact: boolean;
   display: boolean;
   loading: boolean;
   step: number;
@@ -134,8 +136,12 @@ function Root({
   const value = valueProp === undefined ? own : valueProp;
   const control = useFieldControl({ id, invalid, required, disabled });
   useUnnamedGroup(ref, readOnly || loading ? 'none' : name);
-  // One step of "show less": the value's text gives way before a star is cut.
-  const valueHidden = useShrinkLevel(ref, 1) === 1;
+  // "Show less": the value's text gives way first. A display that still does not fit (a narrow table
+  // cell) then draws one star and the value as a number, instead of a row cut at its end. An input
+  // keeps its stars: each is a choice.
+  const level = useShrinkLevel(ref, readOnly ? 2 : 1);
+  const valueHidden = level >= 1;
+  const compact = readOnly && level === 2;
   const text = (v: number) => formatValue(v, max);
   const shared: Shared = {
     max,
@@ -153,6 +159,7 @@ function Root({
     icon,
     emptyIcon,
     valueHidden,
+    compact,
     display: readOnly,
     loading,
     step,
@@ -166,6 +173,7 @@ function Root({
     'data-umbra': 'star-rating',
     'data-size': size,
     'data-mode': readOnly ? 'display' : 'input',
+    'data-compact': compact ? '' : undefined,
     'data-step': step === 0.5 ? 'half' : undefined,
     style: { '--stars': max, ...style } as CSSProperties,
   };
@@ -261,6 +269,15 @@ function Stars({ className, style, children }: StarRatingStarsProps) {
     return (
       <span data-part="skeleton" className={cx(styles.skeleton, className)} style={style}>
         <Skeleton shape="block" width="100%" height="100%" />
+      </span>
+    );
+  if (rating.compact)
+    return (
+      <span data-part="stars" className={cx(styles.stars, className)} style={style}>
+        <Star index={0} fill={1} />
+        <span data-part="value" aria-hidden="true" className={styles.value}>
+          {rating.value}
+        </span>
       </span>
     );
   // Half steps: a press chooses the whole star, so every pointer target is a star, 24px or more. A

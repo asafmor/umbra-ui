@@ -150,6 +150,12 @@
   cursor: default;
 }
 
+/* One star and the number, when a display has no room for its row. */
+.root[data-compact] > .stars {
+  align-items: center;
+  gap: var(--umbra-space-1);
+}
+
 .value {
   flex: none;
   color: var(--umbra-color-base-text-secondary);

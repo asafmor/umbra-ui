@@ -6,7 +6,8 @@ import { expectFocusKept } from './helpers';
 const open = async (page: Page, story: string, width = 1280, height = 720) => {
   await page.setViewportSize({ width, height });
   await page.goto(`/iframe.html?id=overlays-modal--${story}&viewMode=story`);
-  await page.locator('[data-umbra="modal"]').first().waitFor();
+  // A `ConfirmDialog` is found by its own name.
+  await page.locator('[data-umbra="modal"], [data-umbra="confirm-dialog"]').first().waitFor();
   await page.evaluate(() => document.fonts.ready);
 };
 const dialog = (page: Page, name: string | RegExp) => page.getByRole('dialog', { name });

@@ -5,7 +5,7 @@ import { Icon } from '../provider/icons';
 import { formatKeys, keyCaps } from '../provider/shortcuts';
 import { useShortcut, useShortcutList } from '../provider/UmbraProvider';
 import { cx, renderPart, type Part } from '../utils/parts';
-import { Modal, type ModalHeaderProps, type ModalSize } from './Modal';
+import { Modal, ModalNameContext, type ModalHeaderProps, type ModalSize } from './Modal';
 import { useOpenState } from './shared';
 import styles from './ShortcutsSheet.module.css';
 import { passThrough, type RootAttributes } from '../utils/passThrough';
@@ -205,10 +205,14 @@ function Panel({
 
   const words = query.toLowerCase().split(/\s+/).filter(Boolean);
   const matches = (section: string, item: ShortcutsSheetItemData) => {
-    const text = [section, item.label, ...[item.keys].flat().map((keys) => formatKeys(keys))]
+    const keys = [item.keys].flat();
+    const text = [section, item.label, ...keys.map((combination) => formatKeys(combination))]
       .join(' ')
       .toLowerCase();
-    return words.every((word) => text.includes(word));
+    // A key is also found by its name as it is written ("arrowup" for "↑"), from its start: "row" is
+    // a word of a label, not the end of "ArrowUp".
+    const names = keys.flatMap((combination) => combination.toLowerCase().split('+'));
+    return words.every((word) => text.includes(word) || names.some((name) => name.startsWith(word)));
   };
   const shown = [...sections]
     .map(([section, items]) => [section, items.filter((item) => matches(section, item))] as const)
@@ -306,22 +310,24 @@ export function ShortcutsSheet({
   const [isOpen, setOpen] = useOpenState(open, defaultOpen, onOpenChange);
   useShortcut(shortcut ?? undefined, shortcut ? () => setOpen(!isOpen) : undefined);
   return (
-    <Modal.Root
-      open={isOpen}
-      onOpenChange={setOpen}
-      variant={variant}
-      side={side}
-      size={size}
-      height={height}
-      headingLevel={headingLevel}
-    >
-      {trigger && <Modal.Trigger>{trigger}</Modal.Trigger>}
-      <Modal.Overlay>
-        <Modal.Content {...passThrough(panel)} className={cx(styles.root, className)} style={style}>
-          <Panel {...panel} headingLevel={headingLevel} />
-        </Modal.Content>
-      </Modal.Overlay>
-    </Modal.Root>
+    <ModalNameContext value="shortcuts-sheet">
+      <Modal.Root
+        open={isOpen}
+        onOpenChange={setOpen}
+        variant={variant}
+        side={side}
+        size={size}
+        height={height}
+        headingLevel={headingLevel}
+      >
+        {trigger && <Modal.Trigger>{trigger}</Modal.Trigger>}
+        <Modal.Overlay>
+          <Modal.Content {...passThrough(panel)} className={cx(styles.root, className)} style={style}>
+            <Panel {...panel} headingLevel={headingLevel} />
+          </Modal.Content>
+        </Modal.Overlay>
+      </Modal.Root>
+    </ModalNameContext>
   );
 }
 

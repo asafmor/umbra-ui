@@ -129,6 +129,16 @@ test.describe('ShortcutsSheet', () => {
       'Select the row',
       'Open the row',
     ]);
+    // OP-11: a key is found by its name as well as by the sign drawn for it.
+    for (const text of ['arrowup', '↑']) {
+      await search.fill(text);
+      await expect(sheet(page).locator('[data-part="label"]')).toHaveText(['Move between cells']);
+    }
+    // The written name does not make a line match a word of another kind: "row" is not "ArrowUp".
+    await search.fill('row');
+    await expect(
+      sheet(page).locator('[data-part="label"]').filter({ hasText: 'Move between cells' }),
+    ).toHaveCount(0);
     await search.fill('zzz');
     await expect(sheet(page).locator('[data-part="item"]')).toHaveCount(0);
     await expect(sheet(page).getByRole('status')).toHaveText('No shortcuts match');
@@ -201,7 +211,9 @@ test.describe('ShortcutsSheet', () => {
   test('a drawer is attached to the end edge and is as tall as the window', async ({ page }) => {
     for (const direction of ['ltr', 'rtl']) {
       await openStory(page, 'overlays-shortcutssheet--drawer', { direction });
-      const panel = page.locator('[data-umbra="modal"]');
+      // OP-9: the sheet is found by its own name, as a `ConfirmDialog` is.
+      const panel = page.locator('[data-umbra="shortcuts-sheet"]');
+      await expect(page.locator('[data-umbra="modal"]')).toHaveCount(0);
       await expect(panel).toHaveAttribute('data-variant', 'drawer');
       await expect(sheet(page)).toBeVisible();
       await expect

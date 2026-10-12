@@ -43,6 +43,19 @@ test('an id goes to the root too, of a plain element and of one React Aria draws
   await openStory(page, STORY);
   await expect(page.locator('#root-id-card')).toHaveAttribute('data-test-root', 'Card');
   await expect(page.locator('#root-id-button')).toHaveAttribute('data-test-root', 'Button');
+  // X-5 of review 2: a group that is a field's control took its id from the field only.
+  await expect(page.locator('#root-id-split-button')).toHaveAttribute('data-test-root', 'SplitButton');
+});
+
+test("aria-describedby reaches the root of a control that also takes a field's description", async ({
+  page,
+}) => {
+  await openStory(page, STORY);
+  for (const name of ['SplitButton', 'ColorScaleEditor'])
+    await expect(page.locator(`[data-test-root="${name}"]`)).toHaveAttribute(
+      'aria-describedby',
+      /(^| )root-described( |$)/,
+    );
 });
 
 test('the search trigger of the top bar is a named part', async ({ page }) => {
