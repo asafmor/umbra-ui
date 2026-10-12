@@ -40,7 +40,7 @@ A row is `{ id, label, textValue?, icon?, shortcut?, description?, disabled?, da
 
 Row kinds (`type`): `item`, `checkbox` (toggles; the menu stays open on a press or `Space`), `radio` (neighbouring radio rows are one group; choosing closes the menu).
 
-Row states: hover and keyboard highlight (one step lighter), pressed, focus ring (inside the row), disabled (40%), checked (a check in a leading gutter, in the accent text colour), current page (violet fill with an edge stripe and bold text), danger (danger text colour), submenu open. Data attributes: `data-focused`, `data-hovered`, `data-pressed`, `data-focus-visible`, `data-disabled`, `data-selected`, `data-current`, `data-danger`, `data-has-submenu`, `data-open`.
+Row states: hover and keyboard highlight (one step lighter), pressed, focus ring (inside the row), disabled (40%), checked (a check in a leading gutter, in the accent text colour), current page (the interaction fill and bold text), danger (danger text colour), submenu open. Data attributes: `data-focused`, `data-hovered`, `data-pressed`, `data-focus-visible`, `data-disabled`, `data-selected`, `data-current`, `data-danger`, `data-has-submenu`, `data-open`.
 
 ## Customisation
 
@@ -95,7 +95,7 @@ Row states: hover and keyboard highlight (one step lighter), pressed, focus ring
 - `Escape`, a press outside, and choosing a row close the menu; focus returns to where it was.
 - While a menu is open the rest of the page is inert, as for any menu.
 - A context menu opens on a right click at the pointer, and on the context-menu key or `Shift+F10` at the focused element, so something inside the region must be focusable.
-- A checked row always shows the check; colour only supports it. The current page is the violet fill with a stripe and bold text.
+- A checked row always shows the check; colour only supports it. The current page is the fill of the interaction colour with bold text, no stripe (2026-10-11, owner's O-4); the highlight on it is that fill one step darker.
 - Key hints come from the provider's shortcut list (`shortcut` is an id). The menu shows them; it does not bind them.
 - It keeps the density, context tint and tokens of the place it was opened from. Motion as `Popover`.
 
@@ -127,5 +127,5 @@ Resolved 2026-10-11 (Milestone 2):
 Resolved 2026-10-11 (review 2):
 
 - A danger row under the highlight (pointer or arrow keys) takes a lighter red, `--umbra-menu-item-danger-highlight-fg`: the plain danger red was 4.40:1 on the highlight (F14). Measured 4.5:1 or more on all four tints (`tests/visual/regressions.spec.ts`).
-- The stripe of the current row is on the start side, and the submenu chevron is mirrored, when the direction is right to left (F32). The menu renders into the modal it was opened from.
+- The submenu chevron is mirrored when the direction is right to left (F32). The menu renders into the modal it was opened from.
 - Kept: `Space` on a radio or checkbox row changes it and leaves the menu open, `Enter` changes it and closes. This is the ARIA Authoring Practices pattern for `menuitemradio` (review 2 listed it as a defect, F30).

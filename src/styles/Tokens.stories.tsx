@@ -76,7 +76,7 @@ function Tokens() {
               style={{
                 width: `var(--umbra-density-${d})`,
                 height: 8,
-                background: 'var(--umbra-color-fixed-selected)',
+                background: 'var(--umbra-color-interaction)',
               }}
             />
             <span style={label}>{d}</span>

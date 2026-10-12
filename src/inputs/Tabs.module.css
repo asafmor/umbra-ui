@@ -25,8 +25,8 @@
   --pad: var(--umbra-tabs-padding-x, var(--umbra-space-4));
   --border: var(--umbra-tabs-border, var(--umbra-color-base-border-strong));
   --bg: var(--umbra-tabs-bg, var(--umbra-color-base-surface1));
-  --selected: var(--umbra-tabs-selected-bg, var(--umbra-color-fixed-selected));
-  --on-selected: var(--umbra-tabs-selected-fg, var(--umbra-color-fixed-on-selected));
+  --selected: var(--umbra-tabs-selected-bg, var(--umbra-color-interaction));
+  --on-selected: var(--umbra-tabs-selected-fg, var(--umbra-color-on-interaction));
 
   display: flex;
   flex: 0 1 auto;

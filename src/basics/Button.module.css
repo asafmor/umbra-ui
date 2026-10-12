@@ -32,15 +32,15 @@
 }
 
 .button[data-variant='primary'] {
-  --bg: var(--umbra-button-primary-bg, var(--umbra-color-fixed-primary));
-  --fg: var(--umbra-button-primary-fg, var(--umbra-color-fixed-on-primary));
+  --bg: var(--umbra-button-primary-bg, var(--umbra-color-action));
+  --fg: var(--umbra-button-primary-fg, var(--umbra-color-on-action));
   --border: var(--umbra-button-primary-border, transparent);
   font-weight: 700;
 }
 
 .button[data-variant='accent'] {
-  --bg: var(--umbra-button-accent-bg, var(--umbra-color-fixed-selected));
-  --fg: var(--umbra-button-accent-fg, var(--umbra-color-fixed-on-selected));
+  --bg: var(--umbra-button-accent-bg, var(--umbra-color-interaction));
+  --fg: var(--umbra-button-accent-fg, var(--umbra-color-on-interaction));
   --border: var(--umbra-button-accent-border, transparent);
 }
 
@@ -102,7 +102,7 @@
 }
 
 .button:is([data-variant='ghost'], [data-variant='neutral'])[aria-pressed='true'] {
-  color: var(--umbra-button-pressed-color, var(--umbra-color-fixed-accent-text));
+  color: var(--umbra-button-pressed-color, var(--umbra-color-interaction-text));
 }
 
 /* Icons are strokes; filled, a closed shape (a star, a heart, a flag) reads as "on". */
@@ -112,7 +112,7 @@
 
 .button[data-focus-visible] {
   outline: var(--umbra-state-focus-ring-width) solid
-    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-fixed-focus-ring)));
+    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-focus-ring)));
   outline-offset: var(--umbra-focus-offset, var(--focus-offset, 2px));
 }
 

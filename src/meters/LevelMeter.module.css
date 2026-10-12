@@ -133,7 +133,7 @@
 /* The marker stands taller and wider than the ticks, so it does not depend on its colour. */
 .plot > [data-part='marker'] {
   --tick: var(--mark);
-  --paint: var(--umbra-level-meter-marker, var(--umbra-color-fixed-accent-text));
+  --paint: var(--umbra-level-meter-marker, var(--umbra-color-interaction-text));
 
   inset-block: calc(var(--pad) / -2);
   background: var(--paint);
@@ -161,7 +161,7 @@
 }
 
 .plot > [data-part='marker'][data-tone='accent'] {
-  --paint: var(--umbra-color-fixed-selected);
+  --paint: var(--umbra-color-interaction);
 }
 
 .plot > [data-part='marker'][data-tone='ramp-1'] {

@@ -93,7 +93,7 @@ export const Triggers: Story = {
           </button>
         </Tooltip>
         <Tooltip content="On a link">
-          <a href="#somewhere" style={{ color: 'var(--umbra-color-fixed-accent-text)' }}>
+          <a href="#somewhere" style={{ color: 'var(--umbra-color-interaction-text)' }}>
             Link
           </a>
         </Tooltip>

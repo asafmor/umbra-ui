@@ -57,7 +57,7 @@
   inline-size: calc((var(--to) - var(--from)) * 100%);
   border-radius: inherit;
   background:
-    var(--pattern, none), var(--paint, var(--umbra-slider-fill, var(--umbra-color-fixed-accent-text)));
+    var(--pattern, none), var(--paint, var(--umbra-slider-fill, var(--umbra-color-interaction-text)));
 }
 
 .fill[data-pattern='diagonal'] {
@@ -99,7 +99,7 @@
   box-sizing: border-box;
   inline-size: var(--thumb);
   block-size: var(--thumb);
-  border: 2px solid var(--umbra-slider-thumb-border, var(--umbra-color-fixed-selected));
+  border: 2px solid var(--umbra-slider-thumb-border, var(--umbra-color-interaction));
   border-radius: 50%;
   background: var(--umbra-slider-thumb-bg, var(--umbra-color-base-text-primary));
   cursor: grab;
@@ -128,7 +128,7 @@
 
 .thumb[data-focus-visible] {
   outline: var(--umbra-state-focus-ring-width) solid
-    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-fixed-focus-ring)));
+    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-focus-ring)));
   outline-offset: var(--umbra-focus-offset, var(--focus-offset, 2px));
 }
 

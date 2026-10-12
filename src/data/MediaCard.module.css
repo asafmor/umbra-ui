@@ -20,7 +20,8 @@
   border: var(--umbra-border-width) solid
     var(--umbra-media-card-border, var(--umbra-color-base-border-subtle));
   border-radius: var(--umbra-media-card-radius, var(--umbra-radius-card));
-  background: var(--bg);
+  background: color-mix(in srgb, var(--bg) calc(var(--umbra-surface-opacity) * 100%), transparent);
+  backdrop-filter: var(--umbra-surface-backdrop);
   color: var(--umbra-media-card-color, var(--umbra-color-base-text-primary));
   transition: background-color var(--umbra-motion-duration-fast);
 }
@@ -180,7 +181,7 @@ button.link {
 .link:focus-visible::after,
 .cover:focus-visible {
   outline: var(--umbra-state-focus-ring-width) solid
-    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-fixed-focus-ring)));
+    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-focus-ring)));
   outline-offset: calc(-1 * var(--umbra-state-focus-ring-width));
   border-radius: var(--umbra-media-card-radius, var(--umbra-radius-card));
 }
@@ -327,8 +328,11 @@ button.link {
 /* Selected: the fixed violet fill, and an edge in a lighter violet as the cue that is not the fill
    (the stripe of a selected list row, all the way round). Drawn inside: the card may be clipped. */
 .root[data-selected] {
-  --bg: var(--umbra-media-card-selected-bg, var(--umbra-color-fixed-selected));
+  --bg: var(--umbra-media-card-selected-bg, var(--umbra-color-interaction));
   --secondary: var(--umbra-color-base-text-primary);
+
+  /* The selected fill stays opaque at any surface opacity: it carries text. */
+  background: var(--bg);
   box-shadow: inset 0 0 0 2px
-    var(--umbra-media-card-selected-edge, color-mix(in oklab, var(--umbra-color-fixed-selected), #fff 35%));
+    var(--umbra-media-card-selected-edge, color-mix(in oklab, var(--umbra-color-interaction), #fff 35%));
 }

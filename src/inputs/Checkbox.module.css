@@ -1,6 +1,6 @@
 .root {
   --size: var(--umbra-checkbox-size, calc(var(--umbra-density-control-height) / 2));
-  --fill: var(--umbra-checkbox-selected-bg, var(--umbra-color-fixed-selected));
+  --fill: var(--umbra-checkbox-selected-bg, var(--umbra-color-interaction));
 
   display: inline-grid;
   grid-template-columns: auto minmax(0, 1fr);
@@ -29,7 +29,7 @@
     var(--umbra-checkbox-border, var(--umbra-color-base-border-control));
   border-radius: var(--umbra-checkbox-radius, var(--umbra-radius-control));
   background: var(--umbra-checkbox-bg, transparent);
-  color: var(--umbra-checkbox-mark-color, var(--umbra-color-fixed-on-selected));
+  color: var(--umbra-checkbox-mark-color, var(--umbra-color-on-interaction));
   transition:
     background-color var(--umbra-motion-duration-fast),
     border-color var(--umbra-motion-duration-fast);
@@ -97,7 +97,7 @@
 
 .root[data-focus-visible] > .box {
   outline: var(--umbra-state-focus-ring-width) solid
-    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-fixed-focus-ring)));
+    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-focus-ring)));
   outline-offset: var(--umbra-focus-offset, var(--focus-offset, 2px));
 }
 

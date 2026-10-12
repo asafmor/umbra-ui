@@ -43,8 +43,9 @@ test('every series colour has 3:1 against the card backgrounds on every context 
       tokens.context.derive.cardTint,
       tokens.context.derive.cardTintStrong,
     ] as string[]) {
-      const [, share, base] = /<input> (\d+)%, (#[0-9a-f]+)/.exec(derived)!;
-      surfaces.push(mix(tint, Number(share) / 100, base!));
+      // The tint is mixed into surface1, which has the same luminance on every context.
+      const [, share] = /<input> (\d+)%, var\(--umbra-color-base-surface1\)/.exec(derived)!;
+      surfaces.push(mix(tint, Number(share) / 100, tokens.base.surface1));
     }
   }
   expect(surfaces).toHaveLength(10);

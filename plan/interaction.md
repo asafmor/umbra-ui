@@ -6,10 +6,11 @@ The screenshots are static, so everything here is the library's own rule, approv
 
 | State | Rule |
 |---|---|
-| Hover | Surface lightens one step. A surface that carries light or coloured text (primary, accent and danger buttons) darkens one step instead, so the text keeps 4.5:1. Table and list rows highlight across their full width. |
+| Hover | Surface lightens one step. A filled surface (primary, accent and danger buttons, a selected fill) darkens one step instead, so the text keeps 4.5:1; a derived fill is chosen so that this holds for light and for dark text on it. Table and list rows highlight across their full width. |
 | Pressed | Surface darkens one step. No movement. |
-| Selected | Violet fill (fixed colour), always with a second cue that is not colour: a bar, an edge stripe, an outline, a weight change or a check. A **toggle button that is on** (`pressed`) takes the accent colour and draws its icon filled; one that has a box or a text is outlined as well, and a `ghost` icon button gets no box: the filled icon is its second cue (2026-10-11, `plan/specs/IconButton.md`). |
-| Focus | 2px light-pink ring, shown for keyboard focus (`:focus-visible`). Never violet, so focus and selected cannot be confused. On a brand bar where pink has less than 3:1, the ring takes the bar's text colour. Inside a container that clips, the ring is drawn inwards. |
+| Selected | A fill in the interaction colour (violet by default; derived from the brand or set by the app, `decisions/08-theming.md`), always with a second cue that is not colour. Which cue, by kind of row (changed 2026-10-11, owner's O-4): **a row of data** (`ListItem`, a `DataTable` row) has the edge stripe; **a chosen option** (`Select`, a checked `Menu` row, `EntitySwitcher`) has a check and no stripe; **the current page** (`VerticalNav`, a `current` menu row) is bold with `aria-current` and no stripe; tabs, tiles and segments have a bar, an outline or a ring. A **toggle button that is on** (`pressed`) takes the accent colour and draws its icon filled; one that has a box or a text is outlined as well, and a `ghost` icon button gets no box: the filled icon is its second cue (2026-10-11, `plan/specs/IconButton.md`). |
+| Highlighted | The row under the pointer or the arrow keys in a menu, a select list or the command palette: one surface step lighter. Not a selection, so never the interaction fill and no second cue; on a selected row the highlight shifts that row's own fill one step. |
+| Focus | 2px light-pink ring, shown for keyboard focus (`:focus-visible`). Never the selected colour, so focus and selected cannot be confused: when the interaction colour is itself close to the pink, the ring takes the primary text colour (2026-10-11). On a brand bar where pink has less than 3:1, the ring takes the bar's text colour. Inside a container that clips, the ring is drawn inwards; inside a selected fill it takes the fill's text colour. |
 | Disabled | 40% opacity; no hover or press response. |
 
 ## Motion
@@ -79,4 +80,4 @@ Target: WCAG 2.2 AA. Every story is checked automatically (axe) on every context
 ## Open details
 
 - Exact skeleton shapes per component.
-- The focus ring colour value, once the final palette is set.
+- None on the focus ring colour: `--umbra-color-focus-ring`, light pink, with the two fallbacks under "Focus".

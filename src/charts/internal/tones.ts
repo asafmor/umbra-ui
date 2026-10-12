@@ -9,7 +9,7 @@ export const toneColours: Record<'default' | ThresholdTone, string> = {
   danger: 'var(--umbra-chart-negative, var(--umbra-color-semantic-danger))',
   info: 'var(--umbra-chart-info, var(--umbra-color-semantic-info))',
   neutral: 'var(--umbra-color-base-text-muted)',
-  accent: 'var(--umbra-color-fixed-selected)',
+  accent: 'var(--umbra-color-interaction)',
   'ramp-1': 'var(--umbra-color-value-ramp-1)',
   'ramp-2': 'var(--umbra-color-value-ramp-2)',
   'ramp-3': 'var(--umbra-color-value-ramp-3)',

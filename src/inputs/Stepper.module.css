@@ -83,7 +83,7 @@
 
 .value:focus-visible {
   outline: var(--umbra-state-focus-ring-width) solid
-    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-fixed-focus-ring)));
+    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-focus-ring)));
   outline-offset: calc(-1 * var(--umbra-state-focus-ring-width));
 }
 
@@ -112,7 +112,7 @@
 .indicator > span[data-current] {
   block-size: 6px;
   border-radius: 2px;
-  background: var(--umbra-stepper-segment-current-color, var(--umbra-color-fixed-accent-text));
+  background: var(--umbra-stepper-segment-current-color, var(--umbra-color-interaction-text));
 }
 
 .root[data-disabled] {

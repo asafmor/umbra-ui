@@ -110,7 +110,7 @@ export const Fades: StoryObj<typeof meta> = {
                   insetInline: 0,
                   [edge === 'start' ? 'top' : 'bottom']: 0,
                   height: 2,
-                  background: 'var(--umbra-color-fixed-accent-text)',
+                  background: 'var(--umbra-color-interaction-text)',
                 }}
               />
             ),

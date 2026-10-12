@@ -162,7 +162,7 @@ test('Modal: the `start` drawer is on the right and its close button on the left
   expect(await x(close)).toBeLessThan(await x(title));
 });
 
-test('icons that point along the line are mirrored, and the stripes are on the start side', async ({
+test('icons that point along the line are mirrored, and the current nav item has no stripe', async ({
   page,
 }) => {
   await rtl(page, 'overlays-menu--submenus');
@@ -179,8 +179,8 @@ test('icons that point along the line are mirrored, and the stripes are on the s
 
   await rtl(page, 'shell-verticalnav--default');
   const current = page.locator('[data-umbra="vertical-nav"] [aria-current]').first();
-  // An inset shadow with a negative x is drawn on the right edge.
-  expect(await current.evaluate((el) => getComputedStyle(el).boxShadow)).toMatch(/-\d+px 0px 0px 0px inset/);
+  // No edge stripe in either direction (owner's O-4); the stripe of a list row is checked in data-lists.
+  expect(await current.evaluate((el) => getComputedStyle(el).boxShadow)).toBe('none');
 });
 
 for (const story of [

@@ -14,7 +14,12 @@
   overflow: hidden;
   border: var(--umbra-border-width) solid var(--border);
   border-radius: var(--umbra-card-radius, var(--umbra-radius-card));
-  background: var(--bg);
+  /*
+   * The surface, as opaque as the app asks (plan/decisions/08-theming.md, "Surface opacity"): mixed
+   * with transparent, never `opacity`, so what is on the card stays opaque.
+   */
+  background: color-mix(in srgb, var(--bg) calc(var(--umbra-surface-opacity) * 100%), transparent);
+  backdrop-filter: var(--umbra-surface-backdrop);
   box-shadow: var(--umbra-elevation-card);
   /* Every slot has a definite size, so content can use container queries on width and height. */
   container-type: size;
@@ -166,7 +171,7 @@
 }
 
 .titleLink {
-  color: var(--umbra-color-fixed-accent-text);
+  color: var(--umbra-color-interaction-text);
   text-decoration: underline;
   text-underline-offset: 3px;
 }
@@ -184,7 +189,7 @@
 
 .headerButton:focus-visible::after {
   outline: var(--umbra-state-focus-ring-width) solid
-    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-fixed-focus-ring)));
+    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-focus-ring)));
   outline-offset: calc(-1 * var(--umbra-state-focus-ring-width));
   border-radius: var(--umbra-card-radius, var(--umbra-radius-card));
 }

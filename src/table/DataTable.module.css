@@ -188,7 +188,7 @@
 /* The focused cell: a ring inside it. Never violet, so focus and selection cannot be confused. */
 :is(.cell, .headerCell, .groupCell):focus-visible {
   outline: var(--umbra-state-focus-ring-width) solid
-    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-fixed-focus-ring)));
+    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-focus-ring)));
   outline-offset: calc(-1 * var(--umbra-state-focus-ring-width));
 }
 
@@ -214,7 +214,7 @@
  */
 .radio {
   --size: var(--umbra-checkbox-small-size, calc(var(--umbra-density-table-row) / 2 + 2px));
-  --fill: var(--umbra-radio-selected-bg, var(--umbra-color-fixed-selected));
+  --fill: var(--umbra-radio-selected-bg, var(--umbra-color-interaction));
 
   position: relative;
   cursor: pointer;
@@ -246,7 +246,7 @@
   width: 40%;
   height: 40%;
   border-radius: 50%;
-  background: var(--umbra-radio-mark-color, var(--umbra-color-fixed-on-selected));
+  background: var(--umbra-radio-mark-color, var(--umbra-color-on-interaction));
   opacity: 0;
 }
 
@@ -265,7 +265,7 @@
 
 .radio:has(:focus-visible) > .radioMark {
   outline: var(--umbra-state-focus-ring-width) solid
-    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-fixed-focus-ring)));
+    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-focus-ring)));
   outline-offset: var(--umbra-focus-offset, var(--focus-offset, 2px));
 }
 
@@ -401,9 +401,9 @@
 .row[data-highlighted] {
   --bg: var(
     --umbra-table-highlight-bg,
-    color-mix(in oklab, var(--umbra-color-fixed-accent-text) 14%, var(--surface))
+    color-mix(in oklab, var(--umbra-color-interaction-text) 14%, var(--surface))
   );
-  --accent: var(--umbra-table-highlight-marker, var(--umbra-color-fixed-accent-text));
+  --accent: var(--umbra-table-highlight-marker, var(--umbra-color-interaction-text));
   font-weight: 700;
 }
 
@@ -411,7 +411,7 @@
 .row[data-selected] {
   --bg: var(
     --umbra-table-selected-bg,
-    color-mix(in oklab, var(--umbra-color-fixed-selected) 32%, var(--surface))
+    color-mix(in oklab, var(--umbra-color-interaction-tint) 32%, var(--surface))
   );
 }
 
@@ -692,7 +692,7 @@
 }
 
 .resizeHandle:is(:hover, :focus, [data-resizing])::after {
-  background: var(--umbra-table-resize-color, var(--umbra-color-fixed-focus-ring));
+  background: var(--umbra-table-resize-color, var(--umbra-color-focus-ring));
 }
 
 /* The column menu: a bar of actions, then one row per column. */
@@ -826,6 +826,6 @@ button.columnHandle:is(:hover, [aria-expanded='true']) {
   inset-inline: var(--umbra-space-2);
   height: 2px;
   margin-top: -1px;
-  background: var(--umbra-table-drop-color, var(--umbra-color-fixed-focus-ring));
+  background: var(--umbra-table-drop-color, var(--umbra-color-focus-ring));
   pointer-events: none;
 }

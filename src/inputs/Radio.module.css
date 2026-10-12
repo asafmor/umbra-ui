@@ -1,6 +1,6 @@
 .root {
   --size: var(--umbra-radio-size, calc(var(--umbra-density-control-height) / 2));
-  --fill: var(--umbra-radio-selected-bg, var(--umbra-color-fixed-selected));
+  --fill: var(--umbra-radio-selected-bg, var(--umbra-color-interaction));
 
   display: inline-grid;
   grid-template-columns: auto minmax(0, 1fr);
@@ -46,7 +46,7 @@
   width: 40%;
   height: 40%;
   border-radius: 50%;
-  background: var(--umbra-radio-mark-color, var(--umbra-color-fixed-on-selected));
+  background: var(--umbra-radio-mark-color, var(--umbra-color-on-interaction));
   opacity: 0;
 }
 
@@ -84,7 +84,7 @@
 
 .root[data-variant='default'][data-focus-visible] .ring {
   outline: var(--umbra-state-focus-ring-width) solid
-    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-fixed-focus-ring)));
+    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-focus-ring)));
   outline-offset: var(--umbra-focus-offset, var(--focus-offset, 2px));
 }
 
@@ -195,7 +195,7 @@
 
 /* On the tint the filled ring needs an edge of its own. */
 .root[data-variant='card'][data-selected] .ring {
-  border-color: var(--umbra-radio-mark-color, var(--umbra-color-fixed-on-selected));
+  border-color: var(--umbra-radio-mark-color, var(--umbra-color-on-interaction));
 }
 
 .root[data-variant='card'][data-hovered] {
@@ -212,7 +212,7 @@
 
 .root[data-variant='card'][data-focus-visible] {
   outline: var(--umbra-state-focus-ring-width) solid
-    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-fixed-focus-ring)));
+    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-focus-ring)));
   outline-offset: var(--umbra-focus-offset, var(--focus-offset, 2px));
 }
 

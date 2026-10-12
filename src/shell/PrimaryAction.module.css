@@ -3,9 +3,9 @@
  * the gradient, and hover and press darken it, so the contrast only rises (plan/interaction.md).
  */
 .root {
-  --start: var(--umbra-primary-action-bg, var(--umbra-color-fixed-primary));
-  --end: var(--umbra-primary-action-bg-end, var(--umbra-color-fixed-primary-end));
-  --fg: var(--umbra-primary-action-fg, var(--umbra-color-fixed-on-primary));
+  --start: var(--umbra-primary-action-bg, var(--umbra-color-action));
+  --end: var(--umbra-primary-action-bg-end, var(--umbra-color-action-end));
+  --fg: var(--umbra-primary-action-fg, var(--umbra-color-on-action));
 
   /* Fills the height of the bar it sits in; on its own it is as tall as a control. */
   align-self: stretch;
@@ -77,7 +77,7 @@
 
 :is(.button, .caret)[data-focus-visible] {
   outline: var(--umbra-state-focus-ring-width) solid
-    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-fixed-focus-ring)));
+    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-focus-ring)));
   outline-offset: calc(-1 * var(--umbra-state-focus-ring-width) - 1px);
 }
 

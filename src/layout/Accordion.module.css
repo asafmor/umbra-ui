@@ -62,7 +62,12 @@
   border: var(--umbra-border-width) solid
     var(--umbra-accordion-border, var(--umbra-card-border, var(--umbra-color-base-border-subtle)));
   border-radius: var(--umbra-card-radius, var(--umbra-radius-card));
-  background: var(--umbra-card-bg, var(--umbra-context-card-tint));
+  background: color-mix(
+    in srgb,
+    var(--umbra-card-bg, var(--umbra-context-card-tint)) calc(var(--umbra-surface-opacity) * 100%),
+    transparent
+  );
+  backdrop-filter: var(--umbra-surface-backdrop);
 }
 
 .header {
@@ -131,7 +136,7 @@
 
 .trigger:focus-visible::after {
   outline: var(--umbra-state-focus-ring-width) solid
-    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-fixed-focus-ring)));
+    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-focus-ring)));
   outline-offset: calc(-1 * var(--umbra-state-focus-ring-width));
   border-radius: var(--umbra-radius-control);
 }

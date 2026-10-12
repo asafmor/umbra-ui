@@ -380,29 +380,29 @@ locale prefers; the digits and the names are the locale's.
 
 Reaching for layer 3 or 4 is sometimes a sign that another component already does the job.
 
-| If you are…                                                 | Use                                                                            |
-| ----------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| Lining up several values per row in a `List`                | `DataTable`                                                                    |
-| Rebuilding a card header to hold a title, facts and actions | `PageHeader` (`size="compact"` inside a card)                                  |
-| Putting buttons in a `Popover`                              | `Menu`                                                                         |
-| Asking yes or no in a `Modal`                               | `ConfirmDialog`                                                                |
-| Switching views with a `SegmentedFilter`                    | `Tabs`. A filter narrows one view; tabs change it.                             |
-| Styling a `Button` to look like text                        | `Link`                                                                         |
-| Showing a number in a `Tag`                                 | `Badge` for a count, `ValuePill` for a graded value                            |
-| Making a `StatValue` clickable                              | `SummaryTile`                                                                  |
-| Placing a `Banner` with buttons at the bottom of a page     | `ActionBar`, in the `footer` of `Page`                                         |
-| Hiding a card's header and border to get a bare box         | `Slot`                                                                         |
-| Writing "nothing here" by hand in a card                    | The `empty` prop, or `EmptyState`                                              |
-| Drawing your own spinner                                    | The `loading` prop: skeletons in the final layout                              |
-| Recolouring selected rows or the primary button             | Nothing: those two colours are fixed ([why](theming.md#what-is-not-themeable)) |
-| Letting the page scroll for one long screen                 | A card. Its body scrolls.                                                      |
-| Drawing a tiny chart in a table cell with a `LineChart`     | `Sparkline`, or `sparklineColumn` for the whole column                         |
-| Putting a `Menu` button beside a `Button`                   | `SplitButton`                                                                  |
-| Building a number field from a `TextField` and two buttons  | `Stepper`, or `Slider` when the exact value matters less than the place        |
-| Laying out cards of different heights in a CSS grid         | `WidgetBoard`                                                                  |
-| Writing two lines and a time into the `context` of a bar    | `ContextBlock`                                                                 |
-| Listing the app's shortcuts in a `Modal` by hand            | `ShortcutsSheet`: it reads the provider's registry                             |
-| Making a month view from a `DataTable`                      | `Planner`; `WeekStrip` for one week in a card                                  |
+| If you are…                                                 | Use                                                                                       |
+| ----------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| Lining up several values per row in a `List`                | `DataTable`                                                                               |
+| Rebuilding a card header to hold a title, facts and actions | `PageHeader` (`size="compact"` inside a card)                                             |
+| Putting buttons in a `Popover`                              | `Menu`                                                                                    |
+| Asking yes or no in a `Modal`                               | `ConfirmDialog`                                                                           |
+| Switching views with a `SegmentedFilter`                    | `Tabs`. A filter narrows one view; tabs change it.                                        |
+| Styling a `Button` to look like text                        | `Link`                                                                                    |
+| Showing a number in a `Tag`                                 | `Badge` for a count, `ValuePill` for a graded value                                       |
+| Making a `StatValue` clickable                              | `SummaryTile`                                                                             |
+| Placing a `Banner` with buttons at the bottom of a page     | `ActionBar`, in the `footer` of `Page`                                                    |
+| Hiding a card's header and border to get a bare box         | `Slot`                                                                                    |
+| Writing "nothing here" by hand in a card                    | The `empty` prop, or `EmptyState`                                                         |
+| Drawing your own spinner                                    | The `loading` prop: skeletons in the final layout                                         |
+| Recolouring selected rows or the primary button one by one  | `interaction` and `action` on the provider ([theming](theming.md#interaction-and-action)) |
+| Letting the page scroll for one long screen                 | A card. Its body scrolls.                                                                 |
+| Drawing a tiny chart in a table cell with a `LineChart`     | `Sparkline`, or `sparklineColumn` for the whole column                                    |
+| Putting a `Menu` button beside a `Button`                   | `SplitButton`                                                                             |
+| Building a number field from a `TextField` and two buttons  | `Stepper`, or `Slider` when the exact value matters less than the place                   |
+| Laying out cards of different heights in a CSS grid         | `WidgetBoard`                                                                             |
+| Writing two lines and a time into the `context` of a bar    | `ContextBlock`                                                                            |
+| Listing the app's shortcuts in a `Modal` by hand            | `ShortcutsSheet`: it reads the provider's registry                                        |
+| Making a month view from a `DataTable`                      | `Planner`; `WeekStrip` for one week in a card                                             |
 
 If none fits and you are four layers deep, that is what the layers are for. Keep the blocks: they carry
 the keyboard handling, the accessible names and the shrink rules that a `div` of your own would not.

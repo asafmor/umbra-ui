@@ -94,7 +94,7 @@
   inset-block: 0;
   border-radius: var(--radius);
   background:
-    var(--pattern, none), var(--paint, var(--umbra-diverging-meter-fill, var(--umbra-color-fixed-primary)));
+    var(--pattern, none), var(--paint, var(--umbra-diverging-meter-fill, var(--umbra-color-action)));
 }
 
 .fill[data-direction='negative'] {

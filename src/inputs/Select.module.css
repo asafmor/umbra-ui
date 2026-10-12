@@ -77,7 +77,7 @@
 
 .root:has(> .trigger[data-focus-visible]) {
   outline: var(--umbra-state-focus-ring-width) solid
-    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-fixed-focus-ring)));
+    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-focus-ring)));
   outline-offset: var(--umbra-focus-offset, var(--focus-offset, 2px));
 }
 
@@ -248,7 +248,7 @@
 
 .scroll:focus-visible {
   outline: var(--umbra-state-focus-ring-width) solid
-    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-fixed-focus-ring)));
+    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-focus-ring)));
   outline-offset: calc(-1 * var(--umbra-state-focus-ring-width));
 }
 
@@ -288,20 +288,18 @@
 /* Focus stays in the filter field while the arrow keys move through the options; the ring shows where typing goes. */
 .search:has(.searchInput:is([data-focus-visible], :focus-visible)) {
   outline: var(--umbra-state-focus-ring-width) solid
-    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-fixed-focus-ring)));
+    var(--umbra-focus-color, var(--focus-color, var(--umbra-color-focus-ring)));
   outline-offset: calc(-1 * var(--umbra-state-focus-ring-width));
 }
 
-/* Chosen: the violet tint and edge stripe of a selected list row, plus the check. */
+/* Chosen: the tint of the interaction colour, and the check (or the checked box) as the cue that is not colour. */
 .option[data-selected] {
   --selected-bg: var(
     --umbra-select-option-selected-bg,
-    color-mix(in oklab, var(--umbra-color-fixed-selected) 28%, transparent)
+    color-mix(in oklab, var(--umbra-color-interaction-tint) 28%, transparent)
   );
 
   background: var(--selected-bg);
-  box-shadow: inset calc(var(--umbra-dir, 1) * var(--umbra-select-option-stripe-width, 3px)) 0
-    var(--umbra-color-fixed-selected);
 }
 
 .option[data-selected]:is([data-focused], [data-hovered]) {
@@ -325,12 +323,12 @@
   height: 1.15em;
   border: calc(var(--umbra-border-width) * 2) solid var(--umbra-color-base-border-control);
   border-radius: var(--umbra-radius-control);
-  color: var(--umbra-color-fixed-on-selected);
+  color: var(--umbra-color-on-interaction);
 }
 
 .option[data-selected] > .box {
-  border-color: var(--umbra-color-fixed-selected);
-  background: var(--umbra-color-fixed-selected);
+  border-color: var(--umbra-color-interaction);
+  background: var(--umbra-color-interaction);
 }
 
 .box > svg {

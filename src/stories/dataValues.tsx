@@ -63,7 +63,7 @@ export function MeterStandIn({ value, label }: { value: number; label: string })
         style={{
           width: `${value}%`,
           height: '100%',
-          background: 'var(--umbra-color-fixed-accent-text)',
+          background: 'var(--umbra-color-interaction-text)',
         }}
       />
     </div>

@@ -21,7 +21,7 @@
 }
 
 .tone[data-tone='accent'] {
-  --paint: var(--umbra-color-fixed-selected);
+  --paint: var(--umbra-color-interaction);
 }
 
 .tone[data-tone='ramp-1'] {

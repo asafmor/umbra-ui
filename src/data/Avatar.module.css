@@ -1,7 +1,7 @@
 .root {
   /* Without a size the avatar is as tall as a control, so it follows the density level. */
   --size: var(--umbra-avatar-size, var(--avatar-size, var(--umbra-density-control-height)));
-  --ring: var(--umbra-avatar-ring, var(--umbra-color-fixed-accent-text));
+  --ring: var(--umbra-avatar-ring, var(--umbra-color-interaction-text));
 
   position: relative;
   display: inline-flex;

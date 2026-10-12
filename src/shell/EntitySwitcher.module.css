@@ -171,8 +171,8 @@
 
 /* The current entity: the selected fill, and a check so it is not marked by colour alone. */
 .row[aria-current] {
-  background: var(--umbra-color-fixed-selected);
-  color: var(--umbra-color-fixed-on-selected);
+  background: var(--umbra-color-interaction);
+  color: var(--umbra-color-on-interaction);
 }
 
 .row:disabled {

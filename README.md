@@ -6,7 +6,8 @@ React components for full-window, data-dense applications: dashboards, consoles,
 
 - **The page never scrolls.** The app fills the window; only regions inside cards scroll.
 - **Components fill their slot** and show less as space shrinks, instead of overflowing.
-- **Its own dark look**, with a brand colour and a context tint set by your app.
+- **Its own dark look**, re-skinned by one brand colour: the selected colour, the primary action and the
+  page tint follow it, each can be set, and contrast is kept for any colour you pass.
 - **Three density levels**, set once.
 - **Customisable in four layers**, the same for every component: tokens, props, parts, blocks.
 

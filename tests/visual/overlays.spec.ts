@@ -545,7 +545,8 @@ test('menu: rows with href are links, the current page is marked, and renderLink
   await expect(reports).toHaveAttribute('aria-current', 'page');
   await expect(reports).toHaveAttribute('href', '#reports');
   await expect(reports).toHaveCSS('font-weight', '700');
-  expect(await reports.evaluate((el) => getComputedStyle(el).boxShadow)).toContain('inset');
+  // Weight is the cue beside the colour; the edge stripe is for rows of data (owner's O-4).
+  expect(await reports.evaluate((el) => getComputedStyle(el).boxShadow)).toBe('none');
   const summary = menu.getByRole('menuitem', { name: 'Summary' });
   await expect(summary).not.toHaveAttribute('aria-current');
   expect(await summary.evaluate((el) => el.tagName)).toBe('A');

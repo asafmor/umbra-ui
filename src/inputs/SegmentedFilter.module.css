@@ -1,7 +1,7 @@
 .root {
   --height: var(--umbra-segmented-filter-height, var(--umbra-density-control-height));
   --bg: var(--umbra-segmented-filter-bg, var(--umbra-color-base-surface1));
-  --selected: var(--umbra-segmented-filter-selected-bg, var(--umbra-color-fixed-selected));
+  --selected: var(--umbra-segmented-filter-selected-bg, var(--umbra-color-interaction));
 
   display: inline-flex;
   flex: 0 1 auto;
@@ -70,7 +70,7 @@
 
   z-index: 1;
   border-color: var(--umbra-segmented-filter-selected-border, color-mix(in oklab, var(--selected), #fff 35%));
-  color: var(--umbra-segmented-filter-selected-fg, var(--umbra-color-fixed-on-selected));
+  color: var(--umbra-segmented-filter-selected-fg, var(--umbra-color-on-interaction));
   font-weight: 700;
 }
 

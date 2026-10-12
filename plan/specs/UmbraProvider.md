@@ -29,8 +29,11 @@ Sets all `--umbra-*` variables from `tokens.json`. Any variable can be overridde
 
 | Prop | Type | Default | Purpose |
 |---|---|---|---|
-| `brand` | colour (hex or `rgb()`) | token default | TopBar colour; text on it is computed for contrast. Other colour syntaxes get white text and a development warning. |
-| `context` | preset name \| colour | `violet` | Context tint for the page background and tinted cards |
+| `brand` | colour (hex or `rgb()`) | token default | TopBar colour; text on it is computed for contrast. The interaction colour, the action colour and the context follow it unless they are set. Other colour syntaxes get white text and a development warning. |
+| `context` | preset name \| colour | `violet`, or derived from `brand` | The page background, the card tints, and the hue of surfaces, borders and dim text |
+| `interaction` | colour (hex or `rgb()`) | violet, or derived from `brand` | Selected and checked things, the accent tone, links and thin marks. Lightness adjusted for contrast |
+| `action` | colour (hex or `rgb()`) | magenta, or derived from `brand` | The primary action. Adjusted like `interaction` |
+| `surfaceOpacity` | 0 to 1 | 1 | How opaque card surfaces are over the app background. Overlays stay opaque |
 | `density` | `compact` \| `default` \| `spacious` | `default` | Spacing, row heights, text sizes |
 | `icons` | partial icon map | default set | Overrides the built-in icons by name (see `decisions/05-packaging.md`) |
 | `shortcuts` | list of `{ id, keys, label, action?, whenTyping?, group? }` | — | App key bindings; feeds `ShortcutsSheet`, the `CommandPalette` (`includeShortcuts`) and key hints. `group` is the heading a shortcut is listed under in the sheet. `keys` is written like `Mod+K` (`Mod` is Command on macOS, Ctrl elsewhere). A mounted button with `shortcut={id}` takes the key; otherwise `action` runs. While the user types in a field a bare key is ignored and a combination with Ctrl, Command or Alt works; `whenTyping` overrides that for one shortcut. |
@@ -70,7 +73,7 @@ None.
 
 ### 4. Blocks
 
-`UmbraScope`: the same `context`, `density`, `brand` and `tokens` props for a subtree. Example: one teal section, or one compact table inside a default page.
+`UmbraScope`: the same `brand`, `context`, `interaction`, `action`, `surfaceOpacity`, `density` and `tokens` props for a subtree; the palette is derived again from all the inputs in force there. Example: one teal section, or one compact table inside a default page.
 
 ## Behaviour as space shrinks
 
@@ -111,6 +114,14 @@ One source, resolved by the provider (`src/provider/direction.ts`, unit-tested),
 - React Aria takes its direction from a locale only. In case 2, when the browser's locale has the other direction, the locale passed on gets a script subtag (`en-Arab-US`): right to left, and still formatted as English.
 
 ## Open questions
+
+Resolved 2026-10-11 (owner's O-6 and O-10; the design, formulas and guarantees are in `plan/decisions/08-theming.md`):
+
+- Two new colour inputs, `interaction` and `action`, and `surfaceOpacity`. Names: the owner's word for the first; `action` for the colour of the primary action (`accent` is already a tone, `primary` a button variant).
+- The palette is derived in TypeScript (`src/provider/palette.ts`) on the provider and every scope and written as variables on the element; with no colour prop nothing is written, so the default look is the tokens. The provider's default context is an attribute (`data-umbra-context="violet"`), not an input: a brand set anywhere below still brings its own context.
+- An input set on any scope above wins over a value derived from a brand; a token set by hand (`tokens`, or CSS inside the provider) wins over both. `TopBar brand` colours that bar only.
+- The scopes keep their inputs and hand-set tokens in a second context (`ScopeProvider` now takes the pair), because the attributes alone cannot tell a derived variable from one the app set.
+- A colour that cannot be read (`hsl()`, a name) is passed on unchanged with a development warning.
 
 Resolved 2026-10-11 (Milestone 2, `ShortcutsSheet`):
 

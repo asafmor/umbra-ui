@@ -117,26 +117,30 @@
   background: color-mix(in oklab, #000 var(--umbra-state-press-darken), transparent);
 }
 
-/* The current item: the fixed violet, with an edge stripe and weight so it does not depend on colour alone. */
+/* The current item: the interaction colour, and weight so it does not depend on colour alone. */
 .link[aria-current] {
-  background: var(--umbra-vertical-nav-current-bg, var(--umbra-color-fixed-selected));
-  color: var(--umbra-vertical-nav-current-fg, var(--umbra-color-fixed-on-selected));
-  box-shadow: inset calc(var(--umbra-dir, 1) * var(--umbra-vertical-nav-stripe-width, 3px)) 0 0 currentColor;
+  background: var(--umbra-vertical-nav-current-bg, var(--umbra-color-interaction));
+  color: var(--umbra-vertical-nav-current-fg, var(--umbra-color-on-interaction));
   font-weight: 700;
 }
 
 .link[aria-current]:not([aria-disabled]):hover {
   background: color-mix(
     in oklab,
-    var(--umbra-vertical-nav-current-bg, var(--umbra-color-fixed-selected)),
+    var(--umbra-vertical-nav-current-bg, var(--umbra-color-interaction)),
     #000 var(--umbra-state-hover-darken)
   );
-  color: var(--umbra-vertical-nav-current-fg, var(--umbra-color-fixed-on-selected));
+  color: var(--umbra-vertical-nav-current-fg, var(--umbra-color-on-interaction));
 }
 
-/* A closed group that holds the current item carries the stripe, so the place is not lost. */
+/* A closed group that holds the current item is tinted and bold, so the place is not lost. */
 .item:not([data-open]) > .link[data-holds-current] {
-  box-shadow: inset calc(var(--umbra-dir, 1) * var(--umbra-vertical-nav-stripe-width, 3px)) 0 0 currentColor;
+  background: var(
+    --umbra-vertical-nav-holds-current-bg,
+    color-mix(in oklab, var(--umbra-vertical-nav-current-bg, var(--umbra-color-interaction)) 28%, transparent)
+  );
+  color: var(--umbra-color-base-text-primary);
+  font-weight: 700;
 }
 
 .link[aria-disabled] {

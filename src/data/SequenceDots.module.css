@@ -57,7 +57,7 @@
 .root .mark[data-tone='accent'] {
   --tone: var(
     --umbra-sequence-dots-accent-color,
-    color-mix(in oklab, var(--umbra-color-fixed-selected), #fff 35%)
+    color-mix(in oklab, var(--umbra-color-interaction), #fff 35%)
   );
 }
 

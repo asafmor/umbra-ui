@@ -14,11 +14,14 @@
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: linear-gradient(
-    160deg,
-    var(--umbra-shell-bg, var(--umbra-context-page-background)) 30%,
-    var(--umbra-shell-bg-end, var(--umbra-context-page-background-end))
-  );
+  /* An image or pattern of the app's (any CSS image) lies over the gradient. */
+  background:
+    var(--umbra-shell-image, none) center / cover no-repeat,
+    linear-gradient(
+      160deg,
+      var(--umbra-shell-bg, var(--umbra-context-page-background)) 30%,
+      var(--umbra-shell-bg-end, var(--umbra-context-page-background-end))
+    );
 }
 
 /* The diagonal pattern is opt-in: set --umbra-shell-pattern-opacity above 0. */
@@ -31,7 +34,9 @@
 }
 
 .root[data-background='flat'] > .background {
-  background: var(--umbra-shell-bg, var(--umbra-context-page-background));
+  background:
+    var(--umbra-shell-image, none) center / cover no-repeat,
+    var(--umbra-shell-bg, var(--umbra-context-page-background));
 }
 
 .root[data-background='flat'] > .background::after {

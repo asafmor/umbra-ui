@@ -85,8 +85,9 @@ export function App() {
 | `reducedMotion` | `system`, `always`, `never`                       | `system` follows the operating system.                                            |
 | `locale`        | `en-GB`                                           | Language, number format and text direction.                                       |
 
-Two colours are fixed and do not follow the theme: violet means **selected** and magenta means the
-**primary action**. [Theming](theming.md) has the rest.
+Selected things and the primary action follow the brand: violet and magenta by default, and derived
+from your `brand` when you set one. `interaction` and `action` set them directly, and `surfaceOpacity`
+makes cards translucent over the app background. [Theming](theming.md) has the rest.
 
 ## 4. Build the frame
 

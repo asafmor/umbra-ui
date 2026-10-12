@@ -63,9 +63,9 @@
 
 /* Anchored on the corner of a filled button, where it is not inside the button: the same ring. */
 .root[data-anchored]:has(> [data-variant='accent']) > .indicator {
-  --ring: var(--umbra-button-accent-fg, var(--umbra-color-fixed-on-selected));
+  --ring: var(--umbra-button-accent-fg, var(--umbra-color-on-interaction));
 }
 
 .root[data-anchored]:has(> [data-variant='primary']) > .indicator {
-  --ring: var(--umbra-button-primary-fg, var(--umbra-color-fixed-on-primary));
+  --ring: var(--umbra-button-primary-fg, var(--umbra-color-on-action));
 }
