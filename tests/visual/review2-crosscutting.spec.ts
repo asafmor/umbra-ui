@@ -272,3 +272,238 @@ test.describe('controls that cannot move into the "more" menu', () => {
     }
   }
 });
+
+// OP-2: a spotlight that is not interactive lets nothing but its callout be used, shortcuts included.
+test.describe('a spotlight and the shortcut registry', () => {
+  const callout = (page: Page) => page.getByRole('dialog', { name: 'The dialog button' });
+  const sheet = (page: Page) => page.locator('[data-umbra="shortcuts-sheet"]');
+
+  test('not interactive: no shortcut of the registry runs, and Escape still closes it', async ({ page }) => {
+    await open(page, 'shortcuts');
+    await page.getByRole('button', { name: 'Show locked' }).click();
+    await expect(callout(page)).toBeVisible();
+    await pressKeys(page, 'n', '?');
+    await settle(page);
+    await expect(page.getByText('New orders: 0')).toBeVisible();
+    await expect(sheet(page)).toHaveCount(0);
+    await expect(callout(page)).toBeVisible();
+    await pressKeys(page, 'Escape');
+    await expect(callout(page)).toHaveCount(0);
+    // The page is itself again.
+    await pressKeys(page, 'n');
+    await expect(page.getByText('New orders: 1')).toBeVisible();
+  });
+
+  test('interactive: shortcuts run, and a modal that opens takes the place of the spotlight', async ({
+    page,
+  }) => {
+    await open(page, 'shortcuts');
+    await page.getByRole('button', { name: 'Show usable' }).click();
+    await expect(callout(page)).toBeVisible();
+    await pressKeys(page, 'n');
+    await expect(page.getByText('New orders: 1')).toBeVisible();
+
+    // The target opens a modal: it is not left under the dim.
+    await page.getByRole('button', { name: 'Open dialog' }).click();
+    const modal = page.getByRole('dialog', { name: 'A dialog' });
+    await expect(modal).toBeVisible();
+    await expect(callout(page)).toHaveCount(0);
+    await expect(page.locator('[data-umbra="spotlight"]')).toHaveCount(0);
+    await expect(page.getByText('Spotlight: closed')).toBeAttached();
+    expect(
+      await modal.evaluate((el) => {
+        const box = el.getBoundingClientRect();
+        return el.contains(document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2));
+      }),
+    ).toBe(true);
+    await expectFocusKept(page);
+    await pressKeys(page, 'Escape');
+    await expect(modal).toHaveCount(0);
+
+    // The sheet is a modal too.
+    await page.getByRole('button', { name: 'Show usable' }).click();
+    await expect(callout(page)).toBeVisible();
+    await pressKeys(page, '?');
+    await expect(sheet(page)).toBeVisible();
+    await expect(callout(page)).toHaveCount(0);
+    await expectFocusKept(page);
+  });
+
+  // OP-8.
+  test('a tour whose targets are all missing passes over each step, then closes, in that order', async ({
+    page,
+  }) => {
+    await open(page, 'shortcuts');
+    await page.getByRole('button', { name: 'Missing tour' }).click();
+    await expect(page.getByText(/Tour: .*closed/)).toBeVisible();
+    await settle(page);
+    await settle(page);
+    await expect(page.getByText('Tour: step 1, step 2, closed', { exact: false })).toBeVisible();
+    await expect(page.getByText(/closed, /)).toHaveCount(0);
+    await expectFocusKept(page);
+  });
+});
+
+// O-8: the floating bar of a selection is above every sticky row and cell of the table under it.
+test.describe('a floating action bar over a table', () => {
+  for (const footer of [true, false]) {
+    for (const density of ['compact', 'default', 'spacious']) {
+      for (const [width, height] of [
+        [1920, 1080],
+        [1280, 720],
+        [1024, 600],
+      ] as const) {
+        test(`${footer ? 'with' : 'without'} a summary row, ${density}, ${width}x${height}: every button of the bar can be pressed`, async ({
+          page,
+        }) => {
+          await page.setViewportSize({ width, height });
+          await page.goto(
+            `/iframe.html?id=integration-review-2--bar-over-table&viewMode=story&globals=density:${density}${footer ? '' : '&footer=0'}`,
+          );
+          const bar = page.getByRole('group', { name: 'Selected orders' });
+          await expect(bar).toBeVisible();
+          await expect(bar).toHaveCSS('opacity', '1');
+          await expect(page.locator('[data-umbra="data-table"] tfoot')).toHaveCount(footer ? 1 : 0);
+          // The whole bar: its corners, its middle, and the middle of each button.
+          const covered = await bar.evaluate((el) => {
+            const box = el.getBoundingClientRect();
+            const points: [string, number, number][] = [
+              ['top left', box.left + 3, box.top + 3],
+              ['top right', box.right - 3, box.top + 3],
+              ['bottom left', box.left + 3, box.bottom - 3],
+              ['bottom right', box.right - 3, box.bottom - 3],
+              ['middle', box.left + box.width / 2, box.top + box.height / 2],
+              ...[...el.querySelectorAll('button')].map((button): [string, number, number] => {
+                const b = button.getBoundingClientRect();
+                return [
+                  button.textContent || button.getAttribute('aria-label')!,
+                  b.x + b.width / 2,
+                  b.y + b.height / 2,
+                ];
+              }),
+            ];
+            return points
+              .filter(([, x, y]) => !el.contains(document.elementFromPoint(x, y)))
+              .map(([name]) => name);
+          });
+          expect(covered, 'points of the bar that something covers').toEqual([]);
+          const inside = await bar.evaluate((el) => {
+            const box = el.getBoundingClientRect();
+            const card = el.closest('[data-umbra="card"]')!.getBoundingClientRect();
+            return box.left >= card.left && box.right <= card.right && box.bottom <= card.bottom;
+          });
+          expect(inside, 'the bar is inside its card').toBe(true);
+          await bar.getByRole('button', { name: 'Archive' }).click();
+          await expect(page.getByText('Last: Archive')).toBeVisible();
+        });
+      }
+    }
+  }
+});
+
+// O-5: a pressed toggle is a filled, coloured icon; a pointer press leaves no focus ring.
+test.describe('toggle buttons', () => {
+  const look = (page: Page, name: string) =>
+    page.getByRole('button', { name, exact: true }).evaluate((el) => {
+      const style = getComputedStyle(el);
+      const svg = getComputedStyle(el.querySelector('svg')!);
+      return {
+        pressed: el.getAttribute('aria-pressed'),
+        fill: svg.fill,
+        color: style.color,
+        border: style.borderTopColor,
+        ring: style.outlineStyle,
+      };
+    });
+
+  test('pressed: the accent colour and a filled icon; a ghost icon button has no box', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await page.goto('/iframe.html?id=basics-buttons--toggles&viewMode=story');
+    const off = await look(page, 'Star (off)');
+    const on = await look(page, 'Star');
+    expect(off).toMatchObject({ pressed: 'false', fill: 'none', ring: 'none' });
+    expect(on.pressed).toBe('true');
+    // Filled with its own colour, which is not the colour of the one that is off.
+    expect(on.fill).toBe(on.color);
+    expect(on.color).not.toBe(off.color);
+    expect(on.border).toBe('rgba(0, 0, 0, 0)');
+    // With a box, the outline stays as well.
+    const boxed = await look(page, 'Star (neutral)');
+    expect(boxed.fill).toBe(boxed.color);
+    expect(boxed.border).toBe(boxed.color);
+    // An icon of its own is drawn as it is.
+    expect((await look(page, 'Notify')).fill).toBe('none');
+    // A text button fills its icon and keeps the outline.
+    const text = await look(page, 'Pinned (ghost)');
+    expect(text.fill).toBe(text.color);
+    expect(text.border).toBe(text.color);
+  });
+
+  test('by pointer and by keyboard: the state follows, a ring only after Tab', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await page.goto('/iframe.html?id=basics-buttons--toggles&viewMode=story');
+    const star = page.getByRole('button', { name: 'Star (off)', exact: true });
+    // The keyboard was used before: the next pointer press must still leave no ring.
+    await page.keyboard.press('Tab');
+    await page.keyboard.press('Shift+Tab');
+    await star.click();
+    await expect(star).toHaveAttribute('aria-pressed', 'true');
+    await expect(star).toBeFocused();
+    await settle(page);
+    expect(await look(page, 'Star (off)')).toMatchObject({ ring: 'none' });
+    expect((await look(page, 'Star (off)')).fill).not.toBe('none');
+    await star.click();
+    await expect(star).toHaveAttribute('aria-pressed', 'false');
+    expect(await look(page, 'Star (off)')).toMatchObject({ ring: 'none', fill: 'none' });
+    // The keyboard: Space toggles, and the ring shows.
+    await page.keyboard.press('Tab');
+    await page.keyboard.press('Shift+Tab');
+    await expect(star).toBeFocused();
+    expect((await look(page, 'Star (off)')).ring).toBe('solid');
+    await pressKeys(page, 'Space');
+    await expect(star).toHaveAttribute('aria-pressed', 'true');
+    expect((await look(page, 'Star (off)')).fill).not.toBe('none');
+  });
+
+  test('the star of a message in the inbox: filled when on, and no ring after a pointer press', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await page.goto('/iframe.html?id=pages-list-and-detail--list-and-detail&viewMode=story');
+    const star = page.getByRole('button', { name: 'Star', exact: true });
+    // A whole page: it may take longer than a story of one component.
+    await expect(star).toBeVisible({ timeout: 20_000 });
+    await page.evaluate(() => document.fonts.ready);
+    // As a user who has just used the keyboard.
+    await page.keyboard.press('Tab');
+    for (let press = 0; press < 3; press++) {
+      await star.click();
+      await settle(page);
+      await expect(star).toHaveAttribute('aria-pressed', press % 2 ? 'false' : 'true');
+      const now = await look(page, 'Star');
+      expect(now.ring, `press ${press + 1}: no ring`).toBe('none');
+      expect(now.fill === 'none', `press ${press + 1}: fill`).toBe(press % 2 === 1);
+      expect(now.border).toBe('rgba(0, 0, 0, 0)');
+    }
+  });
+});
+
+// X-9: with a control that stayed in the row before the actions, "the first control of the row" and
+// "the first action that came back" are two different places.
+test('the row has room again as its menu closes: the focus goes to an action that came back', async ({
+  page,
+}) => {
+  await open(page, 'kept-controls');
+  const column = page.locator('[data-width="380"]');
+  const card = column.locator('[data-umbra="card"]', { hasText: 'Orders by region' });
+  await page.evaluate(() => document.fonts.ready);
+  await card.getByRole('button', { name: 'More actions' }).focus();
+  await pressKeys(page, 'Enter');
+  await expect(page.getByRole('menuitem', { name: 'Export' })).toBeFocused();
+  // Wider while the menu is open: the row waits for the menu, then draws its actions again.
+  await column.evaluate((el) => (el.style.width = '1100px'));
+  await settle(page);
+  await pressKeys(page, 'Escape');
+  await expect(card.getByRole('button', { name: 'More actions' })).toHaveCount(0);
+  await expect(card.getByRole('button', { name: 'Export' })).toBeFocused();
+});

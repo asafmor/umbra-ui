@@ -13,6 +13,7 @@ import { Toggle } from '../inputs/Toggle';
 import { Card } from '../layout/Card';
 import { Page } from '../layout/Page';
 import { Stack } from '../layout/Stack';
+import { ActionBar } from '../overlays/ActionBar';
 import { Menu } from '../overlays/Menu';
 import { Modal } from '../overlays/Modal';
 import { Popover } from '../overlays/Popover';
@@ -22,6 +23,7 @@ import { Tooltip } from '../overlays/Tooltip';
 import { UmbraProvider, type ContextTint, type Density } from '../provider/UmbraProvider';
 import { AppShell } from '../shell/AppShell';
 import { EntitySwitcher } from '../shell/EntitySwitcher';
+import { DataTable, type DataTableColumn } from '../table/DataTable';
 import { Log, Rows } from './placeholders';
 
 const meta = { title: 'Integration/Review 2' } satisfies Meta;
@@ -178,6 +180,12 @@ export const StandaloneOverlays: Story = {
 
 function Keys({ globals }: { globals: Globals }) {
   const [count, setCount] = useState(0);
+  // A spotlight: `locked` lets nothing but its callout be used, `usable` leaves its target free.
+  const [spot, setSpot] = useState<'locked' | 'usable' | null>(null);
+  const [dialog, setDialog] = useState(false);
+  const [tour, setTour] = useState(false);
+  const [events, setEvents] = useState<string[]>([]);
+  const note = (event: string) => setEvents((all) => [...all, event]);
   return (
     <UmbraProvider
       density={globals.density}
@@ -201,8 +209,42 @@ function Keys({ globals }: { globals: Globals }) {
                 Text
               </div>
               <Log>New orders: {count}</Log>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <Button onPress={() => setSpot('locked')}>Show locked</Button>
+                <Button onPress={() => setSpot('usable')}>Show usable</Button>
+                <Button onPress={() => (setEvents([]), setTour(true))}>Missing tour</Button>
+              </div>
+              <div data-spot="" style={{ padding: 8 }}>
+                <Button onPress={() => setDialog(true)}>Open dialog</Button>
+              </div>
+              <Log>
+                Spotlight: {spot ?? 'closed'}. Tour: {events.join(', ') || 'no events'}
+              </Log>
             </div>
           </Card>
+          <Spotlight
+            open={spot !== null}
+            onOpenChange={(open) => open || setSpot(null)}
+            interactive={spot === 'usable'}
+            target="[data-spot]"
+            title="The dialog button"
+          >
+            It opens a dialog.
+          </Spotlight>
+          {/* Every target is missing: the tour passes over each step and closes. */}
+          <Spotlight
+            open={tour}
+            onOpenChange={(open) => (note(open ? 'open' : 'closed'), setTour(open))}
+            onStepChange={(step) => note(`step ${step}`)}
+            steps={[
+              { target: '.missing-1', title: 'One' },
+              { target: '.missing-2', title: 'Two' },
+              { target: '.missing-3', title: 'Three' },
+            ]}
+          />
+          <Modal open={dialog} onOpenChange={setDialog} title="A dialog">
+            Opened while a spotlight was showing.
+          </Modal>
           <ShortcutsSheet />
         </Page>
       </AppShell>
@@ -266,3 +308,69 @@ function Kept() {
  * minimum, the controls shrink to theirs and then take more lines. Nothing is cut, nothing leaves the card.
  */
 export const KeptControls: Story = { parameters: { frame: 'padded' }, render: () => <Kept /> };
+
+interface Order {
+  id: string;
+  name: string;
+  amount: number;
+}
+const orders: Order[] = Array.from({ length: 40 }, (_, i) => ({
+  id: `o${i}`,
+  name: `Order ${i + 1}`,
+  amount: 100 + i * 7,
+}));
+
+function Bar() {
+  // `&footer=0` in the address leaves the summary row out.
+  const footer = new URLSearchParams(window.location.search).get('footer') !== '0';
+  const [selected, setSelected] = useState(['o0', 'o1']);
+  const [last, setLast] = useState('none');
+  const columns: DataTableColumn<Order>[] = [
+    {
+      id: 'name',
+      header: 'Name',
+      accessor: 'name',
+      rowHeader: true,
+      pin: 'start',
+      footer: footer ? (rows) => `${rows.length} orders` : undefined,
+    },
+    {
+      id: 'amount',
+      header: 'Amount',
+      accessor: 'amount',
+      align: 'end',
+      footer: footer ? (rows) => String(rows.reduce((sum, row) => sum + row.amount, 0)) : undefined,
+    },
+  ];
+  return (
+    <AppShell background="flat">
+      <Page>
+        <Card title="Orders" padding="none" subtitle={`Last: ${last}`}>
+          <DataTable
+            aria-label="Orders"
+            data={orders}
+            getRowId={(order) => order.id}
+            columns={columns}
+            selectionMode="multiple"
+            selectedIds={selected}
+            onSelectionChange={setSelected}
+          />
+          <ActionBar
+            variant="floating"
+            aria-label="Selected orders"
+            selectionCount={selected.length}
+            onClearSelection={() => setSelected([])}
+            secondary={[{ label: 'Flag', onPress: () => setLast('Flag') }]}
+            primary={[{ label: 'Archive', onPress: () => setLast('Archive') }]}
+          />
+        </Card>
+      </Page>
+    </AppShell>
+  );
+}
+
+/**
+ * The floating bar of a selection over a table with a summary row (`&footer=0`: without one) and a
+ * pinned column: the bar is above every sticky row and cell of the table.
+ */
+export const BarOverTable: Story = { render: () => <Bar /> };

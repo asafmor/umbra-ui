@@ -217,10 +217,13 @@ test('a card collapsed by its stack asks for the popover, and a press while it l
 // under an open page). The "more" button must not be a dead end.
 test('the menu cannot be loaded: the actions open as a plain list', async ({ page }) => {
   const menus = requests(page, menuChunk);
-  await page.route(menuChunk, (route) => route.abort());
+  let offline = true;
+  await page.route(menuChunk, (route) => (offline ? route.abort() : route.continue()));
   await openStory(page, story, narrow);
   await expect(more(page)).toBeVisible();
-  await expect.poll(() => menus.length).toBe(1);
+  await expect.poll(() => menus.length).toBeGreaterThan(0);
+  await page.waitForLoadState('networkidle');
+  const asked = menus.length;
   const list = page.getByRole('group', { name: 'More actions' });
   const action = (name: string) => list.getByRole('button', { name });
 
@@ -229,6 +232,8 @@ test('the menu cannot be loaded: the actions open as a plain list', async ({ pag
   await expect(list).toBeVisible();
   await expect(more(page)).toHaveAttribute('aria-expanded', 'true');
   await expect(menu(page)).toHaveCount(0);
+  // The press asked for the code again.
+  await expect.poll(() => menus.length).toBeGreaterThan(asked);
   for (const name of ['Filter', 'Export', 'Refresh']) {
     const reached = await action(name).evaluate((el) => {
       const box = el.getBoundingClientRect();
@@ -262,13 +267,17 @@ test('the menu cannot be loaded: the actions open as a plain list', async ({ pag
   await page.getByText('Last action: Refresh').click();
   await expect(list).toHaveCount(0);
 
-  // Every press asked for the code again. Whether the browser then makes a request is its own
-  // business: Chromium remembers a module that failed for as long as the page lives, so there the list
-  // stays until a reload, and where a request is made and answered the menu takes over.
+  // Online again: the press that asks gets the code, and once the list is closed the menu opens.
+  offline = false;
   await more(page).focus();
   await pressKeys(page, 'Enter');
   await expect(list.or(menu(page))).toBeVisible();
-  await expectFocusKept(page);
+  await page.waitForLoadState('networkidle');
+  await pressKeys(page, 'Escape');
+  await expect(more(page)).toBeFocused();
+  await pressKeys(page, 'Enter');
+  await expect(row(page, 'Filter')).toBeFocused();
+  await expect(list).toHaveCount(0);
 });
 
 // Review 2, X-4.

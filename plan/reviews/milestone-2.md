@@ -192,22 +192,22 @@ An independent reviewer (with three sub-reviewers) checked 11 components, the pl
 
 | Id | Component | Finding | Reproduce | Status |
 |---|---|---|---|---|
-| X-1 | `Card` popover, `Popover.Content` | A layout-collapsed card inside a `Modal`: pressing its header closes the whole modal, and each collapsed card already shows an empty 2px dialog. A stand-alone `Popover.Content` reads the modal's `OverlayTriggerStateContext` (`src/overlays/Popover.tsx`) and takes the modal's open state as its own: a plain `Popover.Content anchorRef open={false}` in a modal closes the modal on mount. Stray dialogs inside a `Popover` too | A `Stack` with a height in a modal, cards that collapse; a stand-alone `Popover.Content` in a modal | open |
+| X-1 | `Card` popover, `Popover.Content` | A layout-collapsed card inside a `Modal`: pressing its header closes the whole modal, and each collapsed card already shows an empty 2px dialog. A stand-alone `Popover.Content` reads the modal's `OverlayTriggerStateContext` (`src/overlays/Popover.tsx`) and takes the modal's open state as its own: a plain `Popover.Content anchorRef open={false}` in a modal closes the modal on mount. Stray dialogs inside a `Popover` too | A `Stack` with a height in a modal, cards that collapse; a stand-alone `Popover.Content` in a modal | fixed: a content is under a root only when `Popover.Root` says so; one Escape closes one layer |
 | OP-1 | `Planner` | The same as T-1 of review 1 | `pages-planning--planning`: focus "Next month", Enter | open |
 | MC-1 | `Heatmap` | An `Infinity` value (or `steps={NaN}`) throws and unmounts the tree | `values:[[Infinity,1],[2,3]]` | open |
 | MC-6 | `Heatmap`, `Scatter`, `LineChart` (shared `Frame`) | Focus drops to `<body>` when the plot has focus and the chart switches to `loading` or `error` | Focus the plot, set `loading` | open |
 | SL-2 | `EntitySwitcher` | Picker open with focus on a row; the app sets `loading` or shortens `items`: focus goes to `<body>` with the picker still open | 3 items, ArrowDown twice, `loading: true` | open |
 | SL-7 | `HorizontalScroller` | A `next` or `previous` given as a function part loses focus to `<body>` when the end is reached (the story's "Own buttons" row) | Press the custom "next" to the end | open |
-| X-2 | `ActionsOverflow` | If the menu chunk fails to load, the "more" button toggles `aria-expanded` and shows nothing: no error, no fallback, the actions are unreachable; a retry happens only on every second press | `route.abort()` on `Menu-*.js`, `layout-card-on-demand--fits-until-the-window-shrinks` at 700px | open |
+| X-2 | `ActionsOverflow` | If the menu chunk fails to load, the "more" button toggles `aria-expanded` and shows nothing: no error, no fallback, the actions are unreachable; a retry happens only on every second press | `route.abort()` on `Menu-*.js`, `layout-card-on-demand--fits-until-the-window-shrinks` at 700px | fixed: the actions open as a plain list (Popover API) when the menu cannot be loaded; every press asks again (`plan/specs/Card.md`) |
 
 ### Major
 
 | Id | Component | Finding | Reproduce | Status |
 |---|---|---|---|---|
-| X-3 | Rows of actions with `staysInRow` controls | A 380px card with a `SearchField`, a `Select` and two buttons: the title shrinks to 0px, the select is cut, and the "more" button is clipped 56px outside the card; the search field never narrows; with seven kept controls a `Checkbox` label wraps one letter per line | Harness | open |
+| X-3 | Rows of actions with `staysInRow` controls | A 380px card with a `SearchField`, a `Select` and two buttons: the title shrinks to 0px, the select is cut, and the "more" button is clipped 56px outside the card; the search field never narrows; with seven kept controls a `Checkbox` label wraps one letter per line | Harness | fixed: title minimum, fields shrink to a minimum, then the controls wrap; in a card on a line under the title (decision 07). `TopBar` not covered: one line by design |
 | SL-3 | `ContextBlock` in `TopBar` | With `live` and no `time`, the chip arrives after the bar measured and the bar never steps: a fresh load at 880px keeps both lines and the nav is cut; a 1px resize corrects it | Fresh load at 880px | open |
-| OP-2 | `Spotlight` and the shortcut registry | During a non-interactive tour, registry shortcuts still run; a modal they open lands under the dim with focus inside it | `pages-analysis--analysis`: Shift+T, then `?` | open |
-| OP-3 | Shortcut registry | `?` and every bare-key shortcut do nothing while focus is on a checkbox or a range input: `isTypingTarget` counts any `INPUT` | Focus a checkbox, press `?` | open |
+| OP-2 | `Spotlight` and the shortcut registry | During a non-interactive tour, registry shortcuts still run; a modal they open lands under the dim with focus inside it | `pages-analysis--analysis`: Shift+T, then `?` | fixed: no registry shortcut while a spotlight is not interactive; a modal that opens closes the spotlight |
+| OP-3 | Shortcut registry | `?` and every bare-key shortcut do nothing while focus is on a checkbox or a range input: `isTypingTarget` counts any `INPUT` | Focus a checkbox, press `?` | fixed: only controls that take text (`takesText`, unit-tested over every input type) |
 | MC-2 | `PieIndicator` | `layout="block"` with `showValue` never shows the value at any width; the baseline shows it missing | `meters-pieindicator--variants` | open |
 | MC-3 | `Heatmap` | With `thresholds`, a value below the first `from` is not drawn and is no keyboard stop | 6 values, 4 cells | open |
 | MC-4 | `Scatter`, `Heatmap` (`points`) | One `NaN` coordinate blanks the chart | One NaN point | open |
@@ -222,20 +222,20 @@ An independent reviewer (with three sub-reviewers) checked 11 components, the pl
 
 | Id | Component | Finding | Status |
 |---|---|---|---|
-| X-4 | `ActionsOverflow` | A press kept while the chunk loads cannot be taken back: Escape, Tab away or a press elsewhere, and the menu still opens on arrival and takes the focus | open |
-| X-5 | Root attributes | `SplitButton` drops `id` and `aria-describedby`; `ColorScaleEditor` drops `aria-describedby`; every chart drops `aria-describedby` in all data states | open |
+| X-4 | `ActionsOverflow` | A press kept while the chunk loads cannot be taken back: Escape, Tab away or a press elsewhere, and the menu still opens on arrival and takes the focus | fixed: Escape, focus leaving the button and a press elsewhere take the press back |
+| X-5 | Root attributes | `SplitButton` drops `id` and `aria-describedby`; `ColorScaleEditor` drops `aria-describedby`; every chart drops `aria-describedby` in all data states | fixed for `SplitButton` (`id`, `aria-describedby`) and `ColorScaleEditor` (`aria-describedby`); the charts are another agent's |
 | X-6 | `ContextBlock` | A fixed `time` rendered on a server in another time zone gives a hydration mismatch; the spec should name `timeFormat.timeZone` | open |
 | X-7 | `thresholds.spec.ts` | Covers no tier 2 meter: a mutation of `PieIndicator` or `DivergingMeter` bands passes this file | open |
-| X-8 | `Card` popover | The app unmounts a collapsed card while its popover has focus: focus on `<body>` | open |
-| X-9 | `ActionsOverflow` | Menu open, row widened, Escape: focus goes to the first control of the row, not to an action that came back (matches the stated rule; noted) | open |
-| OP-4 | Analysis page | The fifth star of the "Rating" column is clipped in every row at 1920x1080 | open |
-| OP-5 | Analysis page | Annotation labels sit under bars and lines | open |
-| OP-6 | Planning page | At 900x560 spacious the month is not scrolled to today's week | open |
-| OP-7 | Planning tour, step 2 | The ringed week is partly under the sticky weekday header | open |
-| OP-8 | `Spotlight` | With every target missing, `onStepChange(1)` fires after `onOpenChange(false)` | open |
-| OP-9 | `ShortcutsSheet` | The root carries `data-umbra="modal"`; nothing carries `shortcuts-sheet` | open |
-| OP-10 | `Spotlight` | `--umbra-spotlight-z-index` works but is missing from the generated table | open |
-| OP-11 | `ShortcutsSheet` | "arrowup" finds nothing; only "↑" does | open |
+| X-8 | `Card` popover | The app unmounts a collapsed card while its popover has focus: focus on `<body>` | fixed: the focus goes to the next tab stop of the stack (`focusNear`) |
+| X-9 | `ActionsOverflow` | Menu open, row widened, Escape: focus goes to the first control of the row, not to an action that came back (matches the stated rule; noted) | fixed: the focus goes to the first action that came back |
+| OP-4 | Analysis page | The fifth star of the "Rating" column is clipped in every row at 1920x1080 | fixed: the column is 108px; a display rating too narrow for its stars draws one star and the number |
+| OP-5 | Analysis page | Annotation labels sit under bars and lines | fixed: labels are drawn last in the picture, above the marks, with the halo of the labels on marks |
+| OP-6 | Planning page | At 900x560 spacious the month is not scrolled to today's week | fixed: today's week stays in view through the first sizes, until the user scrolls |
+| OP-7 | Planning tour, step 2 | The ringed week is partly under the sticky weekday header | fixed: `scroll-padding-top` of the weekday names on the planner's scrolling element |
+| OP-8 | `Spotlight` | With every target missing, `onStepChange(1)` fires after `onOpenChange(false)` | fixed: the target is not looked for after the spotlight has closed |
+| OP-9 | `ShortcutsSheet` | The root carries `data-umbra="modal"`; nothing carries `shortcuts-sheet` | fixed: `shortcuts-sheet`; `ConfirmDialog` is `confirm-dialog` |
+| OP-10 | `Spotlight` | `--umbra-spotlight-z-index` works but is missing from the generated table | fixed: the generator reads the base stylesheet |
+| OP-11 | `ShortcutsSheet` | "arrowup" finds nothing; only "↑" does | fixed: a key is found by its name too, from its start |
 | MC-8 | `sparklineColumn` | A `NaN` in a run breaks the sort | open |
 | MC-9 | Charts in a `Modal` | With a sibling in the body, `height="fill"` gives 348px instead of 240 and the body scrolls | open |
 | MC-10 | `Heatmap` | The cell edge measures 2.3 to 3.3:1 on fractional pixels, against the 4.1:1 the spec states | open |
@@ -274,10 +274,10 @@ Found by the owner while using the Storybook. Each is a requirement of the fix p
 | O-2 | `DataTable` (table page) | When the width cannot show every column, the user cannot choose which columns to show or hide, nor resize or reorder them. **Changes the decision "no end-user column editing"**: the table gets a column menu (show, hide, reorder, resize, reset), controlled by the app so it can save the choice | open |
 | O-3 | Table page, "Views" card (`VerticalNav`) | The items hug the left and leave the right of the card empty: they should fill the width | open |
 | O-4 | Selected and highlighted rows | The left edge stripe is unwanted on: the selected item of a `VerticalNav`, the highlighted row of the command palette, the selected option of an open `Select` or `Menu`. It stays on list items of the inbox kind and on table rows. The second cue that is not colour must remain (a check, a weight change) | open |
-| O-5 | Inbox page, favourite button (`IconButton` toggle) | A pressed star is an outline star in an outlined box: it should be a filled, coloured star, and a pointer press should not leave a focus ring | open |
+| O-5 | Inbox page, favourite button (`IconButton` toggle) | A pressed star is an outline star in an outlined box: it should be a filled, coloured star, and a pointer press should not leave a focus ring | fixed: accent colour and a filled icon, no box on `ghost`; `pressedIcon`; `Button` `pressed`. No focus ring after a pointer press was reproduced at the unfixed commit either: the ring seen was the outline of the pressed state |
 | O-6 | Theming | Changing the brand colour changes little: everything stays purple and magenta. Brand and context should visibly drive the look. **Changes the decision "violet (selected) and magenta (primary action) are fixed"**: they become defaults derived from the brand, still overridable as tokens | open |
 | O-7 | `LevelMeter` rows (list and detail page) | Each meter starts right after its label, so the meters do not line up: labels need their own column and the meters theirs | open |
-| O-8 | Table page | The `ActionBar` of the selection is hidden under the table's summary row | open |
+| O-8 | Table page | The `ActionBar` of the selection is hidden under the table's summary row | fixed: the table is its own stacking context (`isolation: isolate`); the page and the example compose it rightly |
 | O-9 | `ContextBlock` | An optional background, slightly lighter or darker than the bar it sits in, as in the source | open |
 | O-10 | Theming | One global setting for how opaque card backgrounds are over the app background | open |
 
@@ -292,7 +292,7 @@ An independent reviewer re-proved each open item of Milestone 1 and checked the 
 | F3 | major | Storybook on Pages | The published site holds the Milestone 1 state (354 stories): no tier 2 component and no new page, while README and `docs/browser-checks.md` send readers there | open |
 | F4 | major | Tests | `playwright.examples.config.ts` sets `retries: process.env.CI ? 2 : 0` | open |
 | F5 | minor | Check | `check-optional-props.mjs` misses `Partial<…>`, optional tuple members and class properties; the consumer check in `check:package` covers tier 1 components only | open |
-| F6 | minor | Server rendering | `<CommandPalette open>` or `defaultOpen` throws `document is not defined` in `renderToString` (`useReturnFocusOnClose`, `src/overlays/shared.ts`); the other 88 components render | open |
+| F6 | minor | Server rendering | `<CommandPalette open>` or `defaultOpen` throws `document is not defined` in `renderToString` (`useReturnFocusOnClose`, `src/overlays/shared.ts`); the other 88 components render | fixed: no document read while rendering; `check:package` renders every overlay open on a server |
 | F7 | minor | Check | `check-tokens.mjs` is fooled by a computed key, `setProperty(variable)`, `cssText`, a token read only in a comment, and an unused member of a scale | open |
 | F8 | minor | Check | `check-browsers.mjs` is a denylist: newer features with no row pass (`corner-shape`, `sibling-index()`, `if()`, `scroll-state()`, `moveBefore`, `popover="hint"`, iterator helpers) | open |
 | F9 | minor | Docs | Recipe 18 says a label press does not focus a `Stepper` (it does); recipe 17 says a moved target is followed "at the next of those" (it is followed every frame) | open |
@@ -302,7 +302,7 @@ An independent reviewer re-proved each open item of Milestone 1 and checked the 
 | F13 | minor | Docs | README and "Server rendering" say to import from a `'use client'` file; "Debugging" says a Server Component can import directly (the second is true, checked in a Next.js 16.4 app) | open |
 | F14 | minor | Lint | One ESLint warning (`src/overlays/Spotlight.tsx`), and `eslint .` has no `--max-warnings 0` | open |
 | F15 | minor | Example | `examples/advanced` `#/clients` at 1024 wide: the fifth star of "Rating" is cut by 8px | open |
-| F16 | minor | Shortcut | `Alt+ArrowLeft` does nothing while focus is on a `PrimaryNav` link | open |
+| F16 | minor | Shortcut | `Alt+ArrowLeft` does nothing while focus is on a `PrimaryNav` link | fixed: an arrow key with Alt, Ctrl or Command is not the nav's |
 | F17 | minor | Changelog | The rehearsed changelog reads as a diff against unreleased states ("`backLabel` is now `previousLabel`" for a new component; "was 75"); `rtl-and-maps.md` credits a Safari fallback that was removed | open |
 | F18 | minor | Limit | `PACKED_LIMIT_KB` is still 1300; its comment says to lower it to measured plus a quarter (about 1205) once Milestone 2 is built | open |
 | F19 | minor | CI history | Two red runs on `main` (`50b4c55`, `853fe67`), the same screenshot; green since `16b7e04`; not in AGENTS.md "Known issues" | open |
