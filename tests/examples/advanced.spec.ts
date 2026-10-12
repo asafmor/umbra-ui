@@ -327,3 +327,38 @@ test('the tour walks through the frame, and ? lists the shortcuts of the app', a
   await expect(sheet.getByText('Go to the planner')).toBeVisible();
   await expect(sheet.getByText('Take the tour')).toBeVisible();
 });
+
+test("the user's columns are saved by the app and are there after a reload", async ({ page }) => {
+  await open(page, '#/orders');
+  const headers = () => table(page).locator('thead th [data-part="headerLabel"]').allTextContents();
+  const before = (await headers()).filter(Boolean);
+  expect(before).toContain('Region');
+
+  // Hide a column from the list of the columns button, and move another from its header's menu.
+  await table(page).getByRole('button', { name: 'Columns', exact: true }).click();
+  const list = page.getByRole('dialog', { name: 'Columns' });
+  await list.getByRole('checkbox', { name: 'Region' }).uncheck({ force: true });
+  await page.keyboard.press('Escape');
+  await table(page).getByRole('columnheader', { name: 'Client' }).click({ button: 'right' });
+  await page.getByRole('menuitem', { name: 'Move right' }).click();
+  await expect(table(page).getByRole('button', { name: '1 column hidden' })).toBeVisible();
+  const after = (await headers()).filter(Boolean);
+  expect(after).not.toContain('Region');
+  expect(after.indexOf('Client')).toBe(before.indexOf('Client') + 1);
+
+  // The app wrote it to its own storage; the table ships none.
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('advanced.orders.columns')!));
+  expect(saved.visibility).toEqual({ region: false });
+  expect(saved.order.indexOf('client')).toBe(2);
+
+  await page.reload();
+  await page.locator('[data-umbra="page"]').waitFor();
+  await expect(table(page).getByRole('button', { name: '1 column hidden' })).toBeVisible();
+  expect((await headers()).filter(Boolean)).toEqual(after);
+
+  // "Reset" returns to the columns as the app defines them, and that is saved too.
+  await table(page).getByRole('button', { name: '1 column hidden' }).click();
+  await list.getByRole('button', { name: 'Reset' }).click();
+  await expect.poll(async () => (await headers()).filter(Boolean)).toEqual(before);
+  expect(await page.evaluate(() => localStorage.getItem('advanced.orders.columns'))).toBe('{}');
+});

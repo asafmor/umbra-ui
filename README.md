@@ -152,27 +152,27 @@ npm run dev --prefix examples/dashboard
 
 **Data**
 
-| Component                  | For                                                                                         |
-| -------------------------- | ------------------------------------------------------------------------------------------- |
-| `DataTable`                | Rows and columns: sorting, selection, groups, pinned columns, columns that hide by priority |
-| `List`, `ListItem`         | A list of rows with groups, selection and row actions                                       |
-| `GroupHeader`              | A header row for one group of rows                                                          |
-| `KeyValue`, `KeyValueList` | Labels with their values, in rows, columns or a grid                                        |
-| `StatValue`                | A large value with its label, unit, trend and meter                                         |
-| `SummaryTile`              | A compact tile for one thing; can be a link or a button                                     |
-| `TrendArrow`               | The direction of a change                                                                   |
-| `ValuePill`                | A value coloured by where it falls on a five-step ramp                                      |
-| `StatusIndicator`          | A status as a dot or icon with a label                                                      |
-| `Tag`, `Badge`             | A small label chip; a count or a dot                                                        |
-| `Avatar`, `AvatarGroup`    | A person or entity: image, initials or silhouette                                           |
-| `EntityIcon`               | A small mark for an entity, with an optional name                                           |
-| `Banner`                   | A message band inside a card or page                                                        |
-| `EmptyState`               | Nothing to show, or failed to load, and what to do about it                                 |
-| `Legend`                   | The key for a chart or any colour-coded data                                                |
-| `Link`                     | A text link                                                                                 |
-| `SequenceDots`             | A short row of marks, one per recent outcome                                                |
-| `MediaCard`                | A card for one article or item: a picture, a title, a few details, its own link             |
-| `Comparison`               | Two sides compared on a list of metrics, with bars from the centre                          |
+| Component                  | For                                                                                                                                                     |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DataTable`                | Rows and columns: sorting, selection, groups, pinned columns, columns that hide by priority and that the end user shows, hides, moves, pins and resizes |
+| `List`, `ListItem`         | A list of rows with groups, selection and row actions                                                                                                   |
+| `GroupHeader`              | A header row for one group of rows                                                                                                                      |
+| `KeyValue`, `KeyValueList` | Labels with their values, in rows, columns or a grid                                                                                                    |
+| `StatValue`                | A large value with its label, unit, trend and meter                                                                                                     |
+| `SummaryTile`              | A compact tile for one thing; can be a link or a button                                                                                                 |
+| `TrendArrow`               | The direction of a change                                                                                                                               |
+| `ValuePill`                | A value coloured by where it falls on a five-step ramp                                                                                                  |
+| `StatusIndicator`          | A status as a dot or icon with a label                                                                                                                  |
+| `Tag`, `Badge`             | A small label chip; a count or a dot                                                                                                                    |
+| `Avatar`, `AvatarGroup`    | A person or entity: image, initials or silhouette                                                                                                       |
+| `EntityIcon`               | A small mark for an entity, with an optional name                                                                                                       |
+| `Banner`                   | A message band inside a card or page                                                                                                                    |
+| `EmptyState`               | Nothing to show, or failed to load, and what to do about it                                                                                             |
+| `Legend`                   | The key for a chart or any colour-coded data                                                                                                            |
+| `Link`                     | A text link                                                                                                                                             |
+| `SequenceDots`             | A short row of marks, one per recent outcome                                                                                                            |
+| `MediaCard`                | A card for one article or item: a picture, a title, a few details, its own link                                                                         |
+| `Comparison`               | Two sides compared on a list of metrics, with bars from the centre                                                                                      |
 
 **Time**
 

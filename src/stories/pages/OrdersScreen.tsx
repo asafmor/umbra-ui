@@ -419,6 +419,7 @@ export function OrdersScreen() {
             collapsibleGroups
             stickyGroups
             virtualize
+            columnMenu
             empty={{ title: 'No orders match', description: 'Change the view or reset the filters.' }}
           />
           <ActionBar

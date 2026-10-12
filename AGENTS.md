@@ -60,7 +60,7 @@ The owner approved the plan and delegated the open questions (`plan/reviews/mile
 | Open items of Milestone 1 (token rule, thresholds, baseline trim, tables) | done |
 | Six groups, 23 components: time, data, inputs, meters and charts, shell and layout, overlays | done |
 | Integration pass: names, shared internals, compositions across groups, the groups' weak spots | done; what stays open is in `plan/reviews/milestone-2.md` |
-| Full-page stories (planning, analysis), guides (recipes 14 to 20), the `dashboard` and `advanced` examples | done |
+| Full-page stories (planning, analysis), guides (recipes 14 to 21), the `dashboard` and `advanced` examples | done |
 | Owner's feedback from Storybook (O-1 to O-10) | partly fixed; the rest is open in `plan/reviews/milestone-2.md` |
 | Three independent reviews: time, data and inputs; meters, charts, shell, layout and overlays; the package, the checks, the docs and the examples | done |
 | Fix pass of the reviews, one branch per group, and `MeterList` (O-7) | in progress: the status columns of `plan/reviews/milestone-2.md` |

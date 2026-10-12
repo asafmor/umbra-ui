@@ -10,14 +10,15 @@ const WIDGET =
 export const SIMPLE_WIDGET = 'a, button, input[type="checkbox"], input[type="radio"]';
 
 /**
- * The controls of a cell. Not one: a disabled control (the grid gives every control a `tabindex`, so
+ * The controls of a cell. Not one: what says so itself (`data-grid-ignore`: the "more" button and the
+ * resize handle of a column header, which have their own keys), a disabled control (the grid gives every control a `tabindex`, so
  * a disabled button would count by that), and what is hidden from assistive technology (a `Select` keeps a
  * native `<select>` there for forms and autofill).
  */
 export const widgetsOf = (cell: Element) =>
   [...cell.querySelectorAll<HTMLElement>(WIDGET)].filter(
     (el) =>
-      !el.matches(`${CELL}, :disabled, [aria-disabled="true"], [data-disabled]`) &&
+      !el.matches(`${CELL}, :disabled, [aria-disabled="true"], [data-disabled], [data-grid-ignore]`) &&
       !el.closest('[aria-hidden="true"]'),
   );
 
@@ -43,6 +44,8 @@ export function useCellListeners(
       const target = event.target as HTMLElement;
       const cell = target.closest?.<HTMLElement>(CELL);
       if (!cell || cell === target || !root.current?.contains(cell)) return;
+      // A resize handle cancels on Escape before it gives the focus back.
+      if (target.hasAttribute('data-grid-ignore')) return;
       // A control that has something of its own open (a menu, a list) closes that first.
       if (target.getAttribute('aria-expanded') === 'true') return;
       cell.focus({ preventScroll: true });
