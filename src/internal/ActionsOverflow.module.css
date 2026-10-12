@@ -84,3 +84,11 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/*
+ * In a card header the controls take the room their line has, whether they share it with the title or
+ * have a line of their own: as wide as they can be, they wrap as late as they can.
+ */
+[data-wrap][data-part='header'] > .wrap.wrap {
+  flex-grow: 1;
+}
