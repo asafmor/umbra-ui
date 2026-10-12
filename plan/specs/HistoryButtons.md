@@ -81,3 +81,8 @@ Resolved 2026-10-10:
 Resolved 2026-10-11 (review 2):
 
 - **Blocks: none, as an exception to decision 07** (recorded there): it is two `IconButton`s and a `Menu` wired to one history, and the wiring is the component. An app that wants another arrangement uses those two components with its own history; `TopBar` takes any node in `history`.
+
+Resolved 2026-10-12 (fix pass of Milestone 2):
+
+- **A button that disables itself under the focus hands it to the other.** "Back" at the first place and "Forward" at the last are disabled, and a disabled button cannot hold the focus: it goes to the other button, or to the caret of the entries when both are disabled (`leaveDisabled`, `src/internal/focus.ts`; `tests/visual/focus-kept.spec.ts`). Not when the shortcut did it with the focus elsewhere.
+- **`onBack` and `onForward` are called with no argument**, as every `onPress` is (`scripts/check-optional-props.mjs`, third pass).
