@@ -774,9 +774,9 @@ test.describe('VerticalNav', () => {
     const root = nav(page);
     const current = root.locator('[aria-current="page"]');
     await expect(current).toHaveText('Display');
-    // A second cue beside the colour: an edge stripe and weight.
+    // A second cue beside the colour: weight. The edge stripe is for rows of data (owner's O-4).
     await expect(current).toHaveCSS('font-weight', '700');
-    expect(await current.evaluate((el) => getComputedStyle(el).boxShadow)).toContain('inset');
+    expect(await current.evaluate((el) => getComputedStyle(el).boxShadow)).toBe('none');
     await expect(root.locator('[data-part="section-label"]')).toHaveText('Advanced');
 
     await page.keyboard.press('Tab');
