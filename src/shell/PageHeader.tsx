@@ -191,7 +191,7 @@ function Back({ label = 'Back', onBack, className, style }: PageHeaderBackProps)
     <span data-part="back" className={cx(styles.back, className)} style={style}>
       {/* An icon alone: its name is also its tooltip, as on an `IconButton`. */}
       <Tooltip content={label} placement="bottom">
-        <ButtonBase umbra="icon-button" variant="ghost" iconOnly label={label} onPress={onBack}>
+        <ButtonBase umbra="icon-button" variant="ghost" iconOnly label={label} onPress={() => onBack?.()}>
           <Icon name="back" />
         </ButtonBase>
       </Tooltip>

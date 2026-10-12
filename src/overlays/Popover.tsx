@@ -26,7 +26,7 @@ import {
 import { ButtonBase } from '../basics/Button';
 import { ScrollArea, type ScrollAreaProps } from '../layout/ScrollArea';
 import { Icon } from '../provider/icons';
-import { focusableIn } from '../internal/focus';
+import { focusableIn, focusLost } from '../internal/focus';
 import { useScopeAttributes } from '../provider/UmbraProvider';
 import { warn } from '../utils/dev';
 import { cx, renderPart, type Part } from '../utils/parts';
@@ -140,9 +140,22 @@ function Content({
   const setPanel = useCallback(
     (element: HTMLElement | null) => {
       panel.current = element;
-      return flipWhenCut(element);
+      const stop = flipWhenCut(element);
+      // When the panel leaves. React Aria returns the focus to where it was when the popover opened;
+      // it has nowhere to return it when the popover was open from the start, and drops it when
+      // another popover was still closing as this one opened. Then the focus goes to the trigger.
+      return () => {
+        stop?.();
+        requestAnimationFrame(() => {
+          const trigger = anchor?.current;
+          if (!focusLost() || !(trigger instanceof HTMLElement) || !trigger.isConnected) return;
+          (trigger.matches('button, a[href], [tabindex]') ? trigger : focusableIn(trigger)[0])?.focus({
+            preventScroll: true,
+          });
+        });
+      };
     },
-    [flipWhenCut],
+    [flipWhenCut, anchor],
   );
   const titleId = useId();
   // The title can be left out or replaced; the dialog is only named by one that exists.
@@ -354,7 +367,13 @@ function Header({
         </>
       )}
       {closeButton && (
-        <ButtonBase umbra="icon-button" variant="ghost" iconOnly label={closeLabel} onPress={popover.close}>
+        <ButtonBase
+          umbra="icon-button"
+          variant="ghost"
+          iconOnly
+          label={closeLabel}
+          onPress={() => popover.close()}
+        >
           <Icon name="close" />
         </ButtonBase>
       )}

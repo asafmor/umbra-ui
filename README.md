@@ -32,11 +32,11 @@ shipped by the library:
 npm install @fontsource/figtree @fontsource/barlow-condensed
 ```
 
-| Import                | Content                                                             |
-| --------------------- | ------------------------------------------------------------------- |
-| `umbra-ui`            | The provider, layout, shell and every component that is not a chart |
-| `umbra-ui/charts`     | `LineChart`, `BarChart`, `DonutChart`, `RadarChart`                 |
-| `umbra-ui/styles.css` | The stylesheet. Import it once.                                     |
+| Import                | Content                                                                                |
+| --------------------- | -------------------------------------------------------------------------------------- |
+| `umbra-ui`            | The provider, layout, shell and every component that is not a chart                    |
+| `umbra-ui/charts`     | `LineChart`, `BarChart`, `DonutChart`, `RadarChart`, `Sparkline`, `Heatmap`, `Scatter` |
+| `umbra-ui/styles.css` | The stylesheet. Import it once.                                                        |
 
 ## A first full-window page
 
@@ -91,7 +91,7 @@ stack's `label`.
 | [Customisation](docs/customisation.md)               | The four layers, router links, translating built-in strings                       |
 | [Recipes](docs/recipes.md)                           | Nineteen whole screens, from a first page to a planner and a board of widgets     |
 | [Customisation tables](docs/customisation-tables.md) | Every component's tokens, props, parts and blocks (generated)                     |
-| [Changelog](CHANGELOG.md)                            | What each release changed                                                         |
+| [Changelog](.changeset)                              | What the first release will hold: one entry per area, until `CHANGELOG.md` exists |
 | [Storybook](https://asafmor.github.io/umbra-ui/)     | Every component, variant and state, and the guides (locally: `npm run storybook`) |
 
 ## Examples
@@ -192,6 +192,7 @@ npm run dev --prefix examples/dashboard
 | `LevelMeter`     | A strip of ticks with a marker on a scale                                              |
 | `PieIndicator`   | A small disc that fills with a value, for cells and rows                               |
 | `DivergingMeter` | A bar that fills to one side of an origin or the other                                 |
+| `MeterList`      | Several meters in aligned columns: labels, bars, values                                |
 | `LineChart`      | Series over categories, numbers or time                                                |
 | `BarChart`       | Values across categories: grouped, stacked or diverging                                |
 | `DonutChart`     | One value against a total, or how a total splits                                       |
@@ -252,27 +253,30 @@ The stylesheet relies on current CSS, with no fallbacks for older browsers.
 - **Required**: `:has()`, `color-mix()`, container queries and the `dvh` units. Without them colours,
   states and the rules that shed detail as space shrinks do not work. Below the minimum Firefox and
   Safari the chart tooltip can be cut by its card, and a chart with no height to fill has none.
-- **Degrade gracefully**: subgrid (the rows of a `KeyValueList` stop sharing one label column; Chrome 111
-  is enough without it), `transition-behavior: allow-discrete` (a scrollbar shows while an `Accordion`
+- **Degrade gracefully**: subgrid (the rows of a `KeyValueList` stop sharing one label column; without
+  it Chrome 114, the first with the Popover API, is enough), `transition-behavior: allow-discrete` (a scrollbar shows while an `Accordion`
   section opens), `scrollbar-color`, and a few features newer than the minimum Firefox or Safari, each
   with a fallback or a small visual difference: the table is in
   [Getting started](docs/getting-started.md#browser-support).
-- **Checked**: `npm run lint` fails when the stylesheet or the code uses a feature newer than these
-  versions without a fallback and a note (`scripts/check-browsers.mjs`).
+- **Checked**: `npm run lint` fails when a stylesheet uses anything that is not on a list of looked-up
+  CSS features, or when the code uses one of the newer JavaScript features the check knows, without a
+  fallback and a note (`scripts/check-browsers.mjs`).
 - **Tested** automatically in Chromium only. Firefox and Safari are supported from the versions above
   without automated tests, and are looked at by hand before a release
   ([the checklist](docs/browser-checks.md)); please report what you find.
 - **React** 19.0 or later. **Node** 20 or later to render on the server; the package is ESM only.
 - **Server rendering**: every component renders with `renderToString` and hydrates without warnings.
-  They are client components (they use state, effects and context): with React Server Components, as in
-  the Next.js App Router, import them from a file that starts with `'use client'`.
+  They are client components (they use state, effects and context), and every module of the package
+  starts with `'use client'`: with React Server Components, as in the Next.js App Router, a Server
+  Component imports them directly.
 
 ## Status and roadmap
 
 - **Now**: the core (layout, shell, data, inputs, overlays, table, meters, charts) and the extended set
   (planner and schedule views, sparklines, heatmaps and scatter plots, sliders and steppers, a widget
   board, a tour and a shortcuts sheet) are built, with five guides and three example apps. Versions
-  below `1.0` may change props between minor releases; the [changelog](CHANGELOG.md) says what changed.
+  below `1.0` may change props between minor releases; the changelog says what changed (before the
+  first release: [the pending entries](.changeset)).
 - **Next**: what users ask for. [Open an issue](https://github.com/asafmor/umbra-ui/issues) for what
   you need.
 - The plan and the design decisions are in [`plan/roadmap.md`](plan/roadmap.md).

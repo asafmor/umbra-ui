@@ -86,7 +86,7 @@ function Root({
             renderLink({ href, ...control, children })
           )
         ) : onPress ? (
-          <button type="button" {...control} disabled={disabled} onClick={onPress}>
+          <button type="button" {...control} disabled={disabled} onClick={() => onPress()}>
             {children}
           </button>
         ) : (

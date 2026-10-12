@@ -20,8 +20,8 @@ between them.
 `release:check` rehearses the version bump on a copy in a temporary folder and prints what it would
 release (`umbra-ui 0.0.0 -> 0.1.0`), then checks that the package holds every file its `exports` name
 and nothing outside `dist/`. It prints the packed and unpacked size with the share that is source maps,
-and fails when the packed package is over `PACKED_LIMIT_KB` in `scripts/check-release.mjs` (1300 kB):
-find what grew before raising it. CI runs it on every push.
+and fails when the packed package is over `PACKED_LIMIT_KB` in `scripts/check-release.mjs` (the
+measured size and its date are in the comment there): find what grew before raising it. CI runs it on every push.
 
 ## The steps
 
@@ -45,8 +45,8 @@ find what grew before raising it. CI runs it on every push.
 ### The bump
 
 Each changeset names its bump. Until `1.0.0`: `minor` for a new component, a new prop or a changed
-prop; `patch` for a fix. The changesets waiting now are all `minor`, so the first release is `0.1.0`;
-`release:check` fails if they ever add up to anything else before the first release.
+prop; `patch` for a fix. The first release is `0.1.0`: `release:check` fails if the
+changesets waiting ever add up to anything else before it.
 
 ## Once, for the first release (`0.1.0`)
 
@@ -64,6 +64,12 @@ Before step 1:
    | `examples/advanced/README.md`  | The same                                      |
 
    `git grep -n "pre-release"` must find nothing in those files afterwards.
+
+   **Point the changelog links at the changelog.** Until the first release `CHANGELOG.md` does not
+   exist, so the two links of `README.md` (the table of guides, and "Status and roadmap") go to the
+   `.changeset` folder. After `npm run version` has written the file, change both to
+   `(CHANGELOG.md)` and drop the words about pending entries. `npm run release` stops while
+   `README.md` still links `.changeset`.
 
 2. **Check the name is free**: `npm view umbra-ui` must answer 404.
 
@@ -95,9 +101,10 @@ the first run has worked.
 ## Installing from GitHub
 
 `npm install github:asafmor/umbra-ui` downloads the whole repository, with the baseline images of the
-visual tests (about 180 MB), installs the development dependencies and builds the package.
+visual tests (150 MB on 2026-10-12, and growing), installs the development dependencies and builds the package.
 It takes minutes and is meant for trying an unreleased commit only. The package on npm holds `dist/`,
-the README, the licence and the changelog: about 670 kB packed, more than half of it source maps.
+the README, the licence and the changelog: about 1 MB packed, more than half of it source maps
+(`npm run release:check` prints the size).
 
 ## Trying a release without publishing
 

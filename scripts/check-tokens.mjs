@@ -10,6 +10,7 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import ts from 'typescript';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 const src = join(root, 'src');
@@ -22,9 +23,19 @@ const rel = (path) => relative(root, path).replaceAll('\\', '/');
 // Story code plays the app, which may set any token. Tests are not published.
 const isStory = (file) =>
   /\.stories\.tsx$|\.test\.tsx?$|^src\/stories\/|\/(samples|story\w*)\.tsx?$/.test(file);
+// Comments are removed first, so a token named in a comment is neither a declaration nor a read. The
+// compiler removes them from code (a regular expression would trip on `//` inside a string), and
+// the types with them: a type that names a token declares nothing.
+const withoutComments = (file, text) =>
+  file.endsWith('.css')
+    ? text.replace(/\/\*[\s\S]*?\*\//g, '')
+    : ts.transpileModule(text, {
+        compilerOptions: { removeComments: true, jsx: ts.JsxEmit.Preserve, target: ts.ScriptTarget.ESNext },
+      }).outputText;
 const files = walk(src)
-  .map((path) => ({ file: rel(path), text: readFileSync(path, 'utf8') }))
-  .filter(({ file }) => /\.(css|tsx?)$/.test(file));
+  .map(rel)
+  .filter((file) => /\.(css|tsx?)$/.test(file))
+  .map((file) => ({ file, text: withoutComments(file, readFileSync(join(root, file), 'utf8')) }));
 const problems = [];
 
 // --- 1. Declarations ---
@@ -46,6 +57,11 @@ const allowedDeclarations = new Set([
   'src/layout/Card.tsx: --umbra-card-header-fg',
   'src/shell/PageHeader.tsx: --umbra-page-header-bg',
   'src/shell/PageHeader.tsx: --umbra-page-header-fg',
+  // An overlay drawn outside its trigger's subtree copies the tokens that reach the trigger, so the
+  // app's values follow it (`carryTokens`). It tests each name against the bare prefix, and skips
+  // the one property that is a layout child's own. It sets what an ancestor set, never a default.
+  'src/overlays/shared.ts: --umbra-',
+  'src/overlays/shared.ts: --umbra-slot-min-height',
 ]);
 
 const usedAllowances = new Set();
@@ -53,16 +69,21 @@ for (const { file, text } of files) {
   if (setters.test(file) || isStory(file)) continue;
   const declared = file.endsWith('.css')
     ? // A declaration: the property at the start of a line, or after `{` or `;`.
-      [...text.replace(/\/\*[\s\S]*?\*\//g, '').matchAll(/(?:^|[{;])\s*(--umbra-[a-z0-9-]+)\s*:/gm)]
-    : // A key of a style object (`'--umbra-x': …`, `['--umbra-x' as string]: …`), or setProperty.
-      [
-        ...text.matchAll(/\[?['"`](--umbra-[a-z0-9-]+)['"`](?:\s+as\s+string)?\s*\]?\s*:/g),
-        ...text.matchAll(/setProperty\(\s*['"`](--umbra-[a-z0-9-]+)['"`]/g),
-      ];
-  for (const [, name] of declared) {
+      [...text.matchAll(/(?:^|[{;])\s*(--umbra-[a-z0-9-]+)\s*:/gm)].map(([, name]) => name)
+    : // In code, every token name that is not being read: `var(--umbra-x…` and
+      // `getPropertyValue('--umbra-x…` are the two ways to read one. Anything else can end up as a
+      // declaration, whatever road it takes: a key of a style object, a computed key, a constant
+      // or a template that builds the name, `setProperty`, `cssText`. So each needs a row above.
+      [...text.matchAll(/--umbra-[a-z0-9-]*/g)]
+        .filter(({ index }) => !/(?:var\(\s*|getPropertyValue\(\s*['"`])$/.test(text.slice(0, index)))
+        .map(([name]) => name);
+  for (const name of declared) {
     const key = `${file}: ${name}`;
     if (allowedDeclarations.has(key)) usedAllowances.add(key);
-    else problems.push(`${file} declares ${name}. Set a private property (--${name.slice(8)}) instead.`);
+    else
+      problems.push(
+        `${file} names ${name} outside a read (var(), getPropertyValue). Set a private property (--${name.slice(8) || 'name'}) instead.`,
+      );
   }
 }
 for (const key of allowedDeclarations)
@@ -87,8 +108,29 @@ const read = new Set(
     ([, name]) => name,
   ),
 );
-// Read through a template in code: `var(--umbra-space-${gap})` reads the whole scale.
-const scales = [...all.matchAll(/--umbra-([a-z0-9-]+-)\$\{/g)].map(([, prefix]) => prefix);
+// Read through a template in code: `var(--umbra-space-${gap})`. The members each template can build,
+// from the type or the arithmetic of what it interpolates. A token of the scale that is not listed
+// here must be read by its own name; a template with no row fails.
+const scaleMembers = new Map([
+  // `gap` of Stack: `spaces` of tokens.generated.ts.
+  ['space-', ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']],
+  // `(index % seriesCount) + 1` (src/internal/SeriesMarker.tsx), and `series` of ScheduleSlot.
+  ['color-series-', ['1', '2', '3', '4', '5', '6', '7', '8']],
+  // A band's tone that starts with `ramp-` (src/inputs/bandColour.ts).
+  ['color-value-', ['ramp-1', 'ramp-2', 'ramp-3', 'ramp-4', 'ramp-5']],
+  // The collapse of a Card reads the easing of its direction.
+  ['motion-easing-', ['enter', 'exit']],
+]);
+const templates = new Set([...all.matchAll(/--umbra-([a-z0-9-]+-)\$\{/g)].map(([, prefix]) => prefix));
+for (const prefix of templates)
+  if (!scaleMembers.has(prefix))
+    problems.push(`A template builds --umbra-${prefix}…: list the members it can build in check-tokens.mjs.`);
+const scales = new Set();
+for (const [prefix, members] of scaleMembers) {
+  if (!templates.has(prefix))
+    problems.push(`check-tokens lists the scale --umbra-${prefix}…, which no template builds.`);
+  for (const member of members) scales.add(prefix + member);
+}
 // Read through a constant of src/styles/tokens.generated.ts, where CSS cannot read a variable (a
 // media query): the token, and the generated export that carries its value.
 const throughCode = new Map([
@@ -101,7 +143,7 @@ const forApps = new Map([
 ]);
 const isRead = (name) =>
   read.has(name) ||
-  scales.some((prefix) => name.startsWith(prefix)) ||
+  scales.has(name) ||
   (throughCode.has(name) && new RegExp(`\\b${throughCode.get(name)}\\b`).test(all));
 for (const name of names) {
   if (forApps.has(name) === isRead(name))
@@ -111,7 +153,7 @@ for (const name of names) {
         : `--umbra-${name} (plan/tokens.json) is never read under src/. Use it, or remove the token.`,
     );
 }
-for (const name of [...throughCode.keys(), ...forApps.keys()])
+for (const name of [...throughCode.keys(), ...forApps.keys(), ...scales])
   if (!names.has(name)) problems.push(`check-tokens names --umbra-${name}, which is not a token.`);
 
 // --- 3. No literal duration ---
@@ -121,7 +163,7 @@ for (const name of [...throughCode.keys(), ...forApps.keys()])
 // waits for its delay (the skeleton that appears late).
 for (const { file, text } of files) {
   if (!file.endsWith('.module.css') && file !== 'src/styles/index.css') continue;
-  for (const [, time] of text.replace(/\/\*[\s\S]*?\*\//g, '').matchAll(/(?<![\w.#-])(\d*\.?\d+m?s)\b/g))
+  for (const [, time] of text.matchAll(/(?<![\w.#-])(\d*\.?\d+m?s)\b/g))
     if (!/^(0m?s|1ms)$/.test(time))
       problems.push(`${file}: the duration ${time} is a literal. Read a motion token instead.`);
 }

@@ -1,5 +1,13 @@
-import { useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from 'react';
+import {
+  useLayoutEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type CSSProperties,
+  type ReactNode,
+} from 'react';
 import { IconButton } from '../basics/IconButton';
+import { leaveDisabled } from '../internal/focus';
 import { Menu } from '../overlays/Menu';
 import { Icon } from '../provider/icons';
 import { cx, renderPart, type Part } from '../utils/parts';
@@ -108,14 +116,28 @@ export function HistoryButtons({
     }, longPressMs);
   };
   const endHold = () => clearTimeout(timer.current);
+  // "Back" at the first place and "Forward" at the last disable themselves under the focus, which
+  // then goes to the other of the two (src/internal/focus.ts). With neither left, it stays put.
+  const root = useRef<HTMLDivElement>(null);
+  const pressed = useRef<Element | null>(null);
+  useLayoutEffect(() => {
+    const other = () => root.current?.querySelector<HTMLElement>('button:not(:disabled)');
+    if (!leaveDisabled(pressed.current, other)) pressed.current = null;
+  });
   const unlessHeld = (go: () => void) => () => {
     if (held.current) held.current = false;
-    else go();
+    else {
+      // Not when the shortcut did it, with the focus somewhere else.
+      const active = document.activeElement;
+      pressed.current = root.current?.contains(active) ? active : null;
+      go();
+    }
   };
 
   return (
     <div
       {...passThrough(rest)}
+      ref={root}
       role="group"
       aria-label={ariaLabel}
       data-umbra="history-buttons"

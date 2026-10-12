@@ -23,7 +23,7 @@ Given to an agent together with a list of components. It repeats nothing that is
 
 - **Four layers, always.** Tokens (`var(--umbra-<component>-<name>, <fallback from a global token>)`, never declared on the component itself), props, `parts` through `renderPart`, and blocks as static members (`Tag.Root`). The all-in-one component is built from its own blocks.
 - **Root**: `data-umbra="<kebab-name>"`, `className` and `style` props, state as `data-` attributes. Each part: `data-part="<name>"`.
-- **Public types are ours.** No React Aria or TanStack type appears in a public prop or return type. Events are plain callbacks (`onPress: () => void`, `onChange: (value) => void`).
+- **Public types are ours.** No React Aria or TanStack type appears in a public prop or return type. Events are plain callbacks (`onPress: () => void`, `onChange: (value) => void`). Never hand a callback prop to an event handler as it is (`onClick={onPress}` would call it with the event): wrap it, `onClick={() => onPress()}`; lint fails otherwise.
 - **Tokens have one source**, `plan/tokens.json`. Do not hard-code a colour, font, radius, spacing step or duration that has a token. If you need a new global token, add it to `plan/tokens.json` in the fitting group (and run `npm run tokens`); keep additions few.
 - **Fill the slot, show less as it shrinks.** A component never overflows its container: text truncates with an ellipsis, secondary parts hide (container queries where possible, `useShrinkLevel` where measuring is needed). State each step in the spec and test it.
 - **Layout children**: a component that can sit directly in a `Columns` or `Stack` takes the slot props through `useSlot` (see `Card`); others do not.
@@ -39,7 +39,7 @@ Given to an agent together with a list of components. It repeats nothing that is
 - **Right to left**: logical properties; where a rule must differ, `.x:is([dir='rtl'], [dir='rtl'] *)`, never `:dir(rtl)`. Arrow keys in a horizontal composite follow what is drawn. One right-to-left story and test per component (or one for the group that shows each).
 - **Browsers**: nothing newer than Chrome 117, Firefox 125 and Safari 17.0 without a fallback and a note in `scripts/check-browsers.mjs` (lint runs it).
 - **Colour by value** takes the shared `thresholds` and `lowerIsBetter` (`src/utils/thresholds.ts`), never a shape of its own.
-- **Focus is never lost**: assert it after each step with the helper in `tests/visual/helpers.ts`. Tests are deterministic: CI has no retries, so no waits or preloads to hide a race.
+- **Focus is never lost**: assert it after each step with the helper in `tests/visual/helpers.ts`. A control that disables or removes itself when pressed hands the focus on (`leaveDisabled`, `holdFocus` in `src/internal/focus.ts`), with a test in `tests/visual/focus-kept.spec.ts`. Tests are deterministic: CI has no retries, so no waits or preloads to hide a race.
 - **Do not touch**: `src/index.ts`, `src/charts/index.ts`, `AGENTS.md`, `docs/`, `.changeset/`, other groups' files, and existing spec files of tier 0 components unless your task says so. Report the exports to add instead.
 
 ## Checks, all passing before you finish

@@ -71,7 +71,15 @@ test('the bar shows the date with a clock, and ? and the help button open the sh
   page,
 }) => {
   const block = page.locator('[data-umbra="context-block"]');
-  await expect(block).toContainText('Mon 12 Oct 2026');
+  // The date is the day the clock beside it tells the time of: the browser's today, not a sample date.
+  const today = await page.evaluate(() =>
+    new Date()
+      .toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
+      .replace(',', ''),
+  );
+  expect(today).toMatch(/^[A-Z][a-z]{2} \d{1,2} [A-Z][a-z]{2,3} \d{4}$/);
+  await expect(block).toContainText(today);
+  await expect(page.locator('[data-umbra="week-strip"] [aria-current="date"]')).toHaveCount(1);
   await expect(block.locator('[data-part="chip"]')).toHaveText(/\d{1,2}:\d{2}/);
 
   await page.keyboard.press('?');

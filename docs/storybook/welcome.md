@@ -35,7 +35,7 @@ Each group in the sidebar holds one entry per component, with a story for every 
 | [Data](?path=/story/data-datatable--ranking)                | `DataTable`, `List`, `KeyValue`, `StatValue`, `SummaryTile`, `Tag`, `Badge`, `Avatar`, `Banner`, …                                     |
 | [Inputs](?path=/story/inputs-textfield--states)             | `TextField`, `SearchField`, `Select`, `Checkbox`, `Radio`, `Toggle`, `FormField`, `Tabs`, …                                            |
 | [Overlays](?path=/story/overlays-modal--small)              | `Modal`, `Popover`, `Menu`, `Tooltip`, `CommandPalette`, `ActionBar`, `Spotlight`, `ShortcutsSheet`                                    |
-| [Meters](?path=/story/meters-progressbar--variants)         | `ProgressBar`, `LevelMeter`, `PieIndicator`, `DivergingMeter`                                                                          |
+| [Meters](?path=/story/meters-progressbar--variants)         | `ProgressBar`, `LevelMeter`, `PieIndicator`, `DivergingMeter`, `MeterList`                                                             |
 | [Charts](?path=/story/charts-linechart--variants)           | `LineChart`, `BarChart`, `DonutChart`, `RadarChart`, `Sparkline`, `Heatmap`, `Scatter`, from `umbra-ui/charts`                         |
 | Time                                                        | `Planner`, `WeekStrip`, `ScheduleSlot`, `DateChip`                                                                                     |
 

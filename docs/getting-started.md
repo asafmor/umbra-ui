@@ -231,9 +231,9 @@ A part takes a node (replace it), `null` (hide it) or a function that receives t
 | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Layout   | `AppShell`, `Page`, `Columns`, `Stack`, `Slot`, `Card`, `SectionTitle`, `ScrollArea`, `Accordion`, `WidgetBoard`, `HorizontalScroller`                                                                         |
 | Shell    | `TopBar`, `PrimaryNav`, `SubNav`, `VerticalNav`, `PageHeader`, `PrimaryAction`, `HistoryButtons`, `ShortcutBar`, `ContextBlock`, `EntitySwitcher`                                                              |
-| Data     | `List`, `ListItem`, `DataTable`, `KeyValue`, `StatValue`, `SummaryTile`, `Tag`, `Badge`, `ValuePill`, `Avatar`, `MediaCard`, `Comparison`, and more                                                            |
+| Data     | `List`, `ListItem`, `DataTable`, `KeyValue`, `StatValue`, `SummaryTile`, `Tag`, `Badge`, `ValuePill`, `Avatar`, `MediaCard`, `Comparison`, `SequenceDots`, and more                                            |
 | Time     | `Planner`, `WeekStrip`, `ScheduleSlot`, `DateChip`                                                                                                                                                             |
-| Meters   | `ProgressBar`, `LevelMeter`, `PieIndicator`, `DivergingMeter`                                                                                                                                                  |
+| Meters   | `ProgressBar`, `LevelMeter`, `PieIndicator`, `DivergingMeter`, `MeterList`                                                                                                                                     |
 | Charts   | `LineChart`, `BarChart`, `DonutChart`, `RadarChart`, `Sparkline`, `Heatmap`, `Scatter`, from `umbra-ui/charts`                                                                                                 |
 | Inputs   | `Button`, `IconButton`, `TextField`, `SearchField`, `Select`, `Checkbox`, `RadioGroup`, `Toggle`, `FormField`, `Tabs`, `SegmentedFilter`, `Slider`, `Stepper`, `StarRating`, `SplitButton`, `ColorScaleEditor` |
 | Overlays | `Modal`, `ConfirmDialog`, `Popover`, `Menu`, `Tooltip`, `CommandPalette`, `ActionBar`, `Spotlight`, `ShortcutsSheet`                                                                                           |
@@ -256,7 +256,7 @@ The stylesheet relies on current CSS and has no fallbacks for older browsers.
 | `:has()`                              | States that depend on a child (a hovered trigger)                | Required                                                                                                                   |
 | Container queries                     | Showing less as a component narrows                              | Required: content is cut instead                                                                                           |
 | `dvh` and `dvw` units                 | The shell is exactly the window                                  | Required                                                                                                                   |
-| Subgrid                               | One label column for every row of a `KeyValueList`               | Degrades: each row sizes its own label. Chrome 111 is enough.                                                              |
+| Subgrid                               | One label column for every row of a `KeyValueList`               | Degrades: each row sizes its own label. Chrome 114 is enough.                                                              |
 | `transition-behavior: allow-discrete` | Hiding the scrollbar while an `Accordion` panel opens            | Degrades: the scrollbar shows during the transition                                                                        |
 | `scrollbar-color`, `scrollbar-width`  | Thin scrollbars in Firefox                                       | Degrades: Chrome before 121 and Safari take the `::-webkit-scrollbar` rules; Firefox 153 and 154 show their own scrollbars |
 | `lh` unit                             | Centring a checkbox, a radio or one line of text on its row      | Required (Safari 16.4): a few pixels off                                                                                   |
@@ -284,9 +284,10 @@ The stylesheet relies on current CSS and has no fallbacks for older browsers.
 
 - Every component renders with `renderToString` and hydrates without warnings. Nothing touches `window`
   or `document` while rendering.
-- They are client components: they use state, effects and context. With React Server Components (the
-  Next.js App Router), import them from a file that starts with `'use client'`, and render that file from
-  your server components.
+- They are client components: they use state, effects and context. Every module of the package starts
+  with `'use client'`, so with React Server Components (the Next.js App Router) a Server Component
+  imports them directly; what you pass them from there must be serialisable (no functions), so a
+  component with callbacks goes in a client file of yours.
 - What depends on measured sizes (which cards of a stack collapse, which nav items move to the "more"
   menu) is settled in the browser, after hydration.
 - Import `umbra-ui/styles.css` once, in the root layout.

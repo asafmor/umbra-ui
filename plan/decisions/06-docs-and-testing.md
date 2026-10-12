@@ -28,7 +28,7 @@ Storybook alone does not teach installing, the layout system or customisation, s
 
 ## Baseline images (added 2026-10-11)
 
-The baselines in `tests/visual/__screenshots__/` are the largest thing in the repository (1,979 images, 92 MB, after the trim of 2026-10-11 below), and every changed image adds its full size to the history for good.
+The baselines in `tests/visual/__screenshots__/` are the largest thing in the repository (1,979 images and 92 MB right after the trim of 2026-10-11 below, with the 354 stories of Milestone 1; 3,040 images and 150 MB on 2026-10-12, with Milestone 2), and every changed image adds its full size to the history for good.
 
 **What is captured per story, and why**
 
@@ -93,7 +93,7 @@ Minimums: Chrome and Edge 117, Firefox 125, Safari 17.0. No automated test runs 
 
 | What | Where |
 |---|---|
-| A table of CSS and JavaScript features, the first version of each browser that ships each (MDN browser-compat-data 8.1.5), and a pattern that finds it. A feature newer than a minimum fails unless its row has a note saying what happens without it; a note that is no longer needed fails too. | `scripts/check-browsers.mjs`, run by `npm run lint` on `src/` and by `npm run check:package` on `dist/styles.css` too |
+| A table of CSS and JavaScript features, the first version of each browser that ships each (MDN browser-compat-data 8.1.5), and a pattern that finds it. A feature newer than a minimum fails unless its row has a note saying what happens without it; a note that is no longer needed fails too. For CSS the table is not the only guard (review 3 of Milestone 2, F8): every at-rule, pseudo-class, pseudo-element, function, property, unit and query feature the stylesheets use must be on the list `known` in the script, each name looked up; a name that is not on it fails until a person adds it. JavaScript has the table only. | `scripts/check-browsers.mjs`, run by `npm run lint` on `src/` and by `npm run check:package` on `dist/styles.css` too |
 | The same versions in the README, the getting-started guide and `build.cssTarget` | The same script |
 | The built stylesheet holds no selector the minifier rewrote (`:lang()`), and a `-webkit-` twin beside `mask`, `backdrop-filter` and `user-select` | The same script, with `--dist` |
 | A person looks at the pages, overlays, the table, scrollbars, focus rings, right to left, reduced motion, fonts and charts in Firefox and Safari before a release | `docs/browser-checks.md` |

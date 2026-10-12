@@ -8,6 +8,10 @@
 // - A sample that is partial on purpose opts out with `<!-- docs-check: skip -->` on the line above
 //   its fence. Use it sparingly: a skipped sample is not checked at all.
 // - docs/customisation-tables.md is generated, and has no samples.
+//
+// It also checks the few facts the docs state about the source that would otherwise go stale: the
+// charts the README lists for `umbra-ui/charts`, and that every component is in the README's overview. Sizes and counts are not written in the docs any more: a
+// number that the next commit changes is given with its date, or left to the command that prints it.
 import { readdirSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
@@ -86,7 +90,22 @@ function check(extra) {
         .map((s) => s.name),
     );
   };
+  // The components of an entry: what it exports as a value under a capitalised name.
+  const componentsOf = (path) => {
+    const checker = program.getTypeChecker();
+    return checker
+      .getExportsOfModule(checker.getSymbolAtLocation(program.getSourceFile(path)))
+      .filter((s) => {
+        const target = s.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(s) : s;
+        return /^[A-Z]/.test(s.name) && target.flags & ts.SymbolFlags.Value;
+      })
+      .map((s) => s.name);
+  };
   return {
+    components: {
+      index: componentsOf(abs('src/index.ts')),
+      charts: componentsOf(abs('src/charts/index.ts')),
+    },
     diagnostics: ts.getPreEmitDiagnostics(program).filter((d) => d.file && virtual.has(d.file.fileName)),
     sources: [
       ['umbra-ui', exportsOf(abs('src/index.ts'))],
@@ -118,6 +137,27 @@ for (const d of diagnostics) {
   const message = ts.flattenDiagnosticMessageText(d.messageText, '\n  ');
   console.error(`${byName.get(d.file.fileName).file}:${line + 1} TS${d.code}: ${message}`);
 }
+// --- Facts ---
+
+const facts = [];
+const readme = readFileSync(abs('README.md'), 'utf8');
+const { index, charts } = first.components;
+const chartsRow = /^\| `umbra-ui\/charts`\s*\|([^|]*)\|/m.exec(readme)?.[1] ?? '';
+const listed = [...chartsRow.matchAll(/`(\w+)`/g)].map(([, name]) => name);
+if ([...charts].sort().join() !== [...listed].sort().join())
+  facts.push(
+    `README.md: the row of \`umbra-ui/charts\` lists ${listed.join(', ') || 'nothing'}; the entry exports ${charts.join(', ')}.`,
+  );
+for (const name of [...index, ...charts]) {
+  if (!readme.includes(`\`${name}\``))
+    facts.push(`README.md: the component \`${name}\` is not in the overview.`);
+}
+if (facts.length) {
+  console.error(facts.join('\n'));
+  console.error(`\n${facts.length} statement(s) in the docs do not match the source.`);
+  process.exit(1);
+}
+
 const note = skipped ? ` (${skipped} skipped)` : '';
 if (diagnostics.length) {
   console.error(`\n${diagnostics.length} error(s) in the documentation samples${note}.`);
