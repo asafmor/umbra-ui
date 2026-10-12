@@ -92,7 +92,7 @@ Open with the toolbar's direction set to right to left, or add `&globals=directi
 | `pages-overview--overview`                                     | The whole page mirrors; back and chevron icons point the other way                      |
 | `meters-progressbar--right-to-left`                            | The bar fills from the right, and its gradient runs the same way                        |
 | `layout-card--right-to-left`                                   | The collapse caret turns the right way; actions are at the left                         |
-| `shell-verticalnav--right-to-left`                             | A collapsed rail's badges sit on the correct corner; the group carets are mirrored        |
+| `shell-verticalnav--right-to-left`                             | A collapsed rail's badges sit on the correct corner; the group carets are mirrored      |
 | `overlays-modal--drawer-start-right-to-left`                   | The "start" drawer slides in from the right                                             |
 | `data-datatable--right-to-left`                                | Pinned columns are on the right; horizontal scroll starts from the right                |
 | `overlays-menu--right-to-left`, `inputs-select--right-to-left` | Submenus open to the left; check marks and hints swap sides                             |
