@@ -294,6 +294,14 @@ test.describe('column menu', () => {
 
 test.describe('columns and the width of the table', () => {
   const narrow = (page: Page) => page.locator('[data-box]').filter({ has: grid(page, 'Narrow people') });
+  /** The list is open, under the columns button and lined up with its end ("bottom end"). */
+  const expectOnButton = (page: Page, table: Locator) =>
+    expect(async () => {
+      const button = (await table.locator('[data-part="columnsButton"]').boundingBox())!;
+      const list = (await dialog(page).boundingBox())!;
+      expect(Math.abs(list.x + list.width - (button.x + button.width))).toBeLessThanOrEqual(2);
+      expect(list.y).toBeGreaterThanOrEqual(button.y + button.height);
+    }).toPass({ timeout: 2000 });
 
   test('by default the button comes with the first column that is not shown, and goes with the last', async ({
     page,
@@ -304,14 +312,16 @@ test.describe('columns and the width of the table', () => {
     await table.getByRole('button', { name: '3 columns hidden' }).click();
     await expect(box(page, 'Role No room', 'role')).not.toBeChecked();
 
-    // Wide enough for every column: the button and its column are gone, with the list still open.
+    // Wide enough for every column: the button waits for the list to close before it goes with its
+    // column, so the list stays on it and does not jump to the corner of the window.
     await narrow(page).evaluate((el) => (el.style.width = '700px'));
     await expect.poll(() => shown(table)).toHaveLength(6);
-    await expect(table.locator('[data-col="__hidden"]')).toHaveCount(0);
     await expect(dialog(page).locator('[data-part="noRoom"]')).toHaveCount(0);
+    await expectOnButton(page, table);
     // Closing it with nothing to return to puts the focus on the grid's tab stop, not on the page.
     await page.keyboard.press('Escape');
     await expect(dialog(page)).toHaveCount(0);
+    await expect(table.locator('[data-col="__hidden"]')).toHaveCount(0);
     await expectFocusKept(page);
     await expect.poll(async () => (await focused(page)).isCell).toBe(true);
 
@@ -320,6 +330,23 @@ test.describe('columns and the width of the table', () => {
     await expect(dialog(page)).toBeVisible();
     await box(page, 'Role', 'role').uncheck({ force: true });
     await expect(table.getByRole('button', { name: '1 column hidden' })).toHaveText('+1');
+    await page.keyboard.press('Escape');
+    await expectFocusKept(page);
+
+    // The same with a tick: showing the last column the user hid keeps the list on the button.
+    await table.getByRole('button', { name: '1 column hidden' }).click();
+    await box(page, 'Role', 'role').check({ force: true });
+    await expect.poll(() => shown(table)).toHaveLength(6);
+    await expectOnButton(page, table);
+    await page.keyboard.press('Escape');
+    await expect(table.locator('[data-col="__hidden"]')).toHaveCount(0);
+
+    // Opened from a header's menu, the list loses that header when its column is hidden from the list:
+    // it moves to the button the hidden column brings.
+    await choose(page, table, 'team', 'Columns…');
+    await box(page, 'Team', 'team').uncheck({ force: true });
+    await expect.poll(() => shown(table)).toHaveLength(5);
+    await expectOnButton(page, table);
     await page.keyboard.press('Escape');
     await expectFocusKept(page);
   });
