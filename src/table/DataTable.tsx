@@ -1348,6 +1348,8 @@ export function DataTable<Row>({
   const [headerMenu, setHeaderMenu] = useState<string | null>(null);
   const [menuRtl, setMenuRtl] = useState(false);
   const [columnsOpen, setColumnsOpen] = useState(false);
+  /** The column menu is open against the columns button, so the button stays while it is open. */
+  const [columnsOnMark, setColumnsOnMark] = useState(false);
   /** What the menu or the column menu opens against. */
   const menuAnchor = useRef<HTMLElement | null>(null);
   /** What the live region says: a move or a resize. */
@@ -1426,8 +1428,11 @@ export function DataTable<Row>({
   const hiddenUtility = expandableHidden || parts?.hiddenIndicator !== null;
   // The columns button has its column whatever the width when it is always shown, or when the user hid
   // a column; otherwise the column comes with the first column that does not fit, as the mark did.
+  // It also stays while the list it opened is open: the list is anchored to it, and without it the
+  // list would jump to the corner of the window when the last hidden column comes back.
   const markFixed =
-    parts?.hiddenIndicator !== null && (columnMenu === true || (!expandableHidden && userHidden.length > 0));
+    parts?.hiddenIndicator !== null &&
+    (columnMenu === true || (columnsOpen && columnsOnMark) || (!expandableHidden && userHidden.length > 0));
   const sizes = useMemo(() => {
     const sizes: ColumnSize[] = columns
       .filter((column) => !userHidden.includes(column.id))
@@ -1742,9 +1747,17 @@ export function DataTable<Row>({
     setHeaderMenu(id);
   };
   const openColumns = (anchor: HTMLElement | null) => {
-    menuAnchor.current = root.current?.querySelector('[data-part="columnsButton"]') ?? anchor;
+    const button = root.current?.querySelector<HTMLElement>('[data-part="columnsButton"]');
+    menuAnchor.current = button ?? anchor;
+    setColumnsOnMark(!!button);
     setColumnsOpen(true);
   };
+  // The list opened from a header's menu loses its anchor when that column is hidden from the list:
+  // it moves to the columns button the hidden column brings, rather than to the corner of the window.
+  useLayoutEffect(() => {
+    if (!columnsOpen || menuAnchor.current?.isConnected) return;
+    menuAnchor.current = root.current?.querySelector<HTMLElement>('[data-part="columnsButton"]') ?? null;
+  });
   // When a menu closes and what opened it is gone (a hidden column, the button of a table whose columns
   // are all back), the focus would be left on the page: it goes to the grid's tab stop.
   const overlayOpen = headerMenu !== null || columnsOpen;
