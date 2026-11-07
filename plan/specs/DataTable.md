@@ -27,7 +27,7 @@ About 30 of the 40 screenshots. Best: 18 and 9 (dense rows with tags, pills, bar
 | `headerCell` | label, and in a sortable column a button with the `sortIndicator` | |
 | `row` | one `cell` per column; with selection a cell first that holds a checkbox (`multiple`) or a radio (`single`); with hidden columns and `expandableHidden` a disclosure cell | |
 | `hiddenIndicator` | the content of the columns button: how many columns are not shown ("+3"), or the columns icon when all are | see `columnsButton` |
-| `columnsButton` | a button in a narrow column of its own at the end of the header row; it opens the `columnMenu` | `columnMenu="auto"` (default): while a column is not shown (no room, or hidden by the user), without `expandableHidden`. `columnMenu`: always. `columnMenu={false}`: never (the mark is then plain text, as before) |
+| `columnsButton` | a button in a narrow column of its own at the end of the header row; it opens the `columnMenu` | `columnMenu="auto"` (default): while a column is not shown (no room, or hidden by the user), without `expandableHidden`, and while the list it opened is open (so the list keeps its place when the last hidden column comes back). `columnMenu`: always. `columnMenu={false}`: never (the mark is then plain text, as before) |
 | `columnMenu` | a popover that lists every column in order: a handle to move it, a checkbox to show it, "No room" when the table hid it, a pin mark; above the list "Show all" and "Reset", and a search field from 10 columns up | closed |
 | `columnMenuItem` | one row of that list | |
 | `headerMenuButton` | a "more" button in each column header | on hover of the header, on keyboard focus of its cell and while its menu is open; it takes no room |
