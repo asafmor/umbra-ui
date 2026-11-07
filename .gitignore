@@ -20,6 +20,5 @@ examples/*/package-lock.json
 # local, per-developer files
 *.local
 .claude/settings.local.json
-.serena/
 .claude/worktrees/
 blob-report/
